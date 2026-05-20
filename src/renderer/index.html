@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Score Arranger</title>
+    <style>
+      :root {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC",
+          "Microsoft JhengHei", Arial, sans-serif;
+
+        /* === Light theme (預設) === */
+        --bg-base: #f5f5f7;
+        --bg-panel: #ffffff;
+        --bg-panel-translucent: rgba(255, 255, 255, 0.9);
+        --bg-secondary: #fafafa;
+        --bg-tertiary: #f0f0f0;
+        --bg-hover: #f5f9ff;
+        --bg-divider: #ddd;
+
+        --fg-primary: #1d1d1f;
+        --fg-secondary: #444;
+        --fg-muted: #666;
+        --fg-tertiary: #999;
+
+        --border: #ddd;
+        --border-light: #eee;
+        --border-strong: #ccc;
+
+        --accent: #1d6fdc;
+        --accent-fg: #ffffff;
+        --accent-hover: #195fc4;
+
+        --error-bg: #ffebee;
+        --error-fg: #c62828;
+        --error-border: #ef9a9a;
+
+        --warning-fg: #f57c00;
+        --success-fg: #388e3c;
+
+        --info-bg: #e3f2fd;
+        --info-fg: #1565c0;
+        --info-border: #90caf9;
+
+        --button-bg: #ffffff;
+        --button-fg: #1d1d1f;
+        --button-border: #ccc;
+        --button-bg-hover: #f5f5f5;
+
+        --code-bg: rgba(0, 0, 0, 0.05);
+      }
+
+      body.dark {
+        /* === Dark theme === */
+        --bg-base: #1c1c1e;
+        --bg-panel: #2c2c2e;
+        --bg-panel-translucent: rgba(44, 44, 46, 0.92);
+        --bg-secondary: #3a3a3c;
+        --bg-tertiary: #2c2c2e;
+        --bg-hover: #383850;
+        --bg-divider: #444;
+
+        --fg-primary: #f5f5f7;
+        --fg-secondary: #d0d0d2;
+        --fg-muted: #a0a0a3;
+        --fg-tertiary: #7a7a7d;
+
+        --border: #444;
+        --border-light: #333;
+        --border-strong: #555;
+
+        --accent: #4d8efc;
+        --accent-fg: #ffffff;
+        --accent-hover: #6da4ff;
+
+        --error-bg: #4a1c20;
+        --error-fg: #ff8a80;
+        --error-border: #8a3a40;
+
+        --warning-fg: #ffb74d;
+        --success-fg: #81c784;
+
+        --info-bg: #1a3a5c;
+        --info-fg: #8ab8e8;
+        --info-border: #3a5a8c;
+
+        --button-bg: #3a3a3c;
+        --button-fg: #f5f5f7;
+        --button-border: #555;
+        --button-bg-hover: #4a4a4c;
+
+        --code-bg: rgba(255, 255, 255, 0.08);
+      }
+
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg-base);
+        color: var(--fg-primary);
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      /* OSMD 內容容器一律保持淺色 (避免重新渲染), 透過 wrapper 控制 */
+      .osmd-light-wrapper {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      /* 點 Issue 後譜面 flash 動畫: 黃色脈動 → 淡出 */
+      @keyframes score-flash {
+        0% {
+          background: rgba(255, 215, 0, 0.55);
+          box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.7);
+        }
+        40% {
+          background: rgba(255, 215, 0, 0.35);
+          box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.5);
+        }
+        100% {
+          background: rgba(255, 215, 0, 0);
+          box-shadow: 0 0 0 0 rgba(255, 165, 0, 0);
+        }
+      }
+      .score-flash-overlay {
+        animation: score-flash 1.5s ease-out forwards;
+      }
+
+      /* 載入遮罩的轉圈動畫 */
+      @keyframes score-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 音符級游標: 把目前播放的音符塗成琥珀黃 + 加 drop-shadow halo */
+      /* (參考 Sibelius/Dorico 風格, 比螢光綠優雅且不撞色) */
+      .score-note-playing {
+        fill: #fbbf24 !important;
+        filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.7));
+        transition: filter 80ms ease-out;
+      }
+      .score-note-playing * {
+        fill: #fbbf24 !important;
+        stroke: #fbbf24 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

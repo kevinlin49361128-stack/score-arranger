@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg
+
+# Build artifacts
+dist/
+build-pyi/
+*.spec
+release/
+# build/ 是 electron-builder 的 buildResources 來源 (entitlements / icon.icns /
+# after-pack 腳本 / make-icon.py), 須納版控; 只忽略 make-icon.py 產生的中間檔。
+build/icon.iconset/
+build/icon.png
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (for future Electron app)
+node_modules/
+.next/
+
+# Secrets
+.env
+.env.*
+
+# Claude Code 本地設定
+.claude/
+
+# Project artifacts
+*.sarr
+test-output/

@@ -1,0 +1,14 @@
+{
+  "piece_id": "bach_bwv57_8",
+  "source": "music21:bach/bwv57.8",
+  "annotator": "fermata_heuristic",
+  "notes": "Bach 聖詠 BWV 57/8。Soprano fermata 位置 m.5, 7, 10, 13。樂句邊界為 fermata 後一小節。13 小節作品分為 4 個樂句。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 13],
+      "boundaries": [6, 8, 11]
+    }
+  ]
+}

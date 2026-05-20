@@ -1,0 +1,14 @@
+{
+  "piece_id": "bach_bwv66_6",
+  "source": "music21:bach/bwv66.6",
+  "annotator": "fermata_heuristic",
+  "notes": "Bach 四部聖詠,Phase 0 demo annotation。樂句邊界基於 Soprano 聲部 fermata 位置 (m.1, 2, 3, 5, 7, 9 結束的樂句)。注意:此為啟發式而非音樂家專業標註,僅供開發測試,實際 F1 評估需專業重新標註。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 10],
+      "boundaries": [2, 3, 4, 6, 8]
+    }
+  ]
+}

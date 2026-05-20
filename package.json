@@ -1,0 +1,43 @@
+{
+  "name": "score-arranger",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Score Arranger — 智慧輔助管弦樂譜改編工具",
+  "main": "dist/main/main/index.js",
+  "scripts": {
+    "dev": "concurrently -k -n RENDERER,MAIN,ELECTRON -c green,yellow,cyan \"npm:dev:renderer\" \"npm:dev:main\" \"npm:dev:electron\"",
+    "dev:renderer": "vite",
+    "dev:main": "tsc -p tsconfig.main.json --watch",
+    "dev:electron": "wait-on tcp:5173 dist/main/main/index.js && electron .",
+    "build": "tsc -p tsconfig.main.json && vite build",
+    "start": "electron .",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "freeze-engine": "bash engine/freeze.sh",
+    "dist:mac": "npm run build && npm run freeze-engine && electron-builder --mac",
+    "dist:mac:unsigned": "npm run build && npm run freeze-engine && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --config.dmg.sign=false"
+  },
+  "dependencies": {
+    "@tonejs/midi": "^2.0.28",
+    "jspdf": "^4.2.1",
+    "opensheetmusicdisplay": "^1.8.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tone": "^15.1.22",
+    "verovio": "^6.1.0",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "electron": "^31.3.0",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "wait-on": "^7.2.0"
+  }
+}

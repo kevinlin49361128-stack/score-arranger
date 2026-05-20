@@ -1,0 +1,14 @@
+{
+  "piece_id": "chopin_mazurka_op6_no2_opening",
+  "source": "music21:chopin/mazurka06-2",
+  "annotator": "barline_heuristic",
+  "notes": "Chopin Mazurka op.6 no.2 開頭 16 小節。m.8 有 heavy-light barline (出版者明示樂句邊界),典型 mazurka 8+8 結構。完整曲 75 小節,後段需專業標註。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 16],
+      "boundaries": [9]
+    }
+  ]
+}

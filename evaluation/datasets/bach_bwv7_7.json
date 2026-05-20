@@ -1,0 +1,14 @@
+{
+  "piece_id": "bach_bwv7_7",
+  "source": "music21:bach/bwv7.7",
+  "annotator": "fermata_heuristic",
+  "notes": "Bach 聖詠 BWV 7/7。Soprano fermata 每隔 2 小節出現一次 (m.2, 4, 6, ...18),極規律的 2-bar 樂句結構。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 19],
+      "boundaries": [3, 5, 7, 9, 11, 13, 15, 17]
+    }
+  ]
+}

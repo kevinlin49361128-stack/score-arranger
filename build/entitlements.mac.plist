@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 允許 JIT (Electron V8 引擎) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <!-- 允許可執行記憶體 — PyInstaller 凍結的 Python 直譯器需要 -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <!-- 允許載入未個別簽署的 dylib — 凍結 engine 的 _internal/ 含大量
+         music21 / Python 原生模組 (.so / .dylib) -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <!-- 網路存取 — LLM 改編建議 API 呼叫 (Anthropic / OpenAI compat) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+</dict>
+</plist>

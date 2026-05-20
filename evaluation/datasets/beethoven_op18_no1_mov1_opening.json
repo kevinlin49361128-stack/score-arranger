@@ -1,0 +1,14 @@
+{
+  "piece_id": "beethoven_op18_no1_mov1_opening",
+  "source": "music21:beethoven/opus18no1/movement1",
+  "annotator": "classical_period_heuristic",
+  "notes": "Beethoven 弦樂四重奏 op.18 no.1 第一樂章開頭 8 小節 (主題呈示)。典型古典時期奏鳴曲開頭: 4-小節基本動機 + 4-小節回應,boundaries at m.5。完整樂章 313 小節,後段需專業標註。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 8],
+      "boundaries": [5]
+    }
+  ]
+}

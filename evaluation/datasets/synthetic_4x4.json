@@ -1,0 +1,14 @@
+{
+  "piece_id": "synthetic_4x4",
+  "source": "synthetic",
+  "annotator": "test",
+  "notes": "合成測試: 16 小節分為 4 個 4 小節的樂句。用於驗證評估框架。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 16],
+      "boundaries": [5, 9, 13]
+    }
+  ]
+}

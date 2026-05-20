@@ -1,0 +1,14 @@
+{
+  "piece_id": "mozart_k155_mov3_opening",
+  "source": "music21:mozart/k155/movement3",
+  "annotator": "classical_period_heuristic",
+  "notes": "Mozart 弦樂四重奏 K.155 第三樂章 (Minuet)。標註開頭 16 小節 (典型古典時期 minuet 結構: 4+4 antecedent/consequent + 4+4)。完整曲長 103 小節,後段需專業標註。",
+  "annotations": [
+    {
+      "part_id": "all",
+      "section_id": 0,
+      "section_range": [1, 16],
+      "boundaries": [5, 9, 13]
+    }
+  ]
+}
