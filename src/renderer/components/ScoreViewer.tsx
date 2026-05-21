@@ -729,6 +729,10 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       if (cursorMode !== "note") {
         moveCursorToMeasure(playbackMeasure);
       }
+      // 播放跟隨: 用我們自己受控的 scrollToMeasure (非 OSMD 內建 follow —
+      // 那個會「一播放就滾到底」, 已被三層保險擋掉)。alwaysCenter=false →
+      // 只在當前小節捲出視窗時才捲, 不會每小節都猛拉; behavior=auto 即時不延遲。
+      scrollToMeasure(playbackMeasure, "auto", false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [playbackMeasure, cursorMode, isActivePlaybackPanel]);
 
