@@ -12,6 +12,8 @@
     "build": "tsc -p tsconfig.main.json && vite build",
     "start": "electron .",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
     "freeze-engine": "bash engine/freeze.sh",
@@ -38,6 +40,7 @@
     "electron-builder": "^26.8.1",
     "typescript": "^5.5.3",
     "vite": "^5.3.4",
+    "vitest": "^4.1.7",
     "wait-on": "^7.2.0"
   }
 }
