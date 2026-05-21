@@ -90,19 +90,26 @@ async function createWindow(): Promise<BrowserWindow> {
 
 function registerIpcHandlers(): void {
   ipcMain.handle("dialog:openScore", async () => {
+    // 第一個 filter 是 macOS 對話框的預設選項 — 必須涵蓋所有支援格式,
+    // 否則 PDF / MIDI / ABC / krn 會被 grey-out 而無法選取。
+    const audioExt = ["wav", "mp3", "m4a", "flac", "ogg", "aac"];
     const result = await dialog.showOpenDialog({
       title: "選擇樂譜檔案",
       properties: ["openFile"],
       filters: [
+        {
+          name: "所有支援的格式",
+          extensions: [
+            "musicxml", "xml", "mxl", "mid", "midi", "abc", "krn",
+            "pdf", ...audioExt,
+          ],
+        },
         { name: "MusicXML", extensions: ["musicxml", "xml", "mxl"] },
         { name: "MIDI", extensions: ["mid", "midi"] },
         { name: "ABC Notation", extensions: ["abc"] },
         { name: "Humdrum (**kern)", extensions: ["krn"] },
         { name: "PDF (需安裝 Audiveris)", extensions: ["pdf"] },
-        {
-          name: "音訊 (需安裝 basic-pitch)",
-          extensions: ["wav", "mp3", "m4a", "flac", "ogg", "aac"],
-        },
+        { name: "音訊 (需安裝 basic-pitch)", extensions: audioExt },
         { name: "All Files", extensions: ["*"] },
       ],
     });
