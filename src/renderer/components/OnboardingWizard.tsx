@@ -12,6 +12,8 @@
 
 import { useState } from "react";
 
+import { t, useLocale } from "../utils/i18n";
+
 interface Props {
   onSkip: () => void;
   /** 完成時 callback — Toolbar 串接 import-from-corpus + arrange flow. */
@@ -24,9 +26,11 @@ interface Props {
 
 interface SampleScore {
   corpus: string;
-  title: string;
+  /** i18n key — 樂曲標題。 */
+  titleKey: string;
   composer: string;
-  description: string;
+  /** i18n key — 範例描述。 */
+  descKey: string;
   defaultEnsemble: string;
   defaultSkill: "amateur" | "intermediate" | "professional";
 }
@@ -34,58 +38,60 @@ interface SampleScore {
 const SAMPLES: SampleScore[] = [
   {
     corpus: "corpus:bach/bwv66.6",
-    title: "BWV 66.6 (Chorale)",
+    titleKey: "onboard.sample.bach.title",
     composer: "J. S. Bach",
-    description: "SATB 四部和聲, 短小完整, 改成弦四最直觀.",
+    descKey: "onboard.sample.bach.desc",
     defaultEnsemble: "string_quartet",
     defaultSkill: "intermediate",
   },
   {
     corpus: "corpus:corelli/opus3no1/1grave",
-    title: "Op.3 No.1 'Grave'",
+    titleKey: "onboard.sample.corelli.title",
     composer: "Corelli",
-    description: "巴洛克三重奏鳴曲. 改成 baroque_trio_sonata 自動加大鍵琴 continuo.",
+    descKey: "onboard.sample.corelli.desc",
     defaultEnsemble: "baroque_trio_sonata",
     defaultSkill: "professional",
   },
   {
     corpus: "corpus:mozart/k155/movement1",
-    title: "K.155 第一樂章",
+    titleKey: "onboard.sample.mozart.title",
     composer: "Mozart",
-    description: "弦樂四重奏小品. 改編成小提琴+鋼琴或大鍵琴獨奏練手感.",
+    descKey: "onboard.sample.mozart.desc",
     defaultEnsemble: "violin_piano",
     defaultSkill: "intermediate",
   },
   {
     corpus: "corpus:beethoven/opus18no1/movement1",
-    title: "Op.18 No.1 第一樂章",
+    titleKey: "onboard.sample.beethoven.title",
     composer: "Beethoven",
-    description: "古典弦四經典. 試 piano_solo 或木管五重奏看不同編制風格.",
+    descKey: "onboard.sample.beethoven.desc",
     defaultEnsemble: "piano_solo",
     defaultSkill: "professional",
   },
   {
     corpus: "corpus:haydn/opus74no1/movement1",
-    title: "Op.74 No.1 第一樂章",
+    titleKey: "onboard.sample.haydn.title",
     composer: "Haydn",
-    description: "海頓晚期弦四. 對比 Mozart / Beethoven 風格.",
+    descKey: "onboard.sample.haydn.desc",
     defaultEnsemble: "string_quartet",
     defaultSkill: "professional",
   },
 ];
 
-const ENSEMBLE_DISPLAY: Record<string, string> = {
-  violin_piano: "小提琴 + 鋼琴",
-  string_quartet: "弦樂四重奏",
-  piano_solo: "鋼琴獨奏",
-  harpsichord_solo: "大鍵琴獨奏",
-  violin_harpsichord: "小提琴 + 大鍵琴",
-  baroque_trio_sonata: "巴洛克三重奏鳴曲",
-  woodwind_quintet: "木管五重奏",
-  brass_quintet: "銅管五重奏",
+/** ensemble id → i18n key。 */
+const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
+  violin_piano: "onboard.ensemble.violinPiano",
+  string_quartet: "onboard.ensemble.stringQuartet",
+  piano_solo: "onboard.ensemble.pianoSolo",
+  harpsichord_solo: "onboard.ensemble.harpsichordSolo",
+  violin_harpsichord: "onboard.ensemble.violinHarpsichord",
+  baroque_trio_sonata: "onboard.ensemble.baroqueTrioSonata",
+  woodwind_quintet: "onboard.ensemble.woodwindQuintet",
+  brass_quintet: "onboard.ensemble.brassQuintet",
 };
 
 export function OnboardingWizard({ onSkip, onComplete }: Props) {
+  useLocale();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedSample, setSelectedSample] = useState<SampleScore>(SAMPLES[0]);
   const [ensemble, setEnsemble] = useState<string>(SAMPLES[0].defaultEnsemble);
@@ -152,7 +158,7 @@ export function OnboardingWizard({ onSkip, onComplete }: Props) {
           marginBottom: 4,
         }}>
           <h2 style={{ margin: 0, fontSize: 20 }}>
-            歡迎使用 Score Arranger
+            {t("onboard.title")}
           </h2>
           <button
             onClick={onSkip}
@@ -163,13 +169,13 @@ export function OnboardingWizard({ onSkip, onComplete }: Props) {
               cursor: "pointer",
               fontSize: 12,
             }}
-            title="跳過引導, 之後不再顯示"
+            title={t("onboard.skip.title")}
           >
-            跳過
+            {t("onboard.skip")}
           </button>
         </div>
         <div style={{ fontSize: 12, color: "var(--fg-muted)" }}>
-          3 步驟讓你看到改編結果. 步驟 {step} / 3
+          {t("onboard.progress", { step })}
         </div>
 
         {/* Progress dots */}
@@ -232,12 +238,12 @@ export function OnboardingWizard({ onSkip, onComplete }: Props) {
               opacity: step === 1 ? 0.4 : 1,
             }}
           >
-            ← 上一步
+            {t("onboard.back")}
           </button>
           {step < 3
             ? (
               <button onClick={handleNext} style={btnPrimary}>
-                下一步 →
+                {t("onboard.next")}
               </button>
             )
             : (
@@ -246,7 +252,7 @@ export function OnboardingWizard({ onSkip, onComplete }: Props) {
                 disabled={running}
                 style={btnPrimary}
               >
-                {running ? "改編中..." : "開始改編"}
+                {running ? t("onboard.arranging") : t("onboard.start")}
               </button>
             )}
         </div>
@@ -262,15 +268,16 @@ function Step1(
     onSelect: (s: SampleScore) => void;
   },
 ) {
+  useLocale();
   return (
     <>
       <h3 style={{ fontSize: 14, marginBottom: 8 }}>
-        步驟 1 / 選一首範例樂譜
+        {t("onboard.step1.heading")}
       </h3>
       <div style={{
         fontSize: 12, color: "var(--fg-muted)", marginBottom: 12,
       }}>
-        以下 5 首都已內建, 不需下載. 之後也可以從工具列「匯入」載入自己的譜.
+        {t("onboard.step1.hint")}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {samples.map((s) => (
@@ -292,12 +299,12 @@ function Step1(
             }}
           >
             <div style={{ fontWeight: 600, fontSize: 13 }}>
-              {s.composer} — {s.title}
+              {s.composer} — {t(s.titleKey)}
             </div>
             <div style={{
               fontSize: 11, color: "var(--fg-muted)", marginTop: 2,
             }}>
-              {s.description}
+              {t(s.descKey)}
             </div>
           </button>
         ))}
@@ -314,23 +321,23 @@ function Step2(
     onSkillChange: (v: "amateur" | "intermediate" | "professional") => void;
   },
 ) {
+  useLocale();
   return (
     <>
       <h3 style={{ fontSize: 14, marginBottom: 8 }}>
-        步驟 2 / 選目標編制
+        {t("onboard.step2.heading")}
       </h3>
       <div style={{
         fontSize: 12, color: "var(--fg-muted)", marginBottom: 12,
       }}>
-        改編引擎會把 source 各聲部分配到你選的編制. 若編制人數比 source 多,
-        會自動補完內聲部.
+        {t("onboard.step2.hint")}
       </div>
       <div style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: 6,
       }}>
-        {Object.entries(ENSEMBLE_DISPLAY).map(([key, label]) => (
+        {Object.entries(ENSEMBLE_LABEL_KEYS).map(([key, labelKey]) => (
           <button
             key={key}
             onClick={() => onChange(key)}
@@ -349,22 +356,30 @@ function Step2(
               textAlign: "center",
             }}
           >
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </div>
 
       <h3 style={{ fontSize: 14, marginTop: 20, marginBottom: 8 }}>
-        演奏者技術水平
+        {t("onboard.step2.skillHeading")}
       </h3>
       <div style={{ display: "flex", gap: 6 }}>
         {(
           [
-            ["amateur", "業餘", "簡化和弦, 避難段"],
-            ["intermediate", "中級", "中庸"],
-            ["professional", "專業", "完整呈現"],
+            ["amateur", "onboard.skill.amateur", "onboard.skill.amateur.hint"],
+            [
+              "intermediate",
+              "onboard.skill.intermediate",
+              "onboard.skill.intermediate.hint",
+            ],
+            [
+              "professional",
+              "onboard.skill.professional",
+              "onboard.skill.professional.hint",
+            ],
           ] as const
-        ).map(([key, label, hint]) => (
+        ).map(([key, labelKey, hintKey]) => (
           <button
             key={key}
             onClick={() => onSkillChange(key)}
@@ -382,9 +397,11 @@ function Step2(
               color: "var(--fg-primary)",
             }}
           >
-            <div style={{ fontWeight: 600, fontSize: 13 }}>{label}</div>
+            <div style={{ fontWeight: 600, fontSize: 13 }}>
+              {t(labelKey)}
+            </div>
             <div style={{ fontSize: 10, color: "var(--fg-muted)" }}>
-              {hint}
+              {t(hintKey)}
             </div>
           </button>
         ))}
@@ -400,15 +417,21 @@ function Step3(
     skillLevel: "amateur" | "intermediate" | "professional";
   },
 ) {
+  useLocale();
+  const skillKey: Record<typeof skillLevel, string> = {
+    amateur: "onboard.skill.amateur",
+    intermediate: "onboard.skill.intermediate",
+    professional: "onboard.skill.professional",
+  };
   return (
     <>
       <h3 style={{ fontSize: 14, marginBottom: 8 }}>
-        步驟 3 / 開始
+        {t("onboard.step3.heading")}
       </h3>
       <div style={{
         fontSize: 12, color: "var(--fg-muted)", marginBottom: 16,
       }}>
-        按「開始改編」, 系統會載入樂譜並執行改編. 約 5-10 秒看到結果.
+        {t("onboard.step3.hint")}
       </div>
 
       <div style={{
@@ -418,15 +441,21 @@ function Step3(
         fontSize: 13,
         lineHeight: 1.6,
       }}>
-        <Row label="樂譜" value={`${sample.composer} — ${sample.title}`} />
-        <Row label="目標編制" value={ENSEMBLE_DISPLAY[ensemble] ?? ensemble} />
         <Row
-          label="技術水平"
+          label={t("onboard.step3.scoreLabel")}
+          value={`${sample.composer} — ${t(sample.titleKey)}`}
+        />
+        <Row
+          label={t("onboard.step3.ensembleLabel")}
           value={
-            { amateur: "業餘", intermediate: "中級", professional: "專業" }[
-              skillLevel
-            ]
+            ENSEMBLE_LABEL_KEYS[ensemble]
+              ? t(ENSEMBLE_LABEL_KEYS[ensemble])
+              : ensemble
           }
+        />
+        <Row
+          label={t("onboard.step3.skillLabel")}
+          value={t(skillKey[skillLevel])}
         />
       </div>
 
@@ -436,7 +465,7 @@ function Step3(
         color: "var(--fg-muted)",
         textAlign: "center",
       }}>
-        完成後可以在工具列換不同編制 / 風格 preset, 隨時微調.
+        {t("onboard.step3.footnote")}
       </div>
     </>
   );

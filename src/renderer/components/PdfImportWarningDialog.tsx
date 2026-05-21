@@ -6,22 +6,26 @@
  * 提醒手上若有 MusicXML / MIDI 應優先使用。
  */
 
+import { t, useLocale } from "../utils/i18n";
+
 interface PdfImportWarningDialogProps {
   fileName: string;
   onProceed: () => void;
   onCancel: () => void;
 }
 
-const POINTS = [
-  "辨識結果常見錯音、漏拍、小節錯位、聲部混淆 —— 樂譜越複雜越明顯。",
-  "掃描品質不佳、手寫譜、或排版緊密的樂譜，準確率會明顯下降。",
-  "辨識約需 1–3 分鐘；完成後請務必對照原譜逐處核對、修正。",
-  "若手上有 MusicXML 或 MIDI 檔，建議優先使用 —— 準確度遠高於 PDF。",
+/** 提醒要點 — i18n keys。 */
+const POINT_KEYS = [
+  "pdfWarn.point.errors",
+  "pdfWarn.point.quality",
+  "pdfWarn.point.time",
+  "pdfWarn.point.preferXml",
 ];
 
 export function PdfImportWarningDialog(
   { fileName, onProceed, onCancel }: PdfImportWarningDialogProps,
 ) {
+  useLocale();
   return (
     <div
       role="dialog"
@@ -50,10 +54,9 @@ export function PdfImportWarningDialog(
           boxShadow: "0 12px 48px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 18 }}>PDF 匯入提醒</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>{t("pdfWarn.heading")}</h2>
         <p style={{ marginTop: 8, color: "var(--fg-muted)", fontSize: 13 }}>
-          PDF 樂譜需要先經過 OMR（光學樂譜辨識）自動轉成 MusicXML 才能編輯。
-          這項技術目前仍不夠穩定，匯入前請先有心理準備：
+          {t("pdfWarn.intro")}
         </p>
 
         <ul
@@ -68,9 +71,9 @@ export function PdfImportWarningDialog(
             lineHeight: 1.6,
           }}
         >
-          {POINTS.map((pt, i) => (
+          {POINT_KEYS.map((ptKey, i) => (
             <li
-              key={pt}
+              key={ptKey}
               style={{
                 display: "flex",
                 gap: 8,
@@ -78,7 +81,7 @@ export function PdfImportWarningDialog(
               }}
             >
               <span style={{ color: "var(--accent)" }}>•</span>
-              <span>{pt}</span>
+              <span>{t(ptKey)}</span>
             </li>
           ))}
         </ul>
@@ -86,7 +89,8 @@ export function PdfImportWarningDialog(
         <div
           style={{ marginTop: 12, fontSize: 12, color: "var(--fg-muted)" }}
         >
-          檔案：<span style={{ color: "var(--fg-primary)" }}>{fileName}</span>
+          {t("pdfWarn.fileLabel")}
+          <span style={{ color: "var(--fg-primary)" }}>{fileName}</span>
         </div>
 
         <div
@@ -109,7 +113,7 @@ export function PdfImportWarningDialog(
               fontSize: 13,
             }}
           >
-            取消
+            {t("pdfWarn.cancel")}
           </button>
           <button
             onClick={onProceed}
@@ -124,7 +128,7 @@ export function PdfImportWarningDialog(
               fontWeight: 600,
             }}
           >
-            仍要匯入 PDF
+            {t("pdfWarn.proceed")}
           </button>
         </div>
       </div>

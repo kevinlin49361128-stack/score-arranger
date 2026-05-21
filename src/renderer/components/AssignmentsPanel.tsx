@@ -8,8 +8,10 @@
 import { useEffect, useState } from "react";
 import { QualityBadge } from "./QualityBadge";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function AssignmentsPanel() {
+  useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
   const targetMusicXML = useSessionStore((s) => s.targetMusicXML);
   const setTargetMusicXML = useSessionStore((s) => s.setTargetMusicXML);
@@ -89,7 +91,7 @@ export function AssignmentsPanel() {
     if (!targetPlayerId || !targetStaff) return;
     const key = `${sourcePartId}->${targetValue}`;
     setBusyKey(key);
-    setLoading(true, `重新分配 ${sourcePartId}...`);
+    setLoading(true, t("assign.reassigning", { part: sourcePartId }));
     try {
       const res = await window.scoreArranger.engine.reassign(
         sourcePartId,
@@ -104,7 +106,7 @@ export function AssignmentsPanel() {
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
         setError(null);
       } else {
-        setError(res.error ?? "重新分配失敗");
+        setError(res.error ?? t("assign.reassignFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -130,7 +132,9 @@ export function AssignmentsPanel() {
           gap: 8,
         }}
       >
-        <span>聲部分配 ({arrangement.assignments.length})</span>
+        <span>
+          {t("assign.title", { n: arrangement.assignments.length })}
+        </span>
         <QualityBadge />
         {Object.keys(difficulty).length > 0 && (
           <span
@@ -144,7 +148,7 @@ export function AssignmentsPanel() {
               fontWeight: 400,
               fontSize: 10,
             }}
-            title="各演奏者最高難度. 1=初級, 5=職業"
+            title={t("assign.difficultyTip")}
           >
             {arrangement.players.map((p) => {
               const d = playerDifficulty(p.player_id);
@@ -219,7 +223,7 @@ export function AssignmentsPanel() {
                   opacity: draggingSourceId === a.source_part ? 0.4 : 1,
                   userSelect: "none",
                 }}
-                title="拖曳到另一列以重新分配到該演奏者"
+                title={t("assign.dragHint")}
               >
                 ⋮⋮ {a.source_part}
               </span>
@@ -268,12 +272,17 @@ export function AssignmentsPanel() {
 function DifficultyBadge(
   { name, score, label }: { name: string; score: number; label: string },
 ) {
+  useLocale();
   // 顏色: 1=綠, 3=黃, 5=紅; 用 HSL 線性插值 (120 → 0 度色相)
-  const t = Math.max(0, Math.min(1, (score - 1) / 4));
-  const hue = 120 - 120 * t;
+  const ratio = Math.max(0, Math.min(1, (score - 1) / 4));
+  const hue = 120 - 120 * ratio;
   return (
     <span
-      title={`${name} — ${label} (${score.toFixed(1)} / 5)`}
+      title={t("assign.difficultyBadgeTip", {
+        name,
+        label,
+        score: score.toFixed(1),
+      })}
       style={{
         display: "inline-flex",
         alignItems: "center",

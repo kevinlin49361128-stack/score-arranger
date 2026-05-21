@@ -6,12 +6,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 interface Preset {
   corpus_path: string;
-  display_name: string;
+  name_key: string;           // i18n key — 曲目顯示名
   era: string;
-  ensemble?: string;          // 編制簡述 e.g. "SATB 聖詠"
+  ensemble_key?: string;      // i18n key — 編制簡述
   measures?: number;          // 約略小節數,方便估算
 }
 
@@ -19,325 +20,325 @@ const PRESETS: Preset[] = [
   // ─── Baroque ─────────────────────────────────────────────
   {
     corpus_path: "bach/bwv66.6",
-    display_name: "Bach 聖詠 BWV 66/6",
+    name_key: "preset.piece.bwv66.6",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 10,
   },
   {
     corpus_path: "bach/bwv7.7",
-    display_name: "Bach 聖詠 BWV 7/7",
+    name_key: "preset.piece.bwv7.7",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 19,
   },
   {
     corpus_path: "bach/bwv57.8",
-    display_name: "Bach 聖詠 BWV 57/8",
+    name_key: "preset.piece.bwv57.8",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 13,
   },
   {
     corpus_path: "bach/bwv4.8",
-    display_name: "Bach 聖詠 BWV 4/8 (Christ lag in Todesbanden)",
+    name_key: "preset.piece.bwv4.8",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 14,
   },
   {
     corpus_path: "bach/bwv227.7",
-    display_name: "Bach 經文歌 BWV 227 第 7 樂章",
+    name_key: "preset.piece.bwv227.7",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 13,
   },
   {
     corpus_path: "bach/bwv281",
-    display_name: "Bach 聖詠 BWV 281 (Christus, der ist mein Leben)",
+    name_key: "preset.piece.bwv281",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 9,
   },
   {
     corpus_path: "bach/bwv344",
-    display_name: "Bach 聖詠 BWV 344",
+    name_key: "preset.piece.bwv344",
     era: "Baroque",
-    ensemble: "SATB",
+    ensemble_key: "preset.ensemble.satb",
     measures: 24,
   },
   {
     corpus_path: "bach/bwv1.6",
-    display_name: "Bach 聖詠 BWV 1/6 (含法國號)",
+    name_key: "preset.piece.bwv1.6",
     era: "Baroque",
-    ensemble: "5 parts",
+    ensemble_key: "preset.ensemble.5parts",
     measures: 21,
   },
   {
     corpus_path: "corelli/opus3no1/1grave",
-    display_name: "Corelli 三重奏鳴曲 op.3/1 Grave",
+    name_key: "preset.piece.corelliOp3no1Grave",
     era: "Baroque",
-    ensemble: "Trio Sonata",
+    ensemble_key: "preset.ensemble.trioSonata",
     measures: 19,
   },
   {
     corpus_path: "handel/rinaldo/Lascia_chio_pianga",
-    display_name: "Handel 歌劇《里納爾多》— 讓我哭泣吧",
+    name_key: "preset.piece.handelRinaldoLascia",
     era: "Baroque",
-    ensemble: "聲樂 + 伴奏",
+    ensemble_key: "preset.ensemble.voiceAccomp",
     measures: 54,
   },
 
   // ─── Classical ───────────────────────────────────────────
   {
     corpus_path: "mozart/k80/movement1",
-    display_name: "Mozart 弦樂四重奏 K.80 第一樂章",
+    name_key: "preset.piece.k80m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 67,
   },
   {
     corpus_path: "mozart/k80/movement2",
-    display_name: "Mozart 弦樂四重奏 K.80 第二樂章",
+    name_key: "preset.piece.k80m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 84,
   },
   {
     corpus_path: "mozart/k80/movement3",
-    display_name: "Mozart 弦樂四重奏 K.80 第三樂章 (Minuet)",
+    name_key: "preset.piece.k80m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 52,
   },
   {
     corpus_path: "mozart/k80/movement4",
-    display_name: "Mozart 弦樂四重奏 K.80 第四樂章",
+    name_key: "preset.piece.k80m4",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 71,
   },
   {
     corpus_path: "mozart/k155/movement1",
-    display_name: "Mozart 弦樂四重奏 K.155 第一樂章",
+    name_key: "preset.piece.k155m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
   },
   {
     corpus_path: "mozart/k155/movement2",
-    display_name: "Mozart 弦樂四重奏 K.155 第二樂章",
+    name_key: "preset.piece.k155m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
   },
   {
     corpus_path: "mozart/k155/movement3",
-    display_name: "Mozart 弦樂四重奏 K.155 第三樂章 (Minuet)",
+    name_key: "preset.piece.k155m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 103,
   },
   {
     corpus_path: "mozart/k156/movement1",
-    display_name: "Mozart 弦樂四重奏 K.156 第一樂章",
+    name_key: "preset.piece.k156m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 180,
   },
   {
     corpus_path: "mozart/k156/movement2",
-    display_name: "Mozart 弦樂四重奏 K.156 第二樂章",
+    name_key: "preset.piece.k156m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 37,
   },
   {
     corpus_path: "mozart/k156/movement3",
-    display_name: "Mozart 弦樂四重奏 K.156 第三樂章 (Minuet)",
+    name_key: "preset.piece.k156m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 62,
   },
   {
     corpus_path: "mozart/k156/movement4",
-    display_name: "Mozart 弦樂四重奏 K.156 第四樂章",
+    name_key: "preset.piece.k156m4",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 24,
   },
   {
     corpus_path: "mozart/k458/movement1",
-    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第一樂章",
+    name_key: "preset.piece.k458m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 283,
   },
   {
     corpus_path: "mozart/k458/movement2",
-    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第二樂章 (Minuet)",
+    name_key: "preset.piece.k458m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 63,
   },
   {
     corpus_path: "mozart/k458/movement3",
-    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第三樂章",
+    name_key: "preset.piece.k458m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 53,
   },
   {
     corpus_path: "mozart/k458/movement4",
-    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第四樂章",
+    name_key: "preset.piece.k458m4",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 335,
   },
   {
     corpus_path: "haydn/opus1no1/movement1",
-    display_name: "Haydn 弦樂四重奏 op.1/1 第一樂章",
+    name_key: "preset.piece.haydnOp1no1m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 66,
   },
   {
     corpus_path: "haydn/opus1no1/movement2",
-    display_name: "Haydn 弦樂四重奏 op.1/1 第二樂章 (Minuet)",
+    name_key: "preset.piece.haydnOp1no1m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 62,
   },
   {
     corpus_path: "haydn/opus74no1/movement1",
-    display_name: "Haydn 弦樂四重奏 op.74/1 第一樂章",
+    name_key: "preset.piece.haydnOp74no1m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
   },
   {
     corpus_path: "haydn/opus74no1/movement2",
-    display_name: "Haydn 弦樂四重奏 op.74/1 第二樂章",
+    name_key: "preset.piece.haydnOp74no1m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 174,
   },
   {
     corpus_path: "haydn/opus74no1/movement3",
-    display_name: "Haydn 弦樂四重奏 op.74/1 第三樂章 (Minuet)",
+    name_key: "preset.piece.haydnOp74no1m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 113,
   },
   {
     corpus_path: "haydn/opus74no1/movement4",
-    display_name: "Haydn 弦樂四重奏 op.74/1 第四樂章",
+    name_key: "preset.piece.haydnOp74no1m4",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 287,
   },
   {
     corpus_path: "beethoven/opus18no1/movement1",
-    display_name: "Beethoven 弦樂四重奏 op.18/1 第一樂章",
+    name_key: "preset.piece.beethovenOp18no1m1",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 313,
   },
   {
     corpus_path: "beethoven/opus18no1/movement2",
-    display_name: "Beethoven 弦樂四重奏 op.18/1 第二樂章",
+    name_key: "preset.piece.beethovenOp18no1m2",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 110,
   },
   {
     corpus_path: "beethoven/opus18no1/movement3",
-    display_name: "Beethoven 弦樂四重奏 op.18/1 第三樂章 (Scherzo)",
+    name_key: "preset.piece.beethovenOp18no1m3",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 145,
   },
   {
     corpus_path: "beethoven/opus18no1/movement4",
-    display_name: "Beethoven 弦樂四重奏 op.18/1 第四樂章",
+    name_key: "preset.piece.beethovenOp18no1m4",
     era: "Classical",
-    ensemble: "弦樂四重奏",
+    ensemble_key: "preset.ensemble.stringQuartet",
     measures: 381,
   },
   {
     corpus_path: "beethoven/opus59no1/movement1",
-    display_name: "Beethoven 弦樂四重奏 op.59/1「拉茲莫夫斯基」第一樂章",
+    name_key: "preset.piece.beethovenOp59no1m1",
     era: "Classical",
-    ensemble: "弦樂四重奏 (長)",
+    ensemble_key: "preset.ensemble.stringQuartetLong",
     measures: 400,
   },
   {
     corpus_path: "beethoven/opus132",
-    display_name: "Beethoven 弦樂四重奏 op.132 (晚期)",
+    name_key: "preset.piece.beethovenOp132",
     era: "Classical",
-    ensemble: "弦樂四重奏 (長)",
+    ensemble_key: "preset.ensemble.stringQuartetLong",
     measures: 1124,
   },
   {
     corpus_path: "mozart/k545/movement1_exposition",
-    display_name: "Mozart 鋼琴奏鳴曲 K.545 第一樂章 (呈示部)",
+    name_key: "preset.piece.k545m1Exposition",
     era: "Classical",
-    ensemble: "鋼琴獨奏",
+    ensemble_key: "preset.ensemble.pianoSolo",
     measures: 12,
   },
 
   // ─── Romantic ────────────────────────────────────────────
   {
     corpus_path: "chopin/mazurka06-2",
-    display_name: "Chopin Mazurka op.6 no.2",
+    name_key: "preset.piece.chopinMazurka06.2",
     era: "Romantic",
-    ensemble: "鋼琴獨奏",
+    ensemble_key: "preset.ensemble.pianoSolo",
     measures: 75,
   },
   {
     corpus_path: "joplin/maple_leaf_rag",
-    display_name: "Joplin 楓葉繁音曲 (Maple Leaf Rag)",
+    name_key: "preset.piece.joplinMapleLeafRag",
     era: "Romantic",
-    ensemble: "鋼琴獨奏",
+    ensemble_key: "preset.ensemble.pianoSolo",
     measures: 85,
   },
   {
     corpus_path: "schubert/Lindenbaum",
-    display_name: "Schubert 菩提樹 (Der Lindenbaum)",
+    name_key: "preset.piece.schubertLindenbaum",
     era: "Romantic",
-    ensemble: "聲樂 + 鋼琴",
+    ensemble_key: "preset.ensemble.voicePiano",
     measures: 82,
   },
   {
     corpus_path: "schumann_clara/opus17/movement3",
-    display_name: "Clara Schumann 鋼琴三重奏 op.17 第三樂章",
+    name_key: "preset.piece.claraSchumannOp17m3",
     era: "Romantic",
-    ensemble: "鋼琴三重奏",
+    ensemble_key: "preset.ensemble.pianoTrio",
     measures: 80,
   },
   {
     corpus_path: "schumann_robert/dichterliebe_no2",
-    display_name: "Schumann 詩人之戀 第 2 首",
+    name_key: "preset.piece.schumannDichterliebeNo2",
     era: "Romantic",
-    ensemble: "聲樂 + 鋼琴",
+    ensemble_key: "preset.ensemble.voicePiano",
     measures: 18,
   },
   {
     corpus_path: "schumann_robert/opus48no2",
-    display_name: "Schumann op.48 no.2",
+    name_key: "preset.piece.schumannOp48no2",
     era: "Romantic",
     measures: 18,
   },
   {
     corpus_path: "verdi/laDonnaEMobile",
-    display_name: "Verdi 歌劇《弄臣》— 善變的女人",
+    name_key: "preset.piece.verdiLaDonnaEMobile",
     era: "Romantic",
-    ensemble: "聲樂 + 伴奏",
+    ensemble_key: "preset.ensemble.voiceAccomp",
     measures: 35,
   },
 ];
 
-const ERA_LABELS: Record<string, string> = {
-  Baroque: "巴洛克",
-  Classical: "古典",
-  Romantic: "浪漫派",
+const ERA_LABEL_KEYS: Record<string, string> = {
+  Baroque: "preset.era.baroque",
+  Classical: "preset.era.classical",
+  Romantic: "preset.era.romantic",
 };
 
 interface PresetLibraryProps {
@@ -346,6 +347,7 @@ interface PresetLibraryProps {
 }
 
 export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const {
@@ -385,8 +387,11 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
   const handleLoad = async (preset: Preset) => {
     if (preset.measures && preset.measures > LARGE_THRESHOLD) {
       const warning = preset.measures > HUGE_THRESHOLD
-        ? `這份樂譜有 ${preset.measures} 小節 — 非常大, OSMD 渲染可能需要 30–90 秒並可能讓畫面短暫無回應 (renderer 在處理超長 SVG)。\n\n建議先把「自動縮放」和「上下排列 ribbon」關掉再載入, 或先試短一點的範例。\n\n要繼續嗎?`
-        : `這份樂譜有 ${preset.measures} 小節 (>${LARGE_THRESHOLD}) — 較大, 第一次渲染可能花 10–30 秒。\n\n要繼續嗎?`;
+        ? t("preset.confirm.huge", { measures: preset.measures })
+        : t("preset.confirm.large", {
+          measures: preset.measures,
+          threshold: LARGE_THRESHOLD,
+        });
       if (!confirm(warning)) return;
     }
     return _doLoad(preset);
@@ -409,7 +414,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
 
     const virtualPath = `corpus:${preset.corpus_path}`;
     if (!activeTabId && tabs.length === 0) newTab();
-    setLoading(true, `載入 ${preset.display_name}...`);
+    setLoading(true, t("preset.loading", { name: t(preset.name_key) }));
     try {
       const res = await window.scoreArranger.engine.toMusicXML(virtualPath);
       if (res.ok && res.data) {
@@ -418,7 +423,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
         setMode("setup");
         snapshotToTab();
       } else {
-        setError(res.error ?? "載入失敗");
+        setError(res.error ?? t("preset.error.loadFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -440,7 +445,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
       >
-        範例 ▾
+        {t("preset.button")}
       </button>
       {open && (
         <div
@@ -471,7 +476,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                   background: "var(--bg-secondary)",
                 }}
               >
-                {ERA_LABELS[era] ?? era}
+                {ERA_LABEL_KEYS[era] ? t(ERA_LABEL_KEYS[era]) : era}
               </div>
               {presets.map((p) => (
                 <button
@@ -502,7 +507,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                       gap: 6,
                     }}
                   >
-                    <span>{p.display_name}</span>
+                    <span>{t(p.name_key)}</span>
                     {p.measures && p.measures > HUGE_THRESHOLD && (
                       <span
                         style={{
@@ -514,9 +519,9 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                           fontWeight: 600,
                           letterSpacing: 0.3,
                         }}
-                        title="非常大 — 載入可能花數十秒, ribbon/autofit 會自動關閉"
+                        title={t("preset.badge.xl.title")}
                       >
-                        XL
+                        {t("preset.badge.xl")}
                       </span>
                     )}
                     {p.measures && p.measures > LARGE_THRESHOLD
@@ -531,9 +536,9 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                           fontWeight: 600,
                           letterSpacing: 0.3,
                         }}
-                        title="較大 — 第一次載入可能花 10–30 秒"
+                        title={t("preset.badge.l.title")}
                       >
-                        L
+                        {t("preset.badge.l")}
                       </span>
                     )}
                   </div>
@@ -547,7 +552,7 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                     }}
                   >
                     <span>{p.corpus_path}</span>
-                    {p.ensemble && <span>· {p.ensemble}</span>}
+                    {p.ensemble_key && <span>· {t(p.ensemble_key)}</span>}
                     {p.measures && <span>· {p.measures}m</span>}
                   </div>
                 </button>

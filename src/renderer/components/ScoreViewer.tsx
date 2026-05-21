@@ -17,6 +17,7 @@ import {
 } from "react";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 interface ScoreViewerProps {
   musicXmlContent: string | null;
@@ -101,6 +102,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     },
     forwardedRef,
   ) {
+    useLocale();
     const containerRef = useRef<HTMLDivElement>(null);
     const osmdContainerRef = useRef<HTMLDivElement>(null);
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
@@ -247,7 +249,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           console.error("[ScoreViewer] OSMD render failed:", e);
-          setError(`渲染失敗: ${msg}`);
+          setError(t("scoreViewer.error.renderFailed", { message: msg }));
         }
       };
       run();
@@ -1129,7 +1131,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
               minHeight: 200,
             }}
           >
-            (尚未載入樂譜)
+            {t("scoreViewer.empty")}
           </div>
         )}
         {error && (
@@ -1202,9 +1204,12 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                 }}
                 title={
                   score != null
-                    ? `m.${b.measure} — 難度 ${score.toFixed(1)}/5`
+                    ? t("scoreViewer.overlay.difficulty", {
+                      measure: b.measure,
+                      score: score.toFixed(1),
+                    })
                     : diffHit
-                    ? `m.${b.measure} — 與另一版本不同`
+                    ? t("scoreViewer.overlay.diff", { measure: b.measure })
                     : undefined
                 }
               />
@@ -1229,7 +1234,9 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
             }}
           >
             {dragGhost.semitones > 0 ? "↑" : "↓"}{" "}
-            {Math.abs(dragGhost.semitones)} 半音
+            {t("scoreViewer.drag.semitones", {
+              semitones: Math.abs(dragGhost.semitones),
+            })}
           </div>
         )}
       </div>

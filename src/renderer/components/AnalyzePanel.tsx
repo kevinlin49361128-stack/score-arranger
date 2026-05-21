@@ -10,8 +10,10 @@
  */
 
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function AnalyzePanel() {
+  useLocale();
   const analysis = useSessionStore((s) => s.analysis);
   const setHighlightedMeasure = useSessionStore(
     (s) => s.setHighlightedMeasure,
@@ -20,7 +22,7 @@ export function AnalyzePanel() {
   if (!analysis) {
     return (
       <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
-        (尚未執行分析 — 點上方「分析」按鈕)
+        {t("analyzePanel.empty")}
       </div>
     );
   }
@@ -39,18 +41,26 @@ export function AnalyzePanel() {
         }}
       >
         <span>
-          樂章: <strong>{analysis.summary.movement_count}</strong>
+          {t("analyzePanel.movements")}{" "}
+          <strong>{analysis.summary.movement_count}</strong>
         </span>
         <span>
-          小節: <strong>{analysis.summary.measure_count}</strong>
+          {t("analyzePanel.measures")}{" "}
+          <strong>{analysis.summary.measure_count}</strong>
         </span>
         <span>
-          聲部: <strong>{analysis.summary.part_count}</strong>
+          {t("analyzePanel.parts")}{" "}
+          <strong>{analysis.summary.part_count}</strong>
         </span>
         <span>
-          驗證: {analysis.validation.ok ? "✓ 通過" : "✗ 有錯誤"}
+          {t("analyzePanel.validation")}{" "}
+          {analysis.validation.ok
+            ? t("analyzePanel.validationOk")
+            : t("analyzePanel.validationFail")}
           {analysis.validation.warning_count > 0
-            && ` (${analysis.validation.warning_count} warnings)`}
+            && ` ${t("analyzePanel.validationWarnings", {
+              n: analysis.validation.warning_count,
+            })}`}
         </span>
       </section>
 
@@ -66,7 +76,7 @@ export function AnalyzePanel() {
             letterSpacing: 0.5,
           }}
         >
-          樂句邊界
+          {t("analyzePanel.phraseBoundaries")}
         </div>
         {Object.entries(analysis.phrases).map(([partId, sections]) => (
           <div
@@ -120,7 +130,10 @@ export function AnalyzePanel() {
                           color: "var(--fg-primary)",
                           cursor: "pointer",
                         }}
-                        title={`點選跳到 m.${p.start} (confidence ${conf.toFixed(2)})`}
+                        title={t("analyzePanel.phraseJump", {
+                          m: p.start,
+                          conf: conf.toFixed(2),
+                        })}
                       >
                         m.{p.start}-{p.end - 1} ({length}m)
                       </button>
@@ -145,7 +158,7 @@ export function AnalyzePanel() {
             letterSpacing: 0.5,
           }}
         >
-          聲部清單
+          {t("analyzePanel.partList")}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {analysis.summary.parts.map((part) => (

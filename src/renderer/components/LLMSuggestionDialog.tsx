@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 interface Props {
   context: string;
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
+  useLocale();
   const styleAddendum = useSessionStore((s) => s.styleAddendum);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [query, setQuery] = useState("");
@@ -41,7 +43,7 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
       if (res.ok && res.data) {
         setResponse(res.data.text);
       } else {
-        setError(res.error ?? "AI 回應失敗");
+        setError(res.error ?? t("llmSuggest.responseFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -86,7 +88,9 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
             gap: 8,
           }}
         >
-          <strong style={{ flex: 1, fontSize: 14 }}>🤖 AI 改編建議</strong>
+          <strong style={{ flex: 1, fontSize: 14 }}>
+            {t("llmSuggest.title")}
+          </strong>
           <button
             onClick={onClose}
             style={{
@@ -99,13 +103,15 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
               fontSize: 12,
             }}
           >
-            關閉
+            {t("llmSuggest.close")}
           </button>
         </header>
 
         <div style={{ padding: 16, overflow: "auto", flex: 1 }}>
           {available === null && (
-            <div style={{ color: "var(--fg-muted)" }}>偵測 API 可用性...</div>
+            <div style={{ color: "var(--fg-muted)" }}>
+              {t("llmSuggest.detecting")}
+            </div>
           )}
           {available === false && (
             <div
@@ -118,9 +124,9 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
                 lineHeight: 1.6,
               }}
             >
-              <strong>未啟用 AI 建議</strong>
+              <strong>{t("llmSuggest.disabledTitle")}</strong>
               <p style={{ margin: "6px 0 0" }}>
-                請在啟動 Score Arranger 前設定環境變數:
+                {t("llmSuggest.disabledBody")}
               </p>
               <pre
                 style={{
@@ -134,7 +140,7 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
                 export ANTHROPIC_API_KEY=sk-ant-...
               </pre>
               <p style={{ margin: "6px 0 0", fontSize: 11 }}>
-                API key 只存在於主程序記憶體, 不會寫入磁碟也不會送給 renderer。
+                {t("llmSuggest.keyNote")}
               </p>
             </div>
           )}
@@ -148,7 +154,7 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
                   marginBottom: 8,
                 }}
               >
-                段落描述:
+                {t("llmSuggest.sectionLabel")}
               </div>
               <pre
                 style={{
@@ -171,12 +177,12 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
                   marginBottom: 4,
                 }}
               >
-                你想問什麼?
+                {t("llmSuggest.queryLabel")}
               </div>
               <textarea
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="例: 太難拉, 簡化但保留旋律走向 / 這段和聲覺得怪 / 想要更輕快"
+                placeholder={t("llmSuggest.queryPlaceholder")}
                 rows={3}
                 style={{
                   width: "100%",
@@ -211,10 +217,12 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
                     fontSize: 13,
                   }}
                 >
-                  {loading ? "詢問中..." : "詢問 Claude"}
+                  {loading
+                    ? t("llmSuggest.asking")
+                    : t("llmSuggest.askClaude")}
                 </button>
                 <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-                  ⌘+Enter 送出
+                  {t("llmSuggest.submitHint")}
                 </span>
               </div>
               {error && (

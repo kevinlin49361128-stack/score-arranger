@@ -5,6 +5,8 @@
 
 import React from "react";
 
+import { t } from "../utils/i18n";
+
 interface Props {
   children: React.ReactNode;
 }
@@ -39,7 +41,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           overflow: "auto",
         }}>
           <h2 style={{ color: "#ff6b6b", marginTop: 0 }}>
-            Renderer 錯誤
+            {t("app.rendererError")}
           </h2>
           <div style={{ marginBottom: 12 }}>
             <strong>{this.state.error.name}:</strong>{" "}

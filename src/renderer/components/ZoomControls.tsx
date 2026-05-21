@@ -9,8 +9,10 @@
 
 import { useEffect } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function ZoomControls() {
+  useLocale();
   const zoom = useSessionStore((s) => s.zoom);
   const zoomIn = useSessionStore((s) => s.zoomIn);
   const zoomOut = useSessionStore((s) => s.zoomOut);
@@ -61,7 +63,7 @@ export function ZoomControls() {
   return (
     <div
       style={{ display: "flex", gap: 2, alignItems: "center" }}
-      title="縮放 (⌘+ / ⌘- / ⌘0)"
+      title={t("zoom.control")}
     >
       <button
         onClick={toggleAutoFit}
@@ -72,15 +74,15 @@ export function ZoomControls() {
           color: autoFit ? "var(--accent-fg)" : btn.color,
         }}
         title={autoFit
-          ? "自動縮放: 依面板排列方向 fit-to-screen"
-          : "手動縮放"}
+          ? t("zoom.autoFit.on")
+          : t("zoom.autoFit.off")}
       >
         ⤢
       </button>
       <button
         onClick={() => manualZoom(zoomOut)}
         style={{ ...btn, opacity: autoFit ? 0.5 : 1 }}
-        title="縮小 ⌘-"
+        title={t("zoom.out")}
       >
         −
       </button>
@@ -93,14 +95,14 @@ export function ZoomControls() {
           fontVariantNumeric: "tabular-nums",
           opacity: autoFit ? 0.65 : 1,
         }}
-        title={autoFit ? `自動縮放 ${pct}%` : "重置縮放 ⌘0"}
+        title={autoFit ? t("zoom.autoFitPct", { pct }) : t("zoom.reset")}
       >
         {pct}%
       </button>
       <button
         onClick={() => manualZoom(zoomIn)}
         style={{ ...btn, opacity: autoFit ? 0.5 : 1 }}
-        title="放大 ⌘+"
+        title={t("zoom.in")}
       >
         +
       </button>

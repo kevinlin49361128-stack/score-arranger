@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 /**
  * 全畫面載入遮罩 — 取代原本頂端那條容易被忽略的細文字條。
@@ -8,6 +9,7 @@ import { useSessionStore } from "../stores/sessionStore";
  * 秒數計時器取代寫死的「約 5-10 秒」估計 (大型樂譜實際更久, 寫死反而誤導)。
  */
 export function LoadingOverlay() {
+  useLocale();
   const isLoading = useSessionStore((s) => s.isLoading);
   const loadingMessage = useSessionStore((s) => s.loadingMessage);
   const [elapsed, setElapsed] = useState(0);
@@ -69,11 +71,11 @@ export function LoadingOverlay() {
           }}
         />
         <div style={{ fontSize: 15, fontWeight: 600, textAlign: "center" }}>
-          {loadingMessage || "處理中…"}
+          {loadingMessage || t("loading.processing")}
         </div>
         <div style={{ fontSize: 12, color: "var(--fg-muted, #a0a0a3)" }}>
-          已等待 {elapsed} 秒
-          {elapsed >= 20 ? " — 大型樂譜需要較久，請稍候" : ""}
+          {t("loading.elapsed", { seconds: elapsed })}
+          {elapsed >= 20 ? t("loading.elapsed.longHint") : ""}
         </div>
       </div>
     </div>

@@ -10,16 +10,19 @@
 
 import { useEffect, useState } from "react";
 
+import { t, useLocale } from "../utils/i18n";
+
 interface Props {
   onClose: () => void;
 }
 
 type Provider = "anthropic" | "openai_compat" | "ollama";
 
+// provider 顯示名稱 — anthropic 為固定品牌名, 其餘走 i18n key
 const PROVIDER_LABELS: Record<Provider, string> = {
   anthropic: "Anthropic (Claude)",
-  openai_compat: "OpenAI 相容 (OpenAI / Groq / vLLM …)",
-  ollama: "Ollama (本地模型)",
+  openai_compat: "llmSettings.providerOpenaiCompat",
+  ollama: "llmSettings.providerOllama",
 };
 
 const DEFAULT_BASE: Record<Provider, string> = {
@@ -36,12 +39,18 @@ const DEFAULT_MODEL: Record<Provider, string> = {
 
 // API key 提示 — 各 provider 不同
 const KEY_HINT: Record<Provider, string> = {
-  anthropic: "需設定環境變數 ANTHROPIC_API_KEY 或 LLM_API_KEY",
-  openai_compat: "需設定環境變數 LLM_API_KEY (localhost endpoint 可免)",
-  ollama: "本地 Ollama 通常不需 API key",
+  anthropic: "llmSettings.keyHintAnthropic",
+  openai_compat: "llmSettings.keyHintOpenaiCompat",
+  ollama: "llmSettings.keyHintOllama",
 };
 
+/** provider 顯示名稱 — anthropic 直接回傳, 其餘翻譯。 */
+function providerLabel(p: Provider): string {
+  return p === "anthropic" ? PROVIDER_LABELS[p] : t(PROVIDER_LABELS[p]);
+}
+
 export function LLMSettingsDialog({ onClose }: Props) {
+  useLocale();
   const [provider, setProvider] = useState<Provider>("anthropic");
   const [baseUrl, setBaseUrl] = useState("");
   const [model, setModel] = useState("");
@@ -149,7 +158,9 @@ export function LLMSettingsDialog({ onClose }: Props) {
             gap: 8,
           }}
         >
-          <strong style={{ flex: 1, fontSize: 14 }}>🤖 AI 模型設定</strong>
+          <strong style={{ flex: 1, fontSize: 14 }}>
+            {t("llmSettings.title")}
+          </strong>
           <button
             onClick={onClose}
             style={{
@@ -162,13 +173,15 @@ export function LLMSettingsDialog({ onClose }: Props) {
               fontSize: 12,
             }}
           >
-            關閉
+            {t("llmSettings.close")}
           </button>
         </header>
 
         <div style={{ padding: 16, overflow: "auto", flex: 1 }}>
           {!loaded && (
-            <div style={{ color: "var(--fg-muted)" }}>讀取設定中...</div>
+            <div style={{ color: "var(--fg-muted)" }}>
+              {t("llmSettings.loading")}
+            </div>
           )}
 
           {loaded && (
@@ -193,12 +206,12 @@ export function LLMSettingsDialog({ onClose }: Props) {
                 }}
               >
                 {available
-                  ? "✓ AI 功能已就緒 — 改編建議與自然語言改譜可用"
-                  : "○ 尚未就緒 — 請確認下方 provider 與 API key 設定"}
+                  ? t("llmSettings.statusReady")
+                  : t("llmSettings.statusNotReady")}
               </div>
 
               {/* Provider */}
-              <div style={labelStyle}>模型供應商 (Provider)</div>
+              <div style={labelStyle}>{t("llmSettings.providerLabel")}</div>
               <select
                 value={provider}
                 onChange={(e) =>
@@ -207,13 +220,13 @@ export function LLMSettingsDialog({ onClose }: Props) {
               >
                 {(Object.keys(PROVIDER_LABELS) as Provider[]).map((p) => (
                   <option key={p} value={p}>
-                    {PROVIDER_LABELS[p]}
+                    {providerLabel(p)}
                   </option>
                 ))}
               </select>
 
               {/* Base URL */}
-              <div style={labelStyle}>API Endpoint (Base URL)</div>
+              <div style={labelStyle}>{t("llmSettings.baseUrlLabel")}</div>
               <input
                 type="text"
                 value={baseUrl}
@@ -227,7 +240,7 @@ export function LLMSettingsDialog({ onClose }: Props) {
               />
 
               {/* Model */}
-              <div style={labelStyle}>模型 ID (Model)</div>
+              <div style={labelStyle}>{t("llmSettings.modelLabel")}</div>
               <input
                 type="text"
                 value={model}
@@ -252,15 +265,13 @@ export function LLMSettingsDialog({ onClose }: Props) {
                 }}
               >
                 <strong style={{ color: "var(--fg-primary)" }}>
-                  關於 API Key
+                  {t("llmSettings.keyTitle")}
                 </strong>
                 <p style={{ margin: "4px 0 0" }}>
-                  {KEY_HINT[provider]}
+                  {t(KEY_HINT[provider])}
                 </p>
                 <p style={{ margin: "4px 0 0" }}>
-                  基於安全考量, API key 不會寫入磁碟 — 僅在啟動前以環境變數傳入,
-                  只存在於主程序記憶體。provider / endpoint / model
-                  則會記住。
+                  {t("llmSettings.keyNote")}
                 </p>
               </div>
 
@@ -293,7 +304,9 @@ export function LLMSettingsDialog({ onClose }: Props) {
             }}
           >
             <span style={{ flex: 1, fontSize: 11, color: "var(--fg-tertiary)" }}>
-              {saved ? "✓ 已儲存" : "切換供應商會自動帶入預設 endpoint"}
+              {saved
+                ? t("llmSettings.savedHint")
+                : t("llmSettings.switchHint")}
             </span>
             <button
               onClick={handleSave}
@@ -309,7 +322,7 @@ export function LLMSettingsDialog({ onClose }: Props) {
                 fontWeight: 600,
               }}
             >
-              {saving ? "儲存中..." : "儲存設定"}
+              {saving ? t("llmSettings.saving") : t("llmSettings.save")}
             </button>
           </footer>
         )}

@@ -19,6 +19,7 @@ import type {
   ArrangementResult,
   QualityScores,
 } from "@shared/types";
+import { t as tr } from "../utils/i18n";
 
 export type AppMode =
   | "setup"
@@ -198,7 +199,7 @@ function notifyActiveSession(id: string | null): void {
 }
 
 function deriveLabel(sourcePath: string | null): string {
-  if (!sourcePath) return "新分頁";
+  if (!sourcePath) return tr("session.tab.untitled");
   if (sourcePath.startsWith("corpus:")) {
     return sourcePath.slice("corpus:".length);
   }
@@ -436,7 +437,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         : s.tabs;
       const newTab: TabSnapshot = {
         id,
-        label: "新分頁",
+        label: tr("session.tab.untitled"),
         sourcePath: null,
         sourceMusicXML: null,
         targetMusicXML: null,
@@ -575,7 +576,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           if (t.id !== tid) return t;
           const variants = [...(t.variants ?? [])];
           const autoName = name ??
-            `版本 ${String.fromCharCode(65 + variants.length)}`;
+            tr("session.variant.autoName", {
+              letter: String.fromCharCode(65 + variants.length),
+            });
           variants.push({
             name: autoName,
             targetMusicXML: s.targetMusicXML!,

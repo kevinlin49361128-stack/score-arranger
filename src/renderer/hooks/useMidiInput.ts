@@ -9,6 +9,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { t } from "../utils/i18n";
+
 export interface MidiInputState {
   /** 已偵測到的 MIDI 裝置名稱 */
   devices: string[];
@@ -40,7 +42,7 @@ export function useMidiInput(
       requestMIDIAccess?: () => Promise<MIDIAccess>;
     };
     if (!nav.requestMIDIAccess) {
-      setError("此環境不支援 Web MIDI");
+      setError(t("midi.error.unsupported"));
       return;
     }
     let access: MIDIAccess | null = null;
@@ -80,7 +82,9 @@ export function useMidiInput(
         });
       })
       .catch((e) => {
-        setError(`無法存取 MIDI: ${e instanceof Error ? e.message : String(e)}`);
+        setError(t("midi.error.accessFailed", {
+          message: e instanceof Error ? e.message : String(e),
+        }));
       });
 
     return () => {

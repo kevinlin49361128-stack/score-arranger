@@ -33,9 +33,11 @@ import { Toolbar } from "./components/Toolbar";
 import { VariantBar } from "./components/VariantBar";
 import { useScrollSync } from "./hooks/useScrollSync";
 import { useSessionStore } from "./stores/sessionStore";
+import { t as tr, useLocale } from "./utils/i18n";
 import { diffMeasures } from "./utils/measureDiff";
 
 export default function App() {
+  useLocale();
   const {
     error,
     sourcePath,
@@ -113,17 +115,17 @@ export default function App() {
       setSourcePath(config.corpusPath);
       setError(null);
       setMode("setup");
-      setLoading(true, "載入範例樂譜...");
+      setLoading(true, tr("app.loading.loadSampleScore"));
       const xmlRes = await window.scoreArranger.engine.toMusicXML(
         config.corpusPath,
       );
       if (!xmlRes.ok || !xmlRes.data) {
-        setError(xmlRes.error ?? "載入範例失敗");
+        setError(xmlRes.error ?? tr("app.error.loadSampleFailed"));
         return;
       }
       setSourceMusicXML(xmlRes.data);
       snapshotToTab();
-      setLoading(true, "改編中…");
+      setLoading(true, tr("app.loading.arranging"));
       const arrRes = await window.scoreArranger.engine.arrange(
         config.corpusPath, config.ensemble, false, config.skillLevel, "none",
       );
@@ -138,7 +140,7 @@ export default function App() {
         snapshotToTab();
         setShowWizard(false);
       } else {
-        setError(arrRes.error ?? "改編失敗");
+        setError(arrRes.error ?? tr("app.error.arrangeFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -191,7 +193,9 @@ export default function App() {
     approxPitch: number,
     semitones: number,
   ) => {
-    setLoadingState(true, `轉調 ${semitones > 0 ? "+" : ""}${semitones}...`);
+    setLoadingState(true, tr("app.loading.transpose", {
+      semitones: `${semitones > 0 ? "+" : ""}${semitones}`,
+    }));
     try {
       const evRes = await window.scoreArranger.engine.listMeasureEvents(
         measure,
@@ -229,7 +233,7 @@ export default function App() {
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
         setErrorState(null);
       } else {
-        setErrorState(res.error ?? "拖曳轉調失敗");
+        setErrorState(res.error ?? tr("app.error.dragTransposeFailed"));
       }
     } finally {
       setLoadingState(false);
@@ -318,9 +322,13 @@ export default function App() {
 
   const sourceLabel = sourcePath
     ? sourcePath.startsWith("corpus:")
-      ? `預設: ${sourcePath.slice("corpus:".length)}`
-      : `原始樂譜: ${sourcePath.split("/").pop()}`
-    : "原始樂譜";
+      ? tr("app.panel.sourceLabel.corpus", {
+        name: sourcePath.slice("corpus:".length),
+      })
+      : tr("app.panel.sourceLabel.file", {
+        name: sourcePath.split("/").pop(),
+      })
+    : tr("app.panel.sourceLabel.default");
 
   return (
     <div
@@ -411,7 +419,9 @@ export default function App() {
                 color: "var(--fg-muted)",
               }}
             >
-              <span style={{ fontWeight: 600 }}>原譜</span>
+              <span style={{ fontWeight: 600 }}>
+                {tr("app.panel.sourceTitle")}
+              </span>
               <PlaybackControls side="source" compact />
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
@@ -451,7 +461,9 @@ export default function App() {
                 color: "var(--fg-muted)",
               }}
             >
-              <span style={{ fontWeight: 600 }}>改編譜</span>
+              <span style={{ fontWeight: 600 }}>
+                {tr("app.panel.targetTitle")}
+              </span>
               <PlaybackControls side="target" compact />
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
@@ -459,8 +471,10 @@ export default function App() {
                 ref={targetRef}
                 label={
                   arrangement
-                    ? `改編結果: ${arrangement.name}`
-                    : "改編結果"
+                    ? tr("app.panel.targetLabel.result", {
+                      name: arrangement.name,
+                    })
+                    : tr("app.panel.targetLabel.default")
                 }
                 musicXmlContent={targetMusicXML}
                 highlightedMeasure={highlightedMeasure}
@@ -567,6 +581,7 @@ function PanelResizer(
     onReset: () => void;
   },
 ) {
+  useLocale();
   // horizontal 分隔列 → 拖 Y 改 height; vertical → 拖 X 改 width
   const isH = orientation === "horizontal";
   const MIN = isH ? 60 : 220;
@@ -623,8 +638,8 @@ function PanelResizer(
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       title={isH
-        ? "拖曳調整下方面板高度 / 雙擊重置"
-        : "拖曳調整側邊欄寬度 / 雙擊重置"}
+        ? tr("app.resizer.footer")
+        : tr("app.resizer.side")}
       style={{
         ...(isH ? { height: 6 } : { width: 6, alignSelf: "stretch" }),
         background: hover ? "var(--accent)" : "var(--border)",

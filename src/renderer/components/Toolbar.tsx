@@ -39,21 +39,27 @@ import { PlaybackControls } from "./PlaybackControls";
 import { PresetLibrary } from "./PresetLibrary";
 import { ZoomControls } from "./ZoomControls";
 import { useSessionStore } from "../stores/sessionStore";
-import { getLocale, onLocaleChange, setLocale } from "../utils/i18n";
+import {
+  getLocale,
+  onLocaleChange,
+  setLocale,
+  t as tr,
+} from "../utils/i18n";
 import {
   getStrategyPreference,
   recordUndoIfRecent,
 } from "../utils/preferences";
 
-const ENSEMBLE_LABELS: Record<string, string> = {
-  violin_piano: "小提琴 + 鋼琴",
-  string_quartet: "弦樂四重奏",
-  piano_solo: "鋼琴獨奏",
-  harpsichord_solo: "大鍵琴獨奏",
-  violin_harpsichord: "小提琴 + 大鍵琴",
-  baroque_trio_sonata: "巴洛克三重奏鳴曲",
-  woodwind_quintet: "木管五重奏",
-  brass_quintet: "銅管五重奏",
+// 編制 → i18n key (label 於 render 時用 tr() 查, locale 切換才會更新)
+const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
+  violin_piano: "toolbar.ensemble.violinPiano",
+  string_quartet: "toolbar.ensemble.stringQuartet",
+  piano_solo: "toolbar.ensemble.pianoSolo",
+  harpsichord_solo: "toolbar.ensemble.harpsichordSolo",
+  violin_harpsichord: "toolbar.ensemble.violinHarpsichord",
+  baroque_trio_sonata: "toolbar.ensemble.baroqueTrioSonata",
+  woodwind_quintet: "toolbar.ensemble.woodwindQuintet",
+  brass_quintet: "toolbar.ensemble.brassQuintet",
 };
 
 function Sep() {
@@ -265,7 +271,7 @@ export function Toolbar() {
   }, [canUndo, canRedo, sourcePath]);
 
   const doUndo = async () => {
-    setLoading(true, "Undo...");
+    setLoading(true, tr("toolbar.loading.undo"));
     recordUndoIfRecent();
     try {
       const res = await window.scoreArranger.engine.undo();
@@ -277,7 +283,7 @@ export function Toolbar() {
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
         setError(null);
       } else {
-        setError(res.error ?? "Undo 失敗");
+        setError(res.error ?? tr("toolbar.error.undo"));
       }
     } finally {
       setLoading(false);
@@ -285,7 +291,7 @@ export function Toolbar() {
   };
 
   const doRedo = async () => {
-    setLoading(true, "Redo...");
+    setLoading(true, tr("toolbar.loading.redo"));
     try {
       const res = await window.scoreArranger.engine.redo();
       if (res.ok && res.data) {
@@ -296,7 +302,7 @@ export function Toolbar() {
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
         setError(null);
       } else {
-        setError(res.error ?? "Redo 失敗");
+        setError(res.error ?? tr("toolbar.error.redo"));
       }
     } finally {
       setLoading(false);
@@ -305,19 +311,19 @@ export function Toolbar() {
 
   const handleSaveProject = async () => {
     if (!sourcePath) {
-      setError("尚無內容可儲存");
+      setError(tr("toolbar.error.nothingToSave"));
       return;
     }
     const path = await window.scoreArranger.saveProjectDialog();
     if (!path) return;
-    setLoading(true, "儲存專案...");
+    setLoading(true, tr("toolbar.loading.saveProject"));
     try {
       const res = await window.scoreArranger.engine.saveProject(
         path,
         sourcePath,
       );
       if (!res.ok) {
-        setError(res.error ?? "儲存失敗");
+        setError(res.error ?? tr("toolbar.error.saveFailed"));
       } else {
         setError(null);
       }
@@ -329,7 +335,7 @@ export function Toolbar() {
   const handleOpenProject = async () => {
     const path = await window.scoreArranger.openProjectDialog();
     if (!path) return;
-    setLoading(true, "載入專案...");
+    setLoading(true, tr("toolbar.loading.loadProject"));
     try {
       const res = await window.scoreArranger.engine.loadProject(path);
       if (res.ok && res.data) {
@@ -356,7 +362,7 @@ export function Toolbar() {
         setHistoryFlags(false, false);
         setMode("arrange");
       } else {
-        setError(res.error ?? "載入專案失敗");
+        setError(res.error ?? tr("toolbar.error.loadProjectFailed"));
       }
     } finally {
       setLoading(false);
@@ -366,14 +372,14 @@ export function Toolbar() {
   /** 跑 Audiveris OMR + 顯示經過秒數. 回傳 musicxml 路徑或 null (失敗時已 setError). */
   const runOMR = async (pdfPath: string): Promise<string | null> => {
     const startedAt = Date.now();
-    setLoading(true, "Audiveris 辨識中... (大型 PDF 約 1-3 分鐘)");
+    setLoading(true, tr("toolbar.loading.omrRunning"));
     const timer = setInterval(() => {
       setOmrProgress({ elapsedSec: Math.round((Date.now() - startedAt) / 1000) });
     }, 1000);
     try {
       const omrRes = await window.scoreArranger.engine.pdfToMusicXML(pdfPath);
       if (!omrRes.ok || !omrRes.data) {
-        setError(omrRes.error ?? "OMR 失敗");
+        setError(omrRes.error ?? tr("toolbar.error.omrFailed"));
         return null;
       }
       return omrRes.data.musicxml_path;
@@ -396,7 +402,7 @@ export function Toolbar() {
       let scorePath: string = path;
       const lower = path.toLowerCase();
       if (lower.endsWith(".pdf")) {
-        setLoading(true, "檢查 OMR 環境...");
+        setLoading(true, tr("toolbar.loading.omrCheck"));
         const statusRes = await window.scoreArranger.engine.omrStatus();
         if (!statusRes.ok || !statusRes.data?.available) {
           setLoading(false);
@@ -412,29 +418,31 @@ export function Toolbar() {
         scorePath = omrPath;
       } else if (/\.(wav|mp3|m4a|flac|ogg|aac)$/.test(lower)) {
         // 音訊: 跑 basic-pitch AMT
-        setLoading(true, "檢查 basic-pitch 環境...");
+        setLoading(true, tr("toolbar.loading.amtCheck"));
         const amtRes = await window.scoreArranger.engine.amtStatus();
         if (!amtRes.ok || !amtRes.data?.available) {
           setLoading(false);
           const hints = amtRes.data?.install_hints ?? {};
           const missing = amtRes.data?.missing ?? ["basic-pitch"];
           setError(
-            `音訊轉譜需要 basic-pitch (缺: ${missing.join(", ")})\n\n`
-            + Object.values(hints).join("\n"),
+            tr("toolbar.error.amtMissing", {
+              missing: missing.join(", "),
+              hints: Object.values(hints).join("\n"),
+            }),
           );
           return;
         }
-        setLoading(true, "basic-pitch 辨識音訊中 (1-3 分鐘)...");
+        setLoading(true, tr("toolbar.loading.amtRunning"));
         const amtConv = await window.scoreArranger.engine.audioToMusicXML(path);
         if (!amtConv.ok || !amtConv.data) {
-          setError(amtConv.error ?? "AMT 失敗");
+          setError(amtConv.error ?? tr("toolbar.error.amtFailed"));
           return;
         }
         scorePath = amtConv.data.musicxml_path;
       }
 
       setSourcePath(scorePath);
-      setLoading(true, "檢查樂譜大小...");
+      setLoading(true, tr("toolbar.loading.scoreSize"));
       // 大譜偵測: >800 measures 自動切前 200 小節預覽 (改編仍走完整譜)
       let maxMeasures: number | undefined ;
       try {
@@ -443,13 +451,16 @@ export function Toolbar() {
           maxMeasures = 200;
           setLoading(
             true,
-            `大譜偵測 (${info.data.measure_count} 小節) — 預覽只顯示前 ${maxMeasures} 小節, 改編仍用完整譜`,
+            tr("toolbar.loading.largeScore", {
+              count: info.data.measure_count,
+              preview: maxMeasures,
+            }),
           );
         } else {
-          setLoading(true, "正在載入樂譜...");
+          setLoading(true, tr("toolbar.loading.loadingScore"));
         }
       } catch {
-        setLoading(true, "正在載入樂譜...");
+        setLoading(true, tr("toolbar.loading.loadingScore"));
       }
       const xmlRes = await window.scoreArranger.engine.toMusicXML(
         scorePath, maxMeasures,
@@ -458,7 +469,7 @@ export function Toolbar() {
         setSourceMusicXML(xmlRes.data);
         snapshotToTab();
       } else {
-        setError(xmlRes.error ?? "載入樂譜失敗");
+        setError(xmlRes.error ?? tr("toolbar.error.loadScoreFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -480,7 +491,7 @@ export function Toolbar() {
 
   const handleAnalyze = async () => {
     if (!sourcePath) return;
-    setLoading(true, "正在分析樂譜...");
+    setLoading(true, tr("toolbar.loading.analyzing"));
     setError(null);
     try {
       const res = await window.scoreArranger.engine.analyze(sourcePath);
@@ -488,7 +499,7 @@ export function Toolbar() {
         setAnalysis(res.data);
         setMode("analyze");
       } else {
-        setError(res.error ?? "分析失敗");
+        setError(res.error ?? tr("toolbar.error.analyzeFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -499,7 +510,7 @@ export function Toolbar() {
 
   const handleArrange = async () => {
     if (!sourcePath) return;
-    setLoading(true, "正在改編...");
+    setLoading(true, tr("toolbar.loading.arranging"));
     setError(null);
     try {
       const res = targetEnsemble === "__custom__" && customPlayers
@@ -526,7 +537,7 @@ export function Toolbar() {
         setMode("arrange");
         snapshotToTab();
       } else {
-        setError(res.error ?? "改編失敗");
+        setError(res.error ?? tr("toolbar.error.arrangeFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -572,7 +583,9 @@ export function Toolbar() {
           background: showHeatmap ? "var(--accent)" : btnIcon.background,
           color: showHeatmap ? "var(--accent-fg)" : btnIcon.color,
         }}
-        title={showHeatmap ? "關閉難度熱圖" : "顯示難度熱圖"}
+        title={showHeatmap
+          ? tr("toolbar.heatmap.hide")
+          : tr("toolbar.heatmap.show")}
       >
         🔥
       </button>
@@ -580,15 +593,17 @@ export function Toolbar() {
         onClick={togglePanelLayout}
         style={btnIcon}
         title={panelLayout === "vertical"
-          ? "切為左右排列 (⌘\\)"
-          : "切為上下排列 (⌘\\)"}
+          ? tr("toolbar.layout.toHorizontal")
+          : tr("toolbar.layout.toVertical")}
       >
         {panelLayout === "vertical" ? "▤" : "▥"}
       </button>
       <button
         onClick={toggleInfoPanelPos}
         style={btnIcon}
-        title={infoPanelPos === "side" ? "資訊欄移到下方" : "資訊欄移到右側"}
+        title={infoPanelPos === "side"
+          ? tr("toolbar.infoPanel.toBottom")
+          : tr("toolbar.infoPanel.toSide")}
       >
         {infoPanelPos === "side" ? "◧" : "▭"}
       </button>
@@ -611,14 +626,14 @@ export function Toolbar() {
     >
       {/* === Group 1: 檔案 === */}
       <button onClick={handleImport} style={btnBase} disabled={isLoading}>
-        匯入
+        {tr("toolbar.import")}
       </button>
       <PresetLibrary buttonStyle={btnBase} disabled={isLoading} />
       <button
         onClick={handleOpenProject}
         style={btnIcon}
         disabled={isLoading}
-        title="開啟 .sarr 專案"
+        title={tr("toolbar.openProject")}
       >
         📂
       </button>
@@ -626,7 +641,7 @@ export function Toolbar() {
         onClick={handleSaveProject}
         style={btnIcon}
         disabled={!sourcePath || isLoading}
-        title="儲存專案 (⌘S)"
+        title={tr("toolbar.saveProject")}
       >
         💾
       </button>
@@ -639,7 +654,7 @@ export function Toolbar() {
         style={btnBase}
         disabled={!sourcePath || isLoading}
       >
-        分析
+        {tr("toolbar.analyze")}
       </button>
       <div
         ref={arrangeOptsRef}
@@ -659,9 +674,11 @@ export function Toolbar() {
             borderRight: "1px solid rgba(0,0,0,0.15)",
           }}
           disabled={!sourcePath || isLoading}
-          title={`改編為 ${ENSEMBLE_LABELS[targetEnsemble]}`}
+          title={tr("toolbar.arrange.to", {
+            ensemble: tr(ENSEMBLE_LABEL_KEYS[targetEnsemble] ?? ""),
+          })}
         >
-          改編
+          {tr("toolbar.arrange")}
         </button>
         <select
           value={targetEnsemble}
@@ -675,20 +692,38 @@ export function Toolbar() {
           }}
           disabled={isLoading}
           style={{ ...btnBase, borderRadius: 0, paddingRight: 20 }}
-          title="選擇目標編制"
+          title={tr("toolbar.ensembleSelect")}
         >
-          <option value="violin_piano">小提琴+鋼琴</option>
-          <option value="string_quartet">弦樂四重奏</option>
-          <option value="piano_solo">鋼琴獨奏</option>
-          <option value="harpsichord_solo">大鍵琴獨奏</option>
-          <option value="violin_harpsichord">小提琴+大鍵琴</option>
-          <option value="baroque_trio_sonata">巴洛克三重奏鳴曲</option>
-          <option value="woodwind_quintet">木管五重奏</option>
-          <option value="brass_quintet">銅管五重奏</option>
+          <option value="violin_piano">
+            {tr("toolbar.ensembleOpt.violinPiano")}
+          </option>
+          <option value="string_quartet">
+            {tr("toolbar.ensembleOpt.stringQuartet")}
+          </option>
+          <option value="piano_solo">
+            {tr("toolbar.ensembleOpt.pianoSolo")}
+          </option>
+          <option value="harpsichord_solo">
+            {tr("toolbar.ensembleOpt.harpsichordSolo")}
+          </option>
+          <option value="violin_harpsichord">
+            {tr("toolbar.ensembleOpt.violinHarpsichord")}
+          </option>
+          <option value="baroque_trio_sonata">
+            {tr("toolbar.ensembleOpt.baroqueTrioSonata")}
+          </option>
+          <option value="woodwind_quintet">
+            {tr("toolbar.ensembleOpt.woodwindQuintet")}
+          </option>
+          <option value="brass_quintet">
+            {tr("toolbar.ensembleOpt.brassQuintet")}
+          </option>
           <option value="__custom__">
             {customPlayers
-              ? `🛠 自訂 (${customPlayers.length} 人)`
-              : "🛠 自訂編制..."}
+              ? tr("toolbar.ensembleOpt.customWithCount", {
+                count: customPlayers.length,
+              })
+              : tr("toolbar.ensembleOpt.custom")}
           </option>
         </select>
         <button
@@ -703,7 +738,7 @@ export function Toolbar() {
               ? "var(--bg-hover)"
               : btnBase.background,
           }}
-          title="改編選項 (自動修復 / 技術水平 / 風格)"
+          title={tr("toolbar.arrangeOpts")}
         >
           ⚙
         </button>
@@ -733,7 +768,7 @@ export function Toolbar() {
                 color: "var(--fg-muted)",
               }}
             >
-              改編選項
+              {tr("toolbar.arrangeOpts.heading")}
             </div>
             <label
               style={{
@@ -743,7 +778,7 @@ export function Toolbar() {
                 fontSize: 12,
                 cursor: "pointer",
               }}
-              title="改編後自動執行修復迴圈, 嘗試解決音域 / 把位等問題"
+              title={tr("toolbar.arrangeOpts.autoRepair.title")}
             >
               <input
                 type="checkbox"
@@ -751,7 +786,7 @@ export function Toolbar() {
                 onChange={(e) => setEnableRepair(e.target.checked)}
                 style={{ margin: 0 }}
               />
-              改編後自動修復
+              {tr("toolbar.arrangeOpts.autoRepair")}
             </label>
             <div>
               <div
@@ -761,7 +796,7 @@ export function Toolbar() {
                   marginBottom: 3,
                 }}
               >
-                演奏者技術水平
+                {tr("toolbar.arrangeOpts.skillLevel")}
               </div>
               <select
                 value={skillLevel}
@@ -769,11 +804,15 @@ export function Toolbar() {
                   setSkillLevel(e.target.value as typeof skillLevel)}
                 disabled={isLoading}
                 style={{ ...btnBase, width: "100%", fontSize: 12 }}
-                title="amateur 會主動縮減和弦 / 避難段, professional 不限"
+                title={tr("toolbar.arrangeOpts.skillLevel.title")}
               >
-                <option value="amateur">業餘</option>
-                <option value="intermediate">中級</option>
-                <option value="professional">專業</option>
+                <option value="amateur">{tr("toolbar.skill.amateur")}</option>
+                <option value="intermediate">
+                  {tr("toolbar.skill.intermediate")}
+                </option>
+                <option value="professional">
+                  {tr("toolbar.skill.professional")}
+                </option>
               </select>
             </div>
             {stylePresets.length > 0 && (
@@ -785,14 +824,14 @@ export function Toolbar() {
                     marginBottom: 3,
                   }}
                 >
-                  改編風格
+                  {tr("toolbar.arrangeOpts.style")}
                 </div>
                 <select
                   value={stylePreset}
                   onChange={(e) => setStylePreset(e.target.value)}
                   disabled={isLoading}
                   style={{ ...btnBase, width: "100%", fontSize: 12 }}
-                  title="套用後處理 hooks (旋律 / bass 強化 / continuo 等)"
+                  title={tr("toolbar.arrangeOpts.style.title")}
                 >
                   {stylePresets.map((p) => (
                     <option key={p.id} value={p.id} title={p.description}>
@@ -809,9 +848,9 @@ export function Toolbar() {
         onClick={() => setNlEditOpen(true)}
         style={btnBase}
         disabled={!arrangement || isLoading}
-        title="用自然語言請 AI 修改改編譜 (移調 / 演奏法 / 力度)"
+        title={tr("toolbar.nlEdit.title")}
       >
-        🤖 改譜
+        {tr("toolbar.nlEdit")}
       </button>
 
       <Sep />
@@ -821,7 +860,7 @@ export function Toolbar() {
         onClick={doUndo}
         disabled={!canUndo || isLoading}
         style={{ ...btnIcon, opacity: canUndo ? 1 : 0.4 }}
-        title="Undo (⌘Z)"
+        title={tr("toolbar.undo")}
       >
         ↶
       </button>
@@ -829,7 +868,7 @@ export function Toolbar() {
         onClick={doRedo}
         disabled={!canRedo || isLoading}
         style={{ ...btnIcon, opacity: canRedo ? 1 : 0.4 }}
-        title="Redo (⇧⌘Z)"
+        title={tr("toolbar.redo")}
       >
         ↷
       </button>
@@ -917,7 +956,7 @@ export function Toolbar() {
                   ? "var(--bg-hover)"
                   : btnIcon.background,
               }}
-              title="更多工具 (視窗較窄時自動收合於此)"
+              title={tr("toolbar.overflow.title")}
             >
               ⋯
             </button>
@@ -942,7 +981,9 @@ export function Toolbar() {
             >
               {collapseLevel >= 1 && (
                 <div>
-                  <div style={overflowLabelStyle}>檢視</div>
+                  <div style={overflowLabelStyle}>
+                    {tr("toolbar.overflow.view")}
+                  </div>
                   <div style={{ display: "flex", gap: 4 }}>
                     {renderViewButtons()}
                   </div>
@@ -950,13 +991,17 @@ export function Toolbar() {
               )}
               {collapseLevel >= 2 && (
                 <div>
-                  <div style={overflowLabelStyle}>縮放</div>
+                  <div style={overflowLabelStyle}>
+                    {tr("toolbar.overflow.zoom")}
+                  </div>
                   <ZoomControls />
                 </div>
               )}
               {collapseLevel >= 3 && (
                 <div>
-                  <div style={overflowLabelStyle}>匯出</div>
+                  <div style={overflowLabelStyle}>
+                    {tr("toolbar.overflow.export")}
+                  </div>
                   <ExportMenu
                     buttonStyle={btnBase}
                     disabled={!sourcePath || isLoading}
@@ -975,7 +1020,7 @@ export function Toolbar() {
         <button
           onClick={() => setSettingsOpen((v) => !v)}
           style={btnIcon}
-          title="設定"
+          title={tr("toolbar.settings")}
         >
           ⚙
         </button>
@@ -999,7 +1044,9 @@ export function Toolbar() {
             }}
           >
             <MenuRow
-              label={theme === "dark" ? "切換為亮色" : "切換為暗色"}
+              label={theme === "dark"
+                ? tr("toolbar.settings.toLight")
+                : tr("toolbar.settings.toDark")}
               icon={theme === "dark" ? "☀" : "☾"}
               onClick={() => {
                 toggleTheme();
@@ -1007,7 +1054,9 @@ export function Toolbar() {
               }}
             />
             <MenuRow
-              label={locale === "zh-TW" ? "Switch to English" : "切換為繁中"}
+              label={locale === "zh-TW"
+                ? tr("toolbar.settings.toEnglish")
+                : tr("toolbar.settings.toChinese")}
               icon={locale === "zh-TW" ? "EN" : "中"}
               onClick={() => {
                 setLocale(locale === "zh-TW" ? "en" : "zh-TW");
@@ -1022,7 +1071,7 @@ export function Toolbar() {
               }}
             />
             <MenuRow
-              label="AI 模型設定"
+              label={tr("toolbar.settings.llm")}
               icon="🤖"
               onClick={() => {
                 setLlmSettingsOpen(true);
@@ -1030,7 +1079,7 @@ export function Toolbar() {
               }}
             />
             <MenuRow
-              label="關於 Score Arranger"
+              label={tr("toolbar.settings.about")}
               icon="ⓘ"
               onClick={() => {
                 setAboutOpen(true);
@@ -1070,7 +1119,7 @@ export function Toolbar() {
                 const scorePath = await runOMR(pdfPath);
                 if (scorePath) {
                   setSourcePath(scorePath);
-                  setLoading(true, "正在載入樂譜...");
+                  setLoading(true, tr("toolbar.loading.loadingScore"));
                   const xmlRes = await window.scoreArranger.engine.toMusicXML(
                     scorePath,
                   );
@@ -1078,7 +1127,7 @@ export function Toolbar() {
                     setSourceMusicXML(xmlRes.data);
                     snapshotToTab();
                   } else {
-                    setError(xmlRes.error ?? "載入樂譜失敗");
+                    setError(xmlRes.error ?? tr("toolbar.error.loadScoreFailed"));
                   }
                 }
               } finally {
@@ -1113,9 +1162,13 @@ export function Toolbar() {
             zIndex: 999,
           }}
         >
-          <div style={{ fontWeight: 600 }}>Audiveris 辨識中</div>
+          <div style={{ fontWeight: 600 }}>
+            {tr("toolbar.omrProgress.heading")}
+          </div>
           <div style={{ color: "var(--fg-muted)", fontSize: 11 }}>
-            已用時 {omrProgress.elapsedSec}s · 大型 PDF 需 1-3 分鐘
+            {tr("toolbar.omrProgress.elapsed", {
+              sec: omrProgress.elapsedSec,
+            })}
           </div>
         </div>
       )}

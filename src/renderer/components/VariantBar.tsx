@@ -11,8 +11,10 @@
  */
 
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function VariantBar() {
+  useLocale();
   const tabs = useSessionStore((s) => s.tabs);
   const activeTabId = useSessionStore((s) => s.activeTabId);
   const targetMusicXML = useSessionStore((s) => s.targetMusicXML);
@@ -44,7 +46,7 @@ export function VariantBar() {
       }}
     >
       <span style={{ color: "var(--fg-muted)", marginRight: 4 }}>
-        版本比較:
+        {t("variant.compareLabel")}
       </span>
       {variants.map((v, idx) => {
         const isCurrent = v.targetMusicXML === targetMusicXML;
@@ -74,7 +76,9 @@ export function VariantBar() {
                 : "1px solid var(--border)",
               cursor: isCurrent ? "default" : "pointer",
             }}
-            title={v.note ?? `儲存於 ${new Date(v.createdAt).toLocaleString()}`}
+            title={v.note ?? t("variant.savedAt", {
+              time: new Date(v.createdAt).toLocaleString(),
+            })}
             onClick={() => !isCurrent && loadVariant(idx)}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -99,14 +103,18 @@ export function VariantBar() {
                 opacity: isCurrent ? 0.3 : (isCompareTarget ? 1 : 0.6),
                 fontSize: 11,
               }}
-              title={isCompareTarget ? "停止比較" : "與目前版本比較差異"}
+              title={isCompareTarget
+                ? t("variant.stopCompare")
+                : t("variant.compareDiff")}
             >
               ⇄
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (confirm(`刪除「${v.name}」?`)) deleteVariant(idx);
+                if (confirm(t("variant.deleteConfirm", { name: v.name }))) {
+                  deleteVariant(idx);
+                }
               }}
               style={{
                 width: 16,
@@ -119,7 +127,7 @@ export function VariantBar() {
                 opacity: 0.7,
                 fontSize: 11,
               }}
-              title="刪除"
+              title={t("variant.delete")}
             >
               ×
             </button>
@@ -133,9 +141,11 @@ export function VariantBar() {
                   whiteSpace: "nowrap",
                 }}
               >
-                旋 {v.quality.melody_preservation.toFixed(2)} · 和{" "}
-                {v.quality.harmony_completeness.toFixed(2)} · 奏{" "}
-                {v.quality.playability.toFixed(2)}
+                {t("variant.quality", {
+                  melody: v.quality.melody_preservation.toFixed(2),
+                  harmony: v.quality.harmony_completeness.toFixed(2),
+                  playability: v.quality.playability.toFixed(2),
+                })}
               </div>
             )}
           </div>
@@ -153,9 +163,9 @@ export function VariantBar() {
           cursor: targetMusicXML ? "pointer" : "not-allowed",
           fontSize: 11,
         }}
-        title="把目前的改編結果儲存為一個版本, 之後可切回比較"
+        title={t("variant.saveAs.title")}
       >
-        + 存為版本
+        {t("variant.saveAs")}
       </button>
     </div>
   );

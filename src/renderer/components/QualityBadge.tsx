@@ -9,8 +9,10 @@
 
 import { useEffect, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function QualityBadge() {
+  useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
   const targetMusicXML = useSessionStore((s) => s.targetMusicXML);
   const [quality, setQuality] = useState<QualityReport | null>(null);
@@ -20,7 +22,7 @@ export function QualityBadge() {
       setQuality(null);
       return;
     }
-    const t = window.setTimeout(async () => {
+    const timer = window.setTimeout(async () => {
       try {
         const res = await window.scoreArranger.engine.computeQuality();
         if (res.ok && res.data && "overall" in (res.data as object)) {
@@ -32,7 +34,7 @@ export function QualityBadge() {
         setQuality(null);
       }
     }, 500);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [arrangement, targetMusicXML]);
 
   if (!quality) return null;
@@ -53,11 +55,14 @@ export function QualityBadge() {
       }}
     >
       <span style={{ color: "var(--fg-muted)", fontWeight: 500 }}>
-        品質
+        {t("quality.label")}
       </span>
-      <Ring label="旋律" score={quality.melody_preservation} />
-      <Ring label="和聲" score={quality.harmony_completeness} />
-      <Ring label="演奏性" score={quality.playability} />
+      <Ring label={t("quality.melody")} score={quality.melody_preservation} />
+      <Ring
+        label={t("quality.harmony")}
+        score={quality.harmony_completeness}
+      />
+      <Ring label={t("quality.playability")} score={quality.playability} />
       <span
         style={{
           marginLeft: 4,
@@ -130,10 +135,19 @@ function scoreColor(score: number): string {
 
 function tooltip(q: QualityReport): string {
   return [
-    `整體 ${Math.round(q.overall * 100)} / 100`,
-    `主旋律保留 ${Math.round(q.melody_preservation * 100)}%`,
-    `和聲完整度 ${Math.round(q.harmony_completeness * 100)}%`,
-    `可演奏性 ${Math.round(q.playability * 100)}%`,
-    `error=${q.details.issue_count_error}, warning=${q.details.issue_count_warning}`,
+    t("quality.tipOverall", { score: Math.round(q.overall * 100) }),
+    t("quality.tipMelody", {
+      pct: Math.round(q.melody_preservation * 100),
+    }),
+    t("quality.tipHarmony", {
+      pct: Math.round(q.harmony_completeness * 100),
+    }),
+    t("quality.tipPlayability", {
+      pct: Math.round(q.playability * 100),
+    }),
+    t("quality.tipIssues", {
+      error: q.details.issue_count_error,
+      warning: q.details.issue_count_warning,
+    }),
   ].join("\n");
 }

@@ -10,6 +10,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 interface ExportMenuProps {
   buttonStyle: React.CSSProperties;
@@ -17,6 +18,7 @@ interface ExportMenuProps {
 }
 
 export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const {
@@ -44,7 +46,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
     setOpen(false);
     const path = await window.scoreArranger.exportFileDialog(kind);
     if (!path) return;
-    setLoading(true, `匯出 ${kind === "midi" ? "MIDI" : "MusicXML"}...`);
+    setLoading(true, t("exportMenu.loading.exportFile", {
+      format: kind === "midi" ? "MIDI" : "MusicXML",
+    }));
     try {
       const res = kind === "midi"
         ? await window.scoreArranger.engine.exportTargetMidi(path)
@@ -52,7 +56,7 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
       if (res.ok) {
         setError(null);
       } else {
-        setError(res.error ?? "匯出失敗");
+        setError(res.error ?? t("exportMenu.error.exportFailed"));
       }
     } finally {
       setLoading(false);
@@ -62,16 +66,18 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
   const handleExportPDF = async () => {
     setOpen(false);
     if (!targetMusicXML) {
-      setError("尚無改編結果");
+      setError(t("exportMenu.error.noArrangement"));
       return;
     }
-    setLoading(true, "產生 PDF (首次需載入引擎)...");
+    setLoading(true, t("exportMenu.loading.generatePdf"));
     try {
       const { exportPdfFromMusicXML } = await import("../utils/pdfExport");
       await exportPdfFromMusicXML(targetMusicXML, "arrangement.pdf");
       setError(null);
     } catch (e) {
-      setError(`PDF 失敗: ${e instanceof Error ? e.message : String(e)}`);
+      setError(t("exportMenu.error.pdfFailed", {
+        message: e instanceof Error ? e.message : String(e),
+      }));
     } finally {
       setLoading(false);
     }
@@ -80,12 +86,14 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
   const handleExportAllPartsPDF = async () => {
     setOpen(false);
     if (!arrangement) {
-      setError("尚無改編結果");
+      setError(t("exportMenu.error.noArrangement"));
       return;
     }
     setLoading(
       true,
-      `批次產生 ${arrangement.players.length} 份分譜 PDF...`,
+      t("exportMenu.loading.batchPartPdf", {
+        count: arrangement.players.length,
+      }),
     );
     try {
       const { exportPdfFromMusicXML } = await import("../utils/pdfExport");
@@ -95,7 +103,11 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
         i++;
         setLoading(
           true,
-          `分譜 PDF ${i}/${arrangement.players.length}: ${p.display_name}...`,
+          t("exportMenu.loading.partPdfProgress", {
+            index: i,
+            total: arrangement.players.length,
+            name: p.display_name,
+          }),
         );
         try {
           const res = await window.scoreArranger.engine.targetPartMusicXML(
@@ -118,12 +130,17 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
         }
       }
       if (failures.length > 0) {
-        setError(`部分分譜失敗 (${failures.length}): ${failures.join("; ")}`);
+        setError(t("exportMenu.error.somePartsFailed", {
+          count: failures.length,
+          details: failures.join("; "),
+        }));
       } else {
         setError(null);
       }
     } catch (e) {
-      setError(`分譜匯出失敗: ${e instanceof Error ? e.message : String(e)}`);
+      setError(t("exportMenu.error.partExportFailed", {
+        message: e instanceof Error ? e.message : String(e),
+      }));
     } finally {
       setLoading(false);
     }
@@ -132,14 +149,14 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
   const handleExportWAV = async () => {
     setOpen(false);
     if (!arrangement) {
-      setError("尚無改編結果");
+      setError(t("exportMenu.error.noArrangement"));
       return;
     }
-    setLoading(true, "渲染音訊...");
+    setLoading(true, t("exportMenu.loading.renderAudio"));
     try {
       const midiRes = await window.scoreArranger.engine.toMidi();
       if (!midiRes.ok || !midiRes.data) {
-        setError(midiRes.error ?? "取得 MIDI 失敗");
+        setError(midiRes.error ?? t("exportMenu.error.getMidiFailed"));
         return;
       }
       const { Midi } = await import("@tonejs/midi");
@@ -155,7 +172,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
       downloadBlob(blob, `${arrangement.name.replace(/\s+/g, "_")}.wav`);
       setError(null);
     } catch (e) {
-      setError(`WAV 失敗: ${e instanceof Error ? e.message : String(e)}`);
+      setError(t("exportMenu.error.wavFailed", {
+        message: e instanceof Error ? e.message : String(e),
+      }));
     } finally {
       setLoading(false);
     }
@@ -197,9 +216,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
         style={buttonStyle}
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        title="匯出改編結果"
+        title={t("exportMenu.button.title")}
       >
-        匯出 ▾
+        {t("exportMenu.button")}
       </button>
       {open && (
         <div
@@ -216,7 +235,7 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
             minWidth: 220,
           }}
         >
-          <div style={groupHeader}>總譜</div>
+          <div style={groupHeader}>{t("exportMenu.group.fullScore")}</div>
           <button
             onClick={handleExportPDF}
             disabled={!targetMusicXML}
@@ -224,9 +243,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
             onMouseEnter={(e) => hover(e, true)}
             onMouseLeave={(e) => hover(e, false)}
           >
-            📕 PDF (.pdf)
+            {t("exportMenu.item.pdf")}
             <div style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-              用 verovio 排版, 列印 / 分享用
+              {t("exportMenu.item.pdf.desc")}
             </div>
           </button>
           <button
@@ -236,9 +255,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
             onMouseEnter={(e) => hover(e, true)}
             onMouseLeave={(e) => hover(e, false)}
           >
-            📄 MusicXML (.musicxml)
+            {t("exportMenu.item.musicxml")}
             <div style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-              MuseScore / Dorico 可開
+              {t("exportMenu.item.musicxml.desc")}
             </div>
           </button>
           <button
@@ -248,9 +267,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
             onMouseEnter={(e) => hover(e, true)}
             onMouseLeave={(e) => hover(e, false)}
           >
-            🎹 MIDI (.mid)
+            {t("exportMenu.item.midi")}
             <div style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-              DAW 使用
+              {t("exportMenu.item.midi.desc")}
             </div>
           </button>
           <button
@@ -260,16 +279,16 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
             onMouseEnter={(e) => hover(e, true)}
             onMouseLeave={(e) => hover(e, false)}
           >
-            🔊 WAV (試聽)
+            {t("exportMenu.item.wav")}
             <div style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-              純合成音色快速渲染
+              {t("exportMenu.item.wav.desc")}
             </div>
           </button>
 
           {arrangement && arrangement.players.length > 0 && (
             <>
               <div style={groupHeader}>
-                分譜 (每位演奏者一份)
+                {t("exportMenu.group.parts")}
               </div>
               <button
                 onClick={handleExportAllPartsPDF}
@@ -277,7 +296,9 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
                 onMouseEnter={(e) => hover(e, true)}
                 onMouseLeave={(e) => hover(e, false)}
               >
-                📥 全部 PDF ({arrangement.players.length} 份)
+                {t("exportMenu.item.allPartsPdf", {
+                  count: arrangement.players.length,
+                })}
                 <div style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
                   {arrangement.players.map((p) => p.display_name).join(", ")}
                 </div>

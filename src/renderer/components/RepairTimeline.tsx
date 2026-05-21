@@ -12,6 +12,7 @@
 
 import { useState } from "react";
 import type { QualityScores, RepairTimelineEntry } from "@shared/types";
+import { t, useLocale } from "../utils/i18n";
 
 interface Props {
   timeline: RepairTimelineEntry[];
@@ -35,6 +36,7 @@ function QualityDelta(
     after: number;
   },
 ) {
+  useLocale();
   const improved = after >= before - 0.001;
   return (
     <span>
@@ -52,6 +54,7 @@ export function RepairTimeline(
   { timeline, converged, severityBefore, severityAfter,
     qualityBefore, qualityAfter, finalMusicXML, onScrub }: Props,
 ) {
+  useLocale();
   // step 0 = 改編完成 (最終); step 1..N = 第 N 次迭代後
   // slider 值: N = 最終, 0 = 第一步前... 用 index into [...timeline, final]
   const totalSteps = timeline.length;
@@ -66,7 +69,7 @@ export function RepairTimeline(
         background: "var(--bg-tertiary)",
         borderTop: "1px solid var(--border-light)",
       }}>
-        修復迴圈: 無需修復 (改編結果已無可演奏性問題)
+        {t("repair.noRepairNeeded")}
       </div>
     );
   }
@@ -100,15 +103,15 @@ export function RepairTimeline(
         marginBottom: 6,
       }}>
         <span style={{ fontWeight: 600, color: "var(--fg-muted)" }}>
-          修復時間軸
+          {t("repair.timelineTitle")}
         </span>
         <span style={{
           fontSize: 11,
           color: converged ? "#34d399" : "#f59e0b",
         }}>
           {converged
-            ? `✓ ${totalSteps} 步收斂 · 嚴重度 −${reduction}%`
-            : `⚠ ${totalSteps} 步未完全收斂`}
+            ? t("repair.converged", { steps: totalSteps, pct: reduction })
+            : t("repair.notConverged", { steps: totalSteps })}
         </span>
         <span style={{
           marginLeft: "auto",
@@ -116,8 +119,8 @@ export function RepairTimeline(
           color: "var(--fg-tertiary)",
         }}>
           {step >= totalSteps
-            ? "檢視: 最終結果"
-            : `檢視: 第 ${step + 1} 步`}
+            ? t("repair.viewingFinal")
+            : t("repair.viewingStep", { step: step + 1 })}
         </span>
       </div>
 
@@ -128,21 +131,21 @@ export function RepairTimeline(
           color: "var(--fg-tertiary)",
           marginBottom: 6,
         }}>
-          品質{" "}
+          {t("repair.qualityPrefix")}{" "}
           <QualityDelta
-            label="旋律"
+            label={t("repair.qualityMelody")}
             before={qualityBefore.melody_preservation}
             after={qualityAfter.melody_preservation}
           />
           {" · "}
           <QualityDelta
-            label="和聲"
+            label={t("repair.qualityHarmony")}
             before={qualityBefore.harmony_completeness}
             after={qualityAfter.harmony_completeness}
           />
           {" · "}
           <QualityDelta
-            label="可演奏"
+            label={t("repair.qualityPlayability")}
             before={qualityBefore.playability}
             after={qualityAfter.playability}
           />
@@ -170,9 +173,12 @@ export function RepairTimeline(
           <button
             key={i}
             onClick={() => handleScrub(i)}
-            title={`第 ${i + 1} 步: ${entry.issue_code}${
-              entry.applied_strategy ? ` → ${entry.applied_strategy}` : " (無策略)"
-            }`}
+            title={t("repair.stepTick", {
+              step: i + 1,
+              code: entry.issue_code,
+            }) + (entry.applied_strategy
+              ? ` → ${entry.applied_strategy}`
+              : ` ${t("repair.noStrategyShort")}`)}
             style={{
               flex: 1,
               height: 6,
@@ -189,7 +195,7 @@ export function RepairTimeline(
         ))}
         <button
           onClick={() => handleScrub(totalSteps)}
-          title="最終結果"
+          title={t("repair.finalTick")}
           style={{
             flex: 1,
             height: 6,
@@ -212,8 +218,11 @@ export function RepairTimeline(
           color: "var(--fg-secondary)",
         }}>
           <div>
-            <strong>第 {current.iteration + 1} 步</strong>{" "}
-            修復 <code style={{
+            <strong>
+              {t("repair.stepLabel", { step: current.iteration + 1 })}
+            </strong>{" "}
+            {t("repair.repairedCodePrefix")}{" "}
+            <code style={{
               background: "var(--code-bg)",
               padding: "0 4px",
               borderRadius: 3,
@@ -221,9 +230,10 @@ export function RepairTimeline(
             @ {current.issue_location}
           </div>
           <div style={{ color: "var(--fg-tertiary)", marginTop: 2 }}>
-            策略: {current.applied_strategy ?? "(無策略可用 — 標為人工處理)"}
+            {t("repair.strategyLabel")}{" "}
+            {current.applied_strategy ?? t("repair.noStrategy")}
             {" · "}
-            嚴重度 {current.score_before.toFixed(1)} →{" "}
+            {t("repair.severityLabel")} {current.score_before.toFixed(1)} →{" "}
             {current.score_after.toFixed(1)}
           </div>
         </div>

@@ -6,60 +6,60 @@
 
 import type { IpcResponse } from "@shared/types";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 interface ExportOption {
-  label: string;
+  /** i18n key — label 為 t() 後的顯示名稱 */
+  labelKey: string;
+  /** 顯示用副檔名 (檔名格式不翻譯, 但 open_external 為文字需翻) */
   ext: string;
-  description: string;
+  extKey?: string;
+  descKey: string;
   kind: "musicxml" | "midi" | "sarr" | "pdf" | "open_external" | "wav";
 }
 
 const OPTIONS: ExportOption[] = [
   {
-    label: "在 MuseScore / Dorico 開啟",
-    ext: "外部編輯器",
-    description:
-      "直接用系統預設樂譜軟體開啟改編結果,進行進階記譜編輯(力度、表情、版面、分譜)。返回 APP 後可重新匯入修改版。",
+    labelKey: "export.option.openExternal.label",
+    ext: "",
+    extKey: "export.option.openExternal.ext",
+    descKey: "export.option.openExternal.desc",
     kind: "open_external",
   },
   {
-    label: "MusicXML",
+    labelKey: "export.option.musicxml.label",
     ext: ".musicxml",
-    description:
-      "標準樂譜交換格式。可在 MuseScore、Dorico、Sibelius、Finale 開啟,適合印譜或繼續編輯。",
+    descKey: "export.option.musicxml.desc",
     kind: "musicxml",
   },
   {
-    label: "PDF (列印用)",
+    labelKey: "export.option.pdf.label",
     ext: ".pdf",
-    description:
-      "透過 verovio 渲染為 SVG 後輸出 PDF。直接可印,適合給演奏者紙本。",
+    descKey: "export.option.pdf.desc",
     kind: "pdf",
   },
   {
-    label: "MIDI",
+    labelKey: "export.option.midi.label",
     ext: ".mid",
-    description:
-      "MIDI 演奏資料。可在 Logic Pro、Cubase、Ableton 等 DAW 開啟,適合進一步混音或編曲。",
+    descKey: "export.option.midi.desc",
     kind: "midi",
   },
   {
-    label: "WAV (試聽用)",
+    labelKey: "export.option.wav.label",
     ext: ".wav",
-    description:
-      "純合成音色快速渲染為 WAV (44.1kHz 16-bit)。適合分享試聽,不適合正式發行。",
+    descKey: "export.option.wav.desc",
     kind: "wav",
   },
   {
-    label: "Score Arranger 專案",
+    labelKey: "export.option.sarr.label",
     ext: ".sarr",
-    description:
-      "完整保留來源、改編、修改狀態。下次回到 Score Arranger 可繼續編輯。",
+    descKey: "export.option.sarr.desc",
     kind: "sarr",
   },
 ];
 
 export function ExportPanel() {
+  useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
   const sourcePath = useSessionStore((s) => s.sourcePath);
   const targetMusicXML = useSessionStore((s) => s.targetMusicXML);
@@ -68,28 +68,28 @@ export function ExportPanel() {
 
   const handleExport = async (opt: ExportOption) => {
     if (!arrangement && opt.kind !== "sarr") {
-      setError("尚無改編結果可匯出,請先執行「改編」");
+      setError(t("export.error.noArrangement"));
       return;
     }
     if (opt.kind === "sarr" && !sourcePath) {
-      setError("尚無內容可儲存");
+      setError(t("export.error.nothingToSave"));
       return;
     }
 
     // 「在外部編輯器開啟」: 寫到暫存後 shell.openPath
     if (opt.kind === "open_external") {
       if (!targetMusicXML) {
-        setError("尚無 MusicXML 內容");
+        setError(t("export.error.noMusicXML"));
         return;
       }
-      setLoading(true, "開啟外部編輯器...");
+      setLoading(true, t("export.loading.openExternal"));
       try {
         const baseName = arrangement?.name?.replace(/\s+/g, "_") ?? "arrangement";
         const res = await window.scoreArranger.openInExternalEditor(
           targetMusicXML, baseName,
         );
         if (!res.ok) {
-          setError(res.error ?? "開啟失敗");
+          setError(res.error ?? t("export.error.openFailed"));
         } else {
           setError(null);
         }
@@ -102,14 +102,14 @@ export function ExportPanel() {
     // WAV: 純前端用 Tone.Offline 渲染
     if (opt.kind === "wav") {
       if (!arrangement) {
-        setError("尚無改編結果");
+        setError(t("export.error.noArrangementShort"));
         return;
       }
-      setLoading(true, "渲染音訊 (首次載入合成引擎)...");
+      setLoading(true, t("export.loading.renderAudio"));
       try {
         const midiRes = await window.scoreArranger.engine.toMidi();
         if (!midiRes.ok || !midiRes.data) {
-          setError(midiRes.error ?? "取得 MIDI 失敗");
+          setError(midiRes.error ?? t("export.error.getMidiFailed"));
           return;
         }
         const { Midi } = await import("@tonejs/midi");
@@ -125,7 +125,9 @@ export function ExportPanel() {
         downloadBlob(blob, `${arrangement.name.replace(/\s+/g, "_")}.wav`);
         setError(null);
       } catch (e) {
-        setError(`WAV 匯出失敗: ${e instanceof Error ? e.message : String(e)}`);
+        setError(t("export.error.wavFailed", {
+          message: e instanceof Error ? e.message : String(e),
+        }));
       } finally {
         setLoading(false);
       }
@@ -135,17 +137,19 @@ export function ExportPanel() {
     // PDF: 純前端產生,不需檔案對話框 (jsPDF save 直接觸發瀏覽器下載)
     if (opt.kind === "pdf") {
       if (!targetMusicXML) {
-        setError("尚無 MusicXML 內容");
+        setError(t("export.error.noMusicXML"));
         return;
       }
-      setLoading(true, "產生 PDF (首次需載入引擎)...");
+      setLoading(true, t("export.loading.generatePdf"));
       try {
         // Dynamic import: 拖延 verovio (~7MB) + jsPDF 到使用者首次點 PDF
         const { exportPdfFromMusicXML } = await import("../utils/pdfExport");
         await exportPdfFromMusicXML(targetMusicXML, "arrangement.pdf");
         setError(null);
       } catch (e) {
-        setError(`PDF 匯出失敗: ${e instanceof Error ? e.message : String(e)}`);
+        setError(t("export.error.pdfFailed", {
+          message: e instanceof Error ? e.message : String(e),
+        }));
       } finally {
         setLoading(false);
       }
@@ -160,7 +164,7 @@ export function ExportPanel() {
     }
     if (!path) return;
 
-    setLoading(true, `匯出 ${opt.label}...`);
+    setLoading(true, t("export.loading.exporting", { label: t(opt.labelKey) }));
     try {
       let res: IpcResponse<unknown>;
       if (opt.kind === "musicxml") {
@@ -174,7 +178,7 @@ export function ExportPanel() {
         );
       }
       if (!res.ok) {
-        setError(res.error ?? "匯出失敗");
+        setError(res.error ?? t("export.error.exportFailed"));
       } else {
         setError(null);
       }
@@ -209,7 +213,7 @@ export function ExportPanel() {
           color: "var(--fg-muted)",
         }}
       >
-        選擇要匯出的格式。對音樂人最常用的是 MusicXML 給 MuseScore / Dorico 印譜。
+        {t("export.intro")}
       </div>
       <PartsExportSection />
       <div
@@ -236,7 +240,7 @@ export function ExportPanel() {
                   color: "var(--fg-primary)",
                 }}
               >
-                {opt.label}
+                {t(opt.labelKey)}
                 <span
                   style={{
                     marginLeft: 6,
@@ -245,7 +249,7 @@ export function ExportPanel() {
                     fontWeight: 400,
                   }}
                 >
-                  {opt.ext}
+                  {opt.extKey ? t(opt.extKey) : opt.ext}
                 </span>
               </div>
               <div
@@ -256,7 +260,7 @@ export function ExportPanel() {
                   flex: 1,
                 }}
               >
-                {opt.description}
+                {t(opt.descKey)}
               </div>
               <button
                 onClick={() => handleExport(opt)}
@@ -272,7 +276,7 @@ export function ExportPanel() {
                   fontWeight: 600,
                 }}
               >
-                匯出為 {opt.label}
+                {t("export.button.exportAs", { label: t(opt.labelKey) })}
               </button>
             </div>
           );
@@ -288,6 +292,7 @@ export function ExportPanel() {
 // ============================================================================
 
 function PartsExportSection() {
+  useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
   const setLoading = useSessionStore((s) => s.setLoading);
   const setError = useSessionStore((s) => s.setError);
@@ -295,13 +300,15 @@ function PartsExportSection() {
   if (!arrangement || arrangement.players.length === 0) return null;
 
   const exportPart = async (playerId: string, displayName: string) => {
-    setLoading(true, `產生 ${displayName} 分譜 PDF...`);
+    setLoading(true, t("export.parts.loading.generatePartPdf", {
+      name: displayName,
+    }));
     try {
       const res = await window.scoreArranger.engine.targetPartMusicXML(
         playerId,
       );
       if (!res.ok || !res.data) {
-        setError(res.error ?? "取得分譜失敗");
+        setError(res.error ?? t("export.parts.error.getPartFailed"));
         return;
       }
       const { exportPdfFromMusicXML } = await import("../utils/pdfExport");
@@ -309,9 +316,9 @@ function PartsExportSection() {
       await exportPdfFromMusicXML(res.data.musicxml, `${safeName}.pdf`);
       setError(null);
     } catch (e) {
-      setError(
-        `分譜匯出失敗: ${e instanceof Error ? e.message : String(e)}`,
-      );
+      setError(t("export.parts.error.partExportFailed", {
+        message: e instanceof Error ? e.message : String(e),
+      }));
     } finally {
       setLoading(false);
     }
@@ -321,7 +328,9 @@ function PartsExportSection() {
     if (!arrangement) return;
     setLoading(
       true,
-      `批次產生 ${arrangement.players.length} 份分譜 PDF...`,
+      t("export.parts.loading.batchPartPdf", {
+        count: arrangement.players.length,
+      }),
     );
     try {
       const { exportPdfFromMusicXML } = await import("../utils/pdfExport");
@@ -331,7 +340,11 @@ function PartsExportSection() {
         i++;
         setLoading(
           true,
-          `分譜 PDF ${i}/${arrangement.players.length}: ${p.display_name}...`,
+          t("export.parts.loading.partPdfProgress", {
+            index: i,
+            total: arrangement.players.length,
+            name: p.display_name,
+          }),
         );
         try {
           const res = await window.scoreArranger.engine.targetPartMusicXML(
@@ -354,14 +367,17 @@ function PartsExportSection() {
         }
       }
       if (failures.length > 0) {
-        setError(`部分分譜失敗 (${failures.length}): ${failures.join("; ")}`);
+        setError(t("export.parts.error.somePartsFailed", {
+          count: failures.length,
+          details: failures.join("; "),
+        }));
       } else {
         setError(null);
       }
     } catch (e) {
-      setError(
-        `批次匯出失敗: ${e instanceof Error ? e.message : String(e)}`,
-      );
+      setError(t("export.parts.error.batchFailed", {
+        message: e instanceof Error ? e.message : String(e),
+      }));
     } finally {
       setLoading(false);
     }
@@ -371,13 +387,15 @@ function PartsExportSection() {
     playerId: string,
     displayName: string,
   ) => {
-    setLoading(true, `匯出 ${displayName} MusicXML...`);
+    setLoading(true, t("export.parts.loading.exportPartMusicXML", {
+      name: displayName,
+    }));
     try {
       const res = await window.scoreArranger.engine.targetPartMusicXML(
         playerId,
       );
       if (!res.ok || !res.data) {
-        setError(res.error ?? "取得分譜失敗");
+        setError(res.error ?? t("export.parts.error.getPartFailed"));
         return;
       }
       // 透過 Blob 直接下載
@@ -416,7 +434,7 @@ function PartsExportSection() {
           marginBottom: 6,
         }}
       >
-        分譜 (每位演奏者一份)
+        {t("export.parts.title")}
       </div>
       <div
         style={{
@@ -425,7 +443,7 @@ function PartsExportSection() {
           marginBottom: 12,
         }}
       >
-        把改編結果依演奏者拆成獨立譜面。給弦樂四重奏團員時, 每人只要拿自己那份。
+        {t("export.parts.desc")}
       </div>
       <button
         onClick={exportAllPartsPDF}
@@ -440,9 +458,13 @@ function PartsExportSection() {
           cursor: "pointer",
           marginBottom: 12,
         }}
-        title={`一次下載全部 ${arrangement.players.length} 份 PDF 分譜`}
+        title={t("export.parts.downloadAllPdf.title", {
+          count: arrangement.players.length,
+        })}
       >
-        📥 下載全部 PDF ({arrangement.players.length})
+        {t("export.parts.downloadAllPdf", {
+          count: arrangement.players.length,
+        })}
       </button>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {arrangement.players.map((p) => (
@@ -479,7 +501,7 @@ function PartsExportSection() {
                 borderRadius: 4,
                 cursor: "pointer",
               }}
-              title="下載此演奏者的 PDF 分譜"
+              title={t("export.parts.downloadPartPdf.title")}
             >
               PDF
             </button>
@@ -495,7 +517,7 @@ function PartsExportSection() {
                 borderRadius: 4,
                 cursor: "pointer",
               }}
-              title="下載此演奏者的 MusicXML"
+              title={t("export.parts.downloadPartXml.title")}
             >
               XML
             </button>

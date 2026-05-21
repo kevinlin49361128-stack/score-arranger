@@ -7,8 +7,10 @@
 
 import { useEffect, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function SectionNavigator() {
+  useLocale();
   const sourcePath = useSessionStore((s) => s.sourcePath);
   const arrangement = useSessionStore((s) => s.arrangement);
   const targetMusicXML = useSessionStore((s) => s.targetMusicXML);
@@ -54,7 +56,9 @@ export function SectionNavigator() {
         fontSize: 12,
       }}
     >
-      <span style={{ color: "var(--fg-muted)" }}>導航:</span>
+      <span style={{ color: "var(--fg-muted)" }}>
+        {t("section.navLabel")}
+      </span>
       {hasSections && (
         <select
           onChange={(e) => {
@@ -65,7 +69,7 @@ export function SectionNavigator() {
           defaultValue=""
           style={selStyle}
         >
-          <option value="" disabled>段落 →</option>
+          <option value="" disabled>{t("section.sectionsOption")}</option>
           {nav.movements.map((mv) =>
             mv.sections.length === 0 ? null : (
               <optgroup key={mv.movement_id} label={mv.title}>
@@ -89,7 +93,7 @@ export function SectionNavigator() {
           defaultValue=""
           style={selStyle}
         >
-          <option value="" disabled>排練記號 →</option>
+          <option value="" disabled>{t("section.marksOption")}</option>
           {nav.rehearsal_marks.map((r) => (
             <option key={r.measure} value={r.measure}>
               {r.mark} (m.{r.measure})
@@ -98,7 +102,7 @@ export function SectionNavigator() {
         </select>
       )}
       <span style={{ color: "var(--fg-tertiary)" }}>
-        全 {nav.total_measures} 小節
+        {t("section.totalMeasures", { n: nav.total_measures })}
       </span>
     </div>
   );

@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
 
@@ -196,6 +197,7 @@ interface PlaybackControlsProps {
 export function PlaybackControls(
   { side = "target", compact = false }: PlaybackControlsProps = {} as any,
 ) {
+  useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
   const sourcePath = useSessionStore((s) => s.sourcePath);
   const sourceMusicXML = useSessionStore((s) => s.sourceMusicXML);
@@ -598,11 +600,11 @@ export function PlaybackControls(
     if (state === "playing") return;
     // source 模式: 需要 sourcePath; target 模式: 需要 arrangement
     if (side === "source" && !sourcePath && !sourceMusicXML) {
-      setError("尚無原譜可播放");
+      setError(t("playback.error.noSource"));
       return;
     }
     if (side === "target" && !arrangement) {
-      setError("尚無改編結果, 請先改編");
+      setError(t("playback.error.noArrangement"));
       return;
     }
 
@@ -616,7 +618,7 @@ export function PlaybackControls(
           )
         : await window.scoreArranger.engine.toMidi();
       if (!res.ok || !res.data) {
-        setError(res.error ?? "取得 MIDI 失敗");
+        setError(res.error ?? t("playback.error.getMidiFailed"));
         setState("idle");
         setActiveSide(null);
         return;
@@ -735,6 +737,9 @@ export function PlaybackControls(
     : !!arrangement;
   const disabled = !haveMaterial || state === "loading";
   const progressPercent = Math.round(playbackProgress * 100);
+  const sideLabel = side === "source"
+    ? t("playback.side.source")
+    : t("playback.side.target");
 
   return (
     <div
@@ -762,12 +767,16 @@ export function PlaybackControls(
           opacity: (disabled || (activeSide != null && activeSide !== side))
             ? 0.4 : 1,
         }}
-        title={`回到開頭 (${side === "source" ? "原譜" : "改編譜"})`}
+        title={t("playback.rewind.title", { side: sideLabel })}
       >
         ⏮
       </button>
       {isThisSidePlaying ? (
-        <button onClick={handlePause} style={btn} title="暫停">
+        <button
+          onClick={handlePause}
+          style={btn}
+          title={t("playback.pause.title")}
+        >
           ⏸
         </button>
       ) : (
@@ -785,8 +794,8 @@ export function PlaybackControls(
             color: isThisSidePaused ? "var(--accent-fg)" : btn.color,
           }}
           title={isThisSidePaused
-            ? `繼續播放 (${side === "source" ? "原譜" : "改編譜"})`
-            : `播放 ${side === "source" ? "原譜" : "改編譜"}`}
+            ? t("playback.resume.title", { side: sideLabel })
+            : t("playback.play.title", { side: sideLabel })}
         >
           {state === "loading" && activeSide === side
             ? "⌛"
@@ -797,7 +806,7 @@ export function PlaybackControls(
         onClick={handleStop}
         disabled={state === "idle"}
         style={{ ...btn, opacity: state === "idle" ? 0.5 : 1 }}
-        title="停止"
+        title={t("playback.stop.title")}
       >
         ⏹
       </button>
@@ -813,7 +822,9 @@ export function PlaybackControls(
           position: "relative",
           border: "1px solid var(--border-light)",
         }}
-        title={state === "idle" ? "尚未播放" : `${progressPercent}% — 點選跳轉`}
+        title={state === "idle"
+          ? t("playback.progress.idle")
+          : t("playback.progress.seek", { percent: progressPercent })}
       >
         <div
           style={{
@@ -830,8 +841,8 @@ export function PlaybackControls(
           <label
             title={
               sampleLoadFailedRef.current
-                ? "Salamander 取樣載入失敗,使用純合成"
-                : "勾選使用 Salamander 鋼琴取樣 (需網路)"
+                ? t("playback.samples.failed")
+                : t("playback.samples.hint")
             }
             style={{
               display: "flex",
@@ -848,7 +859,7 @@ export function PlaybackControls(
               onChange={(e) => setUseSamples(e.target.checked)}
               disabled={state !== "idle"}
             />
-            取樣
+            {t("playback.samples.label")}
           </label>
           <CursorModeToggle />
         </>
@@ -857,7 +868,7 @@ export function PlaybackControls(
       {!compact && (
         <>
           <label
-            title="勾選後, 播放至「到」小節時自動跳回「從」小節"
+            title={t("playback.loop.hint")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -877,7 +888,7 @@ export function PlaybackControls(
           <input
             type="number"
             min={1}
-            placeholder="從"
+            placeholder={t("playback.loop.from.placeholder")}
             value={loopStart ?? ""}
             onChange={(e) => setLoopStart(
               e.target.value ? parseInt(e.target.value, 10) : null,
@@ -891,13 +902,13 @@ export function PlaybackControls(
               background: "var(--bg-panel)",
               color: "var(--fg-primary)",
             }}
-            title="loop 起始小節"
+            title={t("playback.loop.from.title")}
           />
           <span style={{ color: "var(--fg-tertiary)", fontSize: 11 }}>–</span>
           <input
             type="number"
             min={1}
-            placeholder="到"
+            placeholder={t("playback.loop.to.placeholder")}
             value={loopEnd ?? ""}
             onChange={(e) => setLoopEnd(
               e.target.value ? parseInt(e.target.value, 10) : null,
@@ -911,7 +922,7 @@ export function PlaybackControls(
               background: "var(--bg-panel)",
               color: "var(--fg-primary)",
             }}
-            title="loop 結束小節 (含)"
+            title={t("playback.loop.to.title")}
           />
         </>
       )}
@@ -931,6 +942,7 @@ function base64ToUint8Array(b64: string): Uint8Array {
 
 /** 游標精細度切換: 一鈕雙態 (note ↔ measure), persist 在 localStorage. */
 function CursorModeToggle() {
+  useLocale();
   const mode = useSessionStore((s) => s.cursorMode);
   const setMode = useSessionStore((s) => s.setCursorMode);
   const isNote = mode === "note";
@@ -938,8 +950,8 @@ function CursorModeToggle() {
     <button
       onClick={() => setMode(isNote ? "measure" : "note")}
       title={isNote
-        ? "目前: 音符級游標 (高亮當前音符) — 點切換為小節級"
-        : "目前: 小節級游標 (整小節綠線) — 點切換為音符級"}
+        ? t("playback.cursorMode.noteHint")
+        : t("playback.cursorMode.measureHint")}
       style={{
         padding: "4px 8px",
         fontSize: 11,
@@ -952,7 +964,7 @@ function CursorModeToggle() {
         fontWeight: 600,
       }}
     >
-      {isNote ? "♪ 音符" : "▮ 小節"}
+      {isNote ? t("playback.cursorMode.note") : t("playback.cursorMode.measure")}
     </button>
   );
 }

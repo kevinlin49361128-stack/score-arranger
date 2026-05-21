@@ -11,6 +11,8 @@
 
 import { useEffect, useState } from "react";
 
+import { t, useLocale } from "../utils/i18n";
+
 export interface CustomPlayer {
   player_id: string;
   display_name: string;
@@ -33,18 +35,20 @@ interface Props {
   initial?: CustomPlayer[];
 }
 
-const FAMILY_LABEL: Record<string, string> = {
-  strings: "弦樂",
-  woodwind: "木管",
-  brass: "銅管",
-  keyboard: "鍵盤",
-  voice: "聲樂",
-  percussion: "打擊",
+/** 樂器家族 → i18n key。 */
+const FAMILY_LABEL_KEYS: Record<string, string> = {
+  strings: "ensemble.family.strings",
+  woodwind: "ensemble.family.woodwind",
+  brass: "ensemble.family.brass",
+  keyboard: "ensemble.family.keyboard",
+  voice: "ensemble.family.voice",
+  percussion: "ensemble.family.percussion",
 };
 
 export function CustomEnsembleDialog(
   { onApply, onCancel, initial }: Props,
 ) {
+  useLocale();
   const [instruments, setInstruments] = useState<AvailableInstrument[]>([]);
   const [players, setPlayers] = useState<CustomPlayer[]>(
     initial ?? [
@@ -159,16 +163,15 @@ export function CustomEnsembleDialog(
           boxShadow: "0 12px 48px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 18 }}>自訂編制</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>{t("ensemble.heading")}</h2>
         <p
           style={{ marginTop: 8, color: "var(--fg-muted)", fontSize: 12 }}
         >
-          從樂器庫挑 1-8 個演奏者. 每加一個 player, 改編引擎會嘗試把 source
-          的某個聲部分配給他. 多餘的 player 會自動從和聲補完內聲部.
+          {t("ensemble.intro")}
         </p>
 
         {loading
-          ? <div style={{ padding: 24 }}>載入樂器庫中...</div>
+          ? <div style={{ padding: 24 }}>{t("ensemble.loading")}</div>
           : (
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
               {players.map((p, idx) => (
@@ -196,7 +199,8 @@ export function CustomEnsembleDialog(
                   marginTop: 4,
                 }}
               >
-                + 加演奏者{players.length >= 8 ? " (已達上限 8)" : ""}
+                {t("ensemble.addPlayer")}
+                {players.length >= 8 ? t("ensemble.addPlayer.atLimit") : ""}
               </button>
             </div>
           )}
@@ -213,14 +217,14 @@ export function CustomEnsembleDialog(
             onClick={onCancel}
             style={btnSecondary}
           >
-            取消
+            {t("ensemble.cancel")}
           </button>
           <button
             onClick={handleApply}
             disabled={players.length === 0}
             style={btnPrimary}
           >
-            使用此編制 ({players.length})
+            {t("ensemble.apply", { count: players.length })}
           </button>
         </div>
       </div>
@@ -240,6 +244,7 @@ interface PlayerRowProps {
 function PlayerRow(
   { player, index, familyGroups, onUpdate, onRemove, canRemove }: PlayerRowProps,
 ) {
+  useLocale();
   return (
     <div
       style={{
@@ -264,7 +269,7 @@ function PlayerRow(
         {Object.entries(familyGroups).map(([family, list]) => (
           <optgroup
             key={family}
-            label={FAMILY_LABEL[family] ?? family}
+            label={FAMILY_LABEL_KEYS[family] ? t(FAMILY_LABEL_KEYS[family]) : family}
           >
             {list.map((i) => (
               <option key={i.instrument_id} value={i.instrument_id}>
@@ -278,23 +283,23 @@ function PlayerRow(
         type="text"
         value={player.display_name}
         onChange={(e) => onUpdate({ display_name: e.target.value })}
-        placeholder="顯示名稱"
+        placeholder={t("ensemble.row.displayNamePlaceholder")}
         style={selectStyle}
       />
       <select
         value={player.staves}
         onChange={(e) =>
           onUpdate({ staves: parseInt(e.target.value, 10) })}
-        title="譜表數 — 鍵盤類用 2 (大譜表), 其他單譜"
+        title={t("ensemble.row.staves.title")}
         style={selectStyle}
       >
-        <option value={1}>1 譜</option>
-        <option value={2}>2 譜</option>
+        <option value={1}>{t("ensemble.row.staves.one")}</option>
+        <option value={2}>{t("ensemble.row.staves.two")}</option>
       </select>
       <button
         onClick={onRemove}
         disabled={!canRemove}
-        title="刪除此演奏者"
+        title={t("ensemble.row.remove.title")}
         style={{
           padding: "4px 8px",
           border: "1px solid var(--border)",

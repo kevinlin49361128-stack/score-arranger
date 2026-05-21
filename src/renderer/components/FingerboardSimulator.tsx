@@ -9,6 +9,8 @@
  * 弦的調音是物理常數, 直接寫在前端.
  */
 
+import { t, useLocale } from "../utils/i18n";
+
 interface Props {
   instrument: "violin" | "viola" | "cello";
   /** 和弦的 MIDI 音高 (1-4 音) */
@@ -127,6 +129,7 @@ function placeChord(
 }
 
 export function FingerboardSimulator({ instrument, pitches }: Props) {
+  useLocale();
   const strings = TUNINGS[instrument];
   const placed = placeChord(pitches, strings);
   const hasConflict = placed.some((p) => p.conflict !== "none");
@@ -167,15 +170,17 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
         alignItems: "center",
       }}>
         <span>
-          {{ violin: "小提琴", viola: "中提琴", cello: "大提琴" }[instrument]}
-          指板模擬
+          {t(`fingerboard.instrument.${instrument}`)}
+          {t("fingerboard.titleSuffix")}
         </span>
         <span style={{
           fontSize: 10,
           fontWeight: 400,
           color: hasConflict ? "#ef4444" : "#34d399",
         }}>
-          {hasConflict ? "✗ 偵測到演奏衝突" : "✓ 可演奏"}
+          {hasConflict
+            ? t("fingerboard.conflictDetected")
+            : t("fingerboard.playable")}
         </span>
       </div>
 
@@ -201,7 +206,9 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
               fill="var(--fg-tertiary)"
               textAnchor="middle"
             >
-              {pos === COMFORTABLE_POSITION ? "舒適界" : pos}
+              {pos === COMFORTABLE_POSITION
+                ? t("fingerboard.comfortLimit")
+                : pos}
             </text>
           </g>
         ))}
@@ -245,7 +252,11 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
                   r={6}
                   fill="#f59e0b"
                 />
-                <title>{midiName(p.midi)} 超出可演奏音域</title>
+                <title>
+                  {t("fingerboard.noteOutOfRange", {
+                    note: midiName(p.midi),
+                  })}
+                </title>
               </g>
             );
           }
@@ -282,24 +293,24 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
         }}>
           {placed.some((p) => p.conflict === "same-string") && (
             <li style={{ color: "#ef4444" }}>
-              兩個音被迫在同一根弦 — 無法同時按下發聲
+              {t("fingerboard.conflictSameString")}
             </li>
           )}
           {placed.some((p) => p.conflict === "non-adjacent") && (
             <li style={{ color: "#ef4444" }}>
-              使用了不相鄰的弦 — 弓無法同時拉到
+              {t("fingerboard.conflictNonAdjacent")}
             </li>
           )}
           {placed.some((p) => p.conflict === "out-of-range") && (
             <li style={{ color: "#f59e0b" }}>
-              有音超出指板可演奏範圍
+              {t("fingerboard.conflictOutOfRange")}
             </li>
           )}
           {placed.some(
             (p) => p.conflict === "none" && p.position > COMFORTABLE_POSITION,
           ) && (
             <li style={{ color: "#f59e0b" }}>
-              部分音在高把位 — 技術難度較高
+              {t("fingerboard.conflictHighPosition")}
             </li>
           )}
         </ul>

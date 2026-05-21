@@ -9,6 +9,8 @@
 
 import { useState } from "react";
 
+import { t, useLocale } from "../utils/i18n";
+
 interface OMRInstallDialogProps {
   missing: string[];
   installHints: Record<string, string>;
@@ -19,6 +21,7 @@ interface OMRInstallDialogProps {
 export function OMRInstallDialog(
   { missing, installHints, onRetry, onCancel }: OMRInstallDialogProps,
 ) {
+  useLocale();
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string | null>(null);
 
@@ -27,7 +30,7 @@ export function OMRInstallDialog(
     setRetryMsg(null);
     try {
       const ok = await onRetry();
-      if (!ok) setRetryMsg("仍未偵測到, 確認安裝後重試");
+      if (!ok) setRetryMsg(t("omr.retryMsg"));
     } finally {
       setRetrying(false);
     }
@@ -58,11 +61,9 @@ export function OMRInstallDialog(
           boxShadow: "0 12px 48px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 18 }}>需要安裝 Audiveris OMR</h2>
+        <h2 style={{ margin: 0, fontSize: 18 }}>{t("omr.heading")}</h2>
         <p style={{ marginTop: 8, color: "var(--fg-muted)", fontSize: 13 }}>
-          PDF 樂譜輸入需要 Audiveris (開源 OMR) 把 PDF 轉成 MusicXML。
-          Audiveris 透過 child process 呼叫, 不會 bundle 進 Score Arranger
-          (GPLv3 隔離)。
+          {t("omr.intro")}
         </p>
 
         <div
@@ -76,7 +77,7 @@ export function OMRInstallDialog(
           }}
         >
           <div style={{ fontWeight: 600, marginBottom: 8 }}>
-            缺少的元件: {missing.map((m) => (
+            {t("omr.missingLabel")}{missing.map((m) => (
               <span
                 key={m}
                 style={{
@@ -150,7 +151,7 @@ export function OMRInstallDialog(
               fontSize: 13,
             }}
           >
-            取消
+            {t("omr.cancel")}
           </button>
           <button
             onClick={handleRetry}
@@ -166,7 +167,7 @@ export function OMRInstallDialog(
               fontWeight: 600,
             }}
           >
-            {retrying ? "偵測中..." : "重新檢查"}
+            {retrying ? t("omr.detecting") : t("omr.retry")}
           </button>
         </div>
       </div>

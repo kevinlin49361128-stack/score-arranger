@@ -10,6 +10,7 @@
  */
 
 import jsPDF from "jspdf";
+import { t } from "./i18n";
 
 interface VerovioToolkitLike {
   loadData: (xml: string) => boolean;
@@ -37,12 +38,10 @@ async function loadVerovio(): Promise<VerovioToolkitLike> {
     const VerovioToolkit = esmMod.VerovioToolkit ?? esmMod.default
       ?? esmMod.toolkit;
     if (typeof createVerovioModule !== "function") {
-      throw new Error(
-        "verovio/wasm 沒有可呼叫的 default export (createVerovioModule)",
-      );
+      throw new Error(t("pdfExport.error.noWasmExport"));
     }
     if (typeof VerovioToolkit !== "function") {
-      throw new Error("verovio/esm 沒有 VerovioToolkit class");
+      throw new Error(t("pdfExport.error.noToolkitClass"));
     }
     const VerovioModule = await createVerovioModule();
     const tk = new VerovioToolkit(VerovioModule) as VerovioToolkitLike;
@@ -80,7 +79,7 @@ export async function exportPdfFromMusicXML(
 
   const ok = tk.loadData(musicxml);
   if (ok === false) {
-    throw new Error("verovio 無法解析此 MusicXML");
+    throw new Error(t("pdfExport.error.parseFailed"));
   }
   // 連續多次 loadData 後, getPageCount 偶爾回 0 (verovio 內部 redoLayout 未觸發);
   // 顯式重新計算 pages
@@ -143,7 +142,7 @@ async function svgToPngDataUrl(
     canvas.width = Math.round(widthPt * dpi);
     canvas.height = Math.round(heightPt * dpi);
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("無法取得 2D context");
+    if (!ctx) throw new Error(t("pdfExport.error.no2dContext"));
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);

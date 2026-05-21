@@ -16,6 +16,7 @@ import type { MeasureEvent } from "@shared/types";
 import { LLMSuggestionDialog } from "./LLMSuggestionDialog";
 import { useSessionStore } from "../stores/sessionStore";
 import { useMidiInput } from "../hooks/useMidiInput";
+import { t, useLocale } from "../utils/i18n";
 
 interface MeasureEditorProps {
   measure: number | null;
@@ -29,6 +30,7 @@ const DYNAMIC_OPTIONS = ["ppp", "pp", "p", "mp", "mf", "f", "ff", "fff"];
 export function MeasureEditor(
   { measure, onClose, pitchHint }: MeasureEditorProps,
 ) {
+  useLocale();
   const [events, setEvents] = useState<MeasureEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -163,7 +165,12 @@ export function MeasureEditor(
     mode: "set" | "add" | "clear",
   ) => {
     if (measure == null) return;
-    setGlobalLoading(true, `套用 ${articulation || "clear"}...`);
+    setGlobalLoading(
+      true,
+      t("measureEdit.applyingArticulation", {
+        articulation: articulation || "clear",
+      }),
+    );
     try {
       const res = await window.scoreArranger.engine.setMeasureArticulation(
         partId, measure, voiceId, articulation, mode,
@@ -177,7 +184,7 @@ export function MeasureEditor(
         setError(null);
         await fetchEvents(measure);
       } else {
-        setError(res.error ?? "套用 articulation 失敗");
+        setError(res.error ?? t("measureEdit.articulationFailed"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -193,7 +200,7 @@ export function MeasureEditor(
   ) => {
     const key = `${e.part_id}-${e.voice_id}-${e.event_index}-${action}`;
     setBusyKey(key);
-    setGlobalLoading(true, `編輯 ${action}...`);
+    setGlobalLoading(true, t("measureEdit.editingAction", { action }));
     try {
       const res = await window.scoreArranger.engine.editEvent(
         e.part_id, measure, e.voice_id, e.event_index, action, extra,
@@ -208,7 +215,7 @@ export function MeasureEditor(
         // 重新抓事件
         await fetchEvents(measure);
       } else {
-        setError(res.error ?? "編輯失敗");
+        setError(res.error ?? t("measureEdit.editFailed"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -221,7 +228,7 @@ export function MeasureEditor(
   const renderPitchInfo = (e: MeasureEvent) => {
     if (e.kind === "note") return e.pitch;
     if (e.kind === "chord") return e.pitches?.join("·") ?? "";
-    return "(休止)";
+    return t("measureEdit.rest");
   };
 
   // 按 part_id 分組
@@ -266,11 +273,13 @@ export function MeasureEditor(
         }}
       >
         <strong style={{ flex: 1, fontSize: 14 }}>
-          編輯 第 {measure} 小節
+          {t("measureEdit.title", { n: measure })}
         </strong>
         {midiState.enabled && midiState.devices.length > 0 && (
           <span
-            title={`MIDI: ${midiState.devices.join(", ")} 已連線, 按鍵替換選定音高`}
+            title={t("measureEdit.midiTooltip", {
+              devices: midiState.devices.join(", "),
+            })}
             style={{
               fontSize: 10,
               padding: "2px 6px",
@@ -286,7 +295,7 @@ export function MeasureEditor(
         )}
         <button
           onClick={() => setShowLLM(true)}
-          title="用 Claude AI 問改編建議"
+          title={t("measureEdit.llmTooltip")}
           style={{
             padding: "4px 10px",
             border: "1px solid var(--button-border)",
@@ -312,18 +321,18 @@ export function MeasureEditor(
             fontSize: 12,
           }}
         >
-          關閉
+          {t("measureEdit.close")}
         </button>
       </header>
       <div style={{ flex: 1, overflow: "auto" }}>
         {loading && (
           <div style={{ padding: 16, color: "var(--fg-tertiary)", fontSize: 13 }}>
-            ⌛ 載入小節事件...
+            {t("measureEdit.loadingEvents")}
           </div>
         )}
         {!loading && events.length === 0 && (
           <div style={{ padding: 16, color: "var(--fg-tertiary)", fontSize: 13 }}>
-            此小節沒有事件
+            {t("measureEdit.noEvents")}
           </div>
         )}
         {Object.entries(grouped).map(([partId, list]) => (
@@ -351,7 +360,7 @@ export function MeasureEditor(
                 textTransform: "none",
                 color: "var(--fg-tertiary)",
               }}>
-                articulation:
+                {t("measureEdit.articulationLabel")}
               </span>
               {(["legato", "staccato", "tenuto", "pizzicato", "marcato"] as const)
                 .map((a) => (
@@ -368,7 +377,10 @@ export function MeasureEditor(
                       textTransform: "none",
                       cursor: "pointer",
                     }}
-                    title={`整個小節 ${partId} 套用 ${a}`}
+                    title={t("measureEdit.articulationApply", {
+                      part: partId,
+                      articulation: a,
+                    })}
                   >
                     {a}
                   </button>
@@ -385,9 +397,9 @@ export function MeasureEditor(
                   textTransform: "none",
                   cursor: "pointer",
                 }}
-                title="清除所有 articulation"
+                title={t("measureEdit.clearArticulationTooltip")}
               >
-                clear
+                {t("measureEdit.clear")}
               </button>
             </div>
             <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
@@ -474,8 +486,8 @@ export function MeasureEditor(
                               : sm.color,
                           }}
                           title={e.is_locked
-                            ? "已鎖定 — repair 不會動此音, 點擊解鎖"
-                            : "鎖定此音 — repair 不會覆寫"}
+                            ? t("measureEdit.lockedTooltip")
+                            : t("measureEdit.unlockedTooltip")}
                         >
                           {e.is_locked ? "🔒" : "🔓"}
                         </button>
@@ -483,7 +495,7 @@ export function MeasureEditor(
                           disabled={isBusy}
                           onClick={() => doEdit(e, "octave_up")}
                           style={sm}
-                          title="上移八度"
+                          title={t("measureEdit.octaveUpTooltip")}
                         >
                           ↑8va
                         </button>
@@ -491,7 +503,7 @@ export function MeasureEditor(
                           disabled={isBusy}
                           onClick={() => doEdit(e, "octave_down")}
                           style={sm}
-                          title="下移八度"
+                          title={t("measureEdit.octaveDownTooltip")}
                         >
                           ↓8va
                         </button>
@@ -501,7 +513,7 @@ export function MeasureEditor(
                             semitones: 1,
                           })}
                           style={sm}
-                          title="+1 半音"
+                          title={t("measureEdit.semitoneUpTooltip")}
                         >
                           +♯
                         </button>
@@ -511,7 +523,7 @@ export function MeasureEditor(
                             semitones: -1,
                           })}
                           style={sm}
-                          title="-1 半音"
+                          title={t("measureEdit.semitoneDownTooltip")}
                         >
                           −♭
                         </button>
@@ -526,9 +538,9 @@ export function MeasureEditor(
                             ...sm,
                             paddingRight: 18,
                           }}
-                          title="改力度"
+                          title={t("measureEdit.dynamicTooltip")}
                         >
-                          <option value="">(無)</option>
+                          <option value="">{t("measureEdit.dynamicNone")}</option>
                           {DYNAMIC_OPTIONS.map((d) => (
                             <option key={d} value={d}>{d}</option>
                           ))}
@@ -537,7 +549,7 @@ export function MeasureEditor(
                           disabled={isBusy}
                           onClick={() => doEdit(e, "halve_duration")}
                           style={sm}
-                          title="時值縮一半 (♩ → ♪)"
+                          title={t("measureEdit.halveTooltip")}
                         >
                           ÷2
                         </button>
@@ -545,7 +557,7 @@ export function MeasureEditor(
                           disabled={isBusy}
                           onClick={() => doEdit(e, "double_duration")}
                           style={sm}
-                          title="時值加倍 (♪ → ♩)"
+                          title={t("measureEdit.doubleTooltip")}
                         >
                           ×2
                         </button>
@@ -553,7 +565,7 @@ export function MeasureEditor(
                           disabled={isBusy}
                           onClick={() => doEdit(e, "add_dot")}
                           style={sm}
-                          title="加附點 (×1.5)"
+                          title={t("measureEdit.addDotTooltip")}
                         >
                           ♩.
                         </button>
@@ -565,7 +577,7 @@ export function MeasureEditor(
                             color: "var(--error-fg)",
                             borderColor: "var(--error-fg)",
                           }}
-                          title="替換為休止符"
+                          title={t("measureEdit.deleteTooltip")}
                         >
                           🗑
                         </button>
@@ -587,7 +599,13 @@ export function MeasureEditor(
           background: "var(--bg-secondary)",
         }}
       >
-        💡 點任一行選定該事件, 按 <kbd>↑</kbd>/<kbd>↓</kbd> 移半音, <kbd>⇧↑</kbd>/<kbd>⇧↓</kbd> 移八度, <kbd>Del</kbd> 刪除。⌘Z 可 undo。
+        {t("measureEdit.footerHintIntro")}
+        <kbd>↑</kbd>/<kbd>↓</kbd>
+        {t("measureEdit.footerHintSemitone")}
+        <kbd>⇧↑</kbd>/<kbd>⇧↓</kbd>
+        {t("measureEdit.footerHintOctave")}
+        <kbd>Del</kbd>
+        {t("measureEdit.footerHintDelete")}
       </div>
       {showLLM && (
         <LLMSuggestionDialog
@@ -608,23 +626,33 @@ function describeMeasureForLLM(
   events: MeasureEvent[],
 ): string {
   if (measure == null || events.length === 0) {
-    return "(沒有事件)";
+    return t("measureEdit.llmNoEvents");
   }
   const byPart: Record<string, MeasureEvent[]> = {};
   for (const e of events) {
     (byPart[e.part_id] = byPart[e.part_id] ?? []).push(e);
   }
-  const lines: string[] = [`第 ${measure} 小節:`];
+  const lines: string[] = [t("measureEdit.llmMeasureLabel", { n: measure })];
   for (const [part, list] of Object.entries(byPart)) {
     lines.push(`- ${part}:`);
     for (const e of list) {
       let desc = "";
-      if (e.kind === "note") desc = `音 ${e.pitch}`;
+      if (e.kind === "note") desc = t("measureEdit.llmNote", { pitch: e.pitch });
       else if (e.kind === "chord") {
-        desc = `和弦 [${(e.pitches ?? []).join(" + ")}]`;
-      } else desc = "休止";
+        desc = t("measureEdit.llmChord", {
+          pitches: (e.pitches ?? []).join(" + "),
+        });
+      } else desc = t("measureEdit.llmRest");
       const dyn = e.dynamic ? ` (${e.dynamic})` : "";
-      lines.push(`  • ${desc}, 時值 ${e.duration}${dyn}`);
+      lines.push(
+        `  • ${
+          t("measureEdit.llmEventLine", {
+            desc,
+            duration: e.duration,
+            dyn,
+          })
+        }`,
+      );
     }
   }
   return lines.join("\n");

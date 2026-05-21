@@ -5,8 +5,10 @@
  */
 
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 export function SetupHint() {
+  useLocale();
   const sourcePath = useSessionStore((s) => s.sourcePath);
 
   if (sourcePath) {
@@ -19,15 +21,14 @@ export function SetupHint() {
         }}
       >
         <div style={{ marginBottom: 6 }}>
-          ✓ 已載入: <code style={{
+          {t("setupHint.loaded")} <code style={{
             background: "var(--code-bg)",
             padding: "1px 4px",
             borderRadius: 3,
           }}>{sourcePath}</code>
         </div>
         <div style={{ color: "var(--fg-tertiary)" }}>
-          切換到「<strong>2 分析</strong>」檢視聲部結構,
-          或直接點工具列的「<strong>改編</strong>」開始。
+          {t("setupHint.loaded.next")}
         </div>
       </div>
     );
@@ -48,7 +49,7 @@ export function SetupHint() {
     >
       <div style={{ fontSize: 32 }}>🎼</div>
       <div style={{ fontSize: 16, fontWeight: 600, color: "var(--fg-primary)" }}>
-        歡迎使用 Score Arranger
+        {t("setupHint.welcome")}
       </div>
       <div
         style={{
@@ -58,8 +59,7 @@ export function SetupHint() {
           lineHeight: 1.6,
         }}
       >
-        從上方工具列點「<strong>匯入總譜</strong>」匯入 MusicXML 檔,
-        或點「<strong>範例 ▾</strong>」直接載入 28 首巴洛克 / 古典 / 浪漫派作品其中之一。
+        {t("setupHint.intro")}
       </div>
       <div
         style={{
@@ -69,8 +69,8 @@ export function SetupHint() {
           textAlign: "center",
         }}
       >
-        ┌─ 工作流階段 ─┐<br />
-        1 設定 → 2 分析 → 3 改編 → 4 微調 → 5 匯出
+        {t("setupHint.workflowHeader")}<br />
+        {t("setupHint.workflow")}
       </div>
     </div>
   );

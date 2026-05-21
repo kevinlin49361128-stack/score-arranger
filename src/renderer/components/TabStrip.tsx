@@ -7,8 +7,10 @@
 
 import { useEffect } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t as tr, useLocale } from "../utils/i18n";
 
 export function TabStrip() {
+  useLocale();
   const tabs = useSessionStore((s) => s.tabs);
   const activeTabId = useSessionStore((s) => s.activeTabId);
   const sourcePath = useSessionStore((s) => s.sourcePath);
@@ -36,7 +38,7 @@ export function TabStrip() {
     if (!activeTabId || !sourcePath || sourceMusicXML) return;
     let cancelled = false;
     (async () => {
-      setLoading(true, "重新載入樂譜...");
+      setLoading(true, tr("tab.reloadingScore"));
       try {
         const res = await window.scoreArranger.engine.toMusicXML(sourcePath);
         if (cancelled) return;
@@ -45,7 +47,7 @@ export function TabStrip() {
           snapshotToTab();
           setMode("setup");
         } else {
-          setError(res.error ?? "重新載入失敗");
+          setError(res.error ?? tr("tab.reloadFailed"));
         }
       } catch (e) {
         if (!cancelled) {
@@ -131,7 +133,7 @@ export function TabStrip() {
               maxWidth: 220,
               userSelect: "none",
             }}
-            title={t.sourcePath ?? "(空白分頁)"}
+            title={t.sourcePath ?? tr("tab.emptyTab")}
           >
             <span
               style={{
@@ -157,7 +159,7 @@ export function TabStrip() {
                 fontSize: 14,
                 lineHeight: 1,
               }}
-              title="關閉分頁"
+              title={tr("tab.close")}
             >
               ×
             </button>
@@ -176,7 +178,7 @@ export function TabStrip() {
           borderRadius: 6,
           fontSize: 13,
         }}
-        title="新分頁"
+        title={tr("tab.new")}
       >
         +
       </button>

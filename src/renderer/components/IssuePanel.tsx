@@ -15,7 +15,7 @@ import { AssignmentsPanel } from "./AssignmentsPanel";
 import { FingerboardSimulator } from "./FingerboardSimulator";
 import { RepairTimeline } from "./RepairTimeline";
 import { useSessionStore } from "../stores/sessionStore";
-import { getLocale, onLocaleChange, t } from "../utils/i18n";
+import { t, useLocale } from "../utils/i18n";
 import { recordApply, sortByPreference } from "../utils/preferences";
 
 /** 從 part_id 推斷弦樂器類型 (給指板模擬器用) */
@@ -30,55 +30,72 @@ function stringInstrumentOf(
 }
 
 const SEVERITY_META = {
-  error: { icon: "🔴", label: "錯誤", colorVar: "--error-fg" },
-  warning: { icon: "🟡", label: "警告", colorVar: "--warning-fg" },
-  info: { icon: "🟢", label: "提示", colorVar: "--success-fg" },
+  error: { icon: "🔴", labelKey: "issue.severityError", colorVar: "--error-fg" },
+  warning: {
+    icon: "🟡",
+    labelKey: "issue.severityWarning",
+    colorVar: "--warning-fg",
+  },
+  info: { icon: "🟢", labelKey: "issue.severityInfo", colorVar: "--success-fg" },
 } as const;
 
-/** issue code → 簡短人類標籤 (給「同類收合」的群組標題用)。未列出者 fallback 到 code。 */
-const ISSUE_SHORT_LABEL: Record<string, string> = {
-  E_PITCH_BELOW_RANGE: "音域過低",
-  E_PITCH_ABOVE_RANGE: "音域過高",
-  E_STRING_CHORD_EXCEED: "和弦音數超過上限",
-  E_NOTE_BELOW_STRING: "音低於該弦",
-  E_NON_ADJACENT_STRINGS: "跨非相鄰弦",
-  E_VIOLIN_FRET_TOO_HIGH: "小提琴把位過高",
-  E_VIOLIN_STRETCH_EXCEED: "小提琴伸展超限",
-  E_VIOLA_FRET_TOO_HIGH: "中提琴把位過高",
-  E_VIOLA_STRETCH_EXCEED: "中提琴伸展超限",
-  E_CELLO_FRET_TOO_HIGH: "大提琴把位過高",
-  E_CELLO_STRETCH_EXCEED: "大提琴伸展超限",
-  E_MONOPHONIC_CHORD: "單音樂器奏和弦",
-  E_PIANO_HAND_SPAN: "鋼琴單手跨距超限",
-  E_PIANO_HAND_SPAN_EXCEED: "鋼琴單手跨距超限",
-  W_PITCH_OUT_OF_COMFORTABLE: "超出舒適音域",
-  W_PITCH_EXTREME: "接近極限音域",
-  W_VIOLIN_STRETCH_LARGE: "小提琴伸展偏大",
-  W_VIOLA_STRETCH_LARGE: "中提琴伸展偏大",
-  W_CELLO_STRETCH_LARGE: "大提琴伸展偏大",
-  W_PIANO_HAND_SPAN_LARGE: "鋼琴單手跨距偏大",
-  W_VIOLIN_TRIPLE_QUAD_STOP: "小提琴三/四音和弦",
-  W_VIOLA_TRIPLE_QUAD_STOP: "中提琴三/四音和弦",
-  W_CELLO_TRIPLE_QUAD_STOP: "大提琴三/四音和弦",
-  W_PARALLEL_FIFTHS: "平行五度",
-  W_PARALLEL_OCTAVES: "平行八度",
-};
+/**
+ * 有簡短人類標籤的 issue code (給「同類收合」的群組標題用)。
+ * 標籤本身存在 i18n.panels.ts 的 issue.short.<CODE> key; 未列出者 fallback 到 code。
+ */
+const ISSUE_SHORT_LABEL_CODES = new Set<string>([
+  "E_PITCH_BELOW_RANGE",
+  "E_PITCH_ABOVE_RANGE",
+  "E_STRING_CHORD_EXCEED",
+  "E_NOTE_BELOW_STRING",
+  "E_NON_ADJACENT_STRINGS",
+  "E_VIOLIN_FRET_TOO_HIGH",
+  "E_VIOLIN_STRETCH_EXCEED",
+  "E_VIOLA_FRET_TOO_HIGH",
+  "E_VIOLA_STRETCH_EXCEED",
+  "E_CELLO_FRET_TOO_HIGH",
+  "E_CELLO_STRETCH_EXCEED",
+  "E_MONOPHONIC_CHORD",
+  "E_PIANO_HAND_SPAN",
+  "E_PIANO_HAND_SPAN_EXCEED",
+  "W_PITCH_OUT_OF_COMFORTABLE",
+  "W_PITCH_EXTREME",
+  "W_VIOLIN_STRETCH_LARGE",
+  "W_VIOLA_STRETCH_LARGE",
+  "W_CELLO_STRETCH_LARGE",
+  "W_PIANO_HAND_SPAN_LARGE",
+  "W_VIOLIN_TRIPLE_QUAD_STOP",
+  "W_VIOLA_TRIPLE_QUAD_STOP",
+  "W_CELLO_TRIPLE_QUAD_STOP",
+  "W_PARALLEL_FIFTHS",
+  "W_PARALLEL_OCTAVES",
+]);
 
 function shortLabel(code: string): string {
-  return ISSUE_SHORT_LABEL[code] ?? code;
+  return ISSUE_SHORT_LABEL_CODES.has(code) ? t(`issue.short.${code}`) : code;
 }
 
-/** suggestion code → 中文標籤 (給 LLM 解讀與按鈕顯示用)。 */
-const SUGGESTION_LABEL: Record<string, string> = {
-  S_OMIT_NOTE: "省略此音",
-  S_OMIT_INNER_VOICE: "省略內聲部音",
-  S_OCTAVE_UP: "上移八度",
-  S_OCTAVE_DOWN: "下移八度",
-  S_OCTAVE_TRANSPOSE_OUTER: "外聲部移八度",
-  S_REDISTRIBUTE_HANDS: "重新分配左右手",
-  S_SPLIT_TO_PARTS: "拆分到其他聲部",
-  S_REVOICE_PASSAGE: "重配整段聲位",
-};
+/**
+ * 有人類標籤的 suggestion code (給 LLM 解讀與按鈕顯示用)。
+ * 標籤本身存在 i18n.panels.ts 的 issue.suggestion.<CODE> key。
+ */
+const SUGGESTION_LABEL_CODES = new Set<string>([
+  "S_OMIT_NOTE",
+  "S_OMIT_INNER_VOICE",
+  "S_OCTAVE_UP",
+  "S_OCTAVE_DOWN",
+  "S_OCTAVE_TRANSPOSE_OUTER",
+  "S_REDISTRIBUTE_HANDS",
+  "S_SPLIT_TO_PARTS",
+  "S_REVOICE_PASSAGE",
+]);
+
+/** suggestion code → 人類標籤; 未列出者 fallback 到 code。 */
+function suggestionLabel(code: string): string {
+  return SUGGESTION_LABEL_CODES.has(code)
+    ? t(`issue.suggestion.${code}`)
+    : code;
+}
 
 /** 把同一 severity 的 issue 依 code 收合; 數量多的排前面 (大問題優先)。 */
 function groupByCode(
@@ -134,6 +151,7 @@ function fromPlayabilityIssue(
 }
 
 export function IssuePanel() {
+  useLocale();
   const analysis = useSessionStore((s) => s.analysis);
   const arrangementIssues = useSessionStore((s) => s.arrangementIssues);
   const setHighlightedMeasure = useSessionStore(
@@ -155,10 +173,6 @@ export function IssuePanel() {
   /** 每次 hover 啟動 preview 取得一個 token, 回來時若 token 不再是最新就忽略 */
   const previewTokenRef = useRef<number>(0);
   const hoverTimerRef = useRef<number | null>(null);
-  // i18n locale 變更時強制 re-render
-  const [, setLocaleTick] = useState(0);
-  useEffect(() => onLocaleChange(() => setLocaleTick((n) => n + 1)), []);
-  void getLocale;
 
   // LLM 問題解讀 — 一次只展開一個 issue 的解讀
   const [llmAvailable, setLlmAvailable] = useState(false);
@@ -194,13 +208,13 @@ export function IssuePanel() {
         ensemble: arrangement?.name,
         suggestions: issue.suggestions.map((s) => ({
           code: s.code,
-          label: SUGGESTION_LABEL[s.code] ?? s.code,
+          label: suggestionLabel(s.code),
         })),
       });
       if (res.ok && res.data) {
         setExplainData(res.data);
       } else {
-        setExplainError(res.error ?? "AI 解讀失敗");
+        setExplainError(res.error ?? t("issue.explainFailed"));
       }
     } catch (e) {
       setExplainError(e instanceof Error ? e.message : String(e));
@@ -226,7 +240,7 @@ export function IssuePanel() {
   if (!analysis && arrangementIssues.length === 0) {
     return (
       <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
-        (尚未執行分析或改編)
+        {t("issue.emptyState")}
       </div>
     );
   }
@@ -246,12 +260,12 @@ export function IssuePanel() {
 
   const handleApply = async (issue: UnifiedIssue, suggestionCode: string) => {
     if (issue.voiceId == null || issue.eventIndex == null) {
-      setError("此問題來自分析報告 (source),無法直接套用,請先改編");
+      setError(t("issue.applyFromAnalysis"));
       return;
     }
     const key = `${issue.partId}-${issue.measure}-${issue.voiceId}-${issue.eventIndex}`;
     setBusyIssueKey(key);
-    setLoading(true, `套用 ${suggestionCode}...`);
+    setLoading(true, t("issue.applying", { code: suggestionCode }));
     // 套用真實 apply 後 preview 備份失效
     previewBackupRef.current = null;
     previewTokenRef.current++;
@@ -277,7 +291,7 @@ export function IssuePanel() {
         // 記錄使用者偏好 (apply +1)
         recordApply(suggestionCode);
       } else {
-        setError(res.error ?? "套用失敗");
+        setError(res.error ?? t("issue.applyFailed"));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -373,12 +387,16 @@ export function IssuePanel() {
         }}
       >
         {canApply
-          ? `改編結果 — 🔴 ${groups.error.length} 錯誤 · `
-            + `🟡 ${groups.warning.length} 警告 · `
-            + `🟢 ${groups.info.length} 提示 (點建議可直接套用)`
-          : `分析報告 — 🔴 ${groups.error.length} 錯誤 · `
-            + `🟡 ${groups.warning.length} 警告 · `
-            + `🟢 ${groups.info.length} 提示 (改編後可套用建議)`}
+          ? t("issue.summaryArranged", {
+            error: groups.error.length,
+            warning: groups.warning.length,
+            info: groups.info.length,
+          })
+          : t("issue.summaryAnalysis", {
+            error: groups.error.length,
+            warning: groups.warning.length,
+            info: groups.info.length,
+          })}
       </div>
       {(Object.keys(SEVERITY_META) as Array<keyof typeof SEVERITY_META>).map(
         (sev) => {
@@ -406,7 +424,7 @@ export function IssuePanel() {
               >
                 <span>{isExpanded ? "▾" : "▸"}</span>
                 <span>{meta.icon}</span>
-                <span>{meta.label}</span>
+                <span>{t(meta.labelKey)}</span>
                 <span
                   style={{
                     color: "var(--fg-muted)",
@@ -426,7 +444,7 @@ export function IssuePanel() {
                         fontSize: 13,
                       }}
                     >
-                      無此類問題
+                      {t("issue.noneOfType")}
                     </li>
                   )}
                   {groupByCode(list).map(([groupCode, codeIssues]) => {
@@ -588,8 +606,10 @@ export function IssuePanel() {
                                             onMouseLeave={handlePreviewEnd}
                                             title={
                                               canApply
-                                                ? `hover 預覽 / 點擊套用 ${s.code}`
-                                                : "需先執行改編才可套用建議"
+                                                ? t("issue.suggestionTip", {
+                                                  code: s.code,
+                                                })
+                                                : t("issue.suggestionDisabled")
                                             }
                                             style={{
                                               fontSize: 11,
@@ -611,7 +631,7 @@ export function IssuePanel() {
                                             }}
                                           >
                                             {isRec ? "★ " : ""}
-                                            {s.code.replace(/^S_/, "")}
+                                            {suggestionLabel(s.code)}
                                           </button>
                                         );
                                       })}
@@ -635,10 +655,10 @@ export function IssuePanel() {
                                       }}
                                     >
                                       {explainLoading && explainKey === key
-                                        ? "AI 解讀中..."
+                                        ? t("issue.explainLoading")
                                         : explainKey === key
-                                        ? "收起解讀"
-                                        : "💡 AI 解讀"}
+                                        ? t("issue.explainCollapse")
+                                        : t("issue.explainButton")}
                                     </button>
                                   )}
                                   {explainKey === key
@@ -667,13 +687,12 @@ export function IssuePanel() {
                                               <div
                                                 style={{ marginTop: 4 }}
                                               >
-                                                建議{" "}
+                                                {t("issue.recommendPrefix")}
+                                                {" "}
                                                 <strong>
-                                                  {SUGGESTION_LABEL[
-                                                    explainData
-                                                      .recommended
-                                                  ] ?? explainData
-                                                    .recommended}
+                                                  {suggestionLabel(
+                                                    explainData.recommended,
+                                                  )}
                                                 </strong>
                                                 {explainData.reasoning
                                                   ? ` — ${explainData.reasoning}`

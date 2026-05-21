@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { t, useLocale } from "../utils/i18n";
 
 const TARGET_OPTIONS = [
   // 弦樂
@@ -47,6 +48,7 @@ interface PartRow {
 }
 
 export function TranscribePanel() {
+  useLocale();
   const sourcePath = useSessionStore((s) => s.sourcePath);
   const setLoading = useSessionStore((s) => s.setLoading);
   const setError = useSessionStore((s) => s.setError);
@@ -148,17 +150,17 @@ export function TranscribePanel() {
       }
     }
     if (Object.keys(mapping).length === 0) {
-      setError("沒有任何 part 設定了移植目標");
+      setError(t("transcribe.error.noMapping"));
       return;
     }
-    setLoading(true, "套用移植中...");
+    setLoading(true, t("transcribe.loading"));
     setError(null);
     try {
       const res = await window.scoreArranger.engine.transcribe(
         sourcePath, mapping,
       );
       if (!res.ok || !res.data) {
-        setError(res.error ?? "移植失敗");
+        setError(res.error ?? t("transcribe.error.failed"));
         return;
       }
       const data = res.data;
@@ -177,14 +179,14 @@ export function TranscribePanel() {
   if (!sourcePath) {
     return (
       <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
-        請先在 1 設定 mode 匯入樂譜。
+        {t("transcribe.empty.noSource")}
       </div>
     );
   }
   if (parts.length === 0) {
     return (
       <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
-        載入 source parts 中...
+        {t("transcribe.empty.loadingParts")}
       </div>
     );
   }
@@ -203,9 +205,7 @@ export function TranscribePanel() {
           lineHeight: 1.6,
         }}
       >
-        把 source 的部分樂器替換成另一種, 自動處理移調與音域。預設「同樂器
-        合併設定」; 勾「per-part」可單獨指定 (協奏曲只換獨奏用這個)。半音數
-        留空 = 自動推算 (cello→violin 預設 +19 等慣例)。
+        {t("transcribe.hint")}
       </div>
 
       <table style={{ width: "100%", fontSize: 12 }}>
@@ -214,12 +214,12 @@ export function TranscribePanel() {
             background: "var(--bg-tertiary)",
             color: "var(--fg-muted)",
           }}>
-            <th style={cellHead}>Part</th>
-            <th style={cellHead}>原樂器</th>
-            <th style={cellHead}>→ 目標樂器</th>
-            <th style={cellHead}>半音</th>
-            <th style={cellHead}>Fit</th>
-            <th style={cellHead}>Per-part</th>
+            <th style={cellHead}>{t("transcribe.col.part")}</th>
+            <th style={cellHead}>{t("transcribe.col.sourceInstrument")}</th>
+            <th style={cellHead}>{t("transcribe.col.targetInstrument")}</th>
+            <th style={cellHead}>{t("transcribe.col.semitones")}</th>
+            <th style={cellHead}>{t("transcribe.col.fit")}</th>
+            <th style={cellHead}>{t("transcribe.col.perPart")}</th>
           </tr>
         </thead>
         <tbody>
@@ -247,7 +247,9 @@ export function TranscribePanel() {
                     style={selStyle}
                   >
                     <option value={row.instrument_id}>
-                      (不變) {row.instrument_id}
+                      {t("transcribe.option.unchanged", {
+                        instrument: row.instrument_id,
+                      })}
                     </option>
                     {TARGET_OPTIONS.filter((o) => o.id !== row.instrument_id)
                       .map((o) => (
@@ -259,7 +261,7 @@ export function TranscribePanel() {
                   <div style={{ display: "flex", gap: 4 }}>
                     <input
                       type="text"
-                      placeholder="自動"
+                      placeholder={t("transcribe.semitones.placeholder")}
                       value={row.semitones}
                       onChange={(e) =>
                         updateRow(idx, { semitones: e.target.value })}
@@ -268,7 +270,7 @@ export function TranscribePanel() {
                         width: 56,
                         textAlign: "center",
                       }}
-                      title="留空 = 自動推算"
+                      title={t("transcribe.semitones.title")}
                     />
                     {changed && (
                       <button
@@ -276,9 +278,9 @@ export function TranscribePanel() {
                           row.instrument_id, row.target, idx,
                         )}
                         style={btnSmall}
-                        title="查詢慣例 / 自動推算"
+                        title={t("transcribe.suggest.title")}
                       >
-                        建議
+                        {t("transcribe.suggest")}
                       </button>
                     )}
                   </div>
@@ -289,7 +291,7 @@ export function TranscribePanel() {
                     checked={row.fit_to_range}
                     onChange={(e) =>
                       updateRow(idx, { fit_to_range: e.target.checked })}
-                    title="超出目標音域時自動八度位移"
+                    title={t("transcribe.fit.title")}
                   />
                 </td>
                 <td style={cell}>
@@ -298,7 +300,7 @@ export function TranscribePanel() {
                     checked={row.per_part}
                     onChange={(e) =>
                       updateRow(idx, { per_part: e.target.checked })}
-                    title="勾選 = 只移植這一個 part (協奏曲獨奏用)"
+                    title={t("transcribe.perPart.title")}
                   />
                 </td>
               </tr>
@@ -322,11 +324,11 @@ export function TranscribePanel() {
             cursor: hasChanges ? "pointer" : "not-allowed",
           }}
         >
-          ⇆ 套用移植
+          {t("transcribe.apply")}
         </button>
         {!hasChanges && (
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            尚未變更任何 part 的目標
+            {t("transcribe.noChanges")}
           </span>
         )}
       </div>
@@ -343,19 +345,25 @@ export function TranscribePanel() {
             lineHeight: 1.6,
           }}
         >
-          <strong>上次套用結果</strong>
+          <strong>{t("transcribe.result.title")}</strong>
           <div>
-            移調: {Object.entries(lastResult.semitones_used)
-              .map(([k, v]) => `${k}=${v > 0 ? "+" : ""}${v}`)
-              .join(", ")}
+            {t("transcribe.result.transposition", {
+              summary: Object.entries(lastResult.semitones_used)
+                .map(([k, v]) => `${k}=${v > 0 ? "+" : ""}${v}`)
+                .join(", "),
+            })}
           </div>
           <div>
-            自動八度修正: {lastResult.adjustments_count} 個音符
+            {t("transcribe.result.adjustments", {
+              count: lastResult.adjustments_count,
+            })}
           </div>
           {lastResult.warnings.length > 0 && (
             <details style={{ marginTop: 6 }}>
               <summary style={{ color: "var(--warning-fg)" }}>
-                ⚠ Warnings ({lastResult.warnings.length})
+                {t("transcribe.result.warnings", {
+                  count: lastResult.warnings.length,
+                })}
               </summary>
               <ul style={{ margin: "6px 0", paddingLeft: 18 }}>
                 {lastResult.warnings.map((w, i) => (
