@@ -17,6 +17,7 @@ import type {
   AnalysisReport,
   ArrangementIssue,
   ArrangementResult,
+  QualityScores,
 } from "@shared/types";
 
 export type AppMode =
@@ -39,6 +40,8 @@ export interface ArrangementVariant {
   createdAt: number;
   /** 簡短描述, 顯示在 hover tooltip */
   note?: string;
+  /** 存檔時的改編品質 — 給 A/B 並排比較 */
+  quality?: QualityScores | null;
 }
 
 /** 單一 Tab 快照 — 只記顯示用的核心狀態, server-side state 仍是單一 */
@@ -571,6 +574,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             targetMusicXML: s.targetMusicXML!,
             createdAt: Date.now(),
             note,
+            quality: s.arrangement?.quality ?? null,
           });
           return { ...t, variants };
         }),

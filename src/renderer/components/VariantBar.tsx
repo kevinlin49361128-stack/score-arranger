@@ -54,9 +54,10 @@ export function VariantBar() {
             key={`${v.createdAt}-${idx}`}
             style={{
               display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              padding: "2px 4px 2px 8px",
+              flexDirection: "column",
+              alignItems: "stretch",
+              gap: 1,
+              padding: "3px 6px",
               borderRadius: 12,
               background: isCurrent
                 ? "var(--accent)"
@@ -76,7 +77,8 @@ export function VariantBar() {
             title={v.note ?? `儲存於 ${new Date(v.createdAt).toLocaleString()}`}
             onClick={() => !isCurrent && loadVariant(idx)}
           >
-            <span style={{ fontWeight: 500 }}>{v.name}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontWeight: 500, flex: 1 }}>{v.name}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -121,6 +123,21 @@ export function VariantBar() {
             >
               ×
             </button>
+            </div>
+            {v.quality && (
+              <div
+                style={{
+                  fontSize: 9,
+                  opacity: 0.7,
+                  paddingLeft: 2,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                旋 {v.quality.melody_preservation.toFixed(2)} · 和{" "}
+                {v.quality.harmony_completeness.toFixed(2)} · 奏{" "}
+                {v.quality.playability.toFixed(2)}
+              </div>
+            )}
           </div>
         );
       })}

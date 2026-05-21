@@ -135,6 +135,8 @@ export interface ArrangementResult {
     quality_after?: QualityScores | null;
   } | null;
   issues?: ArrangementIssue[];
+  /** 整體改編品質 (melody/harmony/playability) — 給 A/B 版本比較 */
+  quality?: QualityScores | null;
 }
 
 /** 改編品質三項分數 (0~1) — repair 前/後比對用 */

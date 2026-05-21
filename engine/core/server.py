@@ -840,7 +840,23 @@ def _method_arrange(params: dict[str, Any]) -> dict:
             if arrangement.target_score is not None else []
         ),
         "difficulty": _serialize_difficulty(arrangement),
+        "quality": _serialize_quality(arrangement),
     }
+
+
+def _serialize_quality(arrangement) -> Optional[dict]:
+    """整體改編品質 (melody/harmony/playability) — 給 A/B 版本比較用。"""
+    if arrangement is None or arrangement.target_score is None \
+            or getattr(arrangement, "source_score", None) is None:
+        return None
+    from core.quality import compute_quality, quality_to_dict
+    try:
+        issues = collect_issues(arrangement.target_score)
+        return quality_to_dict(compute_quality(
+            arrangement.source_score, arrangement.target_score, issues,
+        ))
+    except Exception:
+        return None
 
 
 def _serialize_difficulty(arrangement) -> dict:
