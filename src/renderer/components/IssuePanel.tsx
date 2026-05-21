@@ -76,6 +76,7 @@ const SUGGESTION_LABEL: Record<string, string> = {
   S_OCTAVE_DOWN: "下移八度",
   S_OCTAVE_TRANSPOSE_OUTER: "外聲部移八度",
   S_REDISTRIBUTE_HANDS: "重新分配左右手",
+  S_SPLIT_TO_PARTS: "拆分到其他聲部",
   S_REVOICE_PASSAGE: "重配整段聲位",
 };
 
