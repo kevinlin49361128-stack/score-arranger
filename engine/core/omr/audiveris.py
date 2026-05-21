@@ -241,15 +241,9 @@ def pdf_to_musicxml(
     except OSError as e:
         raise AudiverisError(f"Audiveris 啟動失敗: {e}") from e
 
-    if result.returncode != 0:
-        # Audiveris 失敗 — 把 stderr 截短後丟出去
-        err = (result.stderr or result.stdout or "").strip()
-        raise AudiverisError(
-            f"Audiveris 退出碼 {result.returncode}: "
-            f"{err[-500:] if len(err) > 500 else err}"
-        )
-
-    # 搜尋輸出: <out_dir>/<basename>/<basename>.{mxl,xml}
+    # 搜尋輸出 — 不論 returncode 都先找。
+    # Audiveris 常在「某聲部匯出例外」下退出碼非 0, 但其餘部分仍寫出
+    # 可用的 .mxl; OMR 結果本就需人工校對, 回傳 best-effort 優於整個失敗。
     stem = pdf.stem
     candidates = [
         out_dir / stem / f"{stem}.mxl",
@@ -257,15 +251,44 @@ def pdf_to_musicxml(
         out_dir / f"{stem}.mxl",
         out_dir / f"{stem}.xml",
     ]
-    # 後備: 在 out_dir 內遞迴找任意 .mxl/.xml
-    for c in candidates:
-        if c.exists():
-            return str(c)
-    for ext in ("*.mxl", "*.xml"):
-        found = list(out_dir.rglob(ext))
-        if found:
-            return str(found[0])
+    found: Optional[Path] = next(
+        (c for c in candidates if c.exists() and c.stat().st_size > 256),
+        None,
+    )
+    if found is None:
+        # 後備: 在 out_dir 內遞迴找任意非空 .mxl/.xml
+        for ext in ("*.mxl", "*.xml"):
+            for f in sorted(out_dir.rglob(ext)):
+                if f.stat().st_size > 256:
+                    found = f
+                    break
+            if found is not None:
+                break
 
+    if found is not None:
+        if result.returncode != 0:
+            print(
+                f"[omr] Audiveris 退出碼 {result.returncode} 但已產出 "
+                f"{found.name} — 以部分辨識結果匯入 (建議仔細校對)",
+                file=sys.stderr,
+            )
+        return str(found)
+
+    # 完全沒有輸出 — 寫完整 log 供診斷, 再失敗。
+    log_path = out_dir / "audiveris.log"
+    try:
+        log_path.write_text(
+            f"$ {' '.join(cmd)}\n\n"
+            f"--- exit code: {result.returncode} ---\n\n"
+            f"--- stdout ---\n{result.stdout or ''}\n\n"
+            f"--- stderr ---\n{result.stderr or ''}\n",
+            encoding="utf-8",
+        )
+    except OSError:
+        log_path = None  # type: ignore[assignment]
+    err = (result.stderr or result.stdout or "").strip()
+    log_hint = f" (完整 log: {log_path})" if log_path else ""
     raise AudiverisError(
-        f"Audiveris 成功退出但找不到輸出 MusicXML (output_dir={out_dir})"
+        f"Audiveris 退出碼 {result.returncode}, 無可用輸出{log_hint}. "
+        f"{err[-400:] if len(err) > 400 else err}"
     )

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -93,6 +93,53 @@ class TestPdfToMusicXML:
         ):
             with pytest.raises(AudiverisError, match="不可用"):
                 pdf_to_musicxml(str(fake_pdf))
+
+    @staticmethod
+    def _available_status() -> AudiverisStatus:
+        return AudiverisStatus(
+            available=True, java_ok=True,
+            audiveris_path="/fake/audiveris", version="5.10",
+            missing=[], install_hints={},
+        )
+
+    def test_partial_output_returned_on_nonzero_exit(self, tmp_path):
+        """Audiveris 退出碼非 0 但已產出 .mxl → 仍回傳 (部分辨識結果)。"""
+        fake_pdf = tmp_path / "song.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4\nfake\n%%EOF")
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        produced = out_dir / "song" / "song.mxl"
+        produced.parent.mkdir()
+        produced.write_bytes(b"x" * 2000)  # > 256 bytes
+
+        fake_result = MagicMock(
+            returncode=1, stdout="", stderr="Error in export",
+        )
+        with patch(
+            "core.omr.audiveris.detect_audiveris",
+            return_value=self._available_status(),
+        ), patch(
+            "core.omr.audiveris.subprocess.run", return_value=fake_result,
+        ):
+            out = pdf_to_musicxml(str(fake_pdf), output_dir=str(out_dir))
+        assert out == str(produced)
+
+    def test_nonzero_exit_no_output_raises_with_log(self, tmp_path):
+        """退出碼非 0 且無任何輸出 → 拋錯, 並寫出完整 log。"""
+        fake_pdf = tmp_path / "song.pdf"
+        fake_pdf.write_bytes(b"%PDF-1.4\nfake\n%%EOF")
+        out_dir = tmp_path / "out"
+        out_dir.mkdir()
+        fake_result = MagicMock(returncode=1, stdout="boom", stderr="fatal")
+        with patch(
+            "core.omr.audiveris.detect_audiveris",
+            return_value=self._available_status(),
+        ), patch(
+            "core.omr.audiveris.subprocess.run", return_value=fake_result,
+        ):
+            with pytest.raises(AudiverisError, match="無可用輸出"):
+                pdf_to_musicxml(str(fake_pdf), output_dir=str(out_dir))
+        assert (out_dir / "audiveris.log").exists()
 
     @pytest.mark.skipif(
         not detect_audiveris().available,
