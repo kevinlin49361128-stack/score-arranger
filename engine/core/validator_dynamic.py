@@ -24,6 +24,7 @@ from .instruments import (
     SuggestionStub,
     get_profile,
 )
+from .instruments.fingering import find_best_fingering_sequence
 from .ir import ChordEvent, NoteEvent, Part, Pitch, Score
 
 
@@ -49,6 +50,13 @@ def calculate_violin_position(
                 return 1
             return (semitones - 3) // 2 + 1
     return None
+
+
+def _fret_to_position(fret: int) -> int:
+    """fret (空弦上方半音數) → 左手把位; 與 calculate_violin_position 同公式。"""
+    if fret <= 3:
+        return 1
+    return (fret - 3) // 2 + 1
 
 
 # ============================================================================
@@ -87,15 +95,21 @@ class StringPositionSimulator:
         part: Part,
         tempo_bpm: float = 120.0,
     ) -> list[DynamicIssue]:
-        """掃描整個 Part 的單音 NoteEvent, 偵測把位跳躍問題。"""
+        """掃描整個 Part, 用跨事件指法 DP 推導把位路徑並偵測把位跳躍問題。
+
+        把位由 find_best_fingering_sequence 的 viterbi DP 求得 — 相鄰音符的
+        把位連貫性已納入考量, 比逐音貪婪估計更貼近真實左手動作 (例如可
+        演奏的弦選擇會傾向維持手部位置, 不再每個音各自取最低把位)。
+        """
         issues: list[DynamicIssue] = []
         beat_duration = 60.0 / max(tempo_bpm, 1.0)
         self.current_position = 1
+        if self.profile.strings is None:
+            return issues
+        measure_starts = self._cumulative_measure_starts(part)
 
-        prev_pitch: Optional[Pitch] = None
-        prev_global_onset: Optional[Fraction] = None
-        measure_starts: dict[int, Fraction] = self._cumulative_measure_starts(part)
-
+        # Pass 1: 依序收集所有有音高的事件
+        seq: list[tuple[int, int, int, Pitch, Fraction]] = []
         for measure in part.measures:
             for voice in measure.voices.values():
                 if voice.is_divisi:
@@ -104,74 +118,87 @@ class StringPositionSimulator:
                     pitch = self._event_high_pitch(event)
                     if pitch is None:
                         continue
-
-                    required_pos = calculate_violin_position(
-                        pitch, self.profile
-                    )
-                    if required_pos is None:
-                        continue
-
                     global_onset = (
                         measure_starts.get(measure.number, Fraction(0))
                         + event.onset
                     )
+                    seq.append((
+                        measure.number, voice.voice_id, idx,
+                        pitch, global_onset,
+                    ))
+        if not seq:
+            return issues
 
-                    if prev_pitch is not None and prev_global_onset is not None:
-                        shift = abs(required_pos - self.current_position)
-                        if shift > 0:
-                            time_available = (
-                                float(global_onset - prev_global_onset)
-                                * beat_duration
-                            )
-                            time_needed = (
-                                self.base_shift_time_sec
-                                + shift * self.per_distance_time_sec
-                            )
-                            if time_needed > time_available * self.safety_margin:
-                                severity = (
-                                    "error"
-                                    if time_needed > time_available
-                                    else "warning"
-                                )
-                                code = (
-                                    "E_VIOLIN_POSITION_JUMP_TOO_FAST"
-                                    if severity == "error"
-                                    else "W_VIOLIN_POSITION_JUMP_DIFFICULT"
-                                )
-                                issues.append(DynamicIssue(
-                                    part_id=part.part_id,
-                                    measure_number=measure.number,
-                                    voice_id=voice.voice_id,
-                                    event_index=idx,
-                                    result=CheckResult(
-                                        severity=severity,
-                                        code=code,
-                                        params={
-                                            "from_position": self.current_position,
-                                            "to_position": required_pos,
-                                            "shift": shift,
-                                            "tempo_bpm": tempo_bpm,
-                                            "time_available_sec": round(
-                                                time_available, 3
-                                            ),
-                                            "time_needed_sec": round(
-                                                time_needed, 3
-                                            ),
-                                        },
-                                        difficulty_score=min(
-                                            time_needed / max(time_available, 1e-6),
-                                            1.0,
-                                        ),
-                                        suggestions=[
-                                            SuggestionStub(code="S_OCTAVE_DOWN"),
-                                            SuggestionStub(code="S_REVOICE_PASSAGE"),
-                                        ],
+        # 跨事件 viterbi 指法 DP → 連續性感知的把位路徑
+        fingerings = find_best_fingering_sequence(
+            [[pitch] for _, _, _, pitch, _ in seq],
+            self.profile.strings,
+        )
+
+        # Pass 2: 沿 DP 求得的把位序列偵測跳躍
+        prev_global_onset: Optional[Fraction] = None
+        for (measure_number, voice_id, idx, _pitch, global_onset), fingering \
+                in zip(seq, fingerings):
+            if fingering is None or not fingering.assignments:
+                continue
+            required_pos = _fret_to_position(fingering.assignments[0][2])
+
+            if prev_global_onset is not None:
+                shift = abs(required_pos - self.current_position)
+                if shift > 0:
+                    time_available = (
+                        float(global_onset - prev_global_onset)
+                        * beat_duration
+                    )
+                    time_needed = (
+                        self.base_shift_time_sec
+                        + shift * self.per_distance_time_sec
+                    )
+                    if time_needed > time_available * self.safety_margin:
+                        severity = (
+                            "error"
+                            if time_needed > time_available
+                            else "warning"
+                        )
+                        code = (
+                            "E_VIOLIN_POSITION_JUMP_TOO_FAST"
+                            if severity == "error"
+                            else "W_VIOLIN_POSITION_JUMP_DIFFICULT"
+                        )
+                        issues.append(DynamicIssue(
+                            part_id=part.part_id,
+                            measure_number=measure_number,
+                            voice_id=voice_id,
+                            event_index=idx,
+                            result=CheckResult(
+                                severity=severity,
+                                code=code,
+                                params={
+                                    "from_position": self.current_position,
+                                    "to_position": required_pos,
+                                    "shift": shift,
+                                    "tempo_bpm": tempo_bpm,
+                                    "time_available_sec": round(
+                                        time_available, 3,
                                     ),
-                                ))
+                                    "time_needed_sec": round(
+                                        time_needed, 3,
+                                    ),
+                                },
+                                difficulty_score=min(
+                                    time_needed / max(time_available, 1e-6),
+                                    1.0,
+                                ),
+                                suggestions=[
+                                    SuggestionStub(code="S_OCTAVE_DOWN"),
+                                    SuggestionStub(
+                                        code="S_REVOICE_PASSAGE"),
+                                ],
+                            ),
+                        ))
 
-                    self.current_position = required_pos
-                    prev_pitch = pitch
-                    prev_global_onset = global_onset
+            self.current_position = required_pos
+            prev_global_onset = global_onset
 
         return issues
 

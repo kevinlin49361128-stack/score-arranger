@@ -116,6 +116,16 @@ class TestStringPositionSimulator:
         issues = sim.simulate_part(part, tempo_bpm=120)
         assert len(issues) == 0
 
+    def test_long_sequence_dp_path(self):
+        """跨事件 viterbi DP 接線 — 長序列 (13 音上行) 慢速下不該產生跳躍問題,
+        且 DP 路徑須能無誤跑完整段。"""
+        part = _make_part([
+            [_note(m, dur=Fraction(4))] for m in range(55, 68)
+        ])
+        sim = StringPositionSimulator(profile=VIOLIN_PROFILE)
+        issues = sim.simulate_part(part, tempo_bpm=60)
+        assert len(issues) == 0
+
 
 # ============================================================================
 # Integration
