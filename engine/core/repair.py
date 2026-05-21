@@ -18,13 +18,15 @@ from __future__ import annotations
 import copy
 import re
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from .arrangement_model import Arrangement
 from .instruments import (
     CheckResult,
+    check_cello_chord,
     check_piano_hand_span,
     check_pitch_in_range,
+    check_viola_chord,
     check_violin_chord,
     get_profile,
 )
@@ -321,6 +323,7 @@ def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     """
     omit_codes = {
         "E_STRING_CHORD_EXCEED",
+        "E_NON_ADJACENT_STRINGS",
         "E_PIANO_HAND_SPAN_EXCEED",
         "W_PIANO_HAND_SPAN_LARGE",
         "W_VIOLIN_TRIPLE_QUAD_STOP",
@@ -460,11 +463,200 @@ def strategy_split_to_other_hand(score: Score, issue: LocatedIssue) -> bool:
     return True
 
 
+# ── 策略 4: 跨聲部和弦拆分 ───────────────────────────────────────────────
+
+# 觸發碼: 單一弦樂聲部裝不下整塊和弦
+_SPLIT_TRIGGER_CODES = {
+    "E_NON_ADJACENT_STRINGS",
+    "E_STRING_CHORD_EXCEED",
+    "E_NOTE_BELOW_STRING",
+}
+
+
+def _chord_severity(pitches: list[Pitch], instrument_id: str) -> str:
+    """這組音在該樂器上一起演奏的最嚴重 severity ('ok' / 'warning' / 'error')。"""
+    profile = get_profile(instrument_id)
+    if profile is None:
+        return "ok"
+    if len(pitches) == 1:
+        return check_pitch_in_range(pitches[0], profile).severity
+    if instrument_id == "violin":
+        return check_violin_chord(pitches).severity
+    if instrument_id == "viola":
+        return check_viola_chord(pitches).severity
+    if instrument_id == "cello":
+        return check_cello_chord(pitches).severity
+    worst = "ok"
+    for p in pitches:
+        sev = check_pitch_in_range(p, profile).severity
+        if _severity_rank(sev) > _severity_rank(worst):
+            worst = sev
+    return worst
+
+
+def _event_at_onset(measure, onset) -> tuple[Optional[int], Optional[int], Any]:
+    """measure 內某 onset 的既有事件 → (voice_id, index, event); 無則三個 None。"""
+    for vid in sorted(measure.voices):
+        voice = measure.voices[vid]
+        if voice.is_divisi:
+            continue
+        for idx, ev in enumerate(voice.events):
+            if abs(ev.onset - onset) < 1e-6:
+                return vid, idx, ev
+    return None, None, None
+
+
+def strategy_split_chord_to_parts(score: Score, issue: LocatedIssue) -> bool:
+    """策略 4: 把單一弦樂聲部演奏不了的和弦, 拆分給鄰近聲部。
+
+    弦樂四重奏等多聲部編制裡, 一塊鋼琴式的和弦常常單一小提琴吃不下 (跨非
+    相鄰弦 / 音數超過弦數 / 有音低於最低弦)。本策略把和弦下方的音分配給
+    其他弦樂聲部 (violin II / viola / cello), 旋律頂音留在原聲部 —— 這正是
+    弦樂改編最正統的處理: 不丟音, 只是把一個樂器吃不下的和弦攤給聲部群。
+
+    成功條件: 每個移出的音都能在某個鄰近聲部上演奏 (併入後該聲部仍可演奏)。
+    若無法完整安置則完全不動 (回傳 False), 交由其他策略 / 人工處理。
+    """
+    if issue.result.code not in _SPLIT_TRIGGER_CODES:
+        return False
+
+    event = _get_event(score, issue)
+    if not isinstance(event, ChordEvent) or len(event.pitches) < 2:
+        return False
+
+    part_a = _get_part(score, issue.part_id)
+    if part_a is None:
+        return False
+    profile_a = get_profile(part_a.instrument_id)
+    if profile_a is None or profile_a.family != "string_bowed":
+        return False
+
+    # 原聲部保留哪些音: 由高到低貪婪擴充 (旋律頂音必留), 加到再加就 error 為止
+    asc = sorted(event.pitches, key=lambda p: p.midi_number)
+    keep: list[Pitch] = []
+    for p in reversed(asc):
+        trial = sorted([*keep, p], key=lambda x: x.midi_number)
+        if _chord_severity(trial, part_a.instrument_id) == "error":
+            break
+        keep = trial
+    if not keep:
+        return False
+    keep_midis = {p.midi_number for p in keep}
+    move = [p for p in asc if p.midi_number not in keep_midis]
+    if not move:
+        return False
+
+    # 候選接收聲部 — 其他弦樂聲部
+    receivers: list[Part] = []
+    for rp in score.parts:
+        if rp.part_id == part_a.part_id:
+            continue
+        rprof = get_profile(rp.instrument_id)
+        if rprof is not None and rprof.family == "string_bowed":
+            receivers.append(rp)
+    if not receivers:
+        return False
+
+    # 規劃: 每個移出音找一個接收聲部 (一聲部最多接一音); 全部安置得了才動手
+    used: set[str] = set()
+    plan: list[tuple[Part, Optional[int], Optional[int], Any, Pitch]] = []
+    for note in move:
+        chosen: Optional[tuple[Part, Optional[int], Optional[int], Any]] = None
+        chosen_rank: Optional[tuple[bool, bool, float]] = None
+        for rp in receivers:
+            if rp.part_id in used:
+                continue
+            rprof = get_profile(rp.instrument_id)
+            if rprof is None:
+                continue
+            measure = next(
+                (m for m in rp.measures if m.number == issue.measure_number),
+                None,
+            )
+            if measure is None:
+                continue
+            vid, idx, slot = _event_at_onset(measure, event.onset)
+            if isinstance(slot, ChordEvent):
+                have = {q.midi_number for q in slot.pitches}
+                merged = (list(slot.pitches) if note.midi_number in have
+                          else [*slot.pitches, note])
+            elif isinstance(slot, NoteEvent):
+                merged = [slot.pitch, note]
+            else:
+                merged = [note]
+            if _chord_severity(merged, rp.instrument_id) == "error":
+                continue
+            lo, hi = rprof.range_comfortable
+            rank = (
+                lo <= note.midi_number <= hi,                  # 在舒適音域
+                not isinstance(slot, (NoteEvent, ChordEvent)),  # 空槽優先
+                -abs(note.midi_number - (lo + hi) / 2.0),       # 音域中心近
+            )
+            if chosen_rank is None or rank > chosen_rank:
+                chosen_rank = rank
+                chosen = (rp, vid, idx, slot)
+        if chosen is None:
+            return False                # 此音無處可去 — 整個策略放棄, 不留半套
+        used.add(chosen[0].part_id)
+        plan.append((chosen[0], chosen[1], chosen[2], chosen[3], note))
+
+    # 執行 — 原聲部只留 keep
+    if len(keep) == 1:
+        _replace_event(score, issue, NoteEvent(
+            pitch=keep[0], duration=event.duration, onset=event.onset,
+            articulations=list(event.articulations), dynamic=event.dynamic,
+            is_tied_from=event.is_tied_from, is_tied_to=event.is_tied_to,
+            slur_group=event.slur_group,
+        ))
+    else:
+        event.pitches = keep
+
+    # 執行 — 移出的音併入各接收聲部
+    for rp, vid, idx, slot, note in plan:
+        measure = next(
+            m for m in rp.measures if m.number == issue.measure_number
+        )
+        if isinstance(slot, ChordEvent):
+            if note.midi_number not in {q.midi_number for q in slot.pitches}:
+                slot.pitches = sorted(
+                    [*slot.pitches, note], key=lambda p: p.midi_number,
+                )
+        elif isinstance(slot, NoteEvent):
+            assert vid is not None and idx is not None
+            measure.voices[vid].events[idx] = ChordEvent(
+                pitches=sorted([slot.pitch, note],
+                               key=lambda p: p.midi_number),
+                duration=slot.duration, onset=slot.onset,
+                articulations=list(slot.articulations), dynamic=slot.dynamic,
+            )
+        else:
+            new_note = NoteEvent(
+                pitch=note, duration=event.duration, onset=event.onset,
+                articulations=list(event.articulations), dynamic=event.dynamic,
+            )
+            if slot is not None and vid is not None and idx is not None:
+                measure.voices[vid].events[idx] = new_note   # 取代休止符
+            else:
+                tvid = 1 if 1 in measure.voices else (
+                    min(measure.voices) if measure.voices else 1
+                )
+                if tvid in measure.voices:
+                    measure.voices[tvid].events.append(new_note)
+                    measure.voices[tvid].events.sort(key=lambda e: e.onset)
+                else:
+                    measure.voices[tvid] = Voice(
+                        voice_id=tvid, events=[new_note],
+                    )
+
+    return True
+
+
 # Phase 1 註冊的策略 (按優先序: 影響從小到大)
 PHASE_1_STRATEGIES: list[tuple[str, RepairStrategy]] = [
     ("octave_shift", strategy_octave_shift),
     ("omit_note", strategy_omit_note),
     ("split_to_other_hand", strategy_split_to_other_hand),
+    ("split_to_parts", strategy_split_chord_to_parts),
 ]
 
 

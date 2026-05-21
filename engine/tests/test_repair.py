@@ -29,6 +29,7 @@ from core.repair import (
     severity_score,
     strategy_octave_shift,
     strategy_omit_note,
+    strategy_split_chord_to_parts,
     strategy_split_to_other_hand,
     _shift_pitch_octave,
 )
@@ -81,6 +82,29 @@ def _make_arrangement(target_score: Score) -> Arrangement:
         players=violin_piano_ensemble(),
         assignments=[],
         target_score=target_score,
+    )
+
+
+def _quartet_score(v1: list, v2: list, va: list, vc: list) -> Score:
+    """弦樂四重奏 target score — 每個參數是該聲部第 1 小節 voice 1 的 events。"""
+    def _p(pid: str, inst: str, events: list) -> Part:
+        return Part(
+            part_id=pid, name_display=pid, instrument_id=inst,
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=events)},
+            )],
+        )
+    return Score(
+        movements=[Movement(
+            movement_id=1, measure_count=1, sections=[Section(0, 1, 1)],
+        )],
+        parts=[
+            _p("violin_1", "violin", v1),
+            _p("violin_2", "violin", v2),
+            _p("viola_3", "viola", va),
+            _p("cello_4", "cello", vc),
+        ],
     )
 
 
@@ -264,6 +288,101 @@ class TestStrategySplitToOtherHand:
         )
         success = strategy_split_to_other_hand(score, violin_issue)
         assert not success
+
+
+# ============================================================================
+# Strategy: split chord across parts (跨聲部拆分)
+# ============================================================================
+
+class TestStrategySplitToParts:
+    def test_overfull_chord_split_across_quartet(self):
+        """violin I 的 5 音和弦 → 拆分: 頂部留 violin I, 移出音散到其他聲部。"""
+        score = _quartet_score(
+            [_chord([55, 62, 69, 76, 81], dur=Fraction(4))], [], [], [],
+        )
+        target = next(
+            i for i in collect_issues(score)
+            if i.part_id == "violin_1"
+            and i.result.code == "E_STRING_CHORD_EXCEED"
+        )
+        assert strategy_split_chord_to_parts(score, target)
+
+        v1_ev = score.parts[0].measures[0].voices[1].events[0]
+        v1_count = len(v1_ev.pitches) if isinstance(v1_ev, ChordEvent) else 1
+        assert v1_count <= 4, "violin I 應縮減到弦數內"
+
+        total = v1_count
+        for p in score.parts[1:]:
+            for v in p.measures[0].voices.values():
+                for e in v.events:
+                    total += len(e.pitches) if isinstance(e, ChordEvent) else 1
+        assert total == 5, "拆分不應丟音"
+        assert all(
+            i.severity != "error" for i in collect_issues(score)
+        ), "拆分後不應殘留 error"
+
+    def test_split_preserves_top_melody_note(self):
+        """最高音 (旋律輪廓) 必須留在 violin I。"""
+        score = _quartet_score(
+            [_chord([55, 62, 69, 76, 81], dur=Fraction(4))], [], [], [],
+        )
+        target = next(
+            i for i in collect_issues(score) if i.part_id == "violin_1"
+        )
+        assert strategy_split_chord_to_parts(score, target)
+        v1_ev = score.parts[0].measures[0].voices[1].events[0]
+        v1_midis = (
+            [p.midi_number for p in v1_ev.pitches]
+            if isinstance(v1_ev, ChordEvent)
+            else [v1_ev.pitch.midi_number]
+        )
+        assert max(v1_midis) == 81
+
+    def test_non_adjacent_chord_split(self):
+        """跨非相鄰弦和弦 (使用者實際遇到的錯誤) → 可拆分修掉, 不丟音。"""
+        score = _quartet_score(
+            [_chord([56, 62, 67], dur=Fraction(4))], [], [], [],
+        )
+        target = next(
+            i for i in collect_issues(score) if i.part_id == "violin_1"
+        )
+        assert target.result.code == "E_NON_ADJACENT_STRINGS"
+        assert strategy_split_chord_to_parts(score, target)
+        total = 0
+        for p in score.parts:
+            for v in p.measures[0].voices.values():
+                for e in v.events:
+                    total += len(e.pitches) if isinstance(e, ChordEvent) else 1
+        assert total == 3, "拆分不應丟音"
+        assert all(i.severity != "error" for i in collect_issues(score))
+
+    def test_no_receivers_returns_false(self):
+        """單一聲部 (無鄰近弦樂可分) → 策略放棄。"""
+        score = _single_part_score("violin_1", "violin", [
+            _chord([55, 62, 69, 76, 81], dur=Fraction(4)),
+        ])
+        target = next(
+            i for i in collect_issues(score)
+            if i.result.code == "E_STRING_CHORD_EXCEED"
+        )
+        assert not strategy_split_chord_to_parts(score, target)
+
+    def test_non_trigger_code_returns_false(self):
+        """非弦樂和弦問題 → 此策略不處理。"""
+        score = _quartet_score([_note(30, dur=Fraction(4))], [], [], [])
+        target = next(
+            i for i in collect_issues(score) if i.part_id == "violin_1"
+        )
+        assert not strategy_split_chord_to_parts(score, target)
+
+    def test_repair_loop_improves_quartet_chord(self):
+        """repair_loop 對四重奏裡演奏不了的和弦 — 整體嚴重度應下降。"""
+        score = _quartet_score([_chord([56, 62, 67], dur=Fraction(4))], [], [], [])
+        arr = _make_arrangement(score)
+        before = severity_score(collect_issues(arr.target_score))
+        repair_loop(arr)
+        after = severity_score(collect_issues(arr.target_score))
+        assert after < before
 
 
 # ============================================================================

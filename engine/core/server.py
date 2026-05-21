@@ -44,6 +44,7 @@ from core.repair import (
     severity_score,
     strategy_octave_shift,
     strategy_omit_note,
+    strategy_split_chord_to_parts,
     strategy_split_to_other_hand,
 )
 
@@ -1007,6 +1008,7 @@ _SUGGESTION_STRATEGY = {
     "S_OMIT_INNER_VOICE": strategy_omit_note,
     "S_REDISTRIBUTE_HANDS": strategy_split_to_other_hand,
     "S_OCTAVE_TRANSPOSE_OUTER": strategy_split_to_other_hand,
+    "S_SPLIT_TO_PARTS": strategy_split_chord_to_parts,
 }
 
 

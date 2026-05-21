@@ -89,6 +89,7 @@ def check_violin_chord(chord_pitches: list[Pitch]) -> CheckResult:
                 "max": len(strings),
             },
             suggestions=[
+                SuggestionStub(code="S_SPLIT_TO_PARTS"),
                 SuggestionStub(code="S_OMIT_NOTE"),
                 SuggestionStub(code="S_ARPEGGIATE"),
                 SuggestionStub(code="S_REASSIGN_TO_OTHER_PART"),
@@ -119,6 +120,7 @@ def check_violin_chord(chord_pitches: list[Pitch]) -> CheckResult:
                     "string": strings[0].open_pitch.spelling,
                 },
                 suggestions=[
+                    SuggestionStub(code="S_SPLIT_TO_PARTS"),
                     SuggestionStub(code="S_OMIT_NOTE", params={"note": lowest.spelling}),
                     SuggestionStub(code="S_OCTAVE_UP", params={"note": lowest.spelling}),
                 ],
@@ -128,6 +130,7 @@ def check_violin_chord(chord_pitches: list[Pitch]) -> CheckResult:
             code="E_NON_ADJACENT_STRINGS",
             params={"instrument": "violin"},
             suggestions=[
+                SuggestionStub(code="S_SPLIT_TO_PARTS"),
                 SuggestionStub(code="S_REVOICE_CHORD"),
                 SuggestionStub(code="S_OMIT_NOTE"),
             ],
