@@ -276,8 +276,18 @@ def _method_to_musicxml(params: dict[str, Any]) -> str:
         except Exception:
             pass  # 切片失敗時退回完整譜
 
-    exporter = m21_musicxml.m21ToXml.GeneralObjectExporter(m21_score)
-    return exporter.parse().decode("utf-8")
+    try:
+        exporter = m21_musicxml.m21ToXml.GeneralObjectExporter(m21_score)
+        return exporter.parse().decode("utf-8")
+    except Exception:
+        # music21 匯出會先跑 makeNotation/makeTies; 對部分 OMR 產生的
+        # 不規則 MusicXML (跨小節聲部編號不一致) 會丟 KeyError 而崩潰。
+        # 若來源本身就是 MusicXML 檔, 直接回傳原始內容 —— Audiveris 等
+        # 工具產生的 .xml/.mxl 已是有效 MusicXML, OSMD 能直接彩現。
+        raw = _raw_musicxml_from_path(path)
+        if raw is not None:
+            return raw
+        raise
 
 
 def _slice_measures(m21_score, max_measures: int):
@@ -300,6 +310,45 @@ def _slice_measures(m21_score, max_measures: int):
             new_part.append(m)
         new_score.insert(0, new_part)
     return new_score
+
+
+def _raw_musicxml_from_path(path: str) -> str | None:
+    """讀出檔案本身的 MusicXML 文字 — .xml/.musicxml 直讀, .mxl 解壓內層。
+
+    給 _method_to_musicxml 在 music21 匯出崩潰時當後備。非 MusicXML 來源
+    (MIDI / ABC / corpus: 參照等) 回傳 None。
+    """
+    from pathlib import Path
+    suffix = Path(path).suffix.lower()
+    if suffix in (".xml", ".musicxml"):
+        try:
+            return Path(path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return None
+    if suffix == ".mxl":
+        import re
+        import zipfile
+        try:
+            with zipfile.ZipFile(path) as zf:
+                inner: str | None = None
+                try:
+                    container = zf.read("META-INF/container.xml").decode("utf-8")
+                    match = re.search(r'full-path="([^"]+)"', container)
+                    if match:
+                        inner = match.group(1)
+                except KeyError:
+                    pass
+                if inner is None:
+                    xmls = [n for n in zf.namelist()
+                            if n.lower().endswith(".xml")
+                            and not n.startswith("META-INF")]
+                    inner = xmls[0] if xmls else None
+                if inner is None:
+                    return None
+                return zf.read(inner).decode("utf-8")
+        except (zipfile.BadZipFile, OSError, KeyError, UnicodeDecodeError):
+            return None
+    return None
 
 
 def _method_score_info(params: dict[str, Any]) -> dict[str, Any]:

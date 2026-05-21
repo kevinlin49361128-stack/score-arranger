@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import io
 import json
+import zipfile
+from unittest.mock import patch
 
 import pytest
 
-from core.server import handle_request, serve
+from core.server import _raw_musicxml_from_path, handle_request, serve
 
 
 # ============================================================================
@@ -878,3 +880,62 @@ class TestServeLoop:
         assert not invalid_resp["ok"]
         valid_resp = json.loads(output[2])
         assert valid_resp["ok"]
+
+
+class TestToMusicXMLFallback:
+    """to_musicxml: music21 匯出對不規則 OMR MusicXML 崩潰時的後備。
+
+    Audiveris 等 OMR 工具產生的 MusicXML 常有跨小節聲部編號不一致,
+    music21 的 makeNotation/makeTies 會丟 KeyError 而崩潰。to_musicxml
+    應退回原始檔內容 (OSMD 能直接彩現), 而非整個失敗。
+    """
+
+    def test_raw_helper_reads_plain_xml(self, tmp_path):
+        f = tmp_path / "score.musicxml"
+        f.write_text("<score-partwise>hi</score-partwise>", encoding="utf-8")
+        assert _raw_musicxml_from_path(str(f)) == "<score-partwise>hi</score-partwise>"
+        g = tmp_path / "score.xml"
+        g.write_text("<score-partwise/>", encoding="utf-8")
+        assert _raw_musicxml_from_path(str(g)) == "<score-partwise/>"
+
+    def test_raw_helper_non_musicxml_returns_none(self, tmp_path):
+        f = tmp_path / "tune.mid"
+        f.write_bytes(b"MThd")
+        assert _raw_musicxml_from_path(str(f)) is None
+        assert _raw_musicxml_from_path("corpus:bach/bwv66.6") is None
+
+    def test_raw_helper_reads_mxl(self, tmp_path):
+        """.mxl (壓縮 MusicXML): 依 container.xml 取出內層 .xml。"""
+        inner = "<score-partwise>compressed</score-partwise>"
+        mxl = tmp_path / "song.mxl"
+        with zipfile.ZipFile(mxl, "w") as zf:
+            zf.writestr(
+                "META-INF/container.xml",
+                '<container><rootfiles>'
+                '<rootfile full-path="song.xml"/></rootfiles></container>',
+            )
+            zf.writestr("song.xml", inner)
+        assert _raw_musicxml_from_path(str(mxl)) == inner
+
+    def test_raw_helper_reads_mxl_without_container(self, tmp_path):
+        """.mxl 缺 container.xml → 退而取第一個非 META-INF 的 .xml。"""
+        inner = "<score-partwise>bare</score-partwise>"
+        mxl = tmp_path / "bare.mxl"
+        with zipfile.ZipFile(mxl, "w") as zf:
+            zf.writestr("whatever.xml", inner)
+        assert _raw_musicxml_from_path(str(mxl)) == inner
+
+    def test_to_musicxml_falls_back_when_export_crashes(self, bach_xml):
+        """music21 匯出丟 KeyError → to_musicxml 回傳原始檔內容, 不崩潰。"""
+        with patch(
+            "music21.musicxml.m21ToXml.GeneralObjectExporter"
+        ) as exporter:
+            exporter.return_value.parse.side_effect = KeyError("4")
+            resp = handle_request({
+                "id": "fb1", "method": "to_musicxml",
+                "params": {"path": bach_xml},
+            })
+        assert resp["ok"], resp.get("error")
+        with open(bach_xml, encoding="utf-8") as fh:
+            expected = fh.read()
+        assert resp["data"] == expected
