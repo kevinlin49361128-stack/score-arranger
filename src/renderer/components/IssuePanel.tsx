@@ -68,6 +68,17 @@ function shortLabel(code: string): string {
   return ISSUE_SHORT_LABEL[code] ?? code;
 }
 
+/** suggestion code → 中文標籤 (給 LLM 解讀與按鈕顯示用)。 */
+const SUGGESTION_LABEL: Record<string, string> = {
+  S_OMIT_NOTE: "省略此音",
+  S_OMIT_INNER_VOICE: "省略內聲部音",
+  S_OCTAVE_UP: "上移八度",
+  S_OCTAVE_DOWN: "下移八度",
+  S_OCTAVE_TRANSPOSE_OUTER: "外聲部移八度",
+  S_REDISTRIBUTE_HANDS: "重新分配左右手",
+  S_REVOICE_PASSAGE: "重配整段聲位",
+};
+
 /** 把同一 severity 的 issue 依 code 收合; 數量多的排前面 (大問題優先)。 */
 function groupByCode(
   list: UnifiedIssue[],
@@ -147,6 +158,55 @@ export function IssuePanel() {
   const [, setLocaleTick] = useState(0);
   useEffect(() => onLocaleChange(() => setLocaleTick((n) => n + 1)), []);
   void getLocale;
+
+  // LLM 問題解讀 — 一次只展開一個 issue 的解讀
+  const [llmAvailable, setLlmAvailable] = useState(false);
+  const [explainKey, setExplainKey] = useState<string | null>(null);
+  const [explainData, setExplainData] = useState<
+    LLMIssueExplanation | null
+  >(null);
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [explainError, setExplainError] = useState<string | null>(null);
+  useEffect(() => {
+    window.scoreArranger.llmIsAvailable()
+      .then(setLlmAvailable)
+      .catch(() => setLlmAvailable(false));
+  }, []);
+
+  const handleExplain = async (issue: UnifiedIssue, issueKey: string) => {
+    if (explainKey === issueKey) {
+      // 再點一次 → 收起
+      setExplainKey(null);
+      setExplainData(null);
+      setExplainError(null);
+      return;
+    }
+    setExplainKey(issueKey);
+    setExplainData(null);
+    setExplainError(null);
+    setExplainLoading(true);
+    try {
+      const res = await window.scoreArranger.llmExplainIssue({
+        issueDescription: t(issue.code, issue.params),
+        instrument: issue.partId,
+        measure: issue.measure,
+        ensemble: arrangement?.name,
+        suggestions: issue.suggestions.map((s) => ({
+          code: s.code,
+          label: SUGGESTION_LABEL[s.code] ?? s.code,
+        })),
+      });
+      if (res.ok && res.data) {
+        setExplainData(res.data);
+      } else {
+        setExplainError(res.error ?? "AI 解讀失敗");
+      }
+    } catch (e) {
+      setExplainError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setExplainLoading(false);
+    }
+  };
 
   // 整合來源
   const issues: UnifiedIssue[] = [];
@@ -508,44 +568,132 @@ export function IssuePanel() {
                                     >
                                       {sortByPreference(
                                         issue.suggestions,
-                                      ).map((s, si) => (
-                                        <button
-                                          key={si}
-                                          disabled={isBusy || !canApply}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleApply(issue, s.code);
-                                          }}
-                                          onMouseEnter={() =>
-                                            handlePreviewStart(
-                                              issue, s.code,
+                                      ).map((s, si) => {
+                                        const isRec = explainKey === key
+                                          && explainData?.recommended
+                                            === s.code;
+                                        return (
+                                          <button
+                                            key={si}
+                                            disabled={isBusy || !canApply}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleApply(issue, s.code);
+                                            }}
+                                            onMouseEnter={() =>
+                                              handlePreviewStart(
+                                                issue, s.code,
+                                              )}
+                                            onMouseLeave={handlePreviewEnd}
+                                            title={
+                                              canApply
+                                                ? `hover 預覽 / 點擊套用 ${s.code}`
+                                                : "需先執行改編才可套用建議"
+                                            }
+                                            style={{
+                                              fontSize: 11,
+                                              padding: "2px 8px",
+                                              border: isRec
+                                                ? "2px solid var(--accent)"
+                                                : "1px solid var(--border)",
+                                              background: canApply
+                                                ? "var(--button-bg)"
+                                                : "var(--bg-tertiary)",
+                                              color: canApply
+                                                ? "var(--button-fg)"
+                                                : "var(--fg-tertiary)",
+                                              borderRadius: 4,
+                                              fontWeight: isRec ? 700 : 400,
+                                              cursor: canApply
+                                                ? "pointer"
+                                                : "not-allowed",
+                                            }}
+                                          >
+                                            {isRec ? "★ " : ""}
+                                            {s.code.replace(/^S_/, "")}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {llmAvailable && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleExplain(issue, key);
+                                      }}
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 11,
+                                        padding: "2px 8px",
+                                        border: "1px dashed var(--border)",
+                                        background: "transparent",
+                                        color: "var(--fg-muted)",
+                                        borderRadius: 4,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      {explainLoading && explainKey === key
+                                        ? "AI 解讀中..."
+                                        : explainKey === key
+                                        ? "收起解讀"
+                                        : "💡 AI 解讀"}
+                                    </button>
+                                  )}
+                                  {explainKey === key
+                                    && (explainData || explainError) && (
+                                    <div
+                                      onClick={(e) => e.stopPropagation()}
+                                      style={{
+                                        marginTop: 4,
+                                        padding: "6px 8px",
+                                        background: "var(--bg-secondary)",
+                                        borderLeft:
+                                          "3px solid var(--accent)",
+                                        borderRadius: 4,
+                                        fontSize: 12,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {explainError
+                                        ? `⚠ ${explainError}`
+                                        : explainData && (
+                                          <>
+                                            <div>
+                                              {explainData.explanation}
+                                            </div>
+                                            {explainData.recommended && (
+                                              <div
+                                                style={{ marginTop: 4 }}
+                                              >
+                                                建議{" "}
+                                                <strong>
+                                                  {SUGGESTION_LABEL[
+                                                    explainData
+                                                      .recommended
+                                                  ] ?? explainData
+                                                    .recommended}
+                                                </strong>
+                                                {explainData.reasoning
+                                                  ? ` — ${explainData.reasoning}`
+                                                  : ""}
+                                              </div>
                                             )}
-                                          onMouseLeave={handlePreviewEnd}
-                                          title={
-                                            canApply
-                                              ? `hover 預覽 / 點擊套用 ${s.code}`
-                                              : "需先執行改編才可套用建議"
-                                          }
-                                          style={{
-                                            fontSize: 11,
-                                            padding: "2px 8px",
-                                            border:
-                                              "1px solid var(--border)",
-                                            background: canApply
-                                              ? "var(--button-bg)"
-                                              : "var(--bg-tertiary)",
-                                            color: canApply
-                                              ? "var(--button-fg)"
-                                              : "var(--fg-tertiary)",
-                                            borderRadius: 4,
-                                            cursor: canApply
-                                              ? "pointer"
-                                              : "not-allowed",
-                                          }}
-                                        >
-                                          {s.code.replace(/^S_/, "")}
-                                        </button>
-                                      ))}
+                                            {!explainData.recommended
+                                              && explainData.reasoning
+                                              && (
+                                                <div
+                                                  style={{
+                                                    marginTop: 4,
+                                                    color:
+                                                      "var(--fg-muted)",
+                                                  }}
+                                                >
+                                                  {explainData.reasoning}
+                                                </div>
+                                              )}
+                                          </>
+                                        )}
                                     </div>
                                   )}
                                 </li>

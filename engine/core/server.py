@@ -1368,6 +1368,8 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
          articulation, mode}   — set / add / clear 演奏法
       - {"op": "dynamic",      part_id, measure_start, measure_end,
          dynamic}              — 區間內所有音符 / 和弦設定力度
+      - {"op": "rest",         part_id, measure_start, measure_end}
+                               — 區間內所有音符 / 和弦變成休止符
 
     語意:
       - 整批 ops 共用「一次」history snapshot → 一次 undo 可全部還原
@@ -1387,7 +1389,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         raise ValueError("ops 為空")
 
     target = sess.current_arrangement.target_score
-    from core.ir import ChordEvent, NoteEvent, Pitch
+    from core.ir import ChordEvent, NoteEvent, Pitch, RestEvent
 
     _names = ["C", "C#", "D", "Eb", "E", "F", "F#",
               "G", "Ab", "A", "Bb", "B"]
@@ -1414,7 +1416,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         if not isinstance(op, dict):
             raise ValueError(f"op #{i}: 格式錯誤")
         kind = op.get("op")
-        if kind not in ("transpose", "articulation", "dynamic"):
+        if kind not in ("transpose", "articulation", "dynamic", "rest"):
             raise ValueError(f"op #{i}: 未知 op 類型 {kind!r}")
         if part_by_id(op.get("part_id", "")) is None:
             raise ValueError(
@@ -1467,7 +1469,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             for voice in measure.voices.values():
                 if getattr(voice, "is_divisi", False):
                     continue
-                for ev in voice.events:
+                for idx, ev in enumerate(voice.events):
                     if not isinstance(ev, (NoteEvent, ChordEvent)):
                         continue
                     if getattr(ev, "is_locked", False):
@@ -1500,6 +1502,11 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                         if ev.dynamic != op["dynamic"]:
                             ev.dynamic = op["dynamic"]
                             changed += 1
+                    elif kind == "rest":
+                        voice.events[idx] = RestEvent(
+                            duration=ev.duration, onset=ev.onset,
+                        )
+                        changed += 1
         results.append({
             "op": kind,
             "part_id": op["part_id"],

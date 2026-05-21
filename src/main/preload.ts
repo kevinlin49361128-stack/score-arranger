@@ -39,9 +39,19 @@ const api = {
   llmEditPlan: (ctx: {
     userRequest: string;
     parts: { part_id: string; name: string }[];
+    sourceParts?: { part_id: string; name: string }[];
+    history?: { request: string; summary: string }[];
     measureCount: number;
     ensemble?: string;
   }) => ipcRenderer.invoke("llm:editPlan", ctx),
+  /** 可演奏性問題 LLM 解讀 — 解釋問題 + 推薦既有建議 */
+  llmExplainIssue: (ctx: {
+    issueDescription: string;
+    instrument?: string;
+    measure: number;
+    ensemble?: string;
+    suggestions: { code: string; label: string }[];
+  }) => ipcRenderer.invoke("llm:explainIssue", ctx),
   /** 監聽外部編輯器存檔事件; 回傳取消訂閱函式 */
   onExternalEditorChanged: (
     cb: (data: { path: string; musicxml: string }) => void,

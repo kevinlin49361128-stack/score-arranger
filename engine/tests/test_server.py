@@ -804,6 +804,26 @@ class TestApplyEditOps:
         assert tgt.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
         assert tgt.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 60
 
+    def test_rest_clears_range_to_rests(self):
+        from core.ir import NoteEvent, RestEvent
+        score = self._setup()
+        resp = handle_request({
+            "id": "e7", "method": "apply_edit_ops",
+            "params": {"ops": [{
+                "op": "rest", "part_id": "violin_1",
+                "measure_start": 1, "measure_end": 2,
+            }]},
+        })
+        assert resp["ok"], resp.get("error")
+        # m.1 / m.2 變休止符; m.3 仍是音符
+        assert isinstance(
+            score.parts[0].measures[0].voices[1].events[0], RestEvent)
+        assert isinstance(
+            score.parts[0].measures[1].voices[1].events[0], RestEvent)
+        assert isinstance(
+            score.parts[0].measures[2].voices[1].events[0], NoteEvent)
+        assert resp["data"]["results"][0]["changed"] == 2
+
     def test_empty_ops_rejected(self):
         self._setup()
         resp = handle_request({

@@ -274,12 +274,14 @@ export async function callLLMSuggestion(
 export interface LLMEditPlanContext {
   userRequest: string;
   parts: { part_id: string; name: string }[];
+  sourceParts?: { part_id: string; name: string }[];
+  history?: { request: string; summary: string }[];
   measureCount: number;
   ensemble?: string;
 }
 
 export interface LLMEditOp {
-  op: "transpose" | "articulation" | "dynamic";
+  op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign";
   part_id: string;
   measure_start: number;
   measure_end: number;
@@ -287,6 +289,8 @@ export interface LLMEditOp {
   articulation?: string;
   mode?: "set" | "add" | "clear";
   dynamic?: string;
+  source_part_id?: string;
+  target_part_id?: string;
   reason: string;
 }
 
@@ -299,7 +303,7 @@ export interface LLMEditPlan {
 const EDIT_PLAN_SYSTEM_PROMPT =
   `你是 Score Arranger 的「自然語言改譜」助手。使用者用自然語言描述想對改編後的譜做什麼修改, 你要把它轉成「可直接套用的結構化操作」。
 
-你只能使用以下三種操作 (operation), 全部以「小節區間」為單位:
+你只能使用以下五種操作 (operation):
 
 1. transpose — 移調區間內所有音符 / 和弦
    { "op": "transpose", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "semitones": <int>, "reason": <string> }
@@ -314,11 +318,20 @@ const EDIT_PLAN_SYSTEM_PROMPT =
    { "op": "dynamic", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "dynamic": <string>, "reason": <string> }
    dynamic 僅限: ppp, pp, p, mp, mf, f, ff, fff, sf, fp
 
+4. rest — 把區間內所有音符 / 和弦變成休止符 (清空該段)
+   { "op": "rest", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "reason": <string> }
+
+5. reassign — 把某個來源聲部整個改分配給另一位演奏者 / 譜表
+   { "op": "reassign", "source_part_id": <string>, "target_part_id": <string>, "reason": <string> }
+   source_part_id 必須來自「來源聲部」清單; target_part_id 必須來自「可用聲部」清單。
+   注意: reassign 會以來源重建整個目標譜, 不與其他操作合併為同一次復原。
+
 規則:
-- part_id 必須完全等於使用者訊息「可用聲部」清單中列出的值, 不可自創或猜測。
+- 操作 1-4 的 part_id 必須完全等於「可用聲部」清單中列出的值, 不可自創或猜測。
 - measure_start / measure_end 必須落在總小節數範圍內, 且 measure_start <= measure_end。
 - reason 用繁體中文, 一句話說明音樂理由。
-- 若使用者要求無法用上述三種操作達成 (例如刪除整個聲部、重寫旋律、加裝飾音), operations 留空陣列, 並在 notes 說明原因。
+- 若使用者訊息含「先前已套用的修改」, 這是接續對話: 新要求可能是對先前結果的微調 (如「再輕一點」「那大提琴呢」), 請結合上下文理解。
+- 若使用者要求無法用上述操作達成 (例如重寫旋律、加裝飾音), operations 留空陣列, 並在 notes 說明原因。
 
 輸出格式 — 只輸出「一個」JSON 物件, 不要 markdown 圍欄, 不要任何多餘文字:
 {"summary":"<繁中, 一句話總結>","operations":[<0 個以上 operation>],"notes":"<選填提醒>"}`;
@@ -380,7 +393,15 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
           : "set";
       } else if (o.op === "dynamic") {
         op.dynamic = typeof o.dynamic === "string" ? o.dynamic : undefined;
+      } else if (o.op === "reassign") {
+        op.source_part_id = typeof o.source_part_id === "string"
+          ? o.source_part_id
+          : "";
+        op.target_part_id = typeof o.target_part_id === "string"
+          ? o.target_part_id
+          : "";
       }
+      // "rest" 不需額外欄位
       return op;
     });
   return {
@@ -408,12 +429,30 @@ export async function callLLMEditPlan(
       .map((p) => `  - part_id="${p.part_id}" → ${p.name}`)
       .join("\n")
     : "  (尚無 target 聲部)";
+  const sourceList = ctx.sourceParts?.length
+    ? ctx.sourceParts
+      .map((p) => `  - part_id="${p.part_id}" → ${p.name}`)
+      .join("\n")
+    : "  (無)";
+  const historyBlock = ctx.history?.length
+    ? [
+      "先前已套用的修改 (依序):",
+      ...ctx.history.map(
+        (h, i) =>
+          `  ${i + 1}. 使用者要求「${h.request}」→ 已套用: ${h.summary}`,
+      ),
+      "",
+    ]
+    : [];
   const userMessage = [
     `編制: ${ctx.ensemble ?? "未指定"}`,
     `總小節數: ${ctx.measureCount}`,
-    "可用聲部:",
+    "可用聲部 (改編後的目標譜):",
     partList,
+    "來源聲部 (僅供 reassign 操作使用):",
+    sourceList,
     "",
+    ...historyBlock,
     "使用者要求:",
     ctx.userRequest,
   ].join("\n");
@@ -425,4 +464,96 @@ export async function callLLMEditPlan(
     throw new Error("LLM 回應為空");
   }
   return parseEditPlan(raw, ctx);
+}
+
+
+// ── 可演奏性問題 LLM 解讀 — 解釋問題 + 從引擎既有建議中推薦 ──────────────
+
+export interface LLMIssueExplainContext {
+  issueDescription: string;
+  instrument?: string;
+  measure: number;
+  ensemble?: string;
+  suggestions: { code: string; label: string }[];
+}
+
+export interface LLMIssueExplanation {
+  explanation: string;
+  recommended: string | null;
+  reasoning: string;
+}
+
+const ISSUE_EXPLAIN_SYSTEM_PROMPT =
+  `你是 Score Arranger 的可演奏性問題顧問。使用者在改編譜時遇到一個「可演奏性問題」, 你要做兩件事:
+1. 用白話解釋這個問題在音樂 / 演奏上代表什麼、為什麼值得處理。
+2. 從使用者提供的「可選修正建議」清單中, 推薦一個最適合的, 並說明理由。
+
+重要原則:
+- 你只能從清單中挑一個既有的建議, 絕對不可自創新的修正方式。
+- 演算法已經產生並排序了這些建議; 你的角色是「解讀 + 判斷哪個最適合此情境」, 不是取代演算法。
+- 若清單為空、或沒有一個適合, recommended 設為 null, 並在 reasoning 說明原因。
+
+輸出只有「一個」JSON 物件, 不要 markdown 圍欄, 不要多餘文字:
+{"explanation":"<繁中, 2-3 句: 這問題是什麼、為何重要>","recommended":"<推薦建議的 code 字串, 或 null>","reasoning":"<繁中, 1-2 句: 為何推薦這個 (或為何都不推薦)>"}`;
+
+
+function parseIssueExplanation(
+  raw: string, validCodes: string[],
+): LLMIssueExplanation {
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(extractJSONObject(raw)) as Record<string, unknown>;
+  } catch (e) {
+    throw new Error(
+      `無法解析 LLM 回應為 JSON: ${e instanceof Error ? e.message : e}`,
+    );
+  }
+  // 防 LLM 幻覺 — recommended 必須是清單中真實存在的 code
+  let recommended = typeof parsed.recommended === "string"
+    ? parsed.recommended
+    : null;
+  if (recommended && !validCodes.includes(recommended)) {
+    recommended = null;
+  }
+  return {
+    explanation: typeof parsed.explanation === "string"
+      ? parsed.explanation
+      : "(LLM 未提供解釋)",
+    recommended,
+    reasoning: typeof parsed.reasoning === "string"
+      ? parsed.reasoning
+      : "",
+  };
+}
+
+
+export async function callLLMIssueExplain(
+  ctx: LLMIssueExplainContext,
+): Promise<LLMIssueExplanation> {
+  const cfg = resolveConfig();
+  if (!cfg) {
+    throw new Error("LLM 未設定 — 請先到「AI 模型設定」設定 provider, 或設 LLM_API_KEY 環境變數");
+  }
+
+  const suggestionLines = ctx.suggestions.length
+    ? ctx.suggestions
+      .map((s) => `  - ${s.code}: ${s.label}`)
+      .join("\n")
+    : "  (無可用建議)";
+  const userMessage = [
+    `編制: ${ctx.ensemble ?? "未指定"}`,
+    `樂器 / 聲部: ${ctx.instrument ?? "未指定"}`,
+    `位置: 第 ${ctx.measure} 小節`,
+    `問題: ${ctx.issueDescription}`,
+    "可選修正建議:",
+    suggestionLines,
+  ].join("\n");
+
+  const raw = await callProvider(
+    cfg, ISSUE_EXPLAIN_SYSTEM_PROMPT, userMessage, 500,
+  );
+  if (!raw) {
+    throw new Error("LLM 回應為空");
+  }
+  return parseIssueExplanation(raw, ctx.suggestions.map((s) => s.code));
 }

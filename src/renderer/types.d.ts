@@ -61,9 +61,18 @@ declare global {
       llmEditPlan: (ctx: {
         userRequest: string;
         parts: { part_id: string; name: string }[];
+        sourceParts?: { part_id: string; name: string }[];
+        history?: { request: string; summary: string }[];
         measureCount: number;
         ensemble?: string;
       }) => Promise<IpcResponse<LLMEditPlan>>;
+      llmExplainIssue: (ctx: {
+        issueDescription: string;
+        instrument?: string;
+        measure: number;
+        ensemble?: string;
+        suggestions: { code: string; label: string }[];
+      }) => Promise<IpcResponse<LLMIssueExplanation>>;
       engine: {
         parse: (path: string) => Promise<IpcResponse<unknown>>;
         validate: (path: string) => Promise<IpcResponse<unknown>>;
@@ -238,7 +247,7 @@ declare global {
   }
 
   interface LLMEditOp {
-    op: "transpose" | "articulation" | "dynamic";
+    op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign";
     part_id: string;
     measure_start: number;
     measure_end: number;
@@ -246,6 +255,8 @@ declare global {
     articulation?: string;
     mode?: "set" | "add" | "clear";
     dynamic?: string;
+    source_part_id?: string;
+    target_part_id?: string;
     reason: string;
   }
 
@@ -253,6 +264,12 @@ declare global {
     summary: string;
     operations: LLMEditOp[];
     notes?: string;
+  }
+
+  interface LLMIssueExplanation {
+    explanation: string;
+    recommended: string | null;
+    reasoning: string;
   }
 
   interface ApplyEditOpsResult {

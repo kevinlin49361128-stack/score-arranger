@@ -49,6 +49,7 @@ import {
 } from "./python-bridge";
 import {
   callLLMEditPlan,
+  callLLMIssueExplain,
   callLLMSuggestion,
   getLLMConfigForUI,
   getLLMInfo,
@@ -417,6 +418,11 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "llm:editPlan",
     async (_evt, ctx) => safeCall(() => callLLMEditPlan(ctx)),
+  );
+  // 可演奏性問題 LLM 解讀 — 解釋問題 + 推薦既有建議
+  ipcMain.handle(
+    "llm:explainIssue",
+    async (_evt, ctx) => safeCall(() => callLLMIssueExplain(ctx)),
   );
 }
 

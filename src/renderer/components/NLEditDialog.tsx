@@ -2,30 +2,38 @@
  * NLEditDialog — 自然語言改譜
  *
  * 使用者用自然語言描述想對「改編後的譜」做什麼修改, LLM 回傳一組
- * 「可直接套用的結構化操作」(transpose / articulation / dynamic)。
- * 使用者在預覽清單逐項確認 (可勾選 / 取消) 後才送出 — 人機協作, 非全自動。
+ * 「可直接套用的結構化操作」(transpose / articulation / dynamic / rest /
+ * reassign)。使用者在預覽清單逐項確認 (可勾選 / 取消) 後才送出 —
+ * 人機協作, 非全自動。支援接續對話 (多輪): 先前已套用的修改會帶進
+ * 下一輪的 LLM context, 使用者可說「再輕一點」「那大提琴呢」。
  *
  * 觸發點: Toolbar「🤖 改譜」按鈕 (需先完成一次改編)
- * 套用走 engine.applyEditOps → 整批共用一次 undo。
+ * 套用: 區間操作走 engine.applyEditOps (整批一次 undo);
+ *       reassign 走 engine.reassign (各自獨立 undo, 會先於區間操作執行)。
  */
 
 import { useEffect, useMemo, useState } from "react";
+import type { ArrangementIssue } from "@shared/types";
 import { useSessionStore } from "../stores/sessionStore";
 
 interface Props {
   onClose: () => void;
 }
 
-interface TargetPart {
+interface NamedPart {
   part_id: string;
   name: string;
 }
 
+type PlayerLite = {
+  player_id: string;
+  display_name: string;
+  staves: number;
+};
+
 /** 由 arrangement.players 推導 target part_id — 對齊 arranger.py 的命名規則。 */
-function derivePartsFromPlayers(
-  players: { player_id: string; display_name: string; staves: number }[],
-): TargetPart[] {
-  const parts: TargetPart[] = [];
+function derivePartsFromPlayers(players: PlayerLite[]): NamedPart[] {
+  const parts: NamedPart[] = [];
   for (const p of players) {
     if (p.staves === 2) {
       parts.push({
@@ -43,11 +51,48 @@ function derivePartsFromPlayers(
   return parts;
 }
 
+/** target part_id → (player_id, staff) — reassign 需要拆回 engine 的參數。 */
+function splitTargetPartId(
+  partId: string,
+  players: PlayerLite[],
+): { player_id: string; staff: string } | null {
+  for (const p of players) {
+    if (p.staves === 2) {
+      if (partId === `${p.player_id}_upper`) {
+        return { player_id: p.player_id, staff: "upper" };
+      }
+      if (partId === `${p.player_id}_lower`) {
+        return { player_id: p.player_id, staff: "lower" };
+      }
+    } else if (partId === p.player_id) {
+      return { player_id: p.player_id, staff: "main" };
+    }
+  }
+  return null;
+}
+
+const OP_ICON: Record<LLMEditOp["op"], string> = {
+  transpose: "↕",
+  articulation: "♪",
+  dynamic: "𝆑",
+  rest: "𝄽",
+  reassign: "⇄",
+};
+
 /** 把一個 op 轉成人類可讀的中文描述。 */
-function describeOp(op: LLMEditOp, partName: string): string {
+function describeOp(
+  op: LLMEditOp,
+  lookupTarget: (id: string) => string,
+  lookupSource: (id: string) => string,
+): string {
+  if (op.op === "reassign") {
+    return `把「${lookupSource(op.source_part_id ?? "")}」`
+      + `改分配給「${lookupTarget(op.target_part_id ?? "")}」`;
+  }
   const range = op.measure_start === op.measure_end
     ? `第 ${op.measure_start} 小節`
     : `第 ${op.measure_start}–${op.measure_end} 小節`;
+  const partName = lookupTarget(op.part_id);
   if (op.op === "transpose") {
     const st = op.semitones ?? 0;
     if (st === 0) return `${partName}・${range}・移調 0 (無變化)`;
@@ -62,32 +107,52 @@ function describeOp(op: LLMEditOp, partName: string): string {
     const verb = op.mode === "add" ? "附加" : "設為";
     return `${partName}・${range}・演奏法${verb} ${op.articulation ?? "?"}`;
   }
+  if (op.op === "rest") {
+    return `${partName}・${range}・整段改為休止符`;
+  }
   return `${partName}・${range}・力度設為 ${op.dynamic ?? "?"}`;
 }
-
-const OP_ICON: Record<LLMEditOp["op"], string> = {
-  transpose: "↕",
-  articulation: "♪",
-  dynamic: "𝆑",
-};
 
 export function NLEditDialog({ onClose }: Props) {
   const {
     arrangement,
+    sourcePath,
     setTargetMusicXML,
     setArrangementIssues,
     setHistoryFlags,
   } = useSessionStore();
 
-  const parts = useMemo<TargetPart[]>(
-    () => derivePartsFromPlayers(arrangement?.players ?? []),
+  const players = useMemo<PlayerLite[]>(
+    () => arrangement?.players ?? [],
     [arrangement],
   );
-  const partName = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const p of parts) m.set(p.part_id, p.name);
+  const parts = useMemo<NamedPart[]>(
+    () => derivePartsFromPlayers(players),
+    [players],
+  );
+  const [sourceParts, setSourceParts] = useState<NamedPart[]>([]);
+
+  const lookupTarget = useMemo(() => {
+    const m = new Map(parts.map((p) => [p.part_id, p.name]));
     return (id: string) => m.get(id) ?? `⚠ 未知聲部 ${id}`;
   }, [parts]);
+  const lookupSource = useMemo(() => {
+    const m = new Map(sourceParts.map((p) => [p.part_id, p.name]));
+    return (id: string) => m.get(id) ?? `⚠ 未知來源 ${id}`;
+  }, [sourceParts]);
+
+  /** op 是否指向真實存在的聲部 (LLM 幻覺防線)。 */
+  const opIsValid = useMemo(() => {
+    const targetIds = new Set(parts.map((p) => p.part_id));
+    const sourceIds = new Set(sourceParts.map((p) => p.part_id));
+    return (op: LLMEditOp): boolean => {
+      if (op.op === "reassign") {
+        return sourceIds.has(op.source_part_id ?? "")
+          && targetIds.has(op.target_part_id ?? "");
+      }
+      return targetIds.has(op.part_id);
+    };
+  }, [parts, sourceParts]);
 
   const [available, setAvailable] = useState<boolean | null>(null);
   const [measureCount, setMeasureCount] = useState(0);
@@ -95,9 +160,14 @@ export function NLEditDialog({ onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [plan, setPlan] = useState<LLMEditPlan | null>(null);
+  const [planRequest, setPlanRequest] = useState("");
   const [selected, setSelected] = useState<boolean[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [appliedMsg, setAppliedMsg] = useState<string | null>(null);
+  // 多輪對話 — 已套用的回合 (帶進下一輪 LLM context)
+  const [history, setHistory] = useState<
+    { request: string; summary: string }[]
+  >([]);
 
   useEffect(() => {
     window.scoreArranger.llmIsAvailable().then(setAvailable).catch(() => {
@@ -108,7 +178,21 @@ export function NLEditDialog({ onClose }: Props) {
         if (res.ok && res.data) setMeasureCount(res.data.total_measures);
       })
       .catch(() => {});
-  }, []);
+    if (sourcePath) {
+      window.scoreArranger.engine.listSourceParts(sourcePath)
+        .then((res) => {
+          if (res.ok && Array.isArray(res.data)) {
+            setSourceParts(
+              res.data.map((p) => ({
+                part_id: p.part_id,
+                name: p.display_name,
+              })),
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [sourcePath]);
 
   const handleGenerate = async () => {
     if (!request.trim()) return;
@@ -120,12 +204,15 @@ export function NLEditDialog({ onClose }: Props) {
       const res = await window.scoreArranger.llmEditPlan({
         userRequest: request.trim(),
         parts,
+        sourceParts,
+        history,
         measureCount: measureCount || 9999,
         ensemble: arrangement?.name,
       });
       if (res.ok && res.data) {
         setPlan(res.data);
-        setSelected(res.data.operations.map(() => true));
+        setPlanRequest(request.trim());
+        setSelected(res.data.operations.map((op) => opIsValid(op)));
       } else {
         setError(res.error ?? "AI 產生改譜方案失敗");
       }
@@ -138,30 +225,71 @@ export function NLEditDialog({ onClose }: Props) {
 
   const handleApply = async () => {
     if (!plan) return;
-    const ops = plan.operations.filter((_, i) => selected[i]);
-    if (ops.length === 0) return;
+    const chosen = plan.operations.filter(
+      (op, i) => selected[i] && opIsValid(op),
+    );
+    if (chosen.length === 0) return;
+    const reassignOps = chosen.filter((op) => op.op === "reassign");
+    const rangeOps = chosen.filter((op) => op.op !== "reassign");
     setApplying(true);
     setError(null);
     try {
-      const res = await window.scoreArranger.engine.applyEditOps(ops);
-      if (res.ok && res.data) {
-        if (res.data.target_musicxml) {
-          setTargetMusicXML(res.data.target_musicxml);
+      let lastXml: string | null = null;
+      let lastIssues: ArrangementIssue[] | null = null;
+      let lastUndo = false;
+      let lastRedo = false;
+      let touched = 0;
+
+      // reassign 先做 — 它以來源重建整個目標譜
+      for (const op of reassignOps) {
+        const split = splitTargetPartId(op.target_part_id ?? "", players);
+        if (!split) {
+          throw new Error(`reassign 目標聲部無效: ${op.target_part_id}`);
         }
-        setArrangementIssues(res.data.issues ?? []);
-        setHistoryFlags(res.data.can_undo, res.data.can_redo);
-        const total = res.data.results.reduce(
-          (s, r) => s + r.changed,
-          0,
+        const res = await window.scoreArranger.engine.reassign(
+          op.source_part_id ?? "",
+          split.player_id,
+          split.staff,
         );
-        setAppliedMsg(
-          `已套用 ${ops.length} 項操作, 共影響 ${total} 個音符 / 和弦。`
-          + "（可用工具列 ↶ 一次還原整批）",
-        );
-        setPlan(null);
-      } else {
-        setError(res.error ?? "套用失敗");
+        if (!res.ok || !res.data) {
+          throw new Error(res.error ?? "reassign 失敗");
+        }
+        lastXml = res.data.target_musicxml ?? lastXml;
+        lastIssues = res.data.issues ?? lastIssues;
+        lastUndo = res.data.can_undo;
+        lastRedo = res.data.can_redo;
+        touched += 1;
       }
+
+      // 區間操作 — 整批一次套用
+      if (rangeOps.length > 0) {
+        const res = await window.scoreArranger.engine.applyEditOps(rangeOps);
+        if (!res.ok || !res.data) {
+          throw new Error(res.error ?? "套用失敗");
+        }
+        lastXml = res.data.target_musicxml ?? lastXml;
+        lastIssues = res.data.issues ?? lastIssues;
+        lastUndo = res.data.can_undo;
+        lastRedo = res.data.can_redo;
+        touched += res.data.results.reduce((s, r) => s + r.changed, 0);
+      }
+
+      if (lastXml) setTargetMusicXML(lastXml);
+      if (lastIssues) setArrangementIssues(lastIssues);
+      setHistoryFlags(lastUndo, lastRedo);
+      setHistory((h) => [
+        ...h,
+        { request: planRequest, summary: plan.summary },
+      ]);
+      const undoNote = reassignAndRangeNote(
+        reassignOps.length,
+        rangeOps.length,
+      );
+      setAppliedMsg(
+        `已套用 ${chosen.length} 項操作 (影響 ${touched} 處)。${undoNote}`,
+      );
+      setPlan(null);
+      setRequest("");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -260,6 +388,30 @@ export function NLEditDialog({ onClose }: Props) {
             </div>
           )}
 
+          {/* 多輪對話紀錄 */}
+          {history.length > 0 && (
+            <div
+              style={{
+                marginBottom: 12,
+                padding: 10,
+                background: "var(--bg-secondary)",
+                borderRadius: 4,
+                fontSize: 11,
+                lineHeight: 1.7,
+              }}
+            >
+              <strong style={{ color: "var(--fg-muted)" }}>對話紀錄</strong>
+              {history.map((h, i) => (
+                <div key={i} style={{ marginTop: 3 }}>
+                  <span style={{ color: "var(--fg-tertiary)" }}>
+                    {i + 1}.
+                  </span>{" "}
+                  「{h.request}」→ {h.summary}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* 可用聲部提示 */}
           {parts.length > 0 && (
             <div
@@ -278,12 +430,12 @@ export function NLEditDialog({ onClose }: Props) {
           <textarea
             value={request}
             onChange={(e) => setRequest(e.target.value)}
-            placeholder={
-              "用一句話描述想做的修改, 例如:\n"
-              + "• 把小提琴第 9-16 小節降一個八度\n"
-              + "• 第 1-4 小節整段改成 staccato\n"
-              + "• 讓鋼琴右手第 20-24 小節更輕 (p)"
-            }
+            placeholder={history.length > 0
+              ? "接著想調整什麼? 例如「再輕一點」「那大提琴呢」"
+              : "用一句話描述想做的修改, 例如:\n"
+                + "• 把小提琴第 9-16 小節降一個八度\n"
+                + "• 第 1-4 小節整段改成 staccato\n"
+                + "• 把第 30-32 小節改成休止符"}
             rows={4}
             disabled={parts.length === 0}
             style={{
@@ -396,14 +548,12 @@ export function NLEditDialog({ onClose }: Props) {
                     fontSize: 12,
                   }}
                 >
-                  AI 無法用目前支援的操作 (移調 / 演奏法 / 力度) 達成此要求。
+                  AI 無法用目前支援的操作達成此要求 (見下方說明)。
                 </div>
               )}
 
               {plan.operations.map((op, i) => {
-                const unknownPart = !parts.some(
-                  (p) => p.part_id === op.part_id,
-                );
+                const valid = opIsValid(op);
                 return (
                   <label
                     key={`${op.op}-${i}`}
@@ -415,14 +565,14 @@ export function NLEditDialog({ onClose }: Props) {
                       border: "1px solid var(--border-light)",
                       borderRadius: 4,
                       marginBottom: 6,
-                      cursor: unknownPart ? "not-allowed" : "pointer",
-                      opacity: unknownPart ? 0.55 : 1,
+                      cursor: valid ? "pointer" : "not-allowed",
+                      opacity: valid ? 1 : 0.55,
                     }}
                   >
                     <input
                       type="checkbox"
-                      checked={selected[i] ?? false}
-                      disabled={unknownPart}
+                      checked={(selected[i] ?? false) && valid}
+                      disabled={!valid}
                       onChange={(e) => {
                         const next = [...selected];
                         next[i] = e.target.checked;
@@ -435,7 +585,7 @@ export function NLEditDialog({ onClose }: Props) {
                         <span style={{ marginRight: 5 }}>
                           {OP_ICON[op.op]}
                         </span>
-                        {describeOp(op, partName(op.part_id))}
+                        {describeOp(op, lookupTarget, lookupSource)}
                       </div>
                       {op.reason && (
                         <div
@@ -448,7 +598,7 @@ export function NLEditDialog({ onClose }: Props) {
                           {op.reason}
                         </div>
                       )}
-                      {unknownPart && (
+                      {!valid && (
                         <div
                           style={{
                             fontSize: 11,
@@ -520,4 +670,18 @@ export function NLEditDialog({ onClose }: Props) {
       </div>
     </div>
   );
+}
+
+/** 套用後的復原提示文字 — reassign 與區間操作的 undo 粒度不同。 */
+function reassignAndRangeNote(
+  reassignCount: number,
+  rangeCount: number,
+): string {
+  if (reassignCount > 0 && rangeCount > 0) {
+    return "（reassign 與區間操作為不同的復原步驟）";
+  }
+  if (reassignCount > 0) {
+    return "（每個 reassign 為獨立的復原步驟）";
+  }
+  return "（可用工具列 ↶ 一次還原整批）";
 }
