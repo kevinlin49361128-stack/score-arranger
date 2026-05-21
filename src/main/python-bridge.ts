@@ -423,7 +423,7 @@ export async function omrStatus(): Promise<OMRStatus> {
 
 export async function pdfToMusicXML(
   pdfPath: string,
-  timeoutSec = 300,
+  timeoutSec = 600,
 ): Promise<{ musicxml_path: string; audiveris_version: string | null }> {
   return (await client.call("pdf_to_musicxml", {
     path: pdfPath,

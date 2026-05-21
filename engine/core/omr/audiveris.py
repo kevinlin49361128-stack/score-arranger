@@ -22,6 +22,7 @@ CLI 用法 (Audiveris 5.x):
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -183,17 +184,30 @@ def detect_audiveris() -> AudiverisStatus:
     )
 
 
+def _find_export(search_dir: Path) -> Optional[Path]:
+    """在目錄內遞迴找出 Audiveris 匯出的 MusicXML — .mxl 優先, 須非空。
+
+    Audiveris 會對檔名套用 alias (例: IMSLP83072-… → IMSLP83072.mxl),
+    故不靠固定檔名, 直接遞迴搜尋。
+    """
+    for ext in ("*.mxl", "*.xml"):
+        for f in sorted(search_dir.rglob(ext)):
+            if f.is_file() and f.stat().st_size > 256:
+                return f
+    return None
+
+
 def pdf_to_musicxml(
     pdf_path: str,
     output_dir: Optional[str] = None,
-    timeout_sec: int = 300,
+    timeout_sec: int = 600,
 ) -> str:
     """把 PDF 用 Audiveris 轉成 MusicXML, 回傳產出檔案路徑.
 
     Args:
         pdf_path: 來源 PDF 絕對路徑.
         output_dir: 輸出目錄 (None 則用 temp dir, 由 caller 處理清理).
-        timeout_sec: 子程序超時 (OMR 大譜可能要 1-2 分鐘).
+        timeout_sec: 單次子程序超時 (整本掃描譜 OMR 可能要數分鐘).
 
     Returns:
         產出的 .mxl 或 .xml 路徑.
@@ -244,27 +258,7 @@ def pdf_to_musicxml(
     # 搜尋輸出 — 不論 returncode 都先找。
     # Audiveris 常在「某聲部匯出例外」下退出碼非 0, 但其餘部分仍寫出
     # 可用的 .mxl; OMR 結果本就需人工校對, 回傳 best-effort 優於整個失敗。
-    stem = pdf.stem
-    candidates = [
-        out_dir / stem / f"{stem}.mxl",
-        out_dir / stem / f"{stem}.xml",
-        out_dir / f"{stem}.mxl",
-        out_dir / f"{stem}.xml",
-    ]
-    found: Optional[Path] = next(
-        (c for c in candidates if c.exists() and c.stat().st_size > 256),
-        None,
-    )
-    if found is None:
-        # 後備: 在 out_dir 內遞迴找任意非空 .mxl/.xml
-        for ext in ("*.mxl", "*.xml"):
-            for f in sorted(out_dir.rglob(ext)):
-                if f.stat().st_size > 256:
-                    found = f
-                    break
-            if found is not None:
-                break
-
+    found = _find_export(out_dir)
     if found is not None:
         if result.returncode != 0:
             print(
@@ -274,16 +268,73 @@ def pdf_to_musicxml(
             )
         return str(found)
 
-    # 完全沒有輸出 — 寫完整 log 供診斷, 再失敗。
-    log_path = out_dir / "audiveris.log"
-    try:
-        log_path.write_text(
-            f"$ {' '.join(cmd)}\n\n"
-            f"--- exit code: {result.returncode} ---\n\n"
-            f"--- stdout ---\n{result.stdout or ''}\n\n"
-            f"--- stderr ---\n{result.stderr or ''}\n",
-            encoding="utf-8",
+    # 無輸出 — Audiveris 整本匯出是 all-or-nothing: 只要任一 sheet 被判
+    # invalid (IMSLP 總譜常見的純文字說明頁、版權頁), 整本就拒絕匯出。
+    # 對策: 主跑已完成 OMR 並寫出 .omr 辨識快取; 從輸出解析無效頁編號,
+    # 吃 .omr 快取用 -sheets 排除無效頁「只重新匯出」—— 不重跑 OMR, 數秒
+    # 完成, 故不會撞到 caller 的整體 timeout。
+    combined = f"{result.stdout or ''}\n{result.stderr or ''}"
+    invalid = sorted({int(n) for n in re.findall(r"#(\d+)\s+flagged as invalid", combined)})
+    total_match = re.search(r"(\d+)\s+sheets?\s+in\b", combined)
+    total = int(total_match.group(1)) if total_match else 0
+    omr_caches = sorted(out_dir.rglob("*.omr"))
+    omr_cache = omr_caches[0] if omr_caches else None
+
+    retry_result: Optional[subprocess.CompletedProcess[str]] = None
+    if invalid and total > len(invalid) and omr_cache is not None:
+        valid = [n for n in range(1, total + 1) if n not in invalid]
+        # 吃 .omr 重新匯出時 Audiveris 會忽略 -output, 直接寫在 .omr 旁邊
+        # (即 out_dir 內), 故重試後仍以 _find_export(out_dir) 搜尋。
+        retry_cmd = [
+            cmd[0],  # 同一個 audiveris 執行檔
+            "-batch",
+            "-export",
+            "-sheets", *(str(n) for n in valid),
+            "--",
+            str(omr_cache),
+        ]
+        print(
+            f"[omr] Audiveris 判定第 {', '.join(map(str, invalid))} 頁無樂譜 "
+            f"(共 {total} 頁); 排除後重新匯出其餘 {len(valid)} 頁",
+            file=sys.stderr,
         )
+        try:
+            retry_result = subprocess.run(
+                retry_cmd, capture_output=True, text=True,
+                timeout=timeout_sec,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            retry_result = None
+        retry_found = _find_export(out_dir)
+        if retry_found is not None:
+            if retry_result is None or retry_result.returncode != 0:
+                rc = (
+                    retry_result.returncode
+                    if retry_result is not None else "timeout"
+                )
+                print(
+                    f"[omr] 重新匯出退出碼 {rc} 但已產出 {retry_found.name} "
+                    f"— 以部分辨識結果匯入 (建議仔細校對)",
+                    file=sys.stderr,
+                )
+            return str(retry_found)
+
+    # 完全沒有輸出 (含排除無效頁的重試) — 寫完整 log 供診斷, 再失敗。
+    log_path = out_dir / "audiveris.log"
+    log_text = (
+        f"$ {' '.join(cmd)}\n\n"
+        f"--- exit code: {result.returncode} ---\n\n"
+        f"--- stdout ---\n{result.stdout or ''}\n\n"
+        f"--- stderr ---\n{result.stderr or ''}\n"
+    )
+    if retry_result is not None:
+        log_text += (
+            f"\n--- retry (-sheets) exit code: {retry_result.returncode} ---\n\n"
+            f"--- retry stdout ---\n{retry_result.stdout or ''}\n\n"
+            f"--- retry stderr ---\n{retry_result.stderr or ''}\n"
+        )
+    try:
+        log_path.write_text(log_text, encoding="utf-8")
     except OSError:
         log_path = None  # type: ignore[assignment]
     err = (result.stderr or result.stdout or "").strip()

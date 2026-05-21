@@ -491,7 +491,7 @@ def _method_pdf_to_musicxml(params: dict[str, Any]) -> dict[str, Any]:
     from .omr import AudiverisError, pdf_to_musicxml, detect_audiveris
     pdf_path = params["path"]
     output_dir = params.get("output_dir")
-    timeout = int(params.get("timeout_sec", 300))
+    timeout = int(params.get("timeout_sec", 600))
     try:
         out = pdf_to_musicxml(
             pdf_path, output_dir=output_dir, timeout_sec=timeout
