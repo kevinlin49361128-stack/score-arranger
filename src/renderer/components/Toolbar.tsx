@@ -3,22 +3,31 @@
  *
  * 視覺分組 (左→右):
  *   1. 檔案: 匯入 | 範例 ▾ | 📂 | 💾
- *   2. 動作: 分析 | 改編 ▾  ✓自動修復
+ *   2. 動作: 分析 | [改編 | 編制 ▾ | ⚙改編選項] | 🤖改譜
  *   3. 歷史: ↶ ↷
  *   4. 播放 + Loop
  *   5. (flex)  → 顯示檔名
- *   6. 縮放: − % +
- *   7. 檢視: 🔥 ▥
- *   8. 匯出 ▾
- *   9. ⚙ 設定 (主題/語言)
+ *   6. 縮放: − % +          (可收合)
+ *   7. 檢視: 🔥 ▥ ◧         (可收合)
+ *   8. 匯出 ▾               (可收合)
+ *   9. ⋯ 溢出選單           (僅在有群組被收合時出現)
+ *  10. ⚙ 設定 (主題/語言/AI 模型)
  *
  * 設計準則:
  * - 同類群組間以細直線分隔
- * - 次要功能 (語言/主題) 收進 ⚙ overflow menu
- * - 每個 group 內按鈕視覺一致 (相同尺寸)
+ * - 改編參數 (自動修復 / 技術水平 / 風格) 收進改編按鈕旁的 ⚙ popover
+ * - 響應式: 視窗過窄時依優先序 (檢視 → 縮放 → 匯出) 自動收進 ⋯ 選單,
+ *   靠 ResizeObserver 量測 header.scrollWidth vs 視窗寬決定 collapseLevel
+ * - 次要功能 (語言/主題/AI 設定) 收進 ⚙ overflow menu
  */
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { AboutDialog } from "./AboutDialog";
 import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog";
 import { ExportMenu } from "./ExportMenu";
@@ -128,6 +137,20 @@ export function Toolbar() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const [nlEditOpen, setNlEditOpen] = useState(false);
+  // 改編選項 popover (自動修復 / 技術水平 / 風格)
+  const [arrangeOptsOpen, setArrangeOptsOpen] = useState(false);
+  const arrangeOptsRef = useRef<HTMLDivElement>(null);
+  // 響應式收合: 0=全顯示, 1=收起檢視, 2=+縮放, 3=+匯出
+  const [collapseLevel, setCollapseLevel] = useState(0);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const filenameRef = useRef<HTMLSpanElement>(null);
+  const zoomGroupRef = useRef<HTMLDivElement>(null);
+  const viewGroupRef = useRef<HTMLDivElement>(null);
+  const exportGroupRef = useRef<HTMLDivElement>(null);
+  // 各可收合群組「展開時」的量測寬度 — 收起後沿用最後一次量測值
+  const groupWidthsRef = useRef({ view: 130, zoom: 185, export: 96 });
   const [omrDialog, setOmrDialog] = useState<{
     missing: string[];
     hints: Record<string, string>;
@@ -137,18 +160,71 @@ export function Toolbar() {
     elapsedSec: number;
   } | null>(null);
 
-  // 點 settings 外部 → 關閉
+  // 點 popover 外部 → 關閉 (設定 / 改編選項 / 溢出選單)
   useEffect(() => {
-    if (!settingsOpen) return;
+    if (!settingsOpen && !arrangeOptsOpen && !overflowOpen) return;
     const onDocClick = (e: MouseEvent) => {
-      if (!settingsRef.current) return;
-      if (!settingsRef.current.contains(e.target as Node)) {
-        setSettingsOpen(false);
-      }
+      const t = e.target as Node;
+      if (
+        settingsOpen && settingsRef.current
+        && !settingsRef.current.contains(t)
+      ) setSettingsOpen(false);
+      if (
+        arrangeOptsOpen && arrangeOptsRef.current
+        && !arrangeOptsRef.current.contains(t)
+      ) setArrangeOptsOpen(false);
+      if (
+        overflowOpen && overflowRef.current
+        && !overflowRef.current.contains(t)
+      ) setOverflowOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [settingsOpen]);
+  }, [settingsOpen, arrangeOptsOpen, overflowOpen]);
+
+  // 響應式工具列: 偵測 overflow → 把次要群組收進「⋯」選單。
+  // overflow = 內容所需寬度超過視窗; 回復條件帶 20px 遲滯避免抖動。
+  const evaluateOverflow = useCallback(() => {
+    const header = headerRef.current;
+    const filename = filenameRef.current;
+    if (!header || !filename) return;
+    // 量測目前可見群組寬度 (收起的群組沿用上次值)
+    if (viewGroupRef.current) {
+      groupWidthsRef.current.view = viewGroupRef.current.offsetWidth;
+    }
+    if (zoomGroupRef.current) {
+      groupWidthsRef.current.zoom = zoomGroupRef.current.offsetWidth;
+    }
+    if (exportGroupRef.current) {
+      groupWidthsRef.current.export = exportGroupRef.current.offsetWidth;
+    }
+    const overflow = header.scrollWidth - window.innerWidth;
+    setCollapseLevel((lvl) => {
+      if (overflow > 1 && lvl < 3) return lvl + 1;
+      if (lvl > 0) {
+        const w = groupWidthsRef.current;
+        const need = lvl === 1 ? w.view : lvl === 2 ? w.zoom : w.export;
+        if (filename.offsetWidth > need + 20) return lvl - 1;
+      }
+      return lvl;
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    evaluateOverflow();
+    const ro = new ResizeObserver(evaluateOverflow);
+    if (headerRef.current) ro.observe(headerRef.current);
+    window.addEventListener("resize", evaluateOverflow);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", evaluateOverflow);
+    };
+  }, [evaluateOverflow]);
+
+  // collapseLevel / 語言變動後再評估一次 → 收斂到穩定狀態
+  useLayoutEffect(() => {
+    evaluateOverflow();
+  }, [collapseLevel, locale, evaluateOverflow]);
 
   // 鍵盤快捷鍵: Cmd+Z / Cmd+Shift+Z / Cmd+S / Cmd+\
   useEffect(() => {
@@ -457,9 +533,49 @@ export function Toolbar() {
     borderColor: "var(--accent)",
     fontWeight: 600,
   };
+  const overflowLabelStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 600,
+    color: "var(--fg-muted)",
+    marginBottom: 4,
+  };
+
+  // 檢視群組三鈕 — 工具列 / 溢出選單共用
+  const renderViewButtons = () => (
+    <>
+      <button
+        onClick={toggleHeatmap}
+        style={{
+          ...btnIcon,
+          background: showHeatmap ? "var(--accent)" : btnIcon.background,
+          color: showHeatmap ? "var(--accent-fg)" : btnIcon.color,
+        }}
+        title={showHeatmap ? "關閉難度熱圖" : "顯示難度熱圖"}
+      >
+        🔥
+      </button>
+      <button
+        onClick={togglePanelLayout}
+        style={btnIcon}
+        title={panelLayout === "vertical"
+          ? "切為左右排列 (⌘\\)"
+          : "切為上下排列 (⌘\\)"}
+      >
+        {panelLayout === "vertical" ? "▤" : "▥"}
+      </button>
+      <button
+        onClick={toggleInfoPanelPos}
+        style={btnIcon}
+        title={infoPanelPos === "side" ? "資訊欄移到下方" : "資訊欄移到右側"}
+      >
+        {infoPanelPos === "side" ? "◧" : "▭"}
+      </button>
+    </>
+  );
 
   return (
     <header
+      ref={headerRef}
       style={{
         display: "flex",
         alignItems: "center",
@@ -503,7 +619,15 @@ export function Toolbar() {
       >
         分析
       </button>
-      <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+      <div
+        ref={arrangeOptsRef}
+        style={{
+          display: "flex",
+          alignItems: "stretch",
+          gap: 0,
+          position: "relative",
+        }}
+      >
         <button
           onClick={handleArrange}
           style={{
@@ -528,12 +652,7 @@ export function Toolbar() {
             }
           }}
           disabled={isLoading}
-          style={{
-            ...btnBase,
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0,
-            paddingRight: 20,
-          }}
+          style={{ ...btnBase, borderRadius: 0, paddingRight: 20 }}
           title="選擇目標編制"
         >
           <option value="violin_piano">小提琴+鋼琴</option>
@@ -550,56 +669,120 @@ export function Toolbar() {
               : "🛠 自訂編制..."}
           </option>
         </select>
-      </div>
-      <label
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          fontSize: 11,
-          color: "var(--fg-muted)",
-        }}
-        title="改編後自動執行修復迴圈, 嘗試解決音域 / 把位等問題"
-      >
-        <input
-          type="checkbox"
-          checked={enableRepair}
-          onChange={(e) => setEnableRepair(e.target.checked)}
-          style={{ margin: 0 }}
-        />
-        修復
-      </label>
-      <select
-        value={skillLevel}
-        onChange={(e) =>
-          setSkillLevel(e.target.value as typeof skillLevel)}
-        disabled={isLoading}
-        style={{
-          ...btnBase,
-          fontSize: 11,
-          padding: "4px 8px",
-        }}
-        title="目標演奏者技術水平 — amateur 會主動縮減和弦/避難段, professional 不限"
-      >
-        <option value="amateur">業餘</option>
-        <option value="intermediate">中級</option>
-        <option value="professional">專業</option>
-      </select>
-      {stylePresets.length > 0 && (
-        <select
-          value={stylePreset}
-          onChange={(e) => setStylePreset(e.target.value)}
-          disabled={isLoading}
-          style={{ ...btnBase, fontSize: 11, padding: "4px 8px" }}
-          title="改編風格 — 套用後處理 hooks (旋律 / bass 強化 / continuo 等)"
+        <button
+          onClick={() => setArrangeOptsOpen((v) => !v)}
+          style={{
+            ...btnBase,
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+            borderLeft: "1px solid var(--border-light)",
+            padding: "5px 7px",
+            background: arrangeOptsOpen
+              ? "var(--bg-hover)"
+              : btnBase.background,
+          }}
+          title="改編選項 (自動修復 / 技術水平 / 風格)"
         >
-          {stylePresets.map((p) => (
-            <option key={p.id} value={p.id} title={p.description}>
-              {p.display_name}
-            </option>
-          ))}
-        </select>
-      )}
+          ⚙
+        </button>
+        {arrangeOptsOpen && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              marginTop: 4,
+              minWidth: 210,
+              background: "var(--bg-panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 6,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+              padding: 10,
+              zIndex: 100,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "var(--fg-muted)",
+              }}
+            >
+              改編選項
+            </div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+              title="改編後自動執行修復迴圈, 嘗試解決音域 / 把位等問題"
+            >
+              <input
+                type="checkbox"
+                checked={enableRepair}
+                onChange={(e) => setEnableRepair(e.target.checked)}
+                style={{ margin: 0 }}
+              />
+              改編後自動修復
+            </label>
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "var(--fg-muted)",
+                  marginBottom: 3,
+                }}
+              >
+                演奏者技術水平
+              </div>
+              <select
+                value={skillLevel}
+                onChange={(e) =>
+                  setSkillLevel(e.target.value as typeof skillLevel)}
+                disabled={isLoading}
+                style={{ ...btnBase, width: "100%", fontSize: 12 }}
+                title="amateur 會主動縮減和弦 / 避難段, professional 不限"
+              >
+                <option value="amateur">業餘</option>
+                <option value="intermediate">中級</option>
+                <option value="professional">專業</option>
+              </select>
+            </div>
+            {stylePresets.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--fg-muted)",
+                    marginBottom: 3,
+                  }}
+                >
+                  改編風格
+                </div>
+                <select
+                  value={stylePreset}
+                  onChange={(e) => setStylePreset(e.target.value)}
+                  disabled={isLoading}
+                  style={{ ...btnBase, width: "100%", fontSize: 12 }}
+                  title="套用後處理 hooks (旋律 / bass 強化 / continuo 等)"
+                >
+                  {stylePresets.map((p) => (
+                    <option key={p.id} value={p.id} title={p.description}>
+                      {p.display_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <button
         onClick={() => setNlEditOpen(true)}
         style={btnBase}
@@ -636,6 +819,7 @@ export function Toolbar() {
 
       {/* === 檔名 (吃所有剩餘空間, 視窗變窄時優先壓縮) === */}
       <span
+        ref={filenameRef}
         style={{
           flex: "1 1 0",
           minWidth: 0,
@@ -656,59 +840,115 @@ export function Toolbar() {
           : ""}
       </span>
 
+      {/* === Group 5: 縮放 (可收合) === */}
+      {collapseLevel < 2 && (
+        <>
+          <Sep />
+          <div
+            ref={zoomGroupRef}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <ZoomControls />
+          </div>
+        </>
+      )}
+
+      {/* === Group 6: 檢視 (可收合) === */}
+      {collapseLevel < 1 && (
+        <>
+          <Sep />
+          <div
+            ref={viewGroupRef}
+            style={{ display: "flex", alignItems: "center", gap: 4 }}
+          >
+            {renderViewButtons()}
+          </div>
+        </>
+      )}
+
+      {/* === Group 7: 匯出 (可收合) === */}
+      {collapseLevel < 3 && (
+        <>
+          <Sep />
+          <div
+            ref={exportGroupRef}
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <ExportMenu
+              buttonStyle={btnBase}
+              disabled={!sourcePath || isLoading}
+            />
+          </div>
+        </>
+      )}
+
+      {/* === 溢出選單: 視窗過窄時自動收合的群組 === */}
+      {collapseLevel > 0 && (
+        <>
+          <Sep />
+          <div ref={overflowRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => setOverflowOpen((v) => !v)}
+              style={{
+                ...btnIcon,
+                background: overflowOpen
+                  ? "var(--bg-hover)"
+                  : btnIcon.background,
+              }}
+              title="更多工具 (視窗較窄時自動收合於此)"
+            >
+              ⋯
+            </button>
+            {/* 內容常駐 (display 切換) — 收合的 ZoomControls 鍵盤快捷鍵不中斷 */}
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                marginTop: 4,
+                minWidth: 190,
+                background: "var(--bg-panel)",
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+                padding: 10,
+                zIndex: 100,
+                display: overflowOpen ? "flex" : "none",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              {collapseLevel >= 1 && (
+                <div>
+                  <div style={overflowLabelStyle}>檢視</div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {renderViewButtons()}
+                  </div>
+                </div>
+              )}
+              {collapseLevel >= 2 && (
+                <div>
+                  <div style={overflowLabelStyle}>縮放</div>
+                  <ZoomControls />
+                </div>
+              )}
+              {collapseLevel >= 3 && (
+                <div>
+                  <div style={overflowLabelStyle}>匯出</div>
+                  <ExportMenu
+                    buttonStyle={btnBase}
+                    disabled={!sourcePath || isLoading}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
       <Sep />
 
-      {/* === Group 5: 縮放 === */}
-      <ZoomControls />
-
-      <Sep />
-
-      {/* === Group 6: 檢視 === */}
-      <button
-        onClick={toggleHeatmap}
-        style={{
-          ...btnIcon,
-          background: showHeatmap ? "var(--accent)" : btnIcon.background,
-          color: showHeatmap ? "var(--accent-fg)" : btnIcon.color,
-        }}
-        title={showHeatmap ? "關閉難度熱圖" : "顯示難度熱圖"}
-      >
-        🔥
-      </button>
-      <button
-        onClick={togglePanelLayout}
-        style={btnIcon}
-        title={
-          panelLayout === "vertical"
-            ? "切為左右排列 (⌘\\)"
-            : "切為上下排列 (⌘\\)"
-        }
-      >
-        {panelLayout === "vertical" ? "▤" : "▥"}
-      </button>
-      <button
-        onClick={toggleInfoPanelPos}
-        style={btnIcon}
-        title={
-          infoPanelPos === "side"
-            ? "資訊欄移到下方"
-            : "資訊欄移到右側"
-        }
-      >
-        {infoPanelPos === "side" ? "◧" : "▭"}
-      </button>
-
-      <Sep />
-
-      {/* === Group 7: 匯出 === */}
-      <ExportMenu
-        buttonStyle={btnBase}
-        disabled={!sourcePath || isLoading}
-      />
-
-      <Sep />
-
-      {/* === Group 8: 設定 overflow menu === */}
+      {/* === Group 9: 設定 overflow menu === */}
       <div ref={settingsRef} style={{ position: "relative" }}>
         <button
           onClick={() => setSettingsOpen((v) => !v)}
