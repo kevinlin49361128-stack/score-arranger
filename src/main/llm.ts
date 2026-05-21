@@ -33,6 +33,7 @@ export interface LLMSuggestionContext {
   context: string;
   userQuery: string;
   ensemble?: string;
+  styleAddendum?: string;
 }
 
 export interface LLMSuggestion {
@@ -253,6 +254,9 @@ export async function callLLMSuggestion(
 
   const userMessage = [
     `編制: ${ctx.ensemble ?? "未指定"}`,
+    ...(ctx.styleAddendum
+      ? ["", `風格脈絡: ${ctx.styleAddendum}`]
+      : []),
     "",
     "譜段:",
     ctx.context,
@@ -278,6 +282,7 @@ export interface LLMEditPlanContext {
   history?: { request: string; summary: string }[];
   measureCount: number;
   ensemble?: string;
+  styleAddendum?: string;
 }
 
 export interface LLMEditOp {
@@ -447,6 +452,7 @@ export async function callLLMEditPlan(
   const userMessage = [
     `編制: ${ctx.ensemble ?? "未指定"}`,
     `總小節數: ${ctx.measureCount}`,
+    ...(ctx.styleAddendum ? [`風格脈絡: ${ctx.styleAddendum}`] : []),
     "可用聲部 (改編後的目標譜):",
     partList,
     "來源聲部 (僅供 reassign 操作使用):",

@@ -51,6 +51,7 @@ declare global {
         context: string;
         userQuery: string;
         ensemble?: string;
+        styleAddendum?: string;
       }) => Promise<IpcResponse<{ text: string }>>;
       llmGetConfig: () => Promise<LLMConfigUI>;
       llmSetConfig: (partial: {
@@ -65,6 +66,7 @@ declare global {
         history?: { request: string; summary: string }[];
         measureCount: number;
         ensemble?: string;
+        styleAddendum?: string;
       }) => Promise<IpcResponse<LLMEditPlan>>;
       llmExplainIssue: (ctx: {
         issueDescription: string;
@@ -88,7 +90,8 @@ declare global {
           strategyOrder?: string[],
         ) => Promise<IpcResponse<ArrangementResult>>;
         listStylePresets: () => Promise<IpcResponse<
-          { id: string; display_name: string; description: string }[]
+          { id: string; display_name: string; description: string;
+            llm_addendum: string }[]
         >>;
         listAvailableInstruments: () => Promise<IpcResponse<Array<{
           instrument_id: string;

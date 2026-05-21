@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useSessionStore } from "../stores/sessionStore";
 
 interface Props {
   context: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
+  const styleAddendum = useSessionStore((s) => s.styleAddendum);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,7 @@ export function LLMSuggestionDialog({ context, ensemble, onClose }: Props) {
         context,
         userQuery: query,
         ensemble,
+        styleAddendum: styleAddendum || undefined,
       });
       if (res.ok && res.data) {
         setResponse(res.data.text);

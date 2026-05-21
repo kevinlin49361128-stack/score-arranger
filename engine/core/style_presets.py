@@ -123,14 +123,6 @@ def _post_thicken_bass_octave(arrangement) -> None:
                 voice.events = new_events
 
 
-def _post_classical_inner_dialog(arrangement) -> None:
-    """古典弦四對話式: 內聲部 (violin II + viola) 若有空, 對 melody 做 imitation
-    (簡化: 用既有 voice_filler 然後對相鄰小節做 echo). Phase 1 簡化: no-op 留
-    為 placeholder, 透過 LLM addendum 提示風格.
-    """
-    pass
-
-
 def _post_alberti_bass(arrangement) -> None:
     """把鋼琴左手柱式長和弦展開為阿爾貝蒂低音 (古典伴奏織體)."""
     from .pianistic import apply_pianistic_texture
@@ -157,7 +149,6 @@ PRESETS: dict[str, StylePreset] = {
         description=(
             "對話式分配 — 內聲部 (vln II / viola) 主動模仿主題, 強調對位."
         ),
-        post_hooks=[_post_classical_inner_dialog],
         llm_addendum=(
             "風格目標: Mozart / Haydn 古典弦樂四重奏. 內聲部 (violin II / viola)"
             " 不只是和聲填充, 偶爾模仿 violin I 的旋律動機, 形成對話. 避免 "
@@ -229,6 +220,7 @@ def list_presets() -> list[dict]:
             "id": p.preset_id,
             "display_name": p.display_name,
             "description": p.description,
+            "llm_addendum": p.llm_addendum,
         }
         for p in PRESETS.values()
     ]

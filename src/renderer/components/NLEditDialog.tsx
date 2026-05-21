@@ -117,6 +117,7 @@ export function NLEditDialog({ onClose }: Props) {
   const {
     arrangement,
     sourcePath,
+    styleAddendum,
     setTargetMusicXML,
     setArrangementIssues,
     setHistoryFlags,
@@ -208,6 +209,7 @@ export function NLEditDialog({ onClose }: Props) {
         history,
         measureCount: measureCount || 9999,
         ensemble: arrangement?.name,
+        styleAddendum: styleAddendum || undefined,
       });
       if (res.ok && res.data) {
         setPlan(res.data);

@@ -242,6 +242,10 @@ interface SessionState {
   error: string | null;
   setError: (msg: string | null) => void;
 
+  // 當前風格 preset 的 LLM 提示文字 (給 AI 建議 / 自然語言改譜帶風格脈絡)
+  styleAddendum: string;
+  setStyleAddendum: (text: string) => void;
+
   // UI mode
   mode: AppMode;
   setMode: (m: AppMode) => void;
@@ -372,6 +376,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   error: null,
   setError: (msg) => set({ error: msg }),
+
+  styleAddendum: "",
+  setStyleAddendum: (text) => set({ styleAddendum: text }),
 
   mode: "setup",
   setMode: (m) => set({ mode: m }),

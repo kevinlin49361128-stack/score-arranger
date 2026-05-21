@@ -345,10 +345,12 @@ export async function arrangeScore(
 }
 
 export async function listStylePresets(): Promise<
-  { id: string; display_name: string; description: string }[]
+  { id: string; display_name: string; description: string;
+    llm_addendum: string }[]
 > {
   return (await client.call("list_style_presets", {})) as {
     id: string; display_name: string; description: string;
+    llm_addendum: string;
   }[];
 }
 

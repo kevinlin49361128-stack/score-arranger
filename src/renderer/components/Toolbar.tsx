@@ -80,6 +80,7 @@ export function Toolbar() {
     setArrangementIssues,
     setLoading,
     setError,
+    setStyleAddendum,
     isLoading,
     setMode,
     theme,
@@ -119,7 +120,8 @@ export function Toolbar() {
   >("professional");
   const [stylePreset, setStylePreset] = useState<string>("none");
   const [stylePresets, setStylePresets] = useState<
-    { id: string; display_name: string; description: string }[]
+    { id: string; display_name: string; description: string;
+      llm_addendum: string }[]
   >([]);
   useEffect(() => {
     let alive = true;
@@ -132,6 +134,11 @@ export function Toolbar() {
       .catch(() => {});
     return () => { alive = false; };
   }, []);
+  // 當前風格的 LLM 提示 → 推進 store, 供 AI 建議 / 自然語言改譜帶風格脈絡
+  useEffect(() => {
+    const active = stylePresets.find((p) => p.id === stylePreset);
+    setStyleAddendum(active?.llm_addendum ?? "");
+  }, [stylePreset, stylePresets, setStyleAddendum]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [aboutOpen, setAboutOpen] = useState(false);

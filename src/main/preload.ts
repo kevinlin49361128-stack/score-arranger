@@ -26,6 +26,7 @@ const api = {
     context: string;
     userQuery: string;
     ensemble?: string;
+    styleAddendum?: string;
   }) => ipcRenderer.invoke("llm:suggest", ctx),
   /** 讀取目前 LLM 設定 (provider / baseUrl / model + 是否可用) */
   llmGetConfig: () => ipcRenderer.invoke("llm:getConfig"),
@@ -43,6 +44,7 @@ const api = {
     history?: { request: string; summary: string }[];
     measureCount: number;
     ensemble?: string;
+    styleAddendum?: string;
   }) => ipcRenderer.invoke("llm:editPlan", ctx),
   /** 可演奏性問題 LLM 解讀 — 解釋問題 + 推薦既有建議 */
   llmExplainIssue: (ctx: {
