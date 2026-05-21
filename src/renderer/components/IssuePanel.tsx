@@ -35,6 +35,52 @@ const SEVERITY_META = {
   info: { icon: "🟢", label: "提示", colorVar: "--success-fg" },
 } as const;
 
+/** issue code → 簡短人類標籤 (給「同類收合」的群組標題用)。未列出者 fallback 到 code。 */
+const ISSUE_SHORT_LABEL: Record<string, string> = {
+  E_PITCH_BELOW_RANGE: "音域過低",
+  E_PITCH_ABOVE_RANGE: "音域過高",
+  E_STRING_CHORD_EXCEED: "和弦音數超過上限",
+  E_NOTE_BELOW_STRING: "音低於該弦",
+  E_NON_ADJACENT_STRINGS: "跨非相鄰弦",
+  E_VIOLIN_FRET_TOO_HIGH: "小提琴把位過高",
+  E_VIOLIN_STRETCH_EXCEED: "小提琴伸展超限",
+  E_VIOLA_FRET_TOO_HIGH: "中提琴把位過高",
+  E_VIOLA_STRETCH_EXCEED: "中提琴伸展超限",
+  E_CELLO_FRET_TOO_HIGH: "大提琴把位過高",
+  E_CELLO_STRETCH_EXCEED: "大提琴伸展超限",
+  E_MONOPHONIC_CHORD: "單音樂器奏和弦",
+  E_PIANO_HAND_SPAN: "鋼琴單手跨距超限",
+  E_PIANO_HAND_SPAN_EXCEED: "鋼琴單手跨距超限",
+  W_PITCH_OUT_OF_COMFORTABLE: "超出舒適音域",
+  W_PITCH_EXTREME: "接近極限音域",
+  W_VIOLIN_STRETCH_LARGE: "小提琴伸展偏大",
+  W_VIOLA_STRETCH_LARGE: "中提琴伸展偏大",
+  W_CELLO_STRETCH_LARGE: "大提琴伸展偏大",
+  W_PIANO_HAND_SPAN_LARGE: "鋼琴單手跨距偏大",
+  W_VIOLIN_TRIPLE_QUAD_STOP: "小提琴三/四音和弦",
+  W_VIOLA_TRIPLE_QUAD_STOP: "中提琴三/四音和弦",
+  W_CELLO_TRIPLE_QUAD_STOP: "大提琴三/四音和弦",
+  W_PARALLEL_FIFTHS: "平行五度",
+  W_PARALLEL_OCTAVES: "平行八度",
+};
+
+function shortLabel(code: string): string {
+  return ISSUE_SHORT_LABEL[code] ?? code;
+}
+
+/** 把同一 severity 的 issue 依 code 收合; 數量多的排前面 (大問題優先)。 */
+function groupByCode(
+  list: UnifiedIssue[],
+): Array<[string, UnifiedIssue[]]> {
+  const byCode = new Map<string, UnifiedIssue[]>();
+  for (const issue of list) {
+    const arr = byCode.get(issue.code);
+    if (arr) arr.push(issue);
+    else byCode.set(issue.code, [issue]);
+  }
+  return [...byCode.entries()].sort((a, b) => b[1].length - a[1].length);
+}
+
 interface UnifiedIssue {
   partId: string;
   measure: number;
@@ -264,8 +310,12 @@ export function IssuePanel() {
         }}
       >
         {canApply
-          ? `改編結果問題 (${issues.length}) — 點建議可直接套用`
-          : `分析報告 (${issues.length}) — 改編後可套用建議`}
+          ? `改編結果 — 🔴 ${groups.error.length} 錯誤 · `
+            + `🟡 ${groups.warning.length} 警告 · `
+            + `🟢 ${groups.info.length} 提示 (點建議可直接套用)`
+          : `分析報告 — 🔴 ${groups.error.length} 錯誤 · `
+            + `🟡 ${groups.warning.length} 警告 · `
+            + `🟢 ${groups.info.length} 提示 (改編後可套用建議)`}
       </div>
       {(Object.keys(SEVERITY_META) as Array<keyof typeof SEVERITY_META>).map(
         (sev) => {
@@ -316,128 +366,190 @@ export function IssuePanel() {
                       無此類問題
                     </li>
                   )}
-                  {list.map((issue, idx) => {
-                    const key = `${issue.partId}-${issue.measure}-${idx}`;
-                    const busyKey =
-                      issue.voiceId != null && issue.eventIndex != null
-                        ? `${issue.partId}-${issue.measure}-${issue.voiceId}-${issue.eventIndex}`
-                        : null;
-                    const isBusy = busyKey === busyIssueKey;
+                  {groupByCode(list).map(([groupCode, codeIssues]) => {
+                    const groupKey = `${sev}:${groupCode}`;
+                    const groupOpen = expanded.has(groupKey);
                     return (
                       <li
-                        key={key}
-                        onClick={() => setHighlightedMeasure(issue.measure)}
+                        key={groupKey}
                         style={{
-                          padding: "8px 24px",
-                          fontSize: 13,
                           borderTop: "1px solid var(--border-light)",
-                          cursor: "pointer",
-                          color: "var(--fg-secondary)",
-                          opacity: isBusy ? 0.5 : 1,
                         }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background =
-                            "var(--bg-hover)")}
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "transparent")}
                       >
-                        <div>
-                          <strong>m.{issue.measure}</strong>{" "}
-                          <span style={{ color: "var(--fg-muted)" }}>
-                            ({issue.partId})
+                        {/* 同類收合的群組標題 */}
+                        <div
+                          onClick={() => toggle(groupKey)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "6px 24px",
+                            cursor: "pointer",
+                            userSelect: "none",
+                            fontSize: 13,
+                            color: "var(--fg-secondary)",
+                          }}
+                        >
+                          <span style={{ color: "var(--fg-tertiary)" }}>
+                            {groupOpen ? "▾" : "▸"}
                           </span>
-                          : <code
-                              style={{
-                                fontSize: 11,
-                                background: "var(--code-bg)",
-                                padding: "1px 4px",
-                                borderRadius: 3,
-                              }}
-                            >
-                              {issue.code}
-                            </code>
-                          <div
-                            style={{
-                              marginTop: 2,
-                              fontSize: 12,
-                              color: "var(--fg-muted)",
-                            }}
-                          >
-                            {t(issue.code, issue.params)}
-                          </div>
+                          <span style={{ fontWeight: 600 }}>
+                            {shortLabel(groupCode)}
+                          </span>
+                          <span style={{ color: "var(--fg-muted)" }}>
+                            ×{codeIssues.length}
+                          </span>
                         </div>
-                        {(() => {
-                          // 弦樂演奏衝突 → 顯示指板模擬器
-                          const inst = stringInstrumentOf(issue.partId);
-                          const midis = issue.params.event_midis as
-                            | number[]
-                            | undefined;
-                          if (
-                            inst && Array.isArray(midis) && midis.length > 0
-                            && (issue.code.includes("STRING")
-                              || issue.code.includes("NON_ADJACENT")
-                              || issue.code.includes("STRETCH")
-                              || issue.code.includes("FRET")
-                              || issue.code.includes("BELOW_STRING")
-                              || issue.code.includes("TRIPLE_QUAD"))
-                          ) {
-                            return (
-                              <div
-                                style={{ marginTop: 6 }}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <FingerboardSimulator
-                                  instrument={inst}
-                                  pitches={midis}
-                                />
-                              </div>
-                            );
-                          }
-                          return null;
-                        })()}
-                        {issue.suggestions.length > 0 && (
-                          <div
+                        {groupOpen && (
+                          <ul
                             style={{
-                              marginTop: 4,
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 4,
+                              margin: 0,
+                              padding: 0,
+                              listStyle: "none",
                             }}
                           >
-                            {sortByPreference(issue.suggestions).map((s, si) => (
-                              <button
-                                key={si}
-                                disabled={isBusy || !canApply}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleApply(issue, s.code);
-                                }}
-                                onMouseEnter={() =>
-                                  handlePreviewStart(issue, s.code)}
-                                onMouseLeave={handlePreviewEnd}
-                                title={
-                                  canApply
-                                    ? `hover 預覽 / 點擊套用 ${s.code}`
-                                    : "需先執行改編才可套用建議"
-                                }
-                                style={{
-                                  fontSize: 11,
-                                  padding: "2px 8px",
-                                  border: "1px solid var(--border)",
-                                  background: canApply
-                                    ? "var(--button-bg)"
-                                    : "var(--bg-tertiary)",
-                                  color: canApply
-                                    ? "var(--button-fg)"
-                                    : "var(--fg-tertiary)",
-                                  borderRadius: 4,
-                                  cursor: canApply ? "pointer" : "not-allowed",
-                                }}
-                              >
-                                {s.code.replace(/^S_/, "")}
-                              </button>
-                            ))}
-                          </div>
+                            {codeIssues.map((issue, idx) => {
+                              const key =
+                                `${issue.partId}-${issue.measure}`
+                                + `-${groupCode}-${idx}`;
+                              const busyKey =
+                                issue.voiceId != null
+                                && issue.eventIndex != null
+                                  ? `${issue.partId}-${issue.measure}`
+                                    + `-${issue.voiceId}-${issue.eventIndex}`
+                                  : null;
+                              const isBusy = busyKey === busyIssueKey;
+                              return (
+                                <li
+                                  key={key}
+                                  onClick={() =>
+                                    setHighlightedMeasure(issue.measure)}
+                                  style={{
+                                    padding: "8px 36px",
+                                    fontSize: 13,
+                                    borderTop:
+                                      "1px solid var(--border-light)",
+                                    cursor: "pointer",
+                                    color: "var(--fg-secondary)",
+                                    opacity: isBusy ? 0.5 : 1,
+                                  }}
+                                  onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "var(--bg-hover)")}
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background =
+                                      "transparent")}
+                                >
+                                  <div>
+                                    <strong>m.{issue.measure}</strong>{" "}
+                                    <span
+                                      style={{ color: "var(--fg-muted)" }}
+                                    >
+                                      ({issue.partId})
+                                    </span>
+                                    <div
+                                      style={{
+                                        marginTop: 2,
+                                        fontSize: 12,
+                                        color: "var(--fg-muted)",
+                                      }}
+                                    >
+                                      {t(issue.code, issue.params)}
+                                    </div>
+                                  </div>
+                                  {(() => {
+                                    // 弦樂演奏衝突 → 顯示指板模擬器
+                                    const inst = stringInstrumentOf(
+                                      issue.partId,
+                                    );
+                                    const midis = issue.params
+                                      .event_midis as number[] | undefined;
+                                    if (
+                                      inst && Array.isArray(midis)
+                                      && midis.length > 0
+                                      && (issue.code.includes("STRING")
+                                        || issue.code.includes(
+                                          "NON_ADJACENT",
+                                        )
+                                        || issue.code.includes("STRETCH")
+                                        || issue.code.includes("FRET")
+                                        || issue.code.includes(
+                                          "BELOW_STRING",
+                                        )
+                                        || issue.code.includes(
+                                          "TRIPLE_QUAD",
+                                        ))
+                                    ) {
+                                      return (
+                                        <div
+                                          style={{ marginTop: 6 }}
+                                          onClick={(e) =>
+                                            e.stopPropagation()}
+                                        >
+                                          <FingerboardSimulator
+                                            instrument={inst}
+                                            pitches={midis}
+                                          />
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+                                  {issue.suggestions.length > 0 && (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        gap: 4,
+                                      }}
+                                    >
+                                      {sortByPreference(
+                                        issue.suggestions,
+                                      ).map((s, si) => (
+                                        <button
+                                          key={si}
+                                          disabled={isBusy || !canApply}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleApply(issue, s.code);
+                                          }}
+                                          onMouseEnter={() =>
+                                            handlePreviewStart(
+                                              issue, s.code,
+                                            )}
+                                          onMouseLeave={handlePreviewEnd}
+                                          title={
+                                            canApply
+                                              ? `hover 預覽 / 點擊套用 ${s.code}`
+                                              : "需先執行改編才可套用建議"
+                                          }
+                                          style={{
+                                            fontSize: 11,
+                                            padding: "2px 8px",
+                                            border:
+                                              "1px solid var(--border)",
+                                            background: canApply
+                                              ? "var(--button-bg)"
+                                              : "var(--bg-tertiary)",
+                                            color: canApply
+                                              ? "var(--button-fg)"
+                                              : "var(--fg-tertiary)",
+                                            borderRadius: 4,
+                                            cursor: canApply
+                                              ? "pointer"
+                                              : "not-allowed",
+                                          }}
+                                        >
+                                          {s.code.replace(/^S_/, "")}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
                         )}
                       </li>
                     );
