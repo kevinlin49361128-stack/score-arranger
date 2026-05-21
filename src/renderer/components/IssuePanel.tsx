@@ -291,6 +291,8 @@ export function IssuePanel() {
           converged={repair.converged}
           severityBefore={repair.severity_before}
           severityAfter={repair.severity_after}
+          qualityBefore={repair.quality_before}
+          qualityAfter={repair.quality_after}
           finalMusicXML={arrangement?.target_musicxml ?? null}
           onScrub={(xml) => {
             if (xml) setTargetMusicXML(xml);

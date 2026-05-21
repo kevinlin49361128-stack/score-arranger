@@ -11,22 +11,46 @@
  */
 
 import { useState } from "react";
-import type { RepairTimelineEntry } from "@shared/types";
+import type { QualityScores, RepairTimelineEntry } from "@shared/types";
 
 interface Props {
   timeline: RepairTimelineEntry[];
   converged: boolean;
   severityBefore: number;
   severityAfter: number;
+  /** 修復前/後的改編品質 (melody/harmony/playability) */
+  qualityBefore?: QualityScores | null;
+  qualityAfter?: QualityScores | null;
   /** 最終 (修復完成) 的 MusicXML — slider 最右端 */
   finalMusicXML: string | null;
   /** 拖拽時回呼: 把該步的 MusicXML 送出去預覽; null = 還原最終版 */
   onScrub: (musicxml: string | null) => void;
 }
 
+/** 一項品質的 before→after 顯示, after 退步時標警示色。 */
+function QualityDelta(
+  { label, before, after }: {
+    label: string;
+    before: number;
+    after: number;
+  },
+) {
+  const improved = after >= before - 0.001;
+  return (
+    <span>
+      {label}{" "}
+      <span style={{ color: "var(--fg-muted)" }}>{before.toFixed(2)}</span>
+      →
+      <span style={{ color: improved ? "#34d399" : "#f59e0b" }}>
+        {after.toFixed(2)}
+      </span>
+    </span>
+  );
+}
+
 export function RepairTimeline(
   { timeline, converged, severityBefore, severityAfter,
-    finalMusicXML, onScrub }: Props,
+    qualityBefore, qualityAfter, finalMusicXML, onScrub }: Props,
 ) {
   // step 0 = 改編完成 (最終); step 1..N = 第 N 次迭代後
   // slider 值: N = 最終, 0 = 第一步前... 用 index into [...timeline, final]
@@ -96,6 +120,34 @@ export function RepairTimeline(
             : `檢視: 第 ${step + 1} 步`}
         </span>
       </div>
+
+      {/* 修復前後品質 — 嚴重度遞減之外, 顯示對音樂品質的實際影響 */}
+      {qualityBefore && qualityAfter && (
+        <div style={{
+          fontSize: 11,
+          color: "var(--fg-tertiary)",
+          marginBottom: 6,
+        }}>
+          品質{" "}
+          <QualityDelta
+            label="旋律"
+            before={qualityBefore.melody_preservation}
+            after={qualityAfter.melody_preservation}
+          />
+          {" · "}
+          <QualityDelta
+            label="和聲"
+            before={qualityBefore.harmony_completeness}
+            after={qualityAfter.harmony_completeness}
+          />
+          {" · "}
+          <QualityDelta
+            label="可演奏"
+            before={qualityBefore.playability}
+            after={qualityAfter.playability}
+          />
+        </div>
+      )}
 
       {/* slider */}
       <input

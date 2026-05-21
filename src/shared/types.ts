@@ -131,8 +131,17 @@ export interface ArrangementResult {
     severity_before: number;
     severity_after: number;
     timeline?: RepairTimelineEntry[];
+    quality_before?: QualityScores | null;
+    quality_after?: QualityScores | null;
   } | null;
   issues?: ArrangementIssue[];
+}
+
+/** 改編品質三項分數 (0~1) — repair 前/後比對用 */
+export interface QualityScores {
+  melody_preservation: number;
+  harmony_completeness: number;
+  playability: number;
 }
 
 /** 修復迴圈單步 — 給時間軸 scrubber 用 */

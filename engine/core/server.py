@@ -857,11 +857,22 @@ def _serialize_difficulty(arrangement) -> dict:
 
 def _build_repair_info(report, before: float, after: float) -> dict:
     """把 RepairReport 轉成含時間軸 (per-iteration 快照) 的 dict."""
+    from core.quality import quality_to_dict
     return {
         "iterations": len(report.iterations),
         "converged": report.converged,
         "severity_before": before,
         "severity_after": after,
+        # 修復前後的改編品質 (melody/harmony/playability) — 讓 UI 顯示
+        # 修復對音樂品質的實際影響, 而不只是 issue 數。
+        "quality_before": (
+            quality_to_dict(report.quality_before)
+            if report.quality_before is not None else None
+        ),
+        "quality_after": (
+            quality_to_dict(report.quality_after)
+            if report.quality_after is not None else None
+        ),
         # 時間軸 — 每步的修復細節 + MusicXML 快照, 給 scrubber UI
         "timeline": [
             {

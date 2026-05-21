@@ -438,3 +438,61 @@ def test_bach_arrangement_repair():
 
     assert final_score <= initial_score, \
         f"修復未改善: {initial_score} → {final_score}"
+
+
+# ============================================================================
+# 品質感知修復 (quality-aware repair)
+# ============================================================================
+
+def test_repair_reports_quality():
+    """repair_loop 應在 report 帶入修復前/後的品質分數。"""
+    from core.analyzer.function import tag_all_sections
+    from core.arrangement_model import build_ensemble
+    from core.arranger import arrange as run_arrange
+    from core.parser import parse_musicxml
+    from core.quality import QualityReport
+    from core.repair import repair_loop
+
+    score = parse_musicxml("corpus:mozart/k155/movement1")
+    tag_all_sections(score)
+    arr = run_arrange(
+        score, build_ensemble("violin_piano", skill_level="amateur"),
+    )
+    report = repair_loop(arr)
+    assert isinstance(report.quality_before, QualityReport)
+    assert isinstance(report.quality_after, QualityReport)
+    for q in (report.quality_before, report.quality_after):
+        assert 0.0 <= q.melody_preservation <= 1.0
+        assert 0.0 <= q.harmony_completeness <= 1.0
+        assert 0.0 <= q.playability <= 1.0
+
+
+def test_pick_best_candidate_lower_issue_score_wins():
+    """_pick_best_candidate: issue 分數低的候選優先 (品質只是同分時的次鍵)。"""
+    from core.ir import Score
+    from core.repair import _pick_best_candidate
+
+    arr = Arrangement(
+        arrangement_id="x", name="x", source_id="x",
+        players=[], assignments=[], target_score=None,
+    )
+    cands = [
+        ("omit_note", 8.0, Score()),
+        ("octave_shift", 3.0, Score()),
+    ]
+    name, score_after, _ = _pick_best_candidate(arr, cands)
+    assert name == "octave_shift"
+    assert score_after == 3.0
+
+
+def test_pick_best_candidate_single():
+    """單一候選 → 直接回傳, 不需 source_score。"""
+    from core.ir import Score
+    from core.repair import _pick_best_candidate
+
+    arr = Arrangement(
+        arrangement_id="x", name="x", source_id="x",
+        players=[], assignments=[], target_score=None,
+    )
+    name, _, _ = _pick_best_candidate(arr, [("omit_note", 5.0, Score())])
+    assert name == "omit_note"

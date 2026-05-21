@@ -36,6 +36,7 @@ from .ir import (
     Score,
     Voice,
 )
+from .quality import QualityReport, compute_quality
 
 
 # ============================================================================
@@ -94,6 +95,10 @@ class RepairReport:
     final_severity_score: float = 0.0
     converged: bool = False
     manual_issues: list[LocatedIssue] = field(default_factory=list)
+    # 修復前/後的改編品質 (melody/harmony/playability) — 讓使用者看到
+    # 修復除了減少 issue 數, 對音樂品質的實際影響。
+    quality_before: Optional[QualityReport] = None
+    quality_after: Optional[QualityReport] = None
 
 
 # ============================================================================
@@ -467,6 +472,47 @@ PHASE_1_STRATEGIES: list[tuple[str, RepairStrategy]] = [
 # Repair loop 主流程
 # ============================================================================
 
+def _safe_quality(arrangement: Arrangement) -> Optional[QualityReport]:
+    """計算 arrangement 當前品質; 缺 source 或失敗 → None。"""
+    src = getattr(arrangement, "source_score", None)
+    tgt = arrangement.target_score
+    if src is None or tgt is None:
+        return None
+    try:
+        return compute_quality(src, tgt)
+    except Exception:
+        return None
+
+
+def _pick_best_candidate(
+    arrangement: Arrangement,
+    candidates: list[tuple[str, float, Score]],
+) -> tuple[str, float, Score]:
+    """從合格候選 (皆已通過「問題嚴格減少」) 挑最佳。
+
+    主鍵: 問題分數越低越好 (減越多)。同分時用品質當第二鍵 —— 旋律 + 和聲
+    保留度越高越好, 避免「修掉 issue 卻把旋律/和聲弄爛」。
+    """
+    if len(candidates) == 1:
+        return candidates[0]
+    best_score = min(c[1] for c in candidates)
+    tied = [c for c in candidates if c[1] <= best_score + 1e-9]
+    if len(tied) == 1:
+        return tied[0]
+    src = getattr(arrangement, "source_score", None)
+    if src is None:
+        return tied[0]
+
+    def quality_key(c: tuple[str, float, Score]) -> float:
+        try:
+            q = compute_quality(src, c[2])
+            return q.melody_preservation + q.harmony_completeness
+        except Exception:
+            return 0.0
+
+    return max(tied, key=quality_key)
+
+
 def repair_loop(
     arrangement: Arrangement,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
@@ -485,6 +531,7 @@ def repair_loop(
 
     report = RepairReport()
     target = arrangement.target_score
+    report.quality_before = _safe_quality(arrangement)
 
     # 跨輪持久的 manual issue keys (reviewer 建議):
     # collect_issues 每輪重建 LocatedIssue 物件, 所以 is_manual 在物件上不持久;
@@ -509,9 +556,12 @@ def repair_loop(
         target_issue = actionable[0]
         score_before = severity_score(actionable)
 
-        # 嘗試策略
+        # 嘗試所有策略, 收集「能讓問題嚴格減少」的合格候選。
+        # 收斂保證不變: 候選必過 new_score <= score_before - epsilon。
+        # 多個合格時 _pick_best_candidate 用品質分數挑最佳 (有方向修復)。
         applied: Optional[str] = None
         score_after = score_before
+        candidates: list[tuple[str, float, Score]] = []
         for name, strategy in strategies:
             snapshot = copy.deepcopy(target)
             if not strategy(target, target_issue):
@@ -520,15 +570,19 @@ def repair_loop(
             # 重新驗證 (同樣套用 manual 標記)
             new_issues = collect_issues(target)
             mark_manual_by_keys(new_issues, manual_keys)
-            new_actionable = actionable_issues(new_issues)
-            new_score = severity_score(new_actionable)
-
+            new_score = severity_score(actionable_issues(new_issues))
             if new_score <= score_before - epsilon:
-                applied = name
-                score_after = new_score
-                break
-            # 未改善: 回滾
+                candidates.append((name, new_score, copy.deepcopy(target)))
+            # 一律還原, 公平試下一個策略
             _restore_score(arrangement, snapshot)
+            target = arrangement.target_score
+            assert target is not None
+
+        if candidates:
+            applied, score_after, repaired = _pick_best_candidate(
+                arrangement, candidates,
+            )
+            _restore_score(arrangement, repaired)
             target = arrangement.target_score
             assert target is not None
 
@@ -568,6 +622,7 @@ def repair_loop(
     report.manual_issues = [
         i for i in final_issues if i.is_manual
     ]
+    report.quality_after = _safe_quality(arrangement)
     return report
 
 
