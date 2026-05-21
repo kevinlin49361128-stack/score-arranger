@@ -80,6 +80,13 @@ const PRESETS: Preset[] = [
     ensemble: "Trio Sonata",
     measures: 19,
   },
+  {
+    corpus_path: "handel/rinaldo/Lascia_chio_pianga",
+    display_name: "Handel 歌劇《里納爾多》— 讓我哭泣吧",
+    era: "Baroque",
+    ensemble: "聲樂 + 伴奏",
+    measures: 54,
+  },
 
   // ─── Classical ───────────────────────────────────────────
   {
@@ -95,6 +102,20 @@ const PRESETS: Preset[] = [
     era: "Classical",
     ensemble: "弦樂四重奏",
     measures: 84,
+  },
+  {
+    corpus_path: "mozart/k80/movement3",
+    display_name: "Mozart 弦樂四重奏 K.80 第三樂章 (Minuet)",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 52,
+  },
+  {
+    corpus_path: "mozart/k80/movement4",
+    display_name: "Mozart 弦樂四重奏 K.80 第四樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 71,
   },
   {
     corpus_path: "mozart/k155/movement1",
@@ -130,11 +151,87 @@ const PRESETS: Preset[] = [
     measures: 37,
   },
   {
+    corpus_path: "mozart/k156/movement3",
+    display_name: "Mozart 弦樂四重奏 K.156 第三樂章 (Minuet)",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 62,
+  },
+  {
     corpus_path: "mozart/k156/movement4",
     display_name: "Mozart 弦樂四重奏 K.156 第四樂章",
     era: "Classical",
     ensemble: "弦樂四重奏",
     measures: 24,
+  },
+  {
+    corpus_path: "mozart/k458/movement1",
+    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第一樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 283,
+  },
+  {
+    corpus_path: "mozart/k458/movement2",
+    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第二樂章 (Minuet)",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 63,
+  },
+  {
+    corpus_path: "mozart/k458/movement3",
+    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第三樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 53,
+  },
+  {
+    corpus_path: "mozart/k458/movement4",
+    display_name: "Mozart 弦樂四重奏 K.458「狩獵」第四樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 335,
+  },
+  {
+    corpus_path: "haydn/opus1no1/movement1",
+    display_name: "Haydn 弦樂四重奏 op.1/1 第一樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 66,
+  },
+  {
+    corpus_path: "haydn/opus1no1/movement2",
+    display_name: "Haydn 弦樂四重奏 op.1/1 第二樂章 (Minuet)",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 62,
+  },
+  {
+    corpus_path: "haydn/opus74no1/movement1",
+    display_name: "Haydn 弦樂四重奏 op.74/1 第一樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+  },
+  {
+    corpus_path: "haydn/opus74no1/movement2",
+    display_name: "Haydn 弦樂四重奏 op.74/1 第二樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 174,
+  },
+  {
+    corpus_path: "haydn/opus74no1/movement3",
+    display_name: "Haydn 弦樂四重奏 op.74/1 第三樂章 (Minuet)",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 113,
+  },
+  {
+    corpus_path: "haydn/opus74no1/movement4",
+    display_name: "Haydn 弦樂四重奏 op.74/1 第四樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏",
+    measures: 287,
   },
   {
     corpus_path: "beethoven/opus18no1/movement1",
@@ -165,11 +262,25 @@ const PRESETS: Preset[] = [
     measures: 381,
   },
   {
+    corpus_path: "beethoven/opus59no1/movement1",
+    display_name: "Beethoven 弦樂四重奏 op.59/1「拉茲莫夫斯基」第一樂章",
+    era: "Classical",
+    ensemble: "弦樂四重奏 (長)",
+    measures: 400,
+  },
+  {
     corpus_path: "beethoven/opus132",
     display_name: "Beethoven 弦樂四重奏 op.132 (晚期)",
     era: "Classical",
     ensemble: "弦樂四重奏 (長)",
     measures: 1124,
+  },
+  {
+    corpus_path: "mozart/k545/movement1_exposition",
+    display_name: "Mozart 鋼琴奏鳴曲 K.545 第一樂章 (呈示部)",
+    era: "Classical",
+    ensemble: "鋼琴獨奏",
+    measures: 12,
   },
 
   // ─── Romantic ────────────────────────────────────────────
@@ -179,6 +290,13 @@ const PRESETS: Preset[] = [
     era: "Romantic",
     ensemble: "鋼琴獨奏",
     measures: 75,
+  },
+  {
+    corpus_path: "joplin/maple_leaf_rag",
+    display_name: "Joplin 楓葉繁音曲 (Maple Leaf Rag)",
+    era: "Romantic",
+    ensemble: "鋼琴獨奏",
+    measures: 85,
   },
   {
     corpus_path: "schubert/Lindenbaum",
@@ -206,6 +324,13 @@ const PRESETS: Preset[] = [
     display_name: "Schumann op.48 no.2",
     era: "Romantic",
     measures: 18,
+  },
+  {
+    corpus_path: "verdi/laDonnaEMobile",
+    display_name: "Verdi 歌劇《弄臣》— 善變的女人",
+    era: "Romantic",
+    ensemble: "聲樂 + 伴奏",
+    measures: 35,
   },
 ];
 

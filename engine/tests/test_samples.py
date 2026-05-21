@@ -2,7 +2,7 @@
 
 打包版 (PyInstaller frozen) 不含 music21 corpus, 只靠 core/sample_scores/
 下的隨附 .musicxml。本檔確保:
-  - SAMPLE_CORPUS_IDS 清單與前端 PresetLibrary 的 PRESETS 一致 (28 首)
+  - SAMPLE_CORPUS_IDS 清單與前端 PresetLibrary 的 PRESETS 一致 (45 首)
   - 每個 corpus_id 都有對應且存在的 .musicxml
   - corpus:<id> 能被 parse_musicxml 解析成有效 IR
 """
@@ -17,9 +17,9 @@ from core.parser import parse_musicxml
 
 
 def test_sample_count():
-    """PresetLibrary 精選 28 首 — 數量不可漂移。"""
-    assert len(samples.SAMPLE_CORPUS_IDS) == 28
-    assert len(set(samples.SAMPLE_CORPUS_IDS)) == 28  # 無重複
+    """PresetLibrary 精選 45 首 — 數量不可漂移。"""
+    assert len(samples.SAMPLE_CORPUS_IDS) == 45
+    assert len(set(samples.SAMPLE_CORPUS_IDS)) == 45  # 無重複
 
 
 def test_all_samples_resolve():
@@ -30,9 +30,9 @@ def test_all_samples_resolve():
 
 
 def test_list_samples_returns_all():
-    """list_samples() (給 list_corpus RPC 用) 應列出全部 28 首。"""
+    """list_samples() (給 list_corpus RPC 用) 應列出全部 45 首。"""
     listed = samples.list_samples()
-    assert len(listed) == 28
+    assert len(listed) == 45
     for entry in listed:
         assert entry["corpus_path"] in set(samples.SAMPLE_CORPUS_IDS)
         assert entry["composer"]

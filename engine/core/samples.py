@@ -28,27 +28,45 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "bach/bwv344",
     "bach/bwv1.6",
     "corelli/opus3no1/1grave",
-    # Classical
+    "handel/rinaldo/Lascia_chio_pianga",
+    # Classical — 弦樂四重奏
     "mozart/k80/movement1",
     "mozart/k80/movement2",
+    "mozart/k80/movement3",
+    "mozart/k80/movement4",
     "mozart/k155/movement1",
     "mozart/k155/movement2",
     "mozart/k155/movement3",
     "mozart/k156/movement1",
     "mozart/k156/movement2",
+    "mozart/k156/movement3",
     "mozart/k156/movement4",
+    "mozart/k458/movement1",
+    "mozart/k458/movement2",
+    "mozart/k458/movement3",
+    "mozart/k458/movement4",
+    "haydn/opus1no1/movement1",
+    "haydn/opus1no1/movement2",
+    "haydn/opus74no1/movement1",
+    "haydn/opus74no1/movement2",
+    "haydn/opus74no1/movement3",
+    "haydn/opus74no1/movement4",
     "beethoven/opus18no1/movement1",
     "beethoven/opus18no1/movement2",
     "beethoven/opus18no1/movement3",
     "beethoven/opus18no1/movement4",
+    "beethoven/opus59no1/movement1",
     "beethoven/opus132",
-    "haydn/opus74no1/movement1",
+    # Classical — 鋼琴
+    "mozart/k545/movement1_exposition",
     # Romantic
     "chopin/mazurka06-2",
+    "joplin/maple_leaf_rag",
     "schubert/Lindenbaum",
     "schumann_clara/opus17/movement3",
     "schumann_robert/dichterliebe_no2",
     "schumann_robert/opus48no2",
+    "verdi/laDonnaEMobile",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)
@@ -56,12 +74,16 @@ _SET = set(SAMPLE_CORPUS_IDS)
 _COMPOSER = {
     "bach": "J. S. Bach",
     "corelli": "Corelli",
+    "handel": "Handel",
     "mozart": "Mozart",
+    "haydn": "Haydn",
     "beethoven": "Beethoven",
     "chopin": "Chopin",
+    "joplin": "Joplin",
     "schubert": "Schubert",
     "schumann_clara": "Clara Schumann",
     "schumann_robert": "Schumann",
+    "verdi": "Verdi",
 }
 
 
