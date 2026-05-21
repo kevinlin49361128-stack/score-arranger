@@ -1,0 +1,41 @@
+name: CI
+
+# repo 推到 GitHub 後自動生效。本地無法執行 — 純設定檔。
+on:
+  push:
+  pull_request:
+
+jobs:
+  engine:
+    name: Python 引擎 (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安裝引擎依賴
+        run: |
+          cd engine
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest
+      - name: pytest
+        run: cd engine && python -m pytest -q
+
+  frontend:
+    name: 前端 (typecheck / lint / vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: 型別檢查
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: 前端單元測試
+        run: npm run test
