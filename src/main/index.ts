@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
   analyzeScore,
+  applyEditOps,
   applySuggestion,
   arrangeScore,
   detectPhrases,
@@ -46,7 +47,15 @@ import {
   arrangeCustom,
   type CustomPlayerInput,
 } from "./python-bridge";
-import { callLLMSuggestion, getLLMInfo, isLLMAvailable } from "./llm";
+import {
+  callLLMEditPlan,
+  callLLMSuggestion,
+  getLLMConfigForUI,
+  getLLMInfo,
+  isLLMAvailable,
+  type LLMSettings,
+  saveLLMSettings,
+} from "./llm";
 
 const isDev = !app.isPackaged;
 
@@ -280,6 +289,11 @@ function registerIpcHandlers(): void {
         editEvent(partId, measure, voiceId, eventIndex, action, extra)
       ),
   );
+  ipcMain.handle(
+    "engine:applyEditOps",
+    async (_evt, ops: Record<string, unknown>[]) =>
+      safeCall(() => applyEditOps(ops)),
+  );
 
   // 在系統預設 App 開啟 MusicXML (e.g. MuseScore / Dorico)
   // 開啟後啟動 fs.watchFile 監看, 使用者存檔 → 自動推送新內容回 renderer
@@ -389,6 +403,20 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "llm:suggest",
     async (_evt, ctx) => safeCall(() => callLLMSuggestion(ctx)),
+  );
+  // LLM 設定 — 讀 / 寫 provider/baseUrl/model (API key 不落地, 走環境變數)
+  ipcMain.handle("llm:getConfig", async () => getLLMConfigForUI());
+  ipcMain.handle(
+    "llm:setConfig",
+    async (_evt, partial: LLMSettings) => {
+      saveLLMSettings(partial);
+      return getLLMConfigForUI();
+    },
+  );
+  // 自然語言改譜 — LLM 產生可套用的結構化操作
+  ipcMain.handle(
+    "llm:editPlan",
+    async (_evt, ctx) => safeCall(() => callLLMEditPlan(ctx)),
   );
 }
 

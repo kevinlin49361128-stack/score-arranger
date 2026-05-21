@@ -27,6 +27,21 @@ const api = {
     userQuery: string;
     ensemble?: string;
   }) => ipcRenderer.invoke("llm:suggest", ctx),
+  /** 讀取目前 LLM 設定 (provider / baseUrl / model + 是否可用) */
+  llmGetConfig: () => ipcRenderer.invoke("llm:getConfig"),
+  /** 儲存 LLM 設定 — 只存 provider/baseUrl/model, API key 不落地 */
+  llmSetConfig: (partial: {
+    provider?: "anthropic" | "openai_compat" | "ollama";
+    baseUrl?: string;
+    model?: string;
+  }) => ipcRenderer.invoke("llm:setConfig", partial),
+  /** 自然語言改譜 — LLM 產生可套用的結構化操作 */
+  llmEditPlan: (ctx: {
+    userRequest: string;
+    parts: { part_id: string; name: string }[];
+    measureCount: number;
+    ensemble?: string;
+  }) => ipcRenderer.invoke("llm:editPlan", ctx),
   /** 監聽外部編輯器存檔事件; 回傳取消訂閱函式 */
   onExternalEditorChanged: (
     cb: (data: { path: string; musicxml: string }) => void,
@@ -162,6 +177,8 @@ const api = {
         action,
         extra,
       ),
+    applyEditOps: (ops: Record<string, unknown>[]) =>
+      ipcRenderer.invoke("engine:applyEditOps", ops),
     undo: () => ipcRenderer.invoke("engine:undo"),
     redo: () => ipcRenderer.invoke("engine:redo"),
     historyStatus: () => ipcRenderer.invoke("engine:historyStatus"),

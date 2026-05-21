@@ -52,6 +52,18 @@ declare global {
         userQuery: string;
         ensemble?: string;
       }) => Promise<IpcResponse<{ text: string }>>;
+      llmGetConfig: () => Promise<LLMConfigUI>;
+      llmSetConfig: (partial: {
+        provider?: "anthropic" | "openai_compat" | "ollama";
+        baseUrl?: string;
+        model?: string;
+      }) => Promise<LLMConfigUI>;
+      llmEditPlan: (ctx: {
+        userRequest: string;
+        parts: { part_id: string; name: string }[];
+        measureCount: number;
+        ensemble?: string;
+      }) => Promise<IpcResponse<LLMEditPlan>>;
       engine: {
         parse: (path: string) => Promise<IpcResponse<unknown>>;
         validate: (path: string) => Promise<IpcResponse<unknown>>;
@@ -166,6 +178,9 @@ declare global {
           action: string,
           extra?: Record<string, unknown>,
         ) => Promise<IpcResponse<EditEventResult>>;
+        applyEditOps: (
+          ops: LLMEditOp[],
+        ) => Promise<IpcResponse<ApplyEditOpsResult>>;
         undo: () => Promise<IpcResponse<UndoRedoResult>>;
         redo: () => Promise<IpcResponse<UndoRedoResult>>;
         historyStatus: () => Promise<IpcResponse<HistoryStatus>>;
@@ -213,6 +228,46 @@ declare global {
         ) => Promise<IpcResponse<MidiResult>>;
       };
     };
+  }
+
+  interface LLMConfigUI {
+    provider: "anthropic" | "openai_compat" | "ollama";
+    baseUrl: string;
+    model: string;
+    available: boolean;
+  }
+
+  interface LLMEditOp {
+    op: "transpose" | "articulation" | "dynamic";
+    part_id: string;
+    measure_start: number;
+    measure_end: number;
+    semitones?: number;
+    articulation?: string;
+    mode?: "set" | "add" | "clear";
+    dynamic?: string;
+    reason: string;
+  }
+
+  interface LLMEditPlan {
+    summary: string;
+    operations: LLMEditOp[];
+    notes?: string;
+  }
+
+  interface ApplyEditOpsResult {
+    applied: boolean;
+    results: {
+      op: string;
+      part_id: string;
+      measure_start: number;
+      measure_end: number;
+      changed: number;
+    }[];
+    target_musicxml: string | null;
+    issues: ArrangementIssue[];
+    can_undo: boolean;
+    can_redo: boolean;
   }
 
   interface SourcePartInfo {

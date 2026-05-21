@@ -22,6 +22,8 @@ import { useEffect, useRef, useState } from "react";
 import { AboutDialog } from "./AboutDialog";
 import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog";
 import { ExportMenu } from "./ExportMenu";
+import { LLMSettingsDialog } from "./LLMSettingsDialog";
+import { NLEditDialog } from "./NLEditDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { PlaybackControls } from "./PlaybackControls";
 import { PresetLibrary } from "./PresetLibrary";
@@ -64,6 +66,7 @@ export function Toolbar() {
     setSourceMusicXML,
     setTargetMusicXML,
     setAnalysis,
+    arrangement,
     setArrangement,
     setArrangementIssues,
     setLoading,
@@ -123,6 +126,8 @@ export function Toolbar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
+  const [nlEditOpen, setNlEditOpen] = useState(false);
   const [omrDialog, setOmrDialog] = useState<{
     missing: string[];
     hints: Record<string, string>;
@@ -595,6 +600,14 @@ export function Toolbar() {
           ))}
         </select>
       )}
+      <button
+        onClick={() => setNlEditOpen(true)}
+        style={btnBase}
+        disabled={!arrangement || isLoading}
+        title="用自然語言請 AI 修改改編譜 (移調 / 演奏法 / 力度)"
+      >
+        🤖 改譜
+      </button>
 
       <Sep />
 
@@ -747,6 +760,14 @@ export function Toolbar() {
               }}
             />
             <MenuRow
+              label="AI 模型設定"
+              icon="🤖"
+              onClick={() => {
+                setLlmSettingsOpen(true);
+                setSettingsOpen(false);
+              }}
+            />
+            <MenuRow
               label="關於 Score Arranger"
               icon="ⓘ"
               onClick={() => {
@@ -758,6 +779,10 @@ export function Toolbar() {
         )}
       </div>
       {aboutOpen && <AboutDialog onClose={() => setAboutOpen(false)} />}
+      {llmSettingsOpen && (
+        <LLMSettingsDialog onClose={() => setLlmSettingsOpen(false)} />
+      )}
+      {nlEditOpen && <NLEditDialog onClose={() => setNlEditOpen(false)} />}
       {customEnsembleOpen && (
         <CustomEnsembleDialog
           initial={customPlayers ?? undefined}

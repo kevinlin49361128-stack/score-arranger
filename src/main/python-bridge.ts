@@ -540,6 +540,13 @@ export async function editEvent(
   });
 }
 
+/** 套用一批自然語言改譜操作 (整批共用一次 undo)。 */
+export async function applyEditOps(
+  ops: Record<string, unknown>[],
+): Promise<unknown> {
+  return client.call("apply_edit_ops", { ops });
+}
+
 export async function undoEdit(): Promise<unknown> {
   return client.call("undo", {});
 }

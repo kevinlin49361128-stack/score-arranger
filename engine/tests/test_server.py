@@ -670,6 +670,150 @@ class TestApplySuggestion:
 
 
 # ============================================================================
+# apply_edit_ops — 自然語言改譜的批次操作
+# ============================================================================
+
+class TestApplyEditOps:
+    """apply_edit_ops: LLM 產生 / 使用者確認後的批次改譜。"""
+
+    @staticmethod
+    def _setup() -> object:
+        """建立含 violin_1 (3 小節, 各一個 C4 音符) 的合成 arrangement。"""
+        import core.server as srv
+        from fractions import Fraction
+        from core.arrangement_model import Arrangement, violin_piano_ensemble
+        from core.ir import (
+            Measure, Movement, NoteEvent, Part, Pitch, Score, Section, Voice,
+        )
+
+        def mk_measure(num: int) -> Measure:
+            return Measure(
+                number=num, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[
+                    NoteEvent(
+                        pitch=Pitch(60, "C4"),
+                        duration=Fraction(4), onset=Fraction(0),
+                    ),
+                ])},
+            )
+
+        score = Score(
+            movements=[Movement(
+                movement_id=1, measure_count=3,
+                sections=[Section(0, 1, 3)],
+            )],
+            parts=[Part(
+                part_id="violin_1", name_display="V",
+                instrument_id="violin",
+                measures=[mk_measure(1), mk_measure(2), mk_measure(3)],
+            )],
+        )
+        srv._CURRENT_ARRANGEMENT = Arrangement(
+            arrangement_id="t", name="T", source_id="s",
+            players=violin_piano_ensemble(),
+            assignments=[],
+            target_score=score,
+        )
+        srv._HISTORY = []
+        srv._REDO_STACK = []
+        return score
+
+    def test_transpose_shifts_pitches(self):
+        score = self._setup()
+        resp = handle_request({
+            "id": "e1", "method": "apply_edit_ops",
+            "params": {"ops": [{
+                "op": "transpose", "part_id": "violin_1",
+                "measure_start": 1, "measure_end": 2, "semitones": -12,
+            }]},
+        })
+        assert resp["ok"], resp.get("error")
+        assert resp["data"]["applied"]
+        # m.1, m.2 降八度; m.3 不動
+        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 48
+        assert score.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 48
+        assert score.parts[0].measures[2].voices[1].events[0].pitch.midi_number == 60
+        assert resp["data"]["results"][0]["changed"] == 2
+
+    def test_invalid_part_id_rejects_whole_batch(self):
+        """任一 op 無效 → 整批拒絕, 不留半套狀態。"""
+        score = self._setup()
+        resp = handle_request({
+            "id": "e2", "method": "apply_edit_ops",
+            "params": {"ops": [
+                {"op": "transpose", "part_id": "violin_1",
+                 "measure_start": 1, "measure_end": 1, "semitones": 12},
+                {"op": "transpose", "part_id": "nonexistent",
+                 "measure_start": 1, "measure_end": 1, "semitones": 12},
+            ]},
+        })
+        assert not resp["ok"]
+        # 第一個 op 也不該被套用 (all-or-nothing)
+        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
+
+    def test_articulation_and_dynamic(self):
+        score = self._setup()
+        resp = handle_request({
+            "id": "e3", "method": "apply_edit_ops",
+            "params": {"ops": [
+                {"op": "articulation", "part_id": "violin_1",
+                 "measure_start": 1, "measure_end": 3,
+                 "articulation": "staccato", "mode": "set"},
+                {"op": "dynamic", "part_id": "violin_1",
+                 "measure_start": 2, "measure_end": 2, "dynamic": "pp"},
+            ]},
+        })
+        assert resp["ok"], resp.get("error")
+        ev = score.parts[0].measures[0].voices[1].events[0]
+        assert ev.articulations == ["staccato"]
+        assert score.parts[0].measures[1].voices[1].events[0].dynamic == "pp"
+        assert score.parts[0].measures[2].voices[1].events[0].dynamic is None
+
+    def test_locked_event_skipped(self):
+        score = self._setup()
+        score.parts[0].measures[0].voices[1].events[0].is_locked = True
+        resp = handle_request({
+            "id": "e4", "method": "apply_edit_ops",
+            "params": {"ops": [{
+                "op": "transpose", "part_id": "violin_1",
+                "measure_start": 1, "measure_end": 3, "semitones": 12,
+            }]},
+        })
+        assert resp["ok"], resp.get("error")
+        # 鎖定的 m.1 不動, m.2 / m.3 移調
+        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
+        assert score.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 72
+        assert resp["data"]["results"][0]["changed"] == 2
+
+    def test_batch_shares_one_undo(self):
+        """整批 ops 共用一次 history → 一次 undo 全部還原。"""
+        score = self._setup()
+        handle_request({
+            "id": "e5", "method": "apply_edit_ops",
+            "params": {"ops": [
+                {"op": "transpose", "part_id": "violin_1",
+                 "measure_start": 1, "measure_end": 1, "semitones": 12},
+                {"op": "transpose", "part_id": "violin_1",
+                 "measure_start": 2, "measure_end": 2, "semitones": 12},
+            ]},
+        })
+        resp = handle_request({"id": "u", "method": "undo", "params": {}})
+        assert resp["ok"], resp.get("error")
+        import core.server as srv
+        tgt = srv._CURRENT_ARRANGEMENT.target_score
+        assert tgt.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
+        assert tgt.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 60
+
+    def test_empty_ops_rejected(self):
+        self._setup()
+        resp = handle_request({
+            "id": "e6", "method": "apply_edit_ops",
+            "params": {"ops": []},
+        })
+        assert not resp["ok"]
+
+
+# ============================================================================
 # stdio loop 整合
 # ============================================================================
 

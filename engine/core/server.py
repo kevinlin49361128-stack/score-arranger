@@ -1350,6 +1350,180 @@ def _method_edit_event(params: dict[str, Any]) -> dict:
     }
 
 
+# 自然語言改譜可用的 articulation / dynamic 白名單 — 拒絕 LLM 幻覺值
+_NL_ARTICULATIONS = {
+    "staccato", "staccatissimo", "tenuto", "accent",
+    "marcato", "spiccato", "legato", "pizzicato",
+}
+_NL_DYNAMICS = {"ppp", "pp", "p", "mp", "mf", "f", "ff", "fff", "sf", "fp"}
+
+
+def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
+    """套用一批「自然語言改譜」操作 — 由 LLM 產生, 使用者確認後送出。
+
+    params["ops"]: list[dict], 每個 op 為以下之一 (皆作用於 measure 區間):
+      - {"op": "transpose",    part_id, measure_start, measure_end,
+         semitones}            — 區間內所有音符 / 和弦移調
+      - {"op": "articulation", part_id, measure_start, measure_end,
+         articulation, mode}   — set / add / clear 演奏法
+      - {"op": "dynamic",      part_id, measure_start, measure_end,
+         dynamic}              — 區間內所有音符 / 和弦設定力度
+
+    語意:
+      - 整批 ops 共用「一次」history snapshot → 一次 undo 可全部還原
+      - 任何一個 op 驗證失敗 → 整批拒絕, 不留半套狀態
+      - 鎖定 (is_locked) 的事件一律跳過, 不被批次操作覆寫
+    回傳每個 op 實際影響的事件數 + 新 target_musicxml + issues。
+    """
+    import copy as _copy
+    import re as _re
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+
+    ops = params.get("ops") or []
+    if not isinstance(ops, list) or not ops:
+        raise ValueError("ops 為空")
+
+    target = sess.current_arrangement.target_score
+    from core.ir import ChordEvent, NoteEvent, Pitch
+
+    _names = ["C", "C#", "D", "Eb", "E", "F", "F#",
+              "G", "Ab", "A", "Bb", "B"]
+
+    def shift_pitch(p: Pitch, delta: int) -> Pitch:
+        new_midi = max(0, min(127, p.midi_number + delta))
+        m = _re.match(r"^([A-G][#b]*)(\-?\d+)$", p.spelling)
+        if m and abs(delta) % 12 == 0:
+            name, octave = m.groups()
+            return Pitch(
+                midi_number=new_midi,
+                spelling=f"{name}{int(octave) + delta // 12}",
+            )
+        return Pitch(
+            midi_number=new_midi,
+            spelling=f"{_names[new_midi % 12]}{new_midi // 12 - 1}",
+        )
+
+    def part_by_id(pid: str):
+        return next((p for p in target.parts if p.part_id == pid), None)
+
+    # ── 階段一: 驗證全部 ops (整批 all-or-nothing) ────────────────────
+    for i, op in enumerate(ops):
+        if not isinstance(op, dict):
+            raise ValueError(f"op #{i}: 格式錯誤")
+        kind = op.get("op")
+        if kind not in ("transpose", "articulation", "dynamic"):
+            raise ValueError(f"op #{i}: 未知 op 類型 {kind!r}")
+        if part_by_id(op.get("part_id", "")) is None:
+            raise ValueError(
+                f"op #{i}: 找不到 part_id={op.get('part_id')!r}")
+        try:
+            m_start = int(op["measure_start"])
+            m_end = int(op["measure_end"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError(
+                f"op #{i}: measure_start/measure_end 無效",
+            ) from None
+        if m_start > m_end:
+            raise ValueError(f"op #{i}: measure_start > measure_end")
+        if kind == "transpose":
+            if not isinstance(op.get("semitones"), int):
+                raise ValueError(f"op #{i}: transpose 缺整數 semitones")
+            if not -48 <= op["semitones"] <= 48:
+                raise ValueError(f"op #{i}: semitones 超出 ±48 範圍")
+        elif kind == "articulation":
+            mode = op.get("mode", "set")
+            if mode not in ("set", "add", "clear"):
+                raise ValueError(f"op #{i}: 無效 mode {mode!r}")
+            art = op.get("articulation", "")
+            if mode != "clear" and art not in _NL_ARTICULATIONS:
+                raise ValueError(
+                    f"op #{i}: 無效 articulation {art!r}")
+        elif kind == "dynamic":
+            if op.get("dynamic") not in _NL_DYNAMICS:
+                raise ValueError(
+                    f"op #{i}: 無效 dynamic {op.get('dynamic')!r}")
+
+    # ── 階段二: 一次 history snapshot, 然後套用 ───────────────────────
+    new_history = list(sess.history)
+    new_history.append(_copy.deepcopy(target))
+    if len(new_history) > _HISTORY_LIMIT:
+        new_history = new_history[-_HISTORY_LIMIT:]
+    sess.history = new_history
+    sess.redo_stack = []
+
+    results: list[dict] = []
+    for op in ops:
+        kind = op["op"]
+        part = part_by_id(op["part_id"])
+        m_start = int(op["measure_start"])
+        m_end = int(op["measure_end"])
+        changed = 0
+        for measure in part.measures:
+            if not m_start <= measure.number <= m_end:
+                continue
+            for voice in measure.voices.values():
+                if getattr(voice, "is_divisi", False):
+                    continue
+                for ev in voice.events:
+                    if not isinstance(ev, (NoteEvent, ChordEvent)):
+                        continue
+                    if getattr(ev, "is_locked", False):
+                        continue
+                    if kind == "transpose":
+                        delta = int(op["semitones"])
+                        if isinstance(ev, NoteEvent):
+                            ev.pitch = shift_pitch(ev.pitch, delta)
+                        else:
+                            ev.pitches = [
+                                shift_pitch(p, delta) for p in ev.pitches
+                            ]
+                        changed += 1
+                    elif kind == "articulation":
+                        mode = op.get("mode", "set")
+                        art = op.get("articulation", "")
+                        if mode == "clear":
+                            if ev.articulations:
+                                ev.articulations = []
+                                changed += 1
+                        elif mode == "set":
+                            new_list = [art] if art else []
+                            if ev.articulations != new_list:
+                                ev.articulations = new_list
+                                changed += 1
+                        elif art and art not in ev.articulations:
+                            ev.articulations.append(art)
+                            changed += 1
+                    elif kind == "dynamic":
+                        if ev.dynamic != op["dynamic"]:
+                            ev.dynamic = op["dynamic"]
+                            changed += 1
+        results.append({
+            "op": kind,
+            "part_id": op["part_id"],
+            "measure_start": m_start,
+            "measure_end": m_end,
+            "changed": changed,
+        })
+
+    try:
+        new_xml = write_musicxml_string(target)
+    except Exception:
+        new_xml = None
+
+    _persist_session(params.get("session_id"))
+    return {
+        "applied": True,
+        "results": results,
+        "target_musicxml": new_xml,
+        "issues": _serialize_issues(collect_issues(target)),
+        "can_undo": len(sess.history) > 0,
+        "can_redo": len(sess.redo_stack) > 0,
+    }
+
+
 def _method_reassign(params: dict[str, Any]) -> dict:
     """把指定 source_part_id 改路由到新的 (target_player_id, target_staff)。
 
@@ -2075,6 +2249,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "reassign": _method_reassign,
     "list_measure_events": _method_list_measure_events,
     "edit_event": _method_edit_event,
+    "apply_edit_ops": _method_apply_edit_ops,
     "set_measure_articulation": _method_set_measure_articulation,
     "undo": _method_undo,
     "redo": _method_redo,
