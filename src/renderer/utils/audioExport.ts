@@ -86,15 +86,17 @@ export async function renderMidiToWav(
       if (track.notes.length === 0) return;
       const name = (track.instrument?.name || track.name || "").toLowerCase();
       // harpsichord 必須在 piano 前先檢查 — 用 Karplus-Strong pluck pool
+      // (離線渲染不載網路取樣; 參數與 PlaybackControls 的退路合成器一致)
       if (name.includes("harpsichord") || name.includes("clavecin")
           || name.includes("cembalo")) {
         const pool = Array.from({ length: 16 }, () => {
           const p = new Tone.PluckSynth({
-            attackNoise: 0.6,
-            dampening: 3500,
-            resonance: 0.92,
-            release: 1.2,
+            attackNoise: 4,
+            dampening: 4500,
+            resonance: 0.78,
+            release: 0.4,
           } as ConstructorParameters<typeof Tone.PluckSynth>[0]);
+          p.volume.value = -9;
           p.connect(reverb);
           return p;
         });

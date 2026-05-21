@@ -1,13 +1,11 @@
 /**
  * PlaybackControls — 播放 / 暫停 / 停止 + 跟隨游標 + 進度條
  *
- * 音色:
- * - 鋼琴: Salamander Grand Piano 取樣 (tonejs.github.io/audio/salamander/)
- * - 小提琴: Tone.PolySynth 合成 (含弓奏 envelope)
+ * 音色 (首次播放時 async 載入取樣, 失敗則退回合成):
+ * - 鋼琴: Salamander Grand Piano 取樣
+ * - 小提琴 / 大提琴 / 長笛 / 單簧管: nbrosowsky/tonejs-instruments 取樣
+ * - 大鍵琴: gleitz/midi-js-soundfonts (FluidR3) 取樣, 退路為 Karplus-Strong 合成
  * - 其他: PolySynth 退路
- *
- * 載入策略: 首次播放時 async 載入 Salamander samples (約 1MB),
- * 失敗則 fallback 為純合成。
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -22,6 +20,10 @@ const SALAMANDER_BASE = "https://tonejs.github.io/audio/salamander/";
 // nbrosowsky/tonejs-instruments: 多種樂器 sample 集合, MIT,可線上載入
 const TONEJS_INSTRUMENTS_BASE =
   "https://nbrosowsky.github.io/tonejs-instruments/samples/";
+// gleitz/midi-js-soundfonts (FluidR3_GM, MIT): tonejs-instruments 沒有大鍵琴,
+// 改用此 soundfont 的真實大鍵琴取樣。
+const HARPSICHORD_BASE =
+  "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/harpsichord-mp3/";
 
 // tonejs-instruments violin 確認存在的 sample 集
 const VIOLIN_URLS: Record<string, string> = {
@@ -106,6 +108,15 @@ const PIANO_URLS: Record<string, string> = {
   C8: "C8.mp3",
 };
 
+// gleitz FluidR3 大鍵琴 — 全 88 鍵皆有, 此處每 3 半音取一個 (Sampler 內插)。
+const HARPSICHORD_URLS: Record<string, string> = {
+  C2: "C2.mp3", Eb2: "Eb2.mp3", Gb2: "Gb2.mp3", A2: "A2.mp3",
+  C3: "C3.mp3", Eb3: "Eb3.mp3", Gb3: "Gb3.mp3", A3: "A3.mp3",
+  C4: "C4.mp3", Eb4: "Eb4.mp3", Gb4: "Gb4.mp3", A4: "A4.mp3",
+  C5: "C5.mp3", Eb5: "Eb5.mp3", Gb5: "Gb5.mp3", A5: "A5.mp3",
+  C6: "C6.mp3",
+};
+
 /**
  * Karplus-Strong 多聲部撥弦合成器 — wrap a pool of Tone.PluckSynth.
  *
@@ -130,10 +141,12 @@ class PolyPluckSynth {
     this.volume = this._volumeNode.volume;
     this.voices = Array.from({ length: voiceCount }, () => {
       const v = new Tone.PluckSynth({
-        attackNoise: options.attackNoise ?? 0.6,
-        dampening: options.dampening ?? 3500,
-        resonance: options.resonance ?? 0.92,
-        release: options.release ?? 1.2,
+        // 調過的撥弦參數: 高 attackNoise 給清脆的撥片起音, 低 resonance +
+        // 短 release 對應大鍵琴 jack 放開即止音的乾衰減 (不是長殘響)。
+        attackNoise: options.attackNoise ?? 4,
+        dampening: options.dampening ?? 4500,
+        resonance: options.resonance ?? 0.78,
+        release: options.release ?? 0.4,
       } as ConstructorParameters<typeof Tone.PluckSynth>[0]);
       v.connect(this._volumeNode);
       return v;
@@ -236,8 +249,9 @@ export function PlaybackControls(
   const celloRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   const fluteRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   const clarinetRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
-  /** 大鍵琴: Karplus-Strong 物理模型 (Tone.PluckSynth pool), 真實撥弦音色. */
-  const harpsichordRef = useRef<PolyPluckSynth | null>(null);
+  /** 大鍵琴: 取樣 (gleitz FluidR3); 退路為 Karplus-Strong 撥弦合成. */
+  const harpsichordRef = useRef<Tone.Sampler | PolyPluckSynth | null>(null);
+  const harpsichordFallbackRef = useRef<PolyPluckSynth | null>(null);
   const fallbackRef = useRef<Tone.PolySynth | null>(null);
   const violinFallbackRef = useRef<Tone.PolySynth | null>(null);
   /** 全局 reverb — 讓所有樂器有些空間感, 不再像乾的合成 sample. */
@@ -267,6 +281,7 @@ export function PlaybackControls(
       fluteRef.current?.dispose?.();
       clarinetRef.current?.dispose?.();
       harpsichordRef.current?.dispose?.();
+      harpsichordFallbackRef.current?.dispose?.();
       fallbackRef.current?.dispose?.();
       violinFallbackRef.current?.dispose?.();
       reverbRef.current?.dispose?.();
@@ -276,6 +291,7 @@ export function PlaybackControls(
       fluteRef.current = null;
       clarinetRef.current = null;
       harpsichordRef.current = null;
+      harpsichordFallbackRef.current = null;
       fallbackRef.current = null;
       violinFallbackRef.current = null;
       reverbRef.current = null;
@@ -318,19 +334,13 @@ export function PlaybackControls(
       violinFallbackRef.current.connect(bus);
       violinFallbackRef.current.volume.value = -10;
     }
-    // Harpsichord: Karplus-Strong (Tone.PluckSynth) 真實撥弦物理模型.
-    // attackNoise 控制起音瞬間白噪音衝擊 (0.6 = 中度), dampening 是 lowpass 截止
-    // 頻率 (3500Hz 模擬大鍵琴明亮但不刺耳的高頻), resonance 0.92 = 弦振動衰減速度,
-    // release 1.2s 自然衰減尾.
-    if (!harpsichordRef.current) {
-      harpsichordRef.current = new PolyPluckSynth(16, {
-        attackNoise: 0.6,
-        dampening: 3500,
-        resonance: 0.92,
-        release: 1.2,
-      });
-      harpsichordRef.current.connect(bus);
-      harpsichordRef.current.volume.value = -4;
+    // Harpsichord 退路: Karplus-Strong 撥弦合成 (Tone.PluckSynth pool).
+    // 取樣載入失敗或使用者關閉取樣時使用; 取樣可用時改用下方 Sampler.
+    if (!harpsichordFallbackRef.current) {
+      const hps = new PolyPluckSynth(16, {});
+      hps.connect(bus);
+      hps.volume.value = -9;
+      harpsichordFallbackRef.current = hps;
     }
 
     if (useSamples && !samplesLoadedRef.current && !sampleLoadFailedRef.current) {
@@ -370,6 +380,13 @@ export function PlaybackControls(
       });
       clarinet.connect(bus);
       clarinet.volume.value = -10;
+      const harpsichord = new Tone.Sampler({
+        urls: HARPSICHORD_URLS,
+        baseUrl: HARPSICHORD_BASE,
+        release: 0.4,
+      });
+      harpsichord.connect(bus);
+      harpsichord.volume.value = -8;
       try {
         await Tone.loaded();
         pianoRef.current = piano;
@@ -377,6 +394,7 @@ export function PlaybackControls(
         celloRef.current = cello;
         fluteRef.current = flute;
         clarinetRef.current = clarinet;
+        harpsichordRef.current = harpsichord;
         samplesLoadedRef.current = true;
       } catch (e) {
         console.warn("取樣載入失敗,回退為合成:", e);
@@ -386,8 +404,10 @@ export function PlaybackControls(
         cello.dispose?.();
         flute.dispose?.();
         clarinet.dispose?.();
+        harpsichord.dispose?.();
         pianoRef.current = fallbackRef.current;
         violinRef.current = violinFallbackRef.current;
+        harpsichordRef.current = harpsichordFallbackRef.current;
       }
     } else if (!pianoRef.current || !violinRef.current) {
       pianoRef.current = pianoRef.current ?? fallbackRef.current;
@@ -429,7 +449,7 @@ export function PlaybackControls(
         if (key === "flute") return fluteRef.current ?? fallbackRef.current!;
         if (key === "clarinet") return clarinetRef.current ?? fallbackRef.current!;
         if (key === "harpsichord") {
-          return harpsichordRef.current ?? fallbackRef.current!;
+          return harpsichordRef.current ?? harpsichordFallbackRef.current!;
         }
         return pianoRef.current ?? fallbackRef.current!;
       },

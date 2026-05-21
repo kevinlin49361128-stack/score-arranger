@@ -264,14 +264,14 @@ def arrange(
         except Exception:
             pass
 
-    # Baroque continuo realization: 若 target 含 harpsichord_1 + 有 BASS source,
-    # 自動在 harpsichord upper staff 生成和聲填充. 對 baroque_trio_sonata 等編制
-    # 立即可用; 其他 ensemble 也安全 (沒 harpsichord_1 會 skip).
-    has_harpsichord = any(
+    # Baroque continuo realization: 在 harpsichord 右手 (upper staff) 自動生成
+    # 和聲填充。僅當 harpsichord 與其他樂器同台 (擔任通奏低音角色) 時才跑 ——
+    # harpsichord 獨奏時它已承擔整個改編 (含旋律), 跑 continuo 會把旋律覆蓋掉。
+    has_continuo_harpsichord = len(arrangement.players) > 1 and any(
         p.player_id == "harpsichord_1" and p.staves == 2
         for p in arrangement.players
     )
-    if has_harpsichord:
+    if has_continuo_harpsichord:
         try:
             from .baroque import realize_continuo
             realize_continuo(arrangement)
