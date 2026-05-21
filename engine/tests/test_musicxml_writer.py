@@ -393,3 +393,45 @@ def test_corpus_roundtrip_preserves_notes(corpus_id):
     assert before == after, (
         f"{corpus_id}: 音符數 {before} → {after}"
     )
+
+
+def test_piano_exports_as_grand_staff():
+    """含鋼琴的改編 → 鋼琴的 upper/lower 兩個 IR part 合成一個大譜表
+    (一個 score-part / <staves>2</staves> / <staff> 標記)。"""
+    from core.analyzer.function import tag_all_sections
+    from core.arrangement_model import build_ensemble
+    from core.arranger import arrange as run_arrange
+    from core.parser import parse_musicxml
+
+    score = parse_musicxml("corpus:mozart/k80/movement1")
+    tag_all_sections(score)
+    arr = run_arrange(score, build_ensemble("violin_piano"))
+    xml = write_musicxml_string(arr.target_score)
+
+    assert "<staves>2</staves>" in xml
+    assert "<staff>1</staff>" in xml
+    assert "<staff>2</staff>" in xml
+    # violin_piano → violin + piano(大譜表) = 2 個 score-part, 不是 3
+    assert xml.count("<score-part ") == 2
+
+    # 仍是合法 MusicXML — 再 parse 不應失敗
+    from music21 import converter
+    restored = parse_stream(converter.parseData(xml, format="musicxml"))
+    assert len(restored.parts) > 0
+
+
+def test_grand_staff_grouping():
+    """_group_parts: X_upper + X_lower 配成 grand, 其餘為 single。"""
+    from core.ir_to_musicxml import _group_parts
+
+    def mk(pid):
+        return Part(part_id=pid, name_display=pid, instrument_id="piano")
+
+    groups = _group_parts([
+        mk("violin_1"), mk("piano_1_upper"), mk("piano_1_lower"),
+    ])
+    kinds = [g[0] for g in groups]
+    assert kinds == ["single", "grand"]
+    grand = next(g for g in groups if g[0] == "grand")
+    assert grand[1].part_id == "piano_1_upper"
+    assert grand[2].part_id == "piano_1_lower"

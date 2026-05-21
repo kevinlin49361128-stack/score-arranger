@@ -128,21 +128,33 @@ def score_to_musicxml(score: Score) -> str:
     root = ET.Element("score-partwise", version="4.0")
     _build_header(root, score)
 
-    # part-list
-    part_list = ET.SubElement(root, "part-list")
-    for idx, part in enumerate(score.parts):
-        sp = ET.SubElement(part_list, "score-part", id=f"P{idx + 1}")
-        ET.SubElement(sp, "part-name").text = part.name_display or part.part_id
-
+    # X_upper + X_lower → 合成大譜表 (一個 score-part / 兩個 staff)
+    groups = _group_parts(score.parts)
     # 漸強/漸弱 (DynamicHairpin) → {part_id: {小節: [(offset, type)]}}
     hairpin_index = _index_hairpins(score)
 
+    # part-list
+    part_list = ET.SubElement(root, "part-list")
+    for gi, group in enumerate(groups):
+        sp = ET.SubElement(part_list, "score-part", id=f"P{gi + 1}")
+        lead = group[1]  # single → 該 part; grand → upper part
+        name = lead.name_display or lead.part_id
+        if group[0] == "grand":
+            name = name.split(" (")[0]  # 去掉 " (U.H.)" 之類 staff 後綴
+        ET.SubElement(sp, "part-name").text = name
+
     # parts
-    for idx, part in enumerate(score.parts):
-        _build_part(
-            root, part, idx, divisions,
-            hairpin_index.get(part.part_id, {}),
-        )
+    for gi, group in enumerate(groups):
+        if group[0] == "grand":
+            _build_grand_staff_part(
+                root, group[1], group[2], gi, divisions, hairpin_index,
+            )
+        else:
+            part = group[1]
+            _build_part(
+                root, part, gi, divisions,
+                hairpin_index.get(part.part_id, {}),
+            )
 
     xml_body = ET.tostring(root, encoding="unicode")
     return (
@@ -234,6 +246,36 @@ def _index_hairpins(
 # ============================================================================
 # Part / Measure
 # ============================================================================
+
+def _group_parts(parts: list) -> list[tuple]:
+    """把 X_upper + X_lower 配成大譜表群組。
+
+    回傳 list, 每項為:
+      ("single", part)          — 一般單行樂器
+      ("grand", upper, lower)   — 鍵盤類, 合成一個兩 staff 的 part
+
+    part_id 慣例見 arranger.build_target_score: 兩 staff 的 player 會產生
+    "<player>_upper" / "<player>_lower"。
+    """
+    by_id = {p.part_id: p for p in parts}
+    consumed: set[str] = set()
+    groups: list[tuple] = []
+    for p in parts:
+        if p.part_id in consumed:
+            continue
+        if p.part_id.endswith(("_upper", "_lower")):
+            base = p.part_id.rsplit("_", 1)[0]
+            upper = by_id.get(f"{base}_upper")
+            lower = by_id.get(f"{base}_lower")
+            if upper is not None and lower is not None:
+                groups.append(("grand", upper, lower))
+                consumed.add(upper.part_id)
+                consumed.add(lower.part_id)
+                continue
+        groups.append(("single", p))
+        consumed.add(p.part_id)
+    return groups
+
 
 def _build_part(
     root: ET.Element, part, part_index: int, divisions: int,
@@ -329,6 +371,115 @@ def _build_measure(
 
 
 # ============================================================================
+# 大譜表 (鍵盤類: 一個 part / 兩個 staff)
+# ============================================================================
+
+def _build_grand_staff_part(
+    root: ET.Element, upper, lower, part_index: int, divisions: int,
+    hairpin_index: dict,
+) -> None:
+    """upper + lower 兩個 IR part → 一個兩 staff 的 MusicXML part。"""
+    part_el = ET.SubElement(root, "part", id=f"P{part_index + 1}")
+    upper_wedges = hairpin_index.get(upper.part_id, {})
+    lower_wedges = hairpin_index.get(lower.part_id, {})
+    cur_ts: tuple[int, int] = (4, 4)
+    n = max(len(upper.measures), len(lower.measures))
+    for i in range(n):
+        um = upper.measures[i] if i < len(upper.measures) else None
+        lm = lower.measures[i] if i < len(lower.measures) else None
+        ref = um if um is not None else lm
+        if ref is None:
+            continue
+        if ref.time_signature is not None:
+            cur_ts = ref.time_signature
+        _build_grand_staff_measure(
+            part_el, um, lm, divisions, cur_ts, i == 0,
+            upper_wedges, lower_wedges,
+        )
+
+
+def _build_grand_staff_measure(
+    part_el: ET.Element, um, lm, divisions: int,
+    time_sig: tuple[int, int], is_first: bool,
+    upper_wedges: dict, lower_wedges: dict,
+) -> None:
+    ref = um if um is not None else lm
+    m_el = ET.SubElement(part_el, "measure", number=str(ref.number))
+    measure_ql = Fraction(time_sig[0] * 4, time_sig[1])
+
+    need_attr = is_first or (
+        ref.time_signature is not None or ref.key_signature is not None
+    )
+    if need_attr:
+        attr = ET.Element("attributes")
+        if is_first:
+            ET.SubElement(attr, "divisions").text = str(divisions)
+        if ref.key_signature is not None or is_first:
+            fifths, mode = _key_to_fifths(ref.key_signature)
+            key_el = ET.SubElement(attr, "key")
+            ET.SubElement(key_el, "fifths").text = str(fifths)
+            if mode:
+                ET.SubElement(key_el, "mode").text = mode
+        if ref.time_signature is not None or is_first:
+            time_el = ET.SubElement(attr, "time")
+            ET.SubElement(time_el, "beats").text = str(time_sig[0])
+            ET.SubElement(time_el, "beat-type").text = str(time_sig[1])
+        if is_first:
+            ET.SubElement(attr, "staves").text = "2"
+            for staff_n, sign, line in ((1, "G", 2), (2, "F", 4)):
+                clef_el = ET.SubElement(attr, "clef", number=str(staff_n))
+                ET.SubElement(clef_el, "sign").text = sign
+                ET.SubElement(clef_el, "line").text = str(line)
+        if len(attr):
+            m_el.append(attr)
+
+    if ref.tempo_bpm is not None or ref.tempo_text is not None:
+        _append_tempo(m_el, ref)
+    if ref.rehearsal_mark is not None:
+        _append_rehearsal(m_el, ref.rehearsal_mark)
+
+    # staff 1 (upper) → backup → staff 2 (lower); voice 編號錯開避免歧義
+    _emit_staff_into_measure(
+        m_el, um, 1, divisions, measure_ql,
+        upper_wedges.get(ref.number, []), voice_base=1,
+    )
+    _append_backup(m_el, divisions, measure_ql)
+    _emit_staff_into_measure(
+        m_el, lm, 2, divisions, measure_ql,
+        lower_wedges.get(ref.number, []), voice_base=5,
+    )
+
+    _append_barlines(m_el, ref)
+
+
+def _emit_staff_into_measure(
+    m_el: ET.Element, measure, staff: int, divisions: int,
+    measure_ql: Fraction, wedges: list, voice_base: int,
+) -> None:
+    """把單一 staff 的內容 (含 wedge) 寫進已建立的 <measure>。"""
+    for (offset_ql, wtype) in wedges:
+        _append_wedge(m_el, wtype, offset_ql, divisions, staff=staff)
+    if measure is None:
+        _append_full_measure_rest(
+            m_el, divisions, measure_ql, voice_num=voice_base, staff=staff,
+        )
+        return
+    voices = _split_voices(_collect_events(measure))
+    if not voices:
+        _append_full_measure_rest(
+            m_el, divisions, measure_ql, voice_num=voice_base, staff=staff,
+        )
+        return
+    for vi, vevents in enumerate(voices):
+        if vi > 0:
+            _append_backup(m_el, divisions, measure_ql)
+        _emit_voice(
+            m_el, vevents, voice_base + vi, divisions, measure_ql,
+            staff=staff,
+        )
+
+
+# ============================================================================
 # 事件收集 + 聲部切割
 # ============================================================================
 
@@ -372,6 +523,7 @@ def _emit_voice(
     voice_num: int,
     divisions: int,
     measure_ql: Fraction,
+    staff: Optional[int] = None,
 ) -> None:
     cursor = Fraction(0)
     prev_dynamic: Optional[str] = None
@@ -385,14 +537,14 @@ def _emit_voice(
         # onset 之前的空隙 → 補休止
         if onset > cursor:
             _append_rest(
-                m_el, onset - cursor, voice_num, divisions,
+                m_el, onset - cursor, voice_num, divisions, staff=staff,
             )
             cursor = onset
 
         if isinstance(ev, RestEvent):
             _append_rest(
                 m_el, Fraction(ev.duration), voice_num, divisions,
-                fermata=ev.fermata,
+                fermata=ev.fermata, staff=staff,
             )
         else:
             dyn = getattr(ev, "dynamic", None)
@@ -402,13 +554,15 @@ def _emit_voice(
             _append_note_event(
                 m_el, ev, idx, voice_num, divisions,
                 open_slurs, slur_first, slur_last,
-                tup_first, tup_last,
+                tup_first, tup_last, staff=staff,
             )
         cursor += Fraction(ev.duration)
 
     # 聲部尾端若不足整小節 → 補休止 (讓 backup 對齊)
     if cursor < measure_ql:
-        _append_rest(m_el, measure_ql - cursor, voice_num, divisions)
+        _append_rest(
+            m_el, measure_ql - cursor, voice_num, divisions, staff=staff,
+        )
 
 
 def _slur_bounds(events: list) -> tuple[dict[int, int], dict[int, int]]:
@@ -455,6 +609,7 @@ def _append_note_event(
     slur_last: dict[int, int],
     tup_first: dict[int, int],
     tup_last: dict[int, int],
+    staff: Optional[int] = None,
 ) -> None:
     pitches = (
         ev.pitches if isinstance(ev, ChordEvent) else [ev.pitch]
@@ -464,7 +619,7 @@ def _append_note_event(
 
     # grace notes (主音前)
     for grace in getattr(ev, "grace_before", []) or []:
-        _append_grace(m_el, grace, voice_num)
+        _append_grace(m_el, grace, voice_num, staff=staff)
 
     for ci, pitch in enumerate(pitches):
         note = ET.SubElement(m_el, "note")
@@ -487,6 +642,8 @@ def _append_note_event(
             tm = ET.SubElement(note, "time-modification")
             ET.SubElement(tm, "actual-notes").text = str(tup.actual)
             ET.SubElement(tm, "normal-notes").text = str(tup.normal)
+        if staff is not None:
+            ET.SubElement(note, "staff").text = str(staff)
         # notations 只掛在和弦的第一個音
         if ci == 0:
             _append_notations(
@@ -584,12 +741,16 @@ def _append_pitch(note: ET.Element, pitch: Pitch) -> None:
     ET.SubElement(p_el, "octave").text = str(octave)
 
 
-def _append_grace(m_el: ET.Element, grace, voice_num: int) -> None:
+def _append_grace(
+    m_el: ET.Element, grace, voice_num: int, staff: Optional[int] = None,
+) -> None:
     note = ET.SubElement(m_el, "note")
     ET.SubElement(note, "grace")
     _append_pitch(note, grace.pitch)
     ET.SubElement(note, "voice").text = str(voice_num)
     ET.SubElement(note, "type").text = "eighth"
+    if staff is not None:
+        ET.SubElement(note, "staff").text = str(staff)
 
 
 def _append_rest(
@@ -598,6 +759,7 @@ def _append_rest(
     voice_num: int,
     divisions: int,
     fermata: bool = False,
+    staff: Optional[int] = None,
 ) -> None:
     note = ET.SubElement(m_el, "note")
     ET.SubElement(note, "rest")
@@ -608,6 +770,8 @@ def _append_rest(
         ET.SubElement(note, "type").text = type_name
         for _ in range(dots):
             ET.SubElement(note, "dot")
+    if staff is not None:
+        ET.SubElement(note, "staff").text = str(staff)
     if fermata:
         notations = ET.SubElement(note, "notations")
         ET.SubElement(notations, "fermata")
@@ -615,13 +779,16 @@ def _append_rest(
 
 def _append_full_measure_rest(
     m_el: ET.Element, divisions: int, measure_ql: Fraction,
+    voice_num: int = 1, staff: Optional[int] = None,
 ) -> None:
     note = ET.SubElement(m_el, "note")
     ET.SubElement(note, "rest", measure="yes")
     ET.SubElement(note, "duration").text = str(
         _dur_units(measure_ql, divisions),
     )
-    ET.SubElement(note, "voice").text = "1"
+    ET.SubElement(note, "voice").text = str(voice_num)
+    if staff is not None:
+        ET.SubElement(note, "staff").text = str(staff)
 
 
 def _append_backup(
@@ -664,6 +831,7 @@ def _append_rehearsal(m_el: ET.Element, mark: str) -> None:
 
 def _append_wedge(
     m_el: ET.Element, wtype: str, offset_ql: Fraction, divisions: int,
+    staff: Optional[int] = None,
 ) -> None:
     """漸強/漸弱記號 — <direction> 內含 <wedge>, 以 <offset> 定位。"""
     direction = ET.SubElement(m_el, "direction", placement="below")
@@ -672,6 +840,8 @@ def _append_wedge(
     off = int(Fraction(offset_ql) * divisions)
     if off:
         ET.SubElement(direction, "offset").text = str(off)
+    if staff is not None:
+        ET.SubElement(direction, "staff").text = str(staff)
 
 
 def _append_barlines(m_el: ET.Element, measure: Measure) -> None:
