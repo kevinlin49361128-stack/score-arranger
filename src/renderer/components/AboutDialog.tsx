@@ -206,6 +206,13 @@ function Overview() {
         定位: <strong>人機協作改編工具</strong>, 非全自動替代。AI 提供分析、
         修復、品質量化, 你保有最終決定權。
       </p>
+      <H2>本軟體授權</H2>
+      <p>
+        Score Arranger 為<strong>開源軟體</strong>, 以{" "}
+        <strong>GNU General Public License v3.0</strong> (GPL-3.0) 釋出。
+        你可以自由使用、研究、修改與散布; 衍生作品須以相同授權開源。
+        免費提供, 無廣告、無遙測。
+      </p>
       <H2>授權與致謝摘要</H2>
       <p>
         Score Arranger 站在許多開源專案的肩膀上:
@@ -238,7 +245,7 @@ function Overview() {
         <Code>NOTICE.md</Code>。
       </p>
       <H2>版本</H2>
-      <p>0.1.0 — © 2026 Kevin Lin</p>
+      <p>0.1.0 — © 2026 Kevin Lin · GPL-3.0</p>
     </div>
   );
 }
