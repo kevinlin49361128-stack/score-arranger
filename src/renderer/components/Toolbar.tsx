@@ -28,7 +28,10 @@ import { PresetLibrary } from "./PresetLibrary";
 import { ZoomControls } from "./ZoomControls";
 import { useSessionStore } from "../stores/sessionStore";
 import { getLocale, onLocaleChange, setLocale } from "../utils/i18n";
-import { recordUndoIfRecent } from "../utils/preferences";
+import {
+  getStrategyPreference,
+  recordUndoIfRecent,
+} from "../utils/preferences";
 
 const ENSEMBLE_LABELS: Record<string, string> = {
   violin_piano: "小提琴 + 鋼琴",
@@ -410,6 +413,7 @@ export function Toolbar() {
           enableRepair,
           skillLevel,
           stylePreset,
+          getStrategyPreference(),
         );
       if (res.ok && res.data) {
         setArrangement(res.data);

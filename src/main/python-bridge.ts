@@ -334,11 +334,13 @@ export async function arrangeScore(
   repair: boolean = false,
   skillLevel: "amateur" | "intermediate" | "professional" = "professional",
   stylePreset: string = "none",
+  strategyOrder: string[] = [],
 ): Promise<unknown> {
   return client.call("arrange", {
     path, target, repair,
     skill_level: skillLevel,
     style_preset: stylePreset,
+    strategy_order: strategyOrder,
   });
 }
 

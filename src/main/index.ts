@@ -161,8 +161,11 @@ function registerIpcHandlers(): void {
     repair: boolean,
     skillLevel?: "amateur" | "intermediate" | "professional",
     stylePreset?: string,
+    strategyOrder?: string[],
   ) => safeCall(() =>
-    arrangeScore(path, target, repair, skillLevel, stylePreset)));
+    arrangeScore(
+      path, target, repair, skillLevel, stylePreset, strategyOrder,
+    )));
   ipcMain.handle("engine:listStylePresets", async () =>
     safeCall(() => listStylePresets()));
   ipcMain.handle("engine:listAvailableInstruments", async () =>

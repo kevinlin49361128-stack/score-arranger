@@ -93,6 +93,33 @@ export function resetPreferences(): void {
   save({ scores: {}, updatedAt: Date.now() });
 }
 
+/** suggestion code → 對應的 repair 策略名 (對齊 server.py 的 _SUGGESTION_STRATEGY) */
+const SUGGESTION_TO_STRATEGY: Record<string, string> = {
+  S_OCTAVE_UP: "octave_shift",
+  S_OCTAVE_DOWN: "octave_shift",
+  S_OMIT_NOTE: "omit_note",
+  S_OMIT_INNER_VOICE: "omit_note",
+  S_REDISTRIBUTE_HANDS: "split_to_other_hand",
+  S_OCTAVE_TRANSPOSE_OUTER: "split_to_other_hand",
+};
+
+/**
+ * 從建議偏好推導「修復策略」的偏好順序 — 傳給引擎的 repair loop,
+ * 讓自動修復在多個同等選項中優先採用使用者偏愛的策略。
+ * 無偏好資料 → 回傳 [] (引擎沿用預設策略順序)。
+ */
+export function getStrategyPreference(): string[] {
+  const scores = getAllScores();
+  const byStrategy: Record<string, number> = {};
+  for (const [code, sc] of Object.entries(scores)) {
+    const strat = SUGGESTION_TO_STRATEGY[code];
+    if (strat) byStrategy[strat] = (byStrategy[strat] ?? 0) + sc;
+  }
+  return Object.entries(byStrategy)
+    .sort((a, b) => b[1] - a[1])
+    .map(([s]) => s);
+}
+
 /** 把 suggestions 依使用者偏好排序 (穩定排序保留原順序) */
 export function sortByPreference<T extends { code: string }>(
   suggestions: T[],

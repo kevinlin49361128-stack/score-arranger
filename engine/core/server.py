@@ -392,7 +392,10 @@ def _method_arrange_custom(params: dict[str, Any]) -> dict:
     repair_info = None
     if do_repair:
         before = severity_score(collect_issues(arrangement.target_score))
-        report = repair_loop(arrangement)
+        report = repair_loop(
+            arrangement,
+            strategies=_ordered_strategies(params.get("strategy_order")),
+        )
         after = severity_score(collect_issues(arrangement.target_score))
         repair_info = _build_repair_info(report, before, after)
 
@@ -795,7 +798,10 @@ def _method_arrange(params: dict[str, Any]) -> dict:
     repair_info = None
     if do_repair:
         before = severity_score(collect_issues(arrangement.target_score))
-        report = repair_loop(arrangement)
+        report = repair_loop(
+            arrangement,
+            strategies=_ordered_strategies(params.get("strategy_order")),
+        )
         after = severity_score(collect_issues(arrangement.target_score))
         repair_info = _build_repair_info(report, before, after)
 
@@ -869,6 +875,25 @@ def _serialize_difficulty(arrangement) -> dict:
         return {pid: difficulty_to_dict(d) for pid, d in per_part.items()}
     except Exception:
         return {}
+
+
+def _ordered_strategies(order):
+    """依使用者偏好的策略名順序重排 PHASE_1_STRATEGIES。
+
+    order: 前端依偏好學習推導的策略名清單 (e.g. ["omit_note", ...])。
+    回傳重排後的 strategies; 無偏好 → None (repair_loop 沿用預設順序)。
+    candidate-collection 的 _pick_best_candidate 在品質同分時取較前者,
+    故偏好的策略會在「問題與品質皆同分」時勝出。
+    """
+    if not order or not isinstance(order, list):
+        return None
+    from core.repair import PHASE_1_STRATEGIES
+    by_name = {pair[0]: pair for pair in PHASE_1_STRATEGIES}
+    ranked = [by_name[n] for n in order if n in by_name]
+    if not ranked:
+        return None
+    rest = [p for p in PHASE_1_STRATEGIES if p not in ranked]
+    return ranked + rest
 
 
 def _build_repair_info(report, before: float, after: float) -> dict:

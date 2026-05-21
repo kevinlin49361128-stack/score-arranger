@@ -51,9 +51,11 @@ const api = {
       repair = false,
       skillLevel: "amateur" | "intermediate" | "professional" = "professional",
       stylePreset = "none",
+      strategyOrder: string[] = [],
     ) =>
       ipcRenderer.invoke(
         "engine:arrange", path, target, repair, skillLevel, stylePreset,
+        strategyOrder,
       ),
     listStylePresets: () =>
       ipcRenderer.invoke("engine:listStylePresets"),

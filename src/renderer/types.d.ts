@@ -64,6 +64,7 @@ declare global {
           repair?: boolean,
           skillLevel?: "amateur" | "intermediate" | "professional",
           stylePreset?: string,
+          strategyOrder?: string[],
         ) => Promise<IpcResponse<ArrangementResult>>;
         listStylePresets: () => Promise<IpcResponse<
           { id: string; display_name: string; description: string }[]
