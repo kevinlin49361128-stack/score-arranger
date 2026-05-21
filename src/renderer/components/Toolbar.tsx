@@ -34,6 +34,7 @@ import { ExportMenu } from "./ExportMenu";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
+import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
 import { PresetLibrary } from "./PresetLibrary";
 import { ZoomControls } from "./ZoomControls";
@@ -165,6 +166,10 @@ export function Toolbar() {
   } | null>(null);
   const [omrProgress, setOmrProgress] = useState<{
     elapsedSec: number;
+  } | null>(null);
+  // PDF 匯入前的「預防針」提醒 — 確認後才進 OMR 流程
+  const [pdfWarning, setPdfWarning] = useState<{
+    pendingPdfPath: string;
   } | null>(null);
 
   // 點 popover 外部 → 關閉 (設定 / 改編選項 / 溢出選單)
@@ -378,10 +383,9 @@ export function Toolbar() {
     }
   };
 
-  const handleImport = async () => {
+  /** 實際執行匯入 — path 已確定 (PDF 已先過預防針提醒)。 */
+  const runImport = async (path: string) => {
     try {
-      const path = await window.scoreArranger.openScoreDialog();
-      if (!path) return;
       setError(null);
       setMode("setup");
       if (!activeTabId && tabs.length === 0) {
@@ -461,6 +465,17 @@ export function Toolbar() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImport = async () => {
+    const path = await window.scoreArranger.openScoreDialog();
+    if (!path) return;
+    // PDF: 先打預防針 —— OMR 辨識本質上不穩定, 讓使用者匯入前心裡有底
+    if (path.toLowerCase().endsWith(".pdf")) {
+      setPdfWarning({ pendingPdfPath: path });
+      return;
+    }
+    await runImport(path);
   };
 
   const handleAnalyze = async () => {
@@ -1103,6 +1118,18 @@ export function Toolbar() {
             已用時 {omrProgress.elapsedSec}s · 大型 PDF 需 1-3 分鐘
           </div>
         </div>
+      )}
+      {pdfWarning && (
+        <PdfImportWarningDialog
+          fileName={pdfWarning.pendingPdfPath.split(/[/\\]/).pop()
+            ?? pdfWarning.pendingPdfPath}
+          onCancel={() => setPdfWarning(null)}
+          onProceed={() => {
+            const pdfPath = pdfWarning.pendingPdfPath;
+            setPdfWarning(null);
+            void runImport(pdfPath);
+          }}
+        />
       )}
     </header>
   );
