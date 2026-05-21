@@ -278,6 +278,65 @@ def baroque_trio_sonata_ensemble() -> list[Player]:
     ]
 
 
+def guitar_solo_ensemble() -> list[Player]:
+    """古典吉他獨奏 (單一五線譜)。"""
+    return [
+        Player(
+            player_id="guitar_1",
+            display_name="Classical Guitar",
+            instruments=["guitar"],
+            primary_instrument="guitar",
+            staves=1,
+        ),
+    ]
+
+
+def lute_solo_ensemble() -> list[Player]:
+    """文藝復興魯特琴獨奏 (單一五線譜)。"""
+    return [
+        Player(
+            player_id="lute_1",
+            display_name="Renaissance Lute",
+            instruments=["lute"],
+            primary_instrument="lute",
+            staves=1,
+        ),
+    ]
+
+
+def harp_solo_ensemble() -> list[Player]:
+    """豎琴獨奏 (雙手大譜表, 與鋼琴相同採 2 個 staff)。"""
+    return [
+        Player(
+            player_id="harp_1",
+            display_name="Concert Pedal Harp",
+            instruments=["harp"],
+            primary_instrument="harp",
+            staves=2,
+        ),
+    ]
+
+
+def flute_guitar_ensemble() -> list[Player]:
+    """長笛 + 吉他二重奏 (常見室內樂編制)。"""
+    return [
+        Player(
+            player_id="flute_1",
+            display_name="Flute",
+            instruments=["flute"],
+            primary_instrument="flute",
+            staves=1,
+        ),
+        Player(
+            player_id="guitar_1",
+            display_name="Classical Guitar",
+            instruments=["guitar"],
+            primary_instrument="guitar",
+            staves=1,
+        ),
+    ]
+
+
 # 編制 ID → 構造函式的對照表 (用於 server / CLI dispatch)
 ENSEMBLE_TEMPLATES: dict[str, "callable"] = {  # type: ignore[name-defined]
     "violin_piano": violin_piano_ensemble,
@@ -288,6 +347,10 @@ ENSEMBLE_TEMPLATES: dict[str, "callable"] = {  # type: ignore[name-defined]
     "baroque_trio_sonata": baroque_trio_sonata_ensemble,
     "woodwind_quintet": woodwind_quintet_ensemble,
     "brass_quintet": brass_quintet_ensemble,
+    "guitar_solo": guitar_solo_ensemble,
+    "lute_solo": lute_solo_ensemble,
+    "harp_solo": harp_solo_ensemble,
+    "flute_guitar": flute_guitar_ensemble,
 }
 
 

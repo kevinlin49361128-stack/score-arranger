@@ -74,6 +74,35 @@ const CLARINET_URLS: Record<string, string> = {
   F5: "clarinet/F5.mp3",
 };
 
+// tonejs-instruments guitar-nylon — 古典吉他取樣 (魯特琴也共用此 sampler)
+const GUITAR_URLS: Record<string, string> = {
+  B1: "guitar-nylon/B1.mp3",
+  D2: "guitar-nylon/D2.mp3",
+  E2: "guitar-nylon/E2.mp3",
+  A2: "guitar-nylon/A2.mp3",
+  E3: "guitar-nylon/E3.mp3",
+  G3: "guitar-nylon/G3.mp3",
+  A3: "guitar-nylon/A3.mp3",
+  B3: "guitar-nylon/B3.mp3",
+  E4: "guitar-nylon/E4.mp3",
+  A4: "guitar-nylon/A4.mp3",
+  A5: "guitar-nylon/A5.mp3",
+};
+
+const HARP_URLS: Record<string, string> = {
+  E1: "harp/E1.mp3",
+  D2: "harp/D2.mp3",
+  C3: "harp/C3.mp3",
+  E3: "harp/E3.mp3",
+  G3: "harp/G3.mp3",
+  D4: "harp/D4.mp3",
+  A4: "harp/A4.mp3",
+  C5: "harp/C5.mp3",
+  E5: "harp/E5.mp3",
+  D6: "harp/D6.mp3",
+  F6: "harp/F6.mp3",
+};
+
 // Salamander 取樣的 ABC 標記 — Tone.Sampler 會在缺音時自動 transpose
 const PIANO_URLS: Record<string, string> = {
   A0: "A0.mp3",
@@ -249,6 +278,9 @@ export function PlaybackControls(
   const celloRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   const fluteRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   const clarinetRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
+  /** 古典吉他取樣 (魯特琴路由也指向此 sampler — 最接近的撥弦音色). */
+  const guitarRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
+  const harpRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   /** 大鍵琴: 取樣 (gleitz FluidR3); 退路為 Karplus-Strong 撥弦合成. */
   const harpsichordRef = useRef<Tone.Sampler | PolyPluckSynth | null>(null);
   const harpsichordFallbackRef = useRef<PolyPluckSynth | null>(null);
@@ -280,6 +312,8 @@ export function PlaybackControls(
       celloRef.current?.dispose?.();
       fluteRef.current?.dispose?.();
       clarinetRef.current?.dispose?.();
+      guitarRef.current?.dispose?.();
+      harpRef.current?.dispose?.();
       harpsichordRef.current?.dispose?.();
       harpsichordFallbackRef.current?.dispose?.();
       fallbackRef.current?.dispose?.();
@@ -290,6 +324,8 @@ export function PlaybackControls(
       celloRef.current = null;
       fluteRef.current = null;
       clarinetRef.current = null;
+      guitarRef.current = null;
+      harpRef.current = null;
       harpsichordRef.current = null;
       harpsichordFallbackRef.current = null;
       fallbackRef.current = null;
@@ -380,6 +416,20 @@ export function PlaybackControls(
       });
       clarinet.connect(bus);
       clarinet.volume.value = -10;
+      const guitar = new Tone.Sampler({
+        urls: GUITAR_URLS,
+        baseUrl: TONEJS_INSTRUMENTS_BASE,
+        release: 0.8,
+      });
+      guitar.connect(bus);
+      guitar.volume.value = -8;
+      const harp = new Tone.Sampler({
+        urls: HARP_URLS,
+        baseUrl: TONEJS_INSTRUMENTS_BASE,
+        release: 0.8,
+      });
+      harp.connect(bus);
+      harp.volume.value = -8;
       const harpsichord = new Tone.Sampler({
         urls: HARPSICHORD_URLS,
         baseUrl: HARPSICHORD_BASE,
@@ -394,6 +444,8 @@ export function PlaybackControls(
         celloRef.current = cello;
         fluteRef.current = flute;
         clarinetRef.current = clarinet;
+        guitarRef.current = guitar;
+        harpRef.current = harp;
         harpsichordRef.current = harpsichord;
         samplesLoadedRef.current = true;
       } catch (e) {
@@ -404,6 +456,8 @@ export function PlaybackControls(
         cello.dispose?.();
         flute.dispose?.();
         clarinet.dispose?.();
+        guitar.dispose?.();
+        harp.dispose?.();
         harpsichord.dispose?.();
         pianoRef.current = fallbackRef.current;
         violinRef.current = violinFallbackRef.current;
@@ -441,6 +495,9 @@ export function PlaybackControls(
         if (
           low.includes("tenor") || low.includes("horn")
         ) return "clarinet";
+        // 撥弦樂器: 魯特琴沒有專屬取樣 → 路由到吉他 sampler (最近的撥弦音色)
+        if (low.includes("guitar") || low.includes("lute")) return "guitar";
+        if (low.includes("harp")) return "harp";
         return "piano";
       },
       get: (key) => {
@@ -448,6 +505,8 @@ export function PlaybackControls(
         if (key === "cello") return celloRef.current ?? violinFallbackRef.current!;
         if (key === "flute") return fluteRef.current ?? fallbackRef.current!;
         if (key === "clarinet") return clarinetRef.current ?? fallbackRef.current!;
+        if (key === "guitar") return guitarRef.current ?? fallbackRef.current!;
+        if (key === "harp") return harpRef.current ?? fallbackRef.current!;
         if (key === "harpsichord") {
           return harpsichordRef.current ?? harpsichordFallbackRef.current!;
         }

@@ -25,7 +25,7 @@ CANONICAL_IDS: set[str] = {
     # 銅管
     "horn_f", "trumpet_bb", "trombone", "tuba",
     # 撥弦 / 打擊
-    "harp", "timpani",
+    "harp", "guitar", "lute", "timpani",
     # 聲樂
     "soprano", "alto", "tenor", "bass_voice",
 }
@@ -72,6 +72,15 @@ ALIASES: dict[str, str] = {
     "fortepiano": "piano",
     "klavier": "piano",
     "harpsichord": "harpsichord",  # 已 canonical, 保持
+    # === 撥弦 ===
+    "classical_guitar": "guitar",
+    "acoustic_guitar": "guitar",
+    "nylon_guitar": "guitar",
+    "nylon_string_guitar": "guitar",
+    "spanish_guitar": "guitar",
+    "renaissance_lute": "lute",
+    "concert_harp": "harp",
+    "pedal_harp": "harp",
 }
 
 
@@ -96,7 +105,11 @@ KEYWORD_HINTS: list[tuple[str, str]] = [
     ("trumpet", "trumpet_bb"),
     ("trombone", "trombone"),
     ("tuba", "tuba"),
+    # 撥弦: "lute" 是 "flute" 的子字串, 但 "flute" 已在前面先匹配掉, 安全。
+    ("harpsichord", "harpsichord"),  # 必須在 "harp" 之前 (harp 是子字串)
     ("harp", "harp"),
+    ("guitar", "guitar"),
+    ("lute", "lute"),
     ("timpani", "timpani"),
     ("piano", "piano"),
     ("klavier", "piano"),

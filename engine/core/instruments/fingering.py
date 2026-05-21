@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from itertools import permutations
+from itertools import combinations, permutations
 from typing import Optional
 
 from core.ir import Pitch
@@ -65,11 +65,18 @@ def _enumerate_candidates(
     strings: list[StringDef],
     max_fret: int = 24,
     max_stretch_semitones: int = 6,
+    require_adjacent: bool = True,
 ) -> list[Fingering]:
     """枚舉一個和弦所有合法 Fingering 候選, 依分數升序排列。
 
     空列表 chord_pitches → 回傳含單一 score=0 Fingering (休止符/空事件)。
     候選數不可行 → 回傳空列表。
+
+    require_adjacent:
+      True (預設) — 使用的弦必須相鄰 (擦弦樂器: violin/viola/cello 一弓只能
+        掃過連續的弦)。維持既有行為, 對應 strings[start:start+n] 連續子集。
+      False — 允許跨越未使用的弦 (撥弦樂器: 吉他/魯特琴可以略過/悶住中間弦,
+        各弦獨立撥)。改為枚舉所有大小為 n 的弦子集。
     """
     n = len(chord_pitches)
     if n == 0:
@@ -90,8 +97,16 @@ def _enumerate_candidates(
                 candidates.append(Fingering(assignments=[(p, s.index, fret)], score=score))
     else:
         string_count = len(strings)
-        for start in range(string_count - n + 1):
-            subset = strings[start : start + n]
+        if require_adjacent:
+            # 擦弦: 只取連續弦子集
+            subsets = [
+                strings[start : start + n]
+                for start in range(string_count - n + 1)
+            ]
+        else:
+            # 撥弦: 任意 n 條弦組合 (可跨越未用弦)
+            subsets = [list(c) for c in combinations(strings, n)]
+        for subset in subsets:
             for perm in permutations(chord_pitches):
                 assignments: list[tuple[Pitch, int, int]] = []
                 valid = True
@@ -130,10 +145,18 @@ def find_best_fingering(
     strings: list[StringDef],
     max_fret: int = 24,
     max_stretch_semitones: int = 6,
+    require_adjacent: bool = True,
 ) -> Optional[Fingering]:
-    """為和弦找出最佳 string→fret 指派。回傳 None 表示不可行。"""
+    """為和弦找出最佳 string→fret 指派。回傳 None 表示不可行。
+
+    require_adjacent: 見 _enumerate_candidates。預設 True 保留擦弦樂器行為。
+    """
     candidates = _enumerate_candidates(
-        chord_pitches, strings, max_fret=max_fret, max_stretch_semitones=max_stretch_semitones
+        chord_pitches,
+        strings,
+        max_fret=max_fret,
+        max_stretch_semitones=max_stretch_semitones,
+        require_adjacent=require_adjacent,
     )
     return candidates[0] if candidates else None
 

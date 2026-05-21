@@ -88,6 +88,10 @@ const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
   baroque_trio_sonata: "onboard.ensemble.baroqueTrioSonata",
   woodwind_quintet: "onboard.ensemble.woodwindQuintet",
   brass_quintet: "onboard.ensemble.brassQuintet",
+  guitar_solo: "onboard.ensemble.guitarSolo",
+  lute_solo: "onboard.ensemble.luteSolo",
+  harp_solo: "onboard.ensemble.harpSolo",
+  flute_guitar: "onboard.ensemble.fluteGuitar",
 };
 
 export function OnboardingWizard({ onSkip, onComplete }: Props) {

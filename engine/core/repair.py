@@ -24,6 +24,9 @@ from .arrangement_model import Arrangement
 from .instruments import (
     CheckResult,
     check_cello_chord,
+    check_guitar_chord,
+    check_harp_chord,
+    check_lute_chord,
     check_piano_hand_span,
     check_pitch_in_range,
     check_viola_chord,
@@ -161,6 +164,16 @@ def _check_event(event, instrument_id: str) -> Optional[CheckResult]:
     if isinstance(event, ChordEvent):
         if instrument_id == "violin":
             return check_violin_chord(event.pitches)
+        if instrument_id == "viola":
+            return check_viola_chord(event.pitches)
+        if instrument_id == "cello":
+            return check_cello_chord(event.pitches)
+        if instrument_id == "guitar":
+            return check_guitar_chord(event.pitches)
+        if instrument_id == "lute":
+            return check_lute_chord(event.pitches)
+        if instrument_id == "harp":
+            return check_harp_chord(event.pitches)
         if instrument_id == "piano":
             # Phase 1 假設整個 chord 用單手
             return check_piano_hand_span(event.pitches, hand="right")
@@ -489,6 +502,12 @@ def _chord_severity(pitches: list[Pitch], instrument_id: str) -> str:
         return check_viola_chord(pitches).severity
     if instrument_id == "cello":
         return check_cello_chord(pitches).severity
+    if instrument_id == "guitar":
+        return check_guitar_chord(pitches).severity
+    if instrument_id == "lute":
+        return check_lute_chord(pitches).severity
+    if instrument_id == "harp":
+        return check_harp_chord(pitches).severity
     worst = "ok"
     for p in pitches:
         sev = check_pitch_in_range(p, profile).severity

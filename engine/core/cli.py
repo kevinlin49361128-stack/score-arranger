@@ -36,8 +36,13 @@ from core.arrangement_model import (
 from core.arranger import arrange
 from core.evaluation import evaluate_phrase_detection, load_annotation
 from core.instruments import (
+    check_cello_chord,
+    check_guitar_chord,
+    check_harp_chord,
+    check_lute_chord,
     check_piano_hand_span,
     check_pitch_in_range,
+    check_viola_chord,
     check_violin_chord,
     get_profile,
 )
@@ -227,8 +232,17 @@ def _check_event(event, measure_number: int, instrument_id: str) -> list[dict]:
 
     elif isinstance(event, ChordEvent):
         # 和弦特定樂器檢查
-        if instrument_id == "violin":
-            result = check_violin_chord(event.pitches)
+        _chord_checkers = {
+            "violin": check_violin_chord,
+            "viola": check_viola_chord,
+            "cello": check_cello_chord,
+            "guitar": check_guitar_chord,
+            "lute": check_lute_chord,
+            "harp": check_harp_chord,
+        }
+        checker = _chord_checkers.get(instrument_id)
+        if checker is not None:
+            result = checker(event.pitches)
             if not result.is_ok:
                 issues.append(_check_result_to_dict(result, measure_number))
         elif instrument_id == "piano":

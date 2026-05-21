@@ -60,6 +60,10 @@ const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
   baroque_trio_sonata: "toolbar.ensemble.baroqueTrioSonata",
   woodwind_quintet: "toolbar.ensemble.woodwindQuintet",
   brass_quintet: "toolbar.ensemble.brassQuintet",
+  guitar_solo: "toolbar.ensemble.guitarSolo",
+  lute_solo: "toolbar.ensemble.luteSolo",
+  harp_solo: "toolbar.ensemble.harpSolo",
+  flute_guitar: "toolbar.ensemble.fluteGuitar",
 };
 
 function Sep() {
@@ -118,6 +122,10 @@ export function Toolbar() {
     | "baroque_trio_sonata"
     | "woodwind_quintet"
     | "brass_quintet"
+    | "guitar_solo"
+    | "lute_solo"
+    | "harp_solo"
+    | "flute_guitar"
     | "__custom__"
   >("violin_piano");
   const [customEnsembleOpen, setCustomEnsembleOpen] = useState(false);
@@ -717,6 +725,18 @@ export function Toolbar() {
           </option>
           <option value="brass_quintet">
             {tr("toolbar.ensembleOpt.brassQuintet")}
+          </option>
+          <option value="guitar_solo">
+            {tr("toolbar.ensembleOpt.guitarSolo")}
+          </option>
+          <option value="lute_solo">
+            {tr("toolbar.ensembleOpt.luteSolo")}
+          </option>
+          <option value="harp_solo">
+            {tr("toolbar.ensembleOpt.harpSolo")}
+          </option>
+          <option value="flute_guitar">
+            {tr("toolbar.ensembleOpt.fluteGuitar")}
           </option>
           <option value="__custom__">
             {customPlayers

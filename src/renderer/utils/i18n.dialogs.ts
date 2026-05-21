@@ -491,6 +491,18 @@ export const DIALOG_STRINGS: BiDict = {
   "onboard.ensemble.brassQuintet": {
     "zh-TW": "銅管五重奏", en: "Brass quintet",
   },
+  "onboard.ensemble.guitarSolo": {
+    "zh-TW": "吉他獨奏", en: "Guitar solo",
+  },
+  "onboard.ensemble.luteSolo": {
+    "zh-TW": "魯特琴獨奏", en: "Lute solo",
+  },
+  "onboard.ensemble.harpSolo": {
+    "zh-TW": "豎琴獨奏", en: "Harp solo",
+  },
+  "onboard.ensemble.fluteGuitar": {
+    "zh-TW": "長笛 + 吉他", en: "Flute + guitar",
+  },
 
   // === Onboarding: Step 1 ===
   "onboard.step1.heading": {

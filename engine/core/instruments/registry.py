@@ -62,6 +62,9 @@ def _bootstrap() -> None:
         FLUTE_PROFILE,
         OBOE_PROFILE,
     )
+    from .guitar import GUITAR_PROFILE
+    from .lute import LUTE_PROFILE
+    from .harp import HARP_PROFILE
     register_profile(VIOLIN_PROFILE)
     register_profile(VIOLA_PROFILE)
     register_profile(CELLO_PROFILE)
@@ -79,6 +82,9 @@ def _bootstrap() -> None:
     register_profile(ALTO_PROFILE)
     register_profile(TENOR_PROFILE)
     register_profile(BASS_VOICE_PROFILE)
+    register_profile(GUITAR_PROFILE)
+    register_profile(LUTE_PROFILE)
+    register_profile(HARP_PROFILE)
 
 
 _bootstrap()

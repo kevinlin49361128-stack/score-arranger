@@ -69,6 +69,13 @@ const ISSUE_SHORT_LABEL_CODES = new Set<string>([
   "W_CELLO_TRIPLE_QUAD_STOP",
   "W_PARALLEL_FIFTHS",
   "W_PARALLEL_OCTAVES",
+  "E_HARP_SAME_STRING",
+  "E_HARP_TOO_MANY_NOTES",
+  "W_HARP_WIDE_SPAN",
+  "E_FRETTED_CHORD_INFEASIBLE",
+  "E_FRETTED_FRET_TOO_HIGH",
+  "W_FRETTED_STRETCH_LARGE",
+  "W_FRETTED_HIGH_POSITION",
 ]);
 
 function shortLabel(code: string): string {
@@ -88,6 +95,7 @@ const SUGGESTION_LABEL_CODES = new Set<string>([
   "S_REDISTRIBUTE_HANDS",
   "S_SPLIT_TO_PARTS",
   "S_REVOICE_PASSAGE",
+  "S_RESPELL_ENHARMONIC",
 ]);
 
 /** suggestion code → 人類標籤; 未列出者 fallback 到 code。 */

@@ -106,4 +106,43 @@ export const ISSUE_STRINGS: BiDict = {
       "Parallel octaves (m.{from_measure}→{to_measure}) — "
       + "avoid in classical voice leading",
   },
+  // 豎琴 (harp)
+  E_HARP_SAME_STRING: {
+    "zh-TW":
+      "{instrument} {pitches} 共用同一根 {letter}{octave} 弦, 無法同時發聲",
+    en:
+      "{instrument} {pitches} share the same {letter}{octave} string and "
+      + "cannot sound together",
+  },
+  E_HARP_TOO_MANY_NOTES: {
+    "zh-TW": "{instrument} 和弦 {chord_size} 音超過雙手合計上限 {max}",
+    en:
+      "{instrument} chord of {chord_size} exceeds the {max}-note "
+      + "two-hand limit",
+  },
+  W_HARP_WIDE_SPAN: {
+    "zh-TW": "{instrument} 和弦跨度 {span_semitones} 半音過寬, 通常須琶音",
+    en:
+      "{instrument} chord span of {span_semitones} semitones is wide, "
+      + "usually needs arpeggiation",
+  },
+  // 有品撥弦樂器 (吉他 / 魯特琴)
+  E_FRETTED_CHORD_INFEASIBLE: {
+    "zh-TW": "{instrument} 此和弦找不到可行指法",
+    en: "{instrument} chord has no feasible fingering",
+  },
+  E_FRETTED_FRET_TOO_HIGH: {
+    "zh-TW": "{instrument} 把位 {fret} 超過最高可用把位 {max}",
+    en: "{instrument} position {fret} exceeds the highest usable fret {max}",
+  },
+  W_FRETTED_STRETCH_LARGE: {
+    "zh-TW": "{instrument} 把位伸展 {stretch} 大於舒適範圍 {comfortable}",
+    en:
+      "{instrument} stretch of {stretch} is larger than the comfortable "
+      + "{comfortable}",
+  },
+  W_FRETTED_HIGH_POSITION: {
+    "zh-TW": "{instrument} 把位 {fret} 偏高, 技術難度較高",
+    en: "{instrument} position {fret} is high, more technically demanding",
+  },
 };

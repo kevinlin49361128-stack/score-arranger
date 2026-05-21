@@ -27,6 +27,18 @@ export const SHELL_STRINGS: BiDict = {
   "toolbar.ensemble.brassQuintet": {
     "zh-TW": "銅管五重奏", en: "Brass quintet",
   },
+  "toolbar.ensemble.guitarSolo": {
+    "zh-TW": "吉他獨奏", en: "Guitar solo",
+  },
+  "toolbar.ensemble.luteSolo": {
+    "zh-TW": "魯特琴獨奏", en: "Lute solo",
+  },
+  "toolbar.ensemble.harpSolo": {
+    "zh-TW": "豎琴獨奏", en: "Harp solo",
+  },
+  "toolbar.ensemble.fluteGuitar": {
+    "zh-TW": "長笛 + 吉他", en: "Flute + guitar",
+  },
 
   // === Toolbar: 編制下拉選項 (短標籤) ===
   "toolbar.ensembleOpt.violinPiano": {
@@ -50,6 +62,18 @@ export const SHELL_STRINGS: BiDict = {
   },
   "toolbar.ensembleOpt.brassQuintet": {
     "zh-TW": "銅管五重奏", en: "Brass quintet",
+  },
+  "toolbar.ensembleOpt.guitarSolo": {
+    "zh-TW": "吉他獨奏", en: "Guitar solo",
+  },
+  "toolbar.ensembleOpt.luteSolo": {
+    "zh-TW": "魯特琴獨奏", en: "Lute solo",
+  },
+  "toolbar.ensembleOpt.harpSolo": {
+    "zh-TW": "豎琴獨奏", en: "Harp solo",
+  },
+  "toolbar.ensembleOpt.fluteGuitar": {
+    "zh-TW": "長笛+吉他", en: "Flute + guitar",
   },
   "toolbar.ensembleOpt.customWithCount": {
     "zh-TW": "🛠 自訂 ({count} 人)", en: "🛠 Custom ({count} players)",

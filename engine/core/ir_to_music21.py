@@ -75,6 +75,8 @@ _INSTRUMENT_FACTORY: dict[str, type] = {
     "trombone": instrument.Trombone,
     "tuba": instrument.Tuba,
     "harp": instrument.Harp,
+    "guitar": instrument.AcousticGuitar,
+    "lute": instrument.Lute,
     "timpani": instrument.Timpani,
 }
 
@@ -87,6 +89,8 @@ def _default_clef_for(instrument_id: str):
     - cello, double_bass, bassoon, tuba, trombone → 低音譜
     - viola → 中音譜
     - horn → 高音譜 (移調樂器, 譜記實際偏高)
+    - guitar / lute → 高音譜 (吉他記譜慣例: 高音譜, 實音低八度)
+    - harp → 高音譜 (上層 staff; 低音 staff 由大譜表處理)
     - 其他預設高音譜 (music21 預設行為)
     """
     from music21 import clef as _clef

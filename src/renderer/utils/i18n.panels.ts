@@ -151,6 +151,34 @@ export const PANEL_STRINGS: BiDict = {
     "zh-TW": "平行八度",
     en: "Parallel octaves",
   },
+  "issue.short.E_HARP_SAME_STRING": {
+    "zh-TW": "豎琴同弦撞音",
+    en: "Harp same-string clash",
+  },
+  "issue.short.E_HARP_TOO_MANY_NOTES": {
+    "zh-TW": "豎琴和弦音數超限",
+    en: "Harp chord exceeds note limit",
+  },
+  "issue.short.W_HARP_WIDE_SPAN": {
+    "zh-TW": "豎琴和弦跨度過寬",
+    en: "Wide harp chord span",
+  },
+  "issue.short.E_FRETTED_CHORD_INFEASIBLE": {
+    "zh-TW": "和弦無可行指法",
+    en: "Chord has no feasible fingering",
+  },
+  "issue.short.E_FRETTED_FRET_TOO_HIGH": {
+    "zh-TW": "把位過高",
+    en: "Position too high",
+  },
+  "issue.short.W_FRETTED_STRETCH_LARGE": {
+    "zh-TW": "把位伸展偏大",
+    en: "Large stretch",
+  },
+  "issue.short.W_FRETTED_HIGH_POSITION": {
+    "zh-TW": "高把位",
+    en: "High position",
+  },
 
   // suggestion code → 人類標籤 (按鈕 + LLM 解讀)
   "issue.suggestion.S_OMIT_NOTE": { "zh-TW": "省略此音", en: "Omit this note" },
@@ -175,6 +203,10 @@ export const PANEL_STRINGS: BiDict = {
   "issue.suggestion.S_REVOICE_PASSAGE": {
     "zh-TW": "重配整段聲位",
     en: "Revoice the passage",
+  },
+  "issue.suggestion.S_RESPELL_ENHARMONIC": {
+    "zh-TW": "改用等音記法",
+    en: "Respell enharmonically",
   },
 
   // ── RepairTimeline ──────────────────────────────────────────────────────
