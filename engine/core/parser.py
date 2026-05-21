@@ -192,6 +192,12 @@ def parse_musicxml(path: str) -> Score:
     if cached is not None:
         return copy.deepcopy(cached)
     ir = parse_stream(load_m21(path))
+    # 補回 music21 import 時丟掉的記譜元素 (hairpin / ornament)。
+    try:
+        from .musicxml_supplement import enrich_score
+        enrich_score(ir, path)
+    except Exception:
+        pass  # 補充解析失敗不影響主解析
     _cache_put(_IR_CACHE, key, ir)
     return copy.deepcopy(ir)
 

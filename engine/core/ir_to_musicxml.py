@@ -88,6 +88,16 @@ _ARTICULATION_XML: dict[str, str] = {
     "breath": "breath-mark",
 }
 
+# IR Ornament.kind → MusicXML <ornaments> 子元素
+_ORNAMENT_XML: dict[str, str] = {
+    "trill": "trill-mark",
+    "mordent": "mordent",
+    "inverted_mordent": "inverted-mordent",
+    "turn": "turn",
+    "inverted_turn": "inverted-turn",
+    "tremolo": "tremolo",
+}
+
 # instrument_id → clef (sign, line, octave-change)
 _CLEF_TABLE: dict[str, tuple[str, int, int]] = {
     "cello": ("F", 4, 0),
@@ -124,9 +134,15 @@ def score_to_musicxml(score: Score) -> str:
         sp = ET.SubElement(part_list, "score-part", id=f"P{idx + 1}")
         ET.SubElement(sp, "part-name").text = part.name_display or part.part_id
 
+    # 漸強/漸弱 (DynamicHairpin) → {part_id: {小節: [(offset, type)]}}
+    hairpin_index = _index_hairpins(score)
+
     # parts
     for idx, part in enumerate(score.parts):
-        _build_part(root, part, idx, divisions)
+        _build_part(
+            root, part, idx, divisions,
+            hairpin_index.get(part.part_id, {}),
+        )
 
     xml_body = ET.tostring(root, encoding="unicode")
     return (
@@ -192,12 +208,36 @@ def _compute_divisions(score: Score) -> int:
     return result
 
 
+def _index_hairpins(
+    score: Score,
+) -> dict[str, dict[int, list[tuple[Fraction, str]]]]:
+    """DynamicHairpin → {part_id: {小節: [(offset_ql, wedge_type), ...]}}。
+
+    每條 hairpin 拆成「起點 (crescendo/diminuendo)」與「終點 (stop)」兩個標記。
+    """
+    index: dict[str, dict[int, list[tuple[Fraction, str]]]] = {}
+    for hp in score.hairpins:
+        pid = hp.part_id
+        if not pid or hp.kind not in ("crescendo", "diminuendo"):
+            continue
+        per_measure = index.setdefault(pid, {})
+        s_m, s_off = hp.start
+        e_m, e_off = hp.end
+        per_measure.setdefault(s_m, []).append((Fraction(s_off), hp.kind))
+        per_measure.setdefault(e_m, []).append((Fraction(e_off), "stop"))
+    for per_measure in index.values():
+        for marks in per_measure.values():
+            marks.sort(key=lambda t: t[0])
+    return index
+
+
 # ============================================================================
 # Part / Measure
 # ============================================================================
 
 def _build_part(
     root: ET.Element, part, part_index: int, divisions: int,
+    wedge_measures: dict[int, list[tuple[Fraction, str]]],
 ) -> None:
     part_el = ET.SubElement(root, "part", id=f"P{part_index + 1}")
     clef = _CLEF_TABLE.get(part.instrument_id, ("G", 2, 0))
@@ -210,6 +250,7 @@ def _build_part(
         _build_measure(
             part_el, measure, divisions, cur_time_sig,
             clef if first else None, first,
+            wedge_measures.get(measure.number, []),
         )
         first = False
 
@@ -221,6 +262,7 @@ def _build_measure(
     time_sig: tuple[int, int],
     clef: Optional[tuple[str, int, int]],
     is_first: bool,
+    wedges: list[tuple[Fraction, str]],
 ) -> None:
     m_el = ET.SubElement(part_el, "measure", number=str(measure.number))
 
@@ -260,6 +302,10 @@ def _build_measure(
         _append_tempo(m_el, measure)
     if measure.rehearsal_mark is not None:
         _append_rehearsal(m_el, measure.rehearsal_mark)
+
+    # 漸強/漸弱記號 (wedge) — 以 <offset> 標出在小節內的位置
+    for (offset_ql, wtype) in wedges:
+        _append_wedge(m_el, wtype, offset_ql, divisions)
 
     # 收集事件 → greedy 切成不重疊的 MusicXML 聲部
     events = _collect_events(measure)
@@ -496,6 +542,14 @@ def _append_notations(
         elif tup_last.get(bid) == idx:
             ET.SubElement(notations, "tuplet", type="stop")
 
+    # ornaments (trill / mordent / turn ...)
+    ornament = getattr(ev, "ornament", None)
+    if ornament is not None:
+        orn_tag = _ORNAMENT_XML.get(ornament.kind)
+        if orn_tag is not None:
+            orn_el = ET.SubElement(notations, "ornaments")
+            ET.SubElement(orn_el, orn_tag)
+
     # articulations / fermata
     arts = list(getattr(ev, "articulations", []) or [])
     art_xml = [
@@ -606,6 +660,18 @@ def _append_rehearsal(m_el: ET.Element, mark: str) -> None:
     direction = ET.SubElement(m_el, "direction", placement="above")
     dtype = ET.SubElement(direction, "direction-type")
     ET.SubElement(dtype, "rehearsal").text = mark
+
+
+def _append_wedge(
+    m_el: ET.Element, wtype: str, offset_ql: Fraction, divisions: int,
+) -> None:
+    """漸強/漸弱記號 — <direction> 內含 <wedge>, 以 <offset> 定位。"""
+    direction = ET.SubElement(m_el, "direction", placement="below")
+    dtype = ET.SubElement(direction, "direction-type")
+    ET.SubElement(dtype, "wedge", type=wtype, number="1")
+    off = int(Fraction(offset_ql) * divisions)
+    if off:
+        ET.SubElement(direction, "offset").text = str(off)
 
 
 def _append_barlines(m_el: ET.Element, measure: Measure) -> None:
