@@ -21,10 +21,12 @@ from __future__ import annotations
 
 import re
 import xml.etree.ElementTree as ET
+from datetime import date
 from fractions import Fraction
 from math import lcm
 from typing import Optional
 
+from . import __version__
 from .ir import (
     ChordEvent,
     Measure,
@@ -189,7 +191,18 @@ def _build_header(root: ET.Element, score: Score) -> None:
     if md.get("copyright"):
         ET.SubElement(ident, "rights").text = md["copyright"]
     encoding = ET.SubElement(ident, "encoding")
-    ET.SubElement(encoding, "software").text = "Score Arranger"
+    ET.SubElement(encoding, "software").text = (
+        f"Score Arranger {__version__}"
+    )
+    ET.SubElement(encoding, "encoding-date").text = date.today().isoformat()
+    # 版本 / 版權宣告 — 讓散出去的改編譜帶有出處與授權資訊。
+    misc = ET.SubElement(ident, "miscellaneous")
+    ET.SubElement(
+        misc, "miscellaneous-field", name="arranged-with",
+    ).text = (
+        f"Score Arranger {__version__} — open-source (GPL-3.0), "
+        "github.com/kevinlin49361128-stack/score-arranger"
+    )
 
 
 # ============================================================================

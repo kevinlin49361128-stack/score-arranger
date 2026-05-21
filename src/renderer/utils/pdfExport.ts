@@ -12,6 +12,10 @@
 import jsPDF from "jspdf";
 import { t } from "./i18n";
 
+/** 匯出 PDF 每頁頁尾的版本 / 版權宣告。 */
+const EXPORT_FOOTER =
+  "Arranged with Score Arranger 0.1.0  ·  © 2026 Kevin Lin  ·  GPL-3.0";
+
 interface VerovioToolkitLike {
   loadData: (xml: string) => boolean;
   renderToSVG: (pageNum: number) => string;
@@ -99,6 +103,10 @@ export async function exportPdfFromMusicXML(
     const imgDataUrl = await svgToPngDataUrl(svg, pageW, pageH);
     if (p > 1) pdf.addPage();
     pdf.addImage(imgDataUrl, "PNG", 0, 0, pageW, pageH);
+    // 版本 / 版權頁尾 — 置中淺灰小字, 落在 verovio 底部留白內
+    pdf.setFontSize(7);
+    pdf.setTextColor(150);
+    pdf.text(EXPORT_FOOTER, pageW / 2, pageH - 14, { align: "center" });
   }
 
   // 顯式 Blob 下載 — 比 pdf.save() 的內建 saveAs 對「連續多個下載」更穩
