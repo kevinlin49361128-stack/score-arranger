@@ -31,6 +31,7 @@ from .arrangement_model import (
 from .instruments import get_profile
 from .ir import (
     ChordEvent,
+    DynamicHairpin,
     Measure,
     NoteEvent,
     Part,
@@ -682,7 +683,48 @@ def build_target_score(
         default_key=source.default_key,
         default_time_signature=source.default_time_signature,
     )
+    # 把來源的漸強/漸弱記號依 assignment 對映到 target part
+    target_score.hairpins = _remap_hairpins(source, assignments)
     return target_score
+
+
+def _remap_hairpins(
+    source: Score, assignments: list[Assignment],
+) -> list[DynamicHairpin]:
+    """把 source 的 DynamicHairpin 依 assignment 對映到 target part_id。
+
+    一條 hairpin (在 source part X) → 找涵蓋其起點小節的 assignment,
+    改掛到對應的 target part。來源聲部未被改編用到 → 該 hairpin 捨棄。
+    """
+    if not source.hairpins:
+        return []
+    out: list[DynamicHairpin] = []
+    for hp in source.hairpins:
+        start_measure = hp.start[0]
+        target_pid: Optional[str] = None
+        for a in assignments:
+            if a.source_part_id != hp.part_id:
+                continue
+            lo, hi = a.span
+            if lo <= start_measure <= hi:
+                target_pid = (
+                    f"{a.target_player_id}_{a.target_staff}"
+                    if a.target_staff != "main"
+                    else a.target_player_id
+                )
+                break
+        if target_pid is None:
+            continue
+        out.append(DynamicHairpin(
+            hairpin_id=len(out),
+            start=hp.start,
+            end=hp.end,
+            kind=hp.kind,
+            part_id=target_pid,
+            start_dynamic=hp.start_dynamic,
+            end_dynamic=hp.end_dynamic,
+        ))
+    return out
 
 
 def _transform_event(event, profile, skill_level: str = "professional"):
