@@ -20,7 +20,8 @@ from __future__ import annotations
 import copy
 from typing import Optional
 
-from .analyzer.function import tag_all_sections
+from .analyzer.function import tag_all_sections, tag_section_functions
+from .analyzer.phrase import detect_phrases
 from .arrangement_model import (
     Arrangement,
     Assignment,
@@ -230,6 +231,12 @@ def arrange(
     _phase_a_skeleton(score, section, players, arrangement)
     _phase_b_fill(score, section, players, arrangement)
 
+    # 樂句級旋律換手 (architecture.md §4.4: 主旋律僅在樂句邊界換聲部)
+    try:
+        _apply_melody_handoff(score, section, arrangement)
+    except Exception:
+        pass  # 換手偵測失敗 → 保留 section 級 MELODY 指派
+
     # Phase C: 衝突解決 (Phase 1 僅 octave shift)
     # Phase D: 連貫性修正 (Phase 2 實作)
 
@@ -408,6 +415,156 @@ def _phase_b_fill(
 
 
 # ============================================================================
+# 樂句級旋律換手 (architecture.md §4.4)
+# ============================================================================
+
+# section 超過此長度 → 跳過換手偵測 (detect_phrases 的 DP 在超大段落上太慢,
+# 且通常代表「整曲被當成單一 section」的退化情況)。
+_HANDOFF_MAX_SECTION_MEASURES = 400
+
+
+def _apply_melody_handoff(
+    score: Score,
+    section: Section,
+    arrangement: Arrangement,
+) -> None:
+    """把單一 section 級 MELODY 指派, 依樂句邊界拆成多個逐樂句指派。
+
+    主旋律在原曲不同聲部間遊走時 (例如旋律從第一小提琴移到大提琴),
+    讓目標旋律樂器逐樂句跟著正確的來源聲部走。
+
+    無偵測到換手 (只有一個樂句, 或每個樂句都同一來源) → 不動原指派。
+    """
+    melody_assigns = [
+        a for a in arrangement.assignments
+        if a.function == VoiceFunction.MELODY
+    ]
+    if not melody_assigns:
+        return
+
+    # 換手是「縮編」技巧 — 目標聲部數 >= 來源數時, 每個來源各自保留對應
+    # 目標 (1:1 對映), 不需把旋律集中換手。只有縮編 (來源 > 目標) 才換手。
+    if len(score.parts) <= len(arrangement.players):
+        return
+
+    # 排除已被 BASS / PEDAL 佔用的來源 — 避免旋律換手搶走低音聲部,
+    # 造成同一來源被雙重使用。
+    exclude = {
+        a.source_part_id for a in arrangement.assignments
+        if a.function in (VoiceFunction.BASS, VoiceFunction.PEDAL)
+    }
+    spans = _melody_handoff_spans(score, section, exclude)
+    if spans is None:
+        return  # 無換手 → 保留原 section 級指派
+
+    # 用逐樂句指派取代原本的 section 級 MELODY 指派
+    primary = melody_assigns[0]
+    others = [
+        a for a in arrangement.assignments
+        if a.function != VoiceFunction.MELODY
+    ]
+    new_melody = [
+        Assignment(
+            assignment_id=0,
+            source_part_id=part_id,
+            target_player_id=primary.target_player_id,
+            target_instrument=primary.target_instrument,
+            target_staff=primary.target_staff,
+            span=(start_m, end_m),
+            function=VoiceFunction.MELODY,
+        )
+        for (start_m, end_m, part_id) in spans
+    ]
+    arrangement.assignments = others + new_melody
+    for i, a in enumerate(arrangement.assignments):
+        a.assignment_id = i
+
+
+def _melody_handoff_spans(
+    score: Score,
+    section: Section,
+    exclude: set[str],
+) -> Optional[list[tuple[int, int, str]]]:
+    """偵測 section 內主旋律的逐樂句來源。
+
+    回傳 [(start_measure, end_measure, source_part_id), ...] — 已合併相鄰
+    同來源的樂句。若無實質換手 (全段同一來源 / 無法細分樂句) → None。
+    """
+    n_measures = section.end_measure - section.start_measure + 1
+    if n_measures > _HANDOFF_MAX_SECTION_MEASURES or n_measures < 4:
+        return None
+
+    # section 級主旋律 part (排除低音聲部)
+    sec_scores = {
+        pid: sc
+        for pid, sc in tag_section_functions(
+            score, section,
+        ).melody_scores.items()
+        if pid not in exclude
+    }
+    if not sec_scores:
+        return None
+    primary = max(sec_scores, key=lambda k: sec_scores[k])
+    primary_part = next(
+        (p for p in score.parts if p.part_id == primary), None
+    )
+    if primary_part is None:
+        return None
+
+    # 用主旋律 part 的樂句邊界當換手點
+    phrases = detect_phrases(primary_part, section)
+    if len(phrases) <= 1:
+        return None
+
+    starts = sorted({
+        ph.start[0] for ph in phrases
+        if section.start_measure <= ph.start[0] <= section.end_measure
+    })
+    if not starts or starts[0] != section.start_measure:
+        starts.insert(0, section.start_measure)
+
+    # 樂句邊界 → 連續不重疊的 measure span
+    raw_spans: list[tuple[int, int]] = []
+    for i, s in enumerate(starts):
+        e = starts[i + 1] - 1 if i + 1 < len(starts) else section.end_measure
+        if e >= s:
+            raw_spans.append((s, e))
+    if len(raw_spans) <= 1:
+        return None
+
+    # 逐樂句挑旋律來源 — sticky: 維持上一樂句的來源, 除非新來源明顯勝出
+    chosen: list[tuple[int, int, str]] = []
+    prev = primary
+    for (s, e) in raw_spans:
+        tmp = Section(section_id=-1, start_measure=s, end_measure=e)
+        span_scores = {
+            pid: sc
+            for pid, sc in tag_section_functions(
+                score, tmp,
+            ).melody_scores.items()
+            if pid not in exclude
+        }
+        if span_scores:
+            winner = max(span_scores, key=lambda k: span_scores[k])
+            prev_score = span_scores.get(prev, 0.0)
+            if winner != prev and span_scores[winner] > prev_score * 1.15:
+                prev = winner
+        chosen.append((s, e, prev))
+
+    # 合併相鄰同來源
+    merged: list[tuple[int, int, str]] = []
+    for (s, e, pid) in chosen:
+        if merged and merged[-1][2] == pid:
+            merged[-1] = (merged[-1][0], e, pid)
+        else:
+            merged.append((s, e, pid))
+
+    if len(merged) <= 1:
+        return None  # 全段同一來源 → 無實質換手
+    return merged
+
+
+# ============================================================================
 # Target score 建構 (含 octave 調整)
 # ============================================================================
 
@@ -481,10 +638,16 @@ def build_target_score(
         target_player = player_by_id.get(assignment.target_player_id)
         skill = target_player.skill_level if target_player else "professional"
 
+        # 依 assignment.span 裁切 — 樂句級換手時各 MELODY 指派只負責自己的
+        # 樂句範圍; 非換手指派的 span 即整個 section, 行為不變。
+        span_lo, span_hi = assignment.span
         for src_m in src_part.measures:
-            if not (section.start_measure <= src_m.number <= section.end_measure):
+            if not (span_lo <= src_m.number <= span_hi):
                 continue
-            tgt_m = target_part.measures[src_m.number - section.start_measure]
+            tgt_idx = src_m.number - section.start_measure
+            if not (0 <= tgt_idx < len(target_part.measures)):
+                continue
+            tgt_m = target_part.measures[tgt_idx]
 
             for voice in src_m.voices.values():
                 if voice.is_divisi:

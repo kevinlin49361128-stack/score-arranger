@@ -354,3 +354,58 @@ class TestArrangerWatermark:
         xml = write_musicxml_string(arr.target_score)
         assert 'type="arranger"' in xml
         assert "Score Arranger" in xml
+
+
+# ============================================================================
+# 樂句級旋律換手 (architecture.md §4.4)
+# ============================================================================
+
+class TestMelodyHandoff:
+    """主旋律縮編時依樂句邊界在來源聲部間換手。"""
+
+    def test_handoff_on_quartet_reduction(self):
+        """弦樂四重奏縮編成 violin+piano → 旋律應逐樂句換手。"""
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import build_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.ir import VoiceFunction
+        from core.parser import parse_musicxml
+
+        score = parse_musicxml("corpus:mozart/k80/movement1")
+        tag_all_sections(score)
+        arr = run_arrange(
+            score, build_ensemble("violin_piano", skill_level="professional"),
+        )
+        mel = [
+            a for a in arr.assignments
+            if a.function == VoiceFunction.MELODY
+        ]
+        # 拆成多個逐樂句指派, 且至少兩個不同來源 (旋律確實換手)
+        assert len(mel) >= 2
+        assert len({a.source_part_id for a in mel}) >= 2
+        # 全部指向同一個目標旋律樂器
+        assert len({(a.target_player_id, a.target_staff) for a in mel}) == 1
+        # span 連續、不重疊、無間隙
+        spans = sorted(a.span for a in mel)
+        for i in range(len(spans) - 1):
+            assert spans[i][1] + 1 == spans[i + 1][0], \
+                f"MELODY span 不連續: {spans[i]} → {spans[i + 1]}"
+
+    def test_no_handoff_when_target_not_smaller(self):
+        """目標聲部數 >= 來源數 (非縮編) → 不換手, 維持單一 section 級指派。"""
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import build_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.ir import VoiceFunction
+        from core.parser import parse_musicxml
+
+        score = parse_musicxml("corpus:mozart/k80/movement1")  # 4 部
+        tag_all_sections(score)
+        arr = run_arrange(
+            score, build_ensemble("string_quartet", skill_level="professional"),
+        )
+        mel = [
+            a for a in arr.assignments
+            if a.function == VoiceFunction.MELODY
+        ]
+        assert len(mel) == 1
