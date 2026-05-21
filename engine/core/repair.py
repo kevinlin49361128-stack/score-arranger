@@ -276,11 +276,43 @@ def strategy_octave_shift(score: Score, issue: LocatedIssue) -> bool:
     return True
 
 
+def _harmonic_omit_choice(pitches: list) -> int:
+    """挑出和弦中最該省略的音 — 回傳該音在 pitches 內的 index。
+
+    原則 (和聲感知):
+    - 保留外聲部 (最低音 = 低音根基, 最高音 = 旋律輪廓)
+    - 內聲部中省略和聲上最不關鍵者:
+        * 與其他音同 pitch-class 的疊音 → 最該省
+        * 完全五度 / 八度 → 可省 (和聲上可被隱含)
+        * 三度 (定大小調) / 七度 (定和弦屬性) → 應保留
+    """
+    order = sorted(range(len(pitches)), key=lambda i: pitches[i].midi_number)
+    if len(order) < 3:
+        return order[-1]  # 2 音 → 省最高, 保留低音根基
+
+    root_midi = pitches[order[0]].midi_number
+    pcs = [pitches[i].midi_number % 12 for i in range(len(pitches))]
+
+    def essential(gi: int) -> int:
+        """分數越低越該省。"""
+        iv = (pitches[gi].midi_number - root_midi) % 12
+        if pcs.count(pitches[gi].midi_number % 12) > 1:
+            return 0  # 疊音
+        if iv in (3, 4, 10, 11):
+            return 3  # 三度 / 七度 — 定義和弦, 最該留
+        if iv in (1, 2, 5, 6, 8, 9):
+            return 2  # 其他和聲音
+        return 1      # 完全五度 / 八度 — 可省
+
+    inner = order[1:-1]  # 只在內聲部中挑
+    return min(inner, key=essential)
+
+
 def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     """策略 2 (Phase 1 範圍): 對和弦超載問題省略一個音。
 
-    啟發式: 優先省略中間音 (保留最低與最高,保持外聲部完整)。
-    若為 2 音和弦,省略最高 (保留低音根基)。
+    和聲感知啟發式: 保留外聲部, 內聲部中省略和聲上最不關鍵的音 (疊音 /
+    完全五度 / 八度優先省, 三度與七度保留)。2 音和弦則省最高。
     """
     omit_codes = {
         "E_STRING_CHORD_EXCEED",
@@ -299,13 +331,11 @@ def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     if len(event.pitches) < 2:
         return False
 
-    sorted_pitches = sorted(event.pitches, key=lambda p: p.midi_number)
-    if len(sorted_pitches) >= 3:
-        # 移除中間音
-        sorted_pitches.pop(len(sorted_pitches) // 2)
-    else:
-        # 2 音: 移除最高
-        sorted_pitches.pop()
+    omit_idx = _harmonic_omit_choice(event.pitches)
+    sorted_pitches = sorted(
+        (p for i, p in enumerate(event.pitches) if i != omit_idx),
+        key=lambda p: p.midi_number,
+    )
 
     if len(sorted_pitches) < 2:
         # 變單音 → 改為 NoteEvent (in-place)
