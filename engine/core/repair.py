@@ -52,7 +52,10 @@ SEVERITY_WEIGHTS: dict[str, float] = {
 }
 
 DEFAULT_EPSILON = 0.5
-DEFAULT_MAX_ITERATIONS = 10
+# 每輪只處理一個 issue, 故密集改編 (鋼琴譜 → 弦樂四重奏) 動輒數十個可演奏性
+# 問題時, 10 輪遠遠不夠收斂。提高上限讓自動修復能真正清完;迴圈本身在
+# issue 清空或全部標為 manual 時就會提早結束, 不會空轉。
+DEFAULT_MAX_ITERATIONS = 50
 
 
 # ============================================================================
@@ -514,8 +517,9 @@ def strategy_split_chord_to_parts(score: Score, issue: LocatedIssue) -> bool:
     其他弦樂聲部 (violin II / viola / cello), 旋律頂音留在原聲部 —— 這正是
     弦樂改編最正統的處理: 不丟音, 只是把一個樂器吃不下的和弦攤給聲部群。
 
-    成功條件: 每個移出的音都能在某個鄰近聲部上演奏 (併入後該聲部仍可演奏)。
-    若無法完整安置則完全不動 (回傳 False), 交由其他策略 / 人工處理。
+    盡量把每個移出音安置到某個鄰近聲部 (併入後該聲部仍須可演奏); 真的
+    無處可去的音才省略 —— 仍優於整顆和弦演奏不出來。一個音都搬不動時
+    回傳 False, 交給 omit_note 等策略處理。
     """
     if issue.result.code not in _SPLIT_TRIGGER_CODES:
         return False
@@ -596,9 +600,12 @@ def strategy_split_chord_to_parts(score: Score, issue: LocatedIssue) -> bool:
                 chosen_rank = rank
                 chosen = (rp, vid, idx, slot)
         if chosen is None:
-            return False                # 此音無處可去 — 整個策略放棄, 不留半套
+            continue                    # 此音無處安置 → 略過 (等同省略此音)
         used.add(chosen[0].part_id)
         plan.append((chosen[0], chosen[1], chosen[2], chosen[3], note))
+
+    if not plan:
+        return False                    # 一個音都搬不動 → 交給 omit_note 處理
 
     # 執行 — 原聲部只留 keep
     if len(keep) == 1:
@@ -771,8 +778,20 @@ def repair_loop(
             assert target is not None
 
         if candidates:
+            # 和弦拆分類錯誤 (跨非相鄰弦 / 音數超載 / 音低於最低弦): 優先採用
+            # split_to_parts —— 把吃不下的音搬到鄰近聲部 (violin II / viola /
+            # cello), 保留所有音符。即使 omit_note 的 issue 分數略低 (丟一個音
+            # 自然少一個和弦警告), 對音樂人而言「少一個音」遠比「分給別的聲部
+            # 演奏」更難接受。split 候選已通過 epsilon 門檻, 故收斂保證不變。
+            preferred = candidates
+            if target_issue.result.code in _SPLIT_TRIGGER_CODES:
+                split_only = [
+                    c for c in candidates if c[0] == "split_to_parts"
+                ]
+                if split_only:
+                    preferred = split_only
             applied, score_after, repaired = _pick_best_candidate(
-                arrangement, candidates,
+                arrangement, preferred,
             )
             _restore_score(arrangement, repaired)
             target = arrangement.target_score
