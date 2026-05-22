@@ -26,10 +26,10 @@ interface ScoreViewerProps {
   highlightedMeasure?: number | null;
   /** Flash 觸發計數, 每次遞增就重新閃一次, 用於連點同一小節 */
   highlightFlashTick?: number;
-  /** 播放中的當前小節 (即時捲動, 不平滑以避免延遲) */
+  /** 播放中的當前小節 (即時捲動, 不平滑以避免延遲)。
+   * source / target 兩個面板都會顯示播放游標 — 播改編譜時原譜游標亦同步
+   * 移動, 方便逐小節對照。 */
   playbackMeasure?: number | null;
-  /** 是否是當前播放對象 — false 時 cursor 不顯示 */
-  isActivePlaybackPanel?: boolean;
   /** 使用者點選譜面上的小節時觸發.
    *
    * hint.approxPitch: 依照點擊 y 位置估算的 MIDI 音高, 讓編輯器可預選最接近的音。
@@ -87,7 +87,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       highlightedMeasure,
       highlightFlashTick,
       playbackMeasure,
-      isActivePlaybackPanel,
       onMeasureClick,
       onNoteDrag,
       measureDifficulty,
@@ -701,8 +700,8 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [highlightedMeasure, zoom, musicXmlContent]);
 
-    // 反應 playbackMeasure — 只在 *本面板是 active playback 對象時* 顯示游標.
-    // 另一面板播放時, 此 panel 不顯示任何 cursor / 高亮.
+    // 反應 playbackMeasure — source / target 兩個面板都顯示播放游標。
+    // 播改編譜時原譜游標亦同步移動 (反之亦然), 方便逐小節 A/B 對照。
     //
     // 游標改用「自繪 overlay」: OSMD 內建 cursor <img> 在深色 pageBackground
     // 下會被不透明的背景 rect 整片蓋住而完全看不見 (這就是 task #66
@@ -715,7 +714,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       })?.cursor;
       // 一律隱藏 OSMD 內建 cursor — 避免與自繪 overlay 重疊 / 殘影
       cursor?.hide?.();
-      if (playbackMeasure == null || !isActivePlaybackPanel) {
+      if (playbackMeasure == null) {
         setPlaybackBox(null);
         return;
       }
@@ -726,7 +725,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // behavior=smooth → 平順滑動跟隨, 不再瞬間跳動。
       scrollToMeasure(playbackMeasure, "smooth", false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playbackMeasure, isActivePlaybackPanel, zoom]);
+    }, [playbackMeasure, zoom]);
 
     /** 點擊 OSMD 容器 → 透過 MeasureList 的 bounding box 找出對應小節。
      *

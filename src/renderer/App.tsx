@@ -51,7 +51,6 @@ export default function App() {
     panelLayout,
     infoPanelPos,
     showHeatmap,
-    activePlaybackSide,
   } = useSessionStore();
   // 載入 per-measure difficulty (僅在 showHeatmap 開啟時)
   const [difficultyData, setDifficultyData] = useState<
@@ -430,7 +429,6 @@ export default function App() {
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
                 playbackMeasure={playbackMeasure}
-                isActivePlaybackPanel={activePlaybackSide === "source"}
                 onMeasureClick={setHighlightedMeasure}
                 isAutoFitReference={!targetMusicXML}
               />
@@ -476,7 +474,6 @@ export default function App() {
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
                 playbackMeasure={playbackMeasure}
-                isActivePlaybackPanel={activePlaybackSide === "target"}
                 onMeasureClick={handleTargetClick}
                 onNoteDrag={handleNoteDrag}
                 measureDifficulty={measureDifficulty}
