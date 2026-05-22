@@ -1560,10 +1560,12 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         if kind == "level":
             # 難度閉環 — 逐小節抹平到目標難度
             # (見 core/difficulty_control.py)
+            # 注意: 不可用 `target` 當區域變數 —— 它在外層綁定的是
+            # target_score, 覆寫會害後續序列化拿 float 當 Score。
             from core.difficulty_control import level_difficulty
-            target = float(op["target_difficulty"])
+            level_target = float(op["target_difficulty"])
             changed = level_difficulty(
-                part, src_score, m_start, m_end, target,
+                part, src_score, m_start, m_end, level_target,
             )
             results.append({
                 "op": kind,

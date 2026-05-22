@@ -834,6 +834,75 @@ class TestApplyEditOps:
         })
         assert not resp["ok"]
 
+    @staticmethod
+    def _setup_with_source() -> object:
+        """target (易, 可加厚) + source (有和聲) — 供 enrich / level 測試。"""
+        import core.server as srv
+        from fractions import Fraction
+        from core.arrangement_model import Arrangement, violin_piano_ensemble
+        from core.ir import (
+            ChordEvent, Measure, Movement, NoteEvent, Part, Pitch,
+            Score, Section, Voice,
+        )
+
+        def tgt_measure(num: int) -> Measure:
+            return Measure(
+                number=num, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[
+                    NoteEvent(pitch=Pitch(72, "C5"),
+                              duration=Fraction(1), onset=Fraction(i))
+                    for i in range(4)
+                ])},
+            )
+
+        def src_measure(num: int) -> Measure:
+            return Measure(
+                number=num, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[ChordEvent(
+                    pitches=[Pitch(48, "C3"), Pitch(52, "E3"),
+                             Pitch(55, "G3")],
+                    duration=Fraction(4), onset=Fraction(0),
+                )])},
+            )
+
+        target = Score(
+            movements=[Movement(movement_id=1, measure_count=3,
+                                sections=[Section(0, 1, 3)])],
+            parts=[Part(part_id="violin_1", name_display="V",
+                        instrument_id="violin",
+                        measures=[tgt_measure(i) for i in (1, 2, 3)])],
+        )
+        source = Score(parts=[Part(
+            part_id="s", name_display="S", instrument_id="violin",
+            measures=[src_measure(i) for i in (1, 2, 3)],
+        )])
+        srv._CURRENT_ARRANGEMENT = Arrangement(
+            arrangement_id="t", name="T", source_id="s",
+            players=violin_piano_ensemble(), assignments=[],
+            target_score=target, source_score=source,
+        )
+        srv._HISTORY = []
+        srv._REDO_STACK = []
+        return target
+
+    def test_level_op_succeeds(self):
+        """回歸: level op 曾用 `target` 當區域變數覆寫 target_score,
+        導致後續序列化拿 float 當 Score → 'float' has no attribute 'parts'。
+        """
+        self._setup_with_source()
+        resp = handle_request({
+            "id": "e8", "method": "apply_edit_ops",
+            "params": {"ops": [{
+                "op": "level", "part_id": "violin_1",
+                "measure_start": 1, "measure_end": 3,
+                "target_difficulty": 3,
+            }]},
+        })
+        assert resp["ok"], resp.get("error")
+        assert resp["data"]["applied"]
+        # target_score 仍可正常序列化 (float 覆寫會在此崩潰)
+        assert resp["data"]["target_musicxml"] is not None
+
 
 # ============================================================================
 # stdio loop 整合
