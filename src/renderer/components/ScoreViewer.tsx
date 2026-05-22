@@ -977,22 +977,35 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
             {error}
           </div>
         )}
-        <div
-          ref={osmdContainerRef}
-          onClick={handleOsmdClick}
-          onMouseDown={handleOsmdMouseDown}
-          onMouseMove={handleOsmdMouseMove}
-          onMouseUp={handleOsmdMouseUp}
-          onMouseLeave={handleOsmdMouseUp}
-          style={{
-            minHeight: 400,
-            padding: 16,
-            background: osmdBg,
-            cursor: onMeasureClick ? "pointer" : "default",
-            position: "relative",
-            userSelect: "none",
-          }}
-        >
+        {/* OSMD 與 React 自繪 overlay 必須分層: osmdContainerRef 專供 OSMD
+            自行 append/remove SVG; overlay 放在獨立的 sibling 層。若兩者
+            共用同一 DOM 容器, OSMD 的 DOM 變動會害 React 在 commit 期
+            insertBefore 失敗 ('node is not a child') → 整個 app 崩潰。 */}
+        <div style={{ position: "relative" }}>
+          <div
+            ref={osmdContainerRef}
+            onClick={handleOsmdClick}
+            onMouseDown={handleOsmdMouseDown}
+            onMouseMove={handleOsmdMouseMove}
+            onMouseUp={handleOsmdMouseUp}
+            onMouseLeave={handleOsmdMouseUp}
+            style={{
+              minHeight: 400,
+              padding: 16,
+              background: osmdBg,
+              cursor: onMeasureClick ? "pointer" : "default",
+              userSelect: "none",
+            }}
+          />
+          {/* React 專屬 overlay 層 — OSMD 完全不碰這層 */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              pointerEvents: "none",
+            }}
+          >
           {flashBox && (
             <div
               key={flashBox.key}
@@ -1083,6 +1096,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
               />
             );
           })}
+          </div>
         </div>
         {dragGhost && (
           <div
