@@ -195,6 +195,7 @@ export function NLEditDialog({ onClose }: Props) {
     setArrangementIssues,
     setHistoryFlags,
     flashEditedMeasures,
+    saveVariant,
   } = useSessionStore();
 
   const players = useMemo<PlayerLite[]>(
@@ -383,6 +384,8 @@ export function NLEditDialog({ onClose }: Props) {
           undoNote,
         }),
       );
+      // D1 編輯版本樹 — 每次成功編輯自動存一個 variant, 方便事後比較 / 還原
+      saveVariant(undefined, planRequest || plan.summary);
       if (before) {
         const afterRes = await window.scoreArranger.engine.computeQuality();
         if (afterRes.ok && afterRes.data) {

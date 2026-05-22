@@ -75,6 +75,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     setArrangementIssues,
     setHistoryFlags,
     flashEditedMeasures,
+    saveVariant,
   } = useSessionStore();
 
   const players = useMemo<PlayerLite[]>(
@@ -226,6 +227,26 @@ export function DifficultyBoostDialog({ onClose }: Props) {
           ? t("boost.applied", { count: ops.length, touched })
           : t("boost.appliedNoChange"),
       );
+      // D1 編輯版本樹 — 每次成功編輯自動存 variant, 方便事後比較 / 還原
+      const noteRange = `m${lo}-${hi}`;
+      const variantNote = direction === "target"
+        ? `${t("boost.direction.target")} ${targetDiff} · ${noteRange}`
+        : direction === "reduce"
+        ? `${t("boost.direction.reduce")} · ${noteRange} · ${
+          intensity === "conservative"
+            ? t("boost.level.light")
+            : intensity === "virtuosic"
+            ? t("boost.level.full")
+            : t("boost.level.medium")
+        }`
+        : `${t("boost.direction.boost")} · ${noteRange} · ${
+          intensity === "conservative"
+            ? t("boost.intensity.conservative")
+            : intensity === "virtuosic"
+            ? t("boost.intensity.virtuosic")
+            : t("boost.intensity.balanced")
+        }`;
+      saveVariant(undefined, variantNote);
       if (before) {
         const afterRes = await window.scoreArranger.engine.computeQuality();
         if (afterRes.ok && afterRes.data) {
