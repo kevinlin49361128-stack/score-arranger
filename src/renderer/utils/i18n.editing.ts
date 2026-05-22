@@ -398,6 +398,19 @@ export const EDITING_STRINGS: BiDict = {
     en: "Reduce difficulty — thin chords / de-ornament / simpler bowing",
     ja: "難度ダウン — コード簡略化 / 装飾除去 / 弓法簡略化",
   },
+  // ── D2 品質 lint (編輯後的品質 delta) ─────────────────────────────────
+  "quality.delta.label": {
+    "zh-TW": "品質變化", en: "Quality change", ja: "品質の変化",
+  },
+  "quality.delta.melody": {
+    "zh-TW": "旋律", en: "Melody", ja: "旋律",
+  },
+  "quality.delta.harmony": {
+    "zh-TW": "和聲", en: "Harmony", ja: "和声",
+  },
+  "quality.delta.playability": {
+    "zh-TW": "可演奏性", en: "Playability", ja: "演奏可能性",
+  },
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },

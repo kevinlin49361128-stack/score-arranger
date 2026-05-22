@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ArrangementIssue } from "@shared/types";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
+import { QualityDeltaBadge, type QualityDelta } from "./QualityDeltaBadge";
 
 interface Props {
   onClose: () => void;
@@ -238,6 +239,7 @@ export function NLEditDialog({ onClose }: Props) {
   const [selected, setSelected] = useState<boolean[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [appliedMsg, setAppliedMsg] = useState<string | null>(null);
+  const [qualityDelta, setQualityDelta] = useState<QualityDelta | null>(null);
   // 多輪對話 — 已套用的回合 (帶進下一輪 LLM context)
   const [history, setHistory] = useState<
     { request: string; summary: string }[]
@@ -274,6 +276,7 @@ export function NLEditDialog({ onClose }: Props) {
     setError(null);
     setPlan(null);
     setAppliedMsg(null);
+    setQualityDelta(null);
     try {
       const res = await window.scoreArranger.llmEditPlan({
         userRequest: request.trim(),
@@ -308,7 +311,11 @@ export function NLEditDialog({ onClose }: Props) {
     const rangeOps = chosen.filter((op) => op.op !== "reassign");
     setApplying(true);
     setError(null);
+    setQualityDelta(null);
     try {
+      // D2 品質 lint — 套用前後對比改編品質
+      const beforeRes = await window.scoreArranger.engine.computeQuality();
+      const before = beforeRes.ok ? beforeRes.data : null;
       let lastXml: string | null = null;
       let lastIssues: ArrangementIssue[] | null = null;
       let lastUndo = false;
@@ -376,6 +383,18 @@ export function NLEditDialog({ onClose }: Props) {
           undoNote,
         }),
       );
+      if (before) {
+        const afterRes = await window.scoreArranger.engine.computeQuality();
+        if (afterRes.ok && afterRes.data) {
+          const a = afterRes.data;
+          setQualityDelta({
+            melody: a.melody_preservation - before.melody_preservation,
+            harmony: a.harmony_completeness - before.harmony_completeness,
+            playability: a.playability - before.playability,
+            overall: a.overall - before.overall,
+          });
+        }
+      }
       setPlan(null);
       setRequest("");
     } catch (e) {
@@ -588,6 +607,7 @@ export function NLEditDialog({ onClose }: Props) {
             </div>
           )}
 
+          <QualityDeltaBadge delta={qualityDelta} />
           {appliedMsg && (
             <div
               className="fx-pulse"

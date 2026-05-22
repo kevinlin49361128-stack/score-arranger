@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
+import { QualityDeltaBadge, type QualityDelta } from "./QualityDeltaBadge";
 
 interface Props {
   onClose: () => void;
@@ -104,6 +105,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appliedMsg, setAppliedMsg] = useState<string | null>(null);
+  const [qualityDelta, setQualityDelta] = useState<QualityDelta | null>(null);
 
   // 預設選第一個聲部
   useEffect(() => {
@@ -197,7 +199,11 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     setApplying(true);
     setError(null);
     setAppliedMsg(null);
+    setQualityDelta(null);
     try {
+      // D2 品質 lint — 套用前後對比改編品質
+      const beforeRes = await window.scoreArranger.engine.computeQuality();
+      const before = beforeRes.ok ? beforeRes.data : null;
       const res = await window.scoreArranger.engine.applyEditOps(ops);
       if (!res.ok || !res.data) {
         throw new Error(res.error ?? t("boost.failed"));
@@ -220,6 +226,18 @@ export function DifficultyBoostDialog({ onClose }: Props) {
           ? t("boost.applied", { count: ops.length, touched })
           : t("boost.appliedNoChange"),
       );
+      if (before) {
+        const afterRes = await window.scoreArranger.engine.computeQuality();
+        if (afterRes.ok && afterRes.data) {
+          const a = afterRes.data;
+          setQualityDelta({
+            melody: a.melody_preservation - before.melody_preservation,
+            harmony: a.harmony_completeness - before.harmony_completeness,
+            playability: a.playability - before.playability,
+            overall: a.overall - before.overall,
+          });
+        }
+      }
       refreshDifficulty();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -736,6 +754,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                     {t("boost.noTech")}
                   </div>
                 )}
+                <QualityDeltaBadge delta={qualityDelta} />
                 {appliedMsg && (
                   <div
                     className="fx-pulse"
