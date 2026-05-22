@@ -262,6 +262,8 @@ declare global {
     source_part_id?: string;
     target_part_id?: string;
     density?: "light" | "medium" | "full";
+    texture?: "block" | "arpeggio" | "strum";
+    target_difficulty?: number;
     reason: string;
   }
 

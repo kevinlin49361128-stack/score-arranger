@@ -1503,6 +1503,15 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             density = op.get("density", "medium")
             if density not in ("light", "medium", "full"):
                 raise ValueError(f"op #{i}: 無效 density {density!r}")
+            texture = op.get("texture", "block")
+            if texture not in ("block", "arpeggio", "strum"):
+                raise ValueError(f"op #{i}: 無效 texture {texture!r}")
+            td = op.get("target_difficulty")
+            if td is not None and not (
+                isinstance(td, (int, float)) and 1 <= td <= 5
+            ):
+                raise ValueError(
+                    f"op #{i}: target_difficulty 須為 1-5 的數字")
             if sess.current_arrangement.source_score is None:
                 raise ValueError(
                     f"op #{i}: enrich 需要 source_score "
@@ -1525,11 +1534,19 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         m_end = int(op["measure_end"])
         changed = 0
         if kind == "enrich":
-            # additive 操作 — 把旋律單音擴成方塊和弦 (見 core/enrich.py)
-            from core.enrich import enrich_part
+            # additive 操作 — 把旋律單音擴成和弦 (見 core/enrich.py)
+            from core.enrich import choose_density, enrich_part
+            texture = op.get("texture", "block")
+            td = op.get("target_difficulty")
+            if td is not None:
+                # Phase C — 依目標難度自動挑密度
+                density = choose_density(
+                    part, src_score, m_start, m_end, float(td), texture,
+                )
+            else:
+                density = op.get("density", "medium")
             changed = enrich_part(
-                part.measures, src_score, m_start, m_end,
-                op.get("density", "medium"),
+                part.measures, src_score, m_start, m_end, density, texture,
             )
             results.append({
                 "op": kind,

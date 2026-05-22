@@ -223,10 +223,25 @@ export const EDITING_STRINGS: BiDict = {
     ja: "{part}・{range}・強弱を {dynamic} に設定",
   },
   "nlEdit.opEnrich": {
-    "zh-TW": "{part}・{range}・依原曲和聲加厚成方塊和弦 ({density})",
-    en: "{part} · {range} · enrich into block chords from the "
-      + "original harmony ({density})",
-    ja: "{part}・{range}・原曲の和声からブロックコードに加厚 ({density})",
+    "zh-TW": "{part}・{range}・依原曲和聲加厚（{texture}・{density}）",
+    en: "{part} · {range} · enrich from the original harmony "
+      + "({texture} · {density})",
+    ja: "{part}・{range}・原曲の和声から加厚（{texture}・{density}）",
+  },
+  "nlEdit.opEnrichTargeted": {
+    "zh-TW": "{part}・{range}・依原曲和聲加厚到難度 {difficulty}（{texture}）",
+    en: "{part} · {range} · enrich toward difficulty {difficulty} "
+      + "({texture})",
+    ja: "{part}・{range}・難易度 {difficulty} まで加厚（{texture}）",
+  },
+  "nlEdit.texture.block": {
+    "zh-TW": "方塊和弦", en: "block chords", ja: "ブロックコード",
+  },
+  "nlEdit.texture.arpeggio": {
+    "zh-TW": "琶音", en: "arpeggio", ja: "アルペジオ",
+  },
+  "nlEdit.texture.strum": {
+    "zh-TW": "刷弦", en: "strum", ja: "ストラム",
   },
   "nlEdit.density.light": {
     "zh-TW": "輕度・只加強拍", en: "light · downbeats only",

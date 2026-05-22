@@ -142,9 +142,23 @@ function describeOp(
       : op.density === "full"
       ? t("nlEdit.density.full")
       : t("nlEdit.density.medium");
+    const textureLabel = op.texture === "arpeggio"
+      ? t("nlEdit.texture.arpeggio")
+      : op.texture === "strum"
+      ? t("nlEdit.texture.strum")
+      : t("nlEdit.texture.block");
+    if (op.target_difficulty != null) {
+      return t("nlEdit.opEnrichTargeted", {
+        part: partName,
+        range,
+        texture: textureLabel,
+        difficulty: op.target_difficulty,
+      });
+    }
     return t("nlEdit.opEnrich", {
       part: partName,
       range,
+      texture: textureLabel,
       density: densityLabel,
     });
   }
