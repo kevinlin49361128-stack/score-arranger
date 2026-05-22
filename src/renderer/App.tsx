@@ -46,6 +46,7 @@ export default function App() {
     highlightedMeasure,
     highlightFlashTick,
     playbackMeasure,
+    editFlash,
     mode,
     panelLayout,
     infoPanelPos,
@@ -474,6 +475,7 @@ export default function App() {
                 onNoteDrag={handleNoteDrag}
                 measureDifficulty={measureDifficulty}
                 diffMeasures={diffSet}
+                editFlash={editFlash}
                 isAutoFitReference={!!targetMusicXML}
               />
             </div>

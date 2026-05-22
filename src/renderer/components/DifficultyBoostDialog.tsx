@@ -73,6 +73,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     setTargetMusicXML,
     setArrangementIssues,
     setHistoryFlags,
+    flashEditedMeasures,
   } = useSessionStore();
 
   const players = useMemo<PlayerLite[]>(
@@ -207,6 +208,13 @@ export function DifficultyBoostDialog({ onClose }: Props) {
       if (res.data.issues) setArrangementIssues(res.data.issues);
       setHistoryFlags(res.data.can_undo, res.data.can_redo);
       const touched = res.data.results.reduce((s, r) => s + r.changed, 0);
+      const rs = res.data.results;
+      if (rs.length > 0) {
+        flashEditedMeasures(
+          Math.min(...rs.map((r) => r.measure_start)),
+          Math.max(...rs.map((r) => r.measure_end)),
+        );
+      }
       setAppliedMsg(
         touched > 0
           ? t("boost.applied", { count: ops.length, touched })
@@ -268,6 +276,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
 
   return (
     <div
+      className="fx-modal-backdrop"
       style={{
         position: "fixed",
         inset: 0,
@@ -280,6 +289,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
       onClick={onClose}
     >
       <div
+        className="fx-modal-card"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 540,
@@ -728,6 +738,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                 )}
                 {appliedMsg && (
                   <div
+                    className="fx-pulse"
                     style={{
                       marginTop: 12,
                       padding: 10,

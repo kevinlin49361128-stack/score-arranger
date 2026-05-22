@@ -160,14 +160,27 @@
       /* 播放游標: 半透明綠色小節高亮, 平順滑動跟隨 (取代被深色背景蓋掉的
          OSMD 內建 cursor)。transition 讓游標在小節間平順滑過, 不瞬間跳。 */
       .score-playback-cursor {
-        background: rgba(52, 199, 89, 0.16);
-        box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.85) inset;
+        background: rgba(52, 199, 89, 0.13);
         border-radius: 4px;
         transition:
           left 130ms ease-out,
           top 130ms ease-out,
           width 130ms ease-out,
           height 130ms ease-out;
+        animation: fx-cursor-pulse 1.7s ease-in-out infinite;
+      }
+      /* 播放游標微脈動 — 柔光呼吸, 取代原本的硬框 */
+      @keyframes fx-cursor-pulse {
+        0%, 100% {
+          box-shadow:
+            0 0 0 1.5px rgba(52, 199, 89, 0.55) inset,
+            0 0 7px 0 rgba(52, 199, 89, 0.18);
+        }
+        50% {
+          box-shadow:
+            0 0 0 2px rgba(52, 199, 89, 0.82) inset,
+            0 0 13px 2px rgba(52, 199, 89, 0.34);
+        }
       }
 
       /* 持久「選取小節」高亮: 點 issue / 點小節後留著的琥珀色外框 */
@@ -182,6 +195,60 @@
         to {
           transform: rotate(360deg);
         }
+      }
+
+      /* ── 視覺特效 ── */
+
+      /* 啟動淡入: app 開啟時整體柔和淡入 */
+      @keyframes app-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      #root {
+        animation: app-fade-in 0.35s ease-out;
+      }
+
+      /* 對話框動態: 淡入 + 輕微放大 (背景遮罩同步淡入) */
+      @keyframes fx-modal-in {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes fx-backdrop-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .fx-modal-card {
+        animation: fx-modal-in 0.15s ease-out;
+      }
+      .fx-modal-backdrop {
+        animation: fx-backdrop-in 0.15s ease-out;
+      }
+
+      /* 改編完成揭示: 目標譜由無→有時淡入 + 微微上滑 */
+      @keyframes fx-reveal {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .fx-reveal {
+        animation: fx-reveal 0.34s ease-out;
+      }
+
+      /* 套用成功微回饋: 按鈕一個輕脈動 */
+      @keyframes fx-pulse {
+        0%, 100% { transform: scale(1); }
+        45% { transform: scale(1.06); }
+      }
+      .fx-pulse {
+        animation: fx-pulse 0.4s ease-out;
+      }
+
+      /* 歡迎空狀態的譜號意象 — 極緩呼吸浮動 */
+      @keyframes fx-breathe {
+        0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+        50% { transform: translateY(-5px) scale(1.03); opacity: 0.56; }
+      }
+      .fx-breathe {
+        animation: fx-breathe 4.5s ease-in-out infinite;
       }
     </style>
   </head>

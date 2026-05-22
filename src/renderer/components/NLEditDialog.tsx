@@ -193,6 +193,7 @@ export function NLEditDialog({ onClose }: Props) {
     setTargetMusicXML,
     setArrangementIssues,
     setHistoryFlags,
+    flashEditedMeasures,
   } = useSessionStore();
 
   const players = useMemo<PlayerLite[]>(
@@ -348,6 +349,13 @@ export function NLEditDialog({ onClose }: Props) {
         lastUndo = res.data.can_undo;
         lastRedo = res.data.can_redo;
         touched += res.data.results.reduce((s, r) => s + r.changed, 0);
+        const rs = res.data.results;
+        if (rs.length > 0) {
+          flashEditedMeasures(
+            Math.min(...rs.map((r) => r.measure_start)),
+            Math.max(...rs.map((r) => r.measure_end)),
+          );
+        }
       }
 
       if (lastXml) setTargetMusicXML(lastXml);
@@ -381,6 +389,7 @@ export function NLEditDialog({ onClose }: Props) {
 
   return (
     <div
+      className="fx-modal-backdrop"
       style={{
         position: "fixed",
         inset: 0,
@@ -393,6 +402,7 @@ export function NLEditDialog({ onClose }: Props) {
       onClick={onClose}
     >
       <div
+        className="fx-modal-card"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 580,
@@ -580,6 +590,7 @@ export function NLEditDialog({ onClose }: Props) {
 
           {appliedMsg && (
             <div
+              className="fx-pulse"
               style={{
                 marginTop: 12,
                 padding: 10,

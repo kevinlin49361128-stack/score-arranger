@@ -257,6 +257,10 @@ interface SessionState {
   /** 每次高亮 (含重複點選同一小節) 都遞增, 觸發 flash 動畫 */
   highlightFlashTick: number;
 
+  /** 編輯套用後要閃光的小節範圍 — 變動小節閃光特效。tick 每次遞增重觸發。 */
+  editFlash: { start: number; end: number; tick: number } | null;
+  flashEditedMeasures: (start: number, end: number) => void;
+
   // 播放中的當前小節 (即時更新, 不平滑捲動)
   playbackMeasure: number | null;
   setPlaybackMeasure: (m: number | null) => void;
@@ -382,6 +386,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       highlightedMeasure: m,
       highlightFlashTick:
         m == null ? s.highlightFlashTick : s.highlightFlashTick + 1,
+    })),
+
+  editFlash: null,
+  flashEditedMeasures: (start, end) =>
+    set((s) => ({
+      editFlash: {
+        start, end, tick: (s.editFlash?.tick ?? 0) + 1,
+      },
     })),
 
   playbackMeasure: null,

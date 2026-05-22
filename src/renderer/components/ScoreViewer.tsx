@@ -51,6 +51,8 @@ interface ScoreViewerProps {
   measureDifficulty?: Map<number, number>;
   /** A/B Diff 模式: 標記為「與另一版本不同」的小節 */
   diffMeasures?: Set<number>;
+  /** 編輯套用後要閃光的小節範圍 — 變動小節閃光特效 (target panel 用) */
+  editFlash?: { start: number; end: number; tick: number } | null;
 }
 
 interface FlashBox {
@@ -68,7 +70,7 @@ const LIGHT_COLORS = {
   defaultColorRest: "#000000",
   defaultColorLabel: "#000000",
   defaultColorTitle: "#000000",
-  pageBackgroundColor: "#ffffff",
+  pageBackgroundColor: "#faf8f2",
 };
 const DARK_COLORS = {
   defaultColorMusic: "#e8e8ea",
@@ -76,7 +78,7 @@ const DARK_COLORS = {
   defaultColorRest: "#e8e8ea",
   defaultColorLabel: "#e8e8ea",
   defaultColorTitle: "#f5f5f7",
-  pageBackgroundColor: "#2c2c2e",
+  pageBackgroundColor: "#2e2c28",
 };
 
 export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
@@ -91,6 +93,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       onNoteDrag,
       measureDifficulty,
       diffMeasures,
+      editFlash,
       isAutoFitReference,
     },
     forwardedRef,
@@ -101,6 +104,11 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [flashBox, setFlashBox] = useState<FlashBox | null>(null);
+    /** 變動小節閃光 — 編輯套用後閃一段範圍的小節 */
+    const [editFlashBoxes, setEditFlashBoxes] = useState<FlashBox[]>([]);
+    /** 改編完成揭示 — 譜面由無→有時播一次淡入上滑 */
+    const [revealing, setRevealing] = useState(false);
+    const prevContentRef = useRef<string | null>(null);
     /** 播放游標 — 自繪 measure 級 overlay (取代被深色背景蓋掉的 OSMD <img> cursor) */
     const [playbackBox, setPlaybackBox] = useState<FlashBox | null>(null);
     /** 持久「選取小節」高亮 — 點 issue / 點小節後留著, 直到下次點別處 */
@@ -115,6 +123,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       | null
     >(null);
     const flashTimerRef = useRef<number | null>(null);
+    const editFlashTimerRef = useRef<number | null>(null);
     const theme = useSessionStore((s) => s.theme);
     const zoom = useSessionStore((s) => s.zoom);
     const setZoom = useSessionStore((s) => s.setZoom);
@@ -681,6 +690,46 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [highlightedMeasure, highlightFlashTick]);
 
+    // 變動小節閃光 — 編輯套用後 (editFlash.tick 遞增) 閃一段範圍的小節。
+    // 延遲一拍等 OSMD 重繪改編後的譜, 再算 box; 沒排版到的小節略過。
+    useEffect(() => {
+      if (!editFlash?.tick) return;
+      let cancelled = false;
+      const computeId = window.setTimeout(() => {
+        if (cancelled) return;
+        const boxes: FlashBox[] = [];
+        for (let m = editFlash.start; m <= editFlash.end; m += 1) {
+          const box = getMeasureBox(m);
+          if (box) boxes.push({ ...box, key: m });
+        }
+        if (boxes.length === 0) return;
+        setEditFlashBoxes(boxes);
+        if (editFlashTimerRef.current != null) {
+          window.clearTimeout(editFlashTimerRef.current);
+        }
+        editFlashTimerRef.current = window.setTimeout(() => {
+          setEditFlashBoxes([]);
+          editFlashTimerRef.current = null;
+        }, 1700);
+      }, 220);
+      return () => {
+        cancelled = true;
+        window.clearTimeout(computeId);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editFlash?.tick]);
+
+    // 改編完成揭示 — musicXmlContent 由無→有時, 播一次淡入 + 微上滑。
+    useEffect(() => {
+      const had = !!prevContentRef.current;
+      const has = !!musicXmlContent;
+      prevContentRef.current = musicXmlContent;
+      if (had || !has) return;
+      setRevealing(true);
+      const id = window.setTimeout(() => setRevealing(false), 420);
+      return () => window.clearTimeout(id);
+    }, [musicXmlContent]);
+
     // 持久「選取小節」高亮 — 點 issue / 點小節後留著, 直到下次點別處。
     // flash 只閃 1.5s 太容易錯過 (尤其視線還在 issue 面板上時),
     // 故額外畫一個持久外框, 並在 zoom / 重渲後重算位置。
@@ -962,14 +1011,38 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
           <div
             style={{
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               height: "100%",
-              color: "var(--fg-tertiary)",
-              minHeight: 200,
+              minHeight: 240,
+              gap: 12,
+              userSelect: "none",
             }}
           >
-            {t("scoreViewer.empty")}
+            <div
+              className="fx-breathe"
+              style={{
+                fontSize: 88,
+                lineHeight: 1,
+                color: "var(--fg-tertiary)",
+              }}
+            >
+              𝄞
+            </div>
+            <div
+              style={{
+                fontFamily: "Georgia, 'Songti TC', serif",
+                fontSize: 17,
+                color: "var(--fg-muted)",
+                letterSpacing: "0.03em",
+              }}
+            >
+              Score Arranger
+            </div>
+            <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
+              {t("scoreViewer.empty")}
+            </div>
           </div>
         )}
         {error && (
@@ -981,7 +1054,10 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
             自行 append/remove SVG; overlay 放在獨立的 sibling 層。若兩者
             共用同一 DOM 容器, OSMD 的 DOM 變動會害 React 在 commit 期
             insertBefore 失敗 ('node is not a child') → 整個 app 崩潰。 */}
-        <div style={{ position: "relative" }}>
+        <div
+          className={revealing ? "fx-reveal" : undefined}
+          style={{ position: "relative" }}
+        >
           <div
             ref={osmdContainerRef}
             onClick={handleOsmdClick}
@@ -1022,6 +1098,23 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
               }}
             />
           )}
+          {/* 變動小節閃光 — 編輯套用後閃過的小節範圍 */}
+          {editFlashBoxes.map((b) => (
+            <div
+              key={`editflash-${b.key}`}
+              className="score-flash-overlay"
+              style={{
+                position: "absolute",
+                left: b.left,
+                top: b.top,
+                width: b.width,
+                height: b.height,
+                pointerEvents: "none",
+                borderRadius: 4,
+                zIndex: 2,
+              }}
+            />
+          ))}
           {/* 持久選取小節高亮 (點 issue / 點小節) */}
           {selectedBox && (
             <div
@@ -1076,6 +1169,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                   pointerEvents: "none",
                   borderRadius: 3,
                   background: heatColor ?? "transparent",
+                  transition: "background 0.4s ease",
                   border: diffHit ? diffBorder : "none",
                   boxShadow: diffHit
                     ? "0 0 0 2px rgba(124, 92, 255, 0.25) inset"
