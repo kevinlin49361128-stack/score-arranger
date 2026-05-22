@@ -17,9 +17,9 @@ import { MODEBAR_STRINGS } from "./i18n.modebar";
 import { PANEL_STRINGS } from "./i18n.panels";
 import { SHELL_STRINGS } from "./i18n.shell";
 
-export type Locale = "zh-TW" | "en";
+export type Locale = "zh-TW" | "en" | "ja";
 
-/** 一筆 key 的雙語字串。 */
+/** 一筆 key 的三語字串 (繁中 / 英 / 日)。 */
 export type BiString = Record<Locale, string>;
 /** 領域字典: key → 雙語字串。 */
 export type BiDict = Record<string, BiString>;
@@ -30,7 +30,7 @@ let currentLocale: Locale = (() => {
   if (typeof window === "undefined") return "zh-TW";
   try {
     const raw = window.localStorage?.getItem(STORAGE_KEY);
-    if (raw === "zh-TW" || raw === "en") return raw;
+    if (raw === "zh-TW" || raw === "en" || raw === "ja") return raw;
   } catch {
     /* ignore */
   }
@@ -89,11 +89,12 @@ const SOURCES: BiDict[] = [
   IO_STRINGS,
 ];
 
-const DICTS: Record<Locale, Dict> = { "zh-TW": {}, en: {} };
+const DICTS: Record<Locale, Dict> = { "zh-TW": {}, en: {}, ja: {} };
 for (const src of SOURCES) {
   for (const [key, bi] of Object.entries(src)) {
     DICTS["zh-TW"][key] = bi["zh-TW"];
     DICTS.en[key] = bi.en;
+    DICTS.ja[key] = bi.ja;
   }
 }
 

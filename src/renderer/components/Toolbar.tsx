@@ -1074,12 +1074,25 @@ export function Toolbar() {
               }}
             />
             <MenuRow
-              label={locale === "zh-TW"
-                ? tr("toolbar.settings.toEnglish")
-                : tr("toolbar.settings.toChinese")}
-              icon={locale === "zh-TW" ? "EN" : "中"}
+              label={tr(
+                locale === "zh-TW"
+                  ? "toolbar.settings.toEnglish"
+                  : locale === "en"
+                    ? "toolbar.settings.toJapanese"
+                    : "toolbar.settings.toChinese",
+              )}
+              icon={
+                locale === "zh-TW" ? "EN" : locale === "en" ? "日" : "中"
+              }
               onClick={() => {
-                setLocale(locale === "zh-TW" ? "en" : "zh-TW");
+                // 三語循環: 繁中 → English → 日本語 → 繁中
+                setLocale(
+                  locale === "zh-TW"
+                    ? "en"
+                    : locale === "en"
+                      ? "ja"
+                      : "zh-TW",
+                );
                 setSettingsOpen(false);
               }}
             />
