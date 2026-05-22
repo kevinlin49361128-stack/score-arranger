@@ -411,6 +411,44 @@ export const EDITING_STRINGS: BiDict = {
   "quality.delta.playability": {
     "zh-TW": "可演奏性", en: "Playability", ja: "演奏可能性",
   },
+  // ── 練習模式 PracticePanel (整合 C) ───────────────────────────────────
+  "practice.title": {
+    "zh-TW": "🎯 練習模式", en: "🎯 Practice mode", ja: "🎯 練習モード",
+  },
+  "practice.intro": {
+    "zh-TW": "點下方任一小節 → 播放器自動循環這段, "
+      + "讓你重點練習困難段落。",
+    en: "Click any measure below → the player auto-loops that bar so "
+      + "you can focus practice on the hard parts.",
+    ja: "下記いずれかの小節をクリック → プレイヤーがその箇所を自動"
+      + "ループし、難所を集中練習できます。",
+  },
+  "practice.hardest": {
+    "zh-TW": "最難的小節", en: "Hardest measures",
+    ja: "最も難しい小節",
+  },
+  "practice.empty": {
+    "zh-TW": "尚未完成改編, 練習模式需要難度資訊。",
+    en: "No arrangement yet — practice mode needs difficulty data.",
+    ja: "まだ編曲がありません — 練習モードには難度データが必要です。",
+  },
+  "practice.loading": {
+    "zh-TW": "計算難度中…", en: "Computing difficulty…",
+    ja: "難度を計算中…",
+  },
+  "practice.measureLabel": {
+    "zh-TW": "第 {n} 小節", en: "Measure {n}", ja: "第 {n} 小節",
+  },
+  "practice.hint": {
+    "zh-TW": "選定後此面板自動關閉, 按 ▶ 開始循環播放。",
+    en: "After picking, this panel closes; press ▶ to start looping.",
+    ja: "選択後にパネルが閉じます。▶ を押してループ再生を開始。",
+  },
+  "practice.computeFailed": {
+    "zh-TW": "難度計算失敗",
+    en: "Difficulty computation failed",
+    ja: "難度の計算に失敗しました",
+  },
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },

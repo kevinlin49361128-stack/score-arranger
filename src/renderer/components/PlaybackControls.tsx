@@ -249,6 +249,7 @@ export function PlaybackControls(
   const playbackProgress = useSessionStore((s) => s.playbackProgress);
   const activeSide = useSessionStore((s) => s.activePlaybackSide);
   const setActiveSide = useSessionStore((s) => s.setActivePlaybackSide);
+  const requestedLoop = useSessionStore((s) => s.requestedLoop);
 
   const [state, setState] = useState<PlayState>("idle");
   const [useSamples, setUseSamples] = useState(true);
@@ -269,6 +270,15 @@ export function PlaybackControls(
   useEffect(() => {
     loopEnabledRef.current = loopEnabled;
   }, [loopEnabled]);
+
+  // 練習模式 — 外部請求 loop 一段 (PracticePanel 點選最難小節)
+  useEffect(() => {
+    if (!requestedLoop?.tick) return;
+    setLoopStart(requestedLoop.start);
+    setLoopEnd(requestedLoop.end);
+    setLoopEnabled(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedLoop?.tick]);
 
   const pianoRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);
   const violinRef = useRef<Tone.Sampler | Tone.PolySynth | null>(null);

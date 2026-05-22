@@ -34,6 +34,7 @@ import { ExportMenu } from "./ExportMenu";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
 import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
+import { PracticePanel } from "./PracticePanel";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
@@ -161,6 +162,7 @@ export function Toolbar() {
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const [nlEditOpen, setNlEditOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   // 改編選項 popover (自動修復 / 技術水平 / 風格)
   const [arrangeOptsOpen, setArrangeOptsOpen] = useState(false);
   const arrangeOptsRef = useRef<HTMLDivElement>(null);
@@ -882,6 +884,14 @@ export function Toolbar() {
       >
         {tr("toolbar.boost")}
       </button>
+      <button
+        onClick={() => setPracticeOpen(true)}
+        style={btnBase}
+        disabled={!arrangement || isLoading}
+        title={tr("toolbar.practice.title")}
+      >
+        {tr("toolbar.practice")}
+      </button>
 
       <Sep />
 
@@ -1139,6 +1149,9 @@ export function Toolbar() {
       {nlEditOpen && <NLEditDialog onClose={() => setNlEditOpen(false)} />}
       {boostOpen && (
         <DifficultyBoostDialog onClose={() => setBoostOpen(false)} />
+      )}
+      {practiceOpen && (
+        <PracticePanel onClose={() => setPracticeOpen(false)} />
       )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog

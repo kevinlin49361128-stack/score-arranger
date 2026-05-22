@@ -137,6 +137,14 @@ export const SHELL_STRINGS: BiDict = {
     en: "Adjust a part's playing difficulty — boost or reduce",
     ja: "パートの演奏難度を調整 — 上げる / 下げる",
   },
+  "toolbar.practice": {
+    "zh-TW": "🎯 練習", en: "🎯 Practice", ja: "🎯 練習",
+  },
+  "toolbar.practice.title": {
+    "zh-TW": "找出最難的小節並自動循環 — 重點練習困難段落",
+    en: "Find the hardest measures and auto-loop them — focused practice",
+    ja: "難しい小節を自動ループ — 難所を集中練習",
+  },
 
   // === Toolbar: 改編選項 popover ===
   "toolbar.arrangeOpts.heading": {

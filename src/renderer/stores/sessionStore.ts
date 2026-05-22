@@ -261,6 +261,10 @@ interface SessionState {
   editFlash: { start: number; end: number; tick: number } | null;
   flashEditedMeasures: (start: number, end: number) => void;
 
+  /** 練習模式請求 loop 一段 — PlaybackControls 訂閱 tick 變化套用。 */
+  requestedLoop: { start: number; end: number; tick: number } | null;
+  requestLoop: (start: number, end: number) => void;
+
   // 播放中的當前小節 (即時更新, 不平滑捲動)
   playbackMeasure: number | null;
   setPlaybackMeasure: (m: number | null) => void;
@@ -393,6 +397,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set((s) => ({
       editFlash: {
         start, end, tick: (s.editFlash?.tick ?? 0) + 1,
+      },
+    })),
+
+  requestedLoop: null,
+  requestLoop: (start, end) =>
+    set((s) => ({
+      requestedLoop: {
+        start, end, tick: (s.requestedLoop?.tick ?? 0) + 1,
       },
     })),
 
