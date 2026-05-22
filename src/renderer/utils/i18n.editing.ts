@@ -228,11 +228,10 @@ export const EDITING_STRINGS: BiDict = {
       + "({texture} · {density})",
     ja: "{part}・{range}・原曲の和声から加厚（{texture}・{density}）",
   },
-  "nlEdit.opEnrichTargeted": {
-    "zh-TW": "{part}・{range}・依原曲和聲加厚到難度 {difficulty}（{texture}）",
-    en: "{part} · {range} · enrich toward difficulty {difficulty} "
-      + "({texture})",
-    ja: "{part}・{range}・難易度 {difficulty} まで加厚（{texture}）",
+  "nlEdit.opLevel": {
+    "zh-TW": "{part}・{range}・抹平到難度 {difficulty}",
+    en: "{part} · {range} · level to difficulty {difficulty}",
+    ja: "{part}・{range}・難易度 {difficulty} へ均す",
   },
   "nlEdit.texture.block": {
     "zh-TW": "方塊和弦", en: "block chords", ja: "ブロックコード",
@@ -294,6 +293,26 @@ export const EDITING_STRINGS: BiDict = {
   },
   "boost.direction.reduce": {
     "zh-TW": "降難度", en: "Reduce", ja: "難度ダウン",
+  },
+  "boost.direction.target": {
+    "zh-TW": "目標難度", en: "Target", ja: "目標難度",
+  },
+  "boost.targetLabel": {
+    "zh-TW": "目標難度等級", en: "Target difficulty level",
+    ja: "目標難易度レベル",
+  },
+  "boost.targetHint": {
+    "zh-TW": "逐小節把這段抹平到選定的難度 —— 太難的小節簡化、"
+      + "太簡單的加厚。",
+    en: "Levels each measure in the range to the chosen difficulty — "
+      + "harder measures get simplified, easier ones enriched.",
+    ja: "範囲内の各小節を選んだ難易度に均します —— 難しい小節は"
+      + "簡略化、易しい小節は加厚。",
+  },
+  "boost.reason.level": {
+    "zh-TW": "抹平到目標難度",
+    en: "Level to target difficulty",
+    ja: "目標難易度へ均す",
   },
   "boost.partLabel": { "zh-TW": "聲部", en: "Part", ja: "パート" },
   "boost.rangeLabel": {

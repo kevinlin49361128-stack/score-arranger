@@ -80,6 +80,7 @@ const OP_ICON: Record<LLMEditOp["op"], string> = {
   reassign: "⇄",
   enrich: "✚",
   simplify: "➖",
+  level: "🎯",
 };
 
 /** 把一個 op 轉成人類可讀的描述。 */
@@ -150,19 +151,18 @@ function describeOp(
       : op.texture === "octave"
       ? t("nlEdit.texture.octave")
       : t("nlEdit.texture.block");
-    if (op.target_difficulty != null) {
-      return t("nlEdit.opEnrichTargeted", {
-        part: partName,
-        range,
-        texture: textureLabel,
-        difficulty: op.target_difficulty,
-      });
-    }
     return t("nlEdit.opEnrich", {
       part: partName,
       range,
       texture: textureLabel,
       density: densityLabel,
+    });
+  }
+  if (op.op === "level") {
+    return t("nlEdit.opLevel", {
+      part: partName,
+      range,
+      difficulty: op.target_difficulty ?? 3,
     });
   }
   if (op.op === "simplify") {

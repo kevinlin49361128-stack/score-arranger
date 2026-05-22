@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fractions import Fraction
 
-from core.enrich import choose_density, enrich_part
+from core.enrich import enrich_part
 from core.instruments.guitar import check_guitar_chord
 from core.ir import (
     ChordEvent, Measure, NoteEvent, Part, Pitch, RestEvent, Score, Voice,
@@ -165,33 +165,6 @@ class TestTexture:
         assert isinstance(ev, ChordEvent)
         assert ev.ornament is not None
         assert ev.ornament.kind == "arpeggio_up"
-
-
-class TestChooseDensity:
-    """Phase C — 難度目標自動挑密度"""
-
-    @staticmethod
-    def _guitar_part(events: list) -> Part:
-        return Part(
-            part_id="guitar_1", name_display="Guitar",
-            instrument_id="guitar", measures=_guitar_measure(events),
-        )
-
-    def test_returns_valid_density(self):
-        src = _src_with_chord([48, 52, 55])
-        part = self._guitar_part([
-            NoteEvent(pitch=_p(72), duration=Fraction(4), onset=Fraction(0)),
-        ])
-        d = choose_density(part, src, 1, 1, 2.5, "block")
-        assert d in ("light", "medium", "full")
-
-    def test_high_target_falls_back_to_full(self):
-        # 目標難度 5 — 單小節小譜湊不到 → 退回 full
-        src = _src_with_chord([48, 52, 55])
-        part = self._guitar_part([
-            NoteEvent(pitch=_p(72), duration=Fraction(4), onset=Fraction(0)),
-        ])
-        assert choose_density(part, src, 1, 1, 5.0, "block") == "full"
 
 
 class TestOctaveTexture:

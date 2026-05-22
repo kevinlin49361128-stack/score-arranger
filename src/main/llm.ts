@@ -287,7 +287,7 @@ export interface LLMEditPlanContext {
 
 export interface LLMEditOp {
   op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
-    | "enrich" | "simplify";
+    | "enrich" | "simplify" | "level";
   part_id: string;
   measure_start: number;
   measure_end: number;
@@ -313,7 +313,7 @@ export interface LLMEditPlan {
 const EDIT_PLAN_SYSTEM_PROMPT =
   `你是 Score Arranger 的「自然語言改譜」助手。使用者用自然語言描述想對改編後的譜做什麼修改, 你要把它轉成「可直接套用的結構化操作」。
 
-你只能使用以下七種操作 (operation):
+你只能使用以下八種操作 (operation):
 
 1. transpose — 移調區間內所有音符 / 和弦
    { "op": "transpose", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "semitones": <int>, "reason": <string> }
@@ -337,10 +337,9 @@ const EDIT_PLAN_SYSTEM_PROMPT =
    注意: reassign 會以來源重建整個目標譜, 不與其他操作合併為同一次復原。
 
 6. enrich — 把區間內稀疏的旋律單音加厚成和弦
-   { "op": "enrich", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "density": <string>, "texture": <string>, "target_difficulty": <int 或省略>, "reason": <string> }
+   { "op": "enrich", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "density": <string>, "texture": <string>, "reason": <string> }
    density: "light" (只加在第一拍) / "medium" (整數拍, 預設) / "full" (每個音都加)
    texture: "block" (方塊和弦, 預設) / "arpeggio" (琶音) / "strum" (刷弦) / "octave" (八度疊置)
-   target_difficulty: 選填 1-5。使用者說「加到某難度 / 變難一點 / 提高難度」時填; 填了系統會自動挑 density (此時 density 可省略)。
    適用情境: 使用者覺得某聲部「和弦太少 / 太單薄 / 太空 / 不夠難 / 想加厚加豐富」, 或想要琶音 / 刷弦織體。
    octave 織體: 把旋律音疊上低八度成八度雙音 — 弦樂 (小提琴等) 想加技巧難度 / 想要八度時用。
    和弦音取自原曲同一時間點的實際和聲 (不會亂編), 並自動過樂器可演奏性檢查;
@@ -352,6 +351,12 @@ const EDIT_PLAN_SYSTEM_PROMPT =
    手法: 和弦瘦身、八度收摺 (超音域音收回)、去裝飾、剝除困難弓法。
    適用情境: 使用者覺得某聲部「太難 / 太複雜 / 想簡單一點 / 給初學者 / 降難度」。
    旋律永遠保留 (和弦瘦身只省內聲部, 旋律恆在頂端); 只對未鎖定事件生效。
+
+8. level — 把區間內的譜「調到目標難度」(難度閉環: 太簡單就加厚、太難就簡化)
+   { "op": "level", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "target_difficulty": <int 1-5>, "reason": <string> }
+   逐小節把難度抹平到 target_difficulty —— 整段的難度曲線會被拉平到該等級。
+   適用情境: 使用者說「把這段調到難度 3 / 抹平難度 / 給某程度的演奏者 / 難度一致一點」。
+   雙向: 比目標簡單的小節會加厚、比目標難的會簡化; 只對未鎖定事件生效。
 
 規則:
 - 操作 1-4 的 part_id 必須完全等於「可用聲部」清單中列出的值, 不可自創或猜測。
@@ -435,17 +440,15 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
           || o.texture === "octave")
           ? o.texture
           : "block";
-        if (
-          o.target_difficulty != null
-          && Number.isFinite(Number(o.target_difficulty))
-        ) {
-          const td = Math.round(Number(o.target_difficulty));
-          if (td >= 1 && td <= 5) op.target_difficulty = td;
-        }
       } else if (o.op === "simplify") {
         op.level = (o.level === "light" || o.level === "full")
           ? o.level
           : "medium";
+      } else if (o.op === "level") {
+        const td = Math.round(Number(o.target_difficulty));
+        op.target_difficulty = Number.isFinite(td)
+          ? Math.min(5, Math.max(1, td))
+          : 3;
       }
       // "rest" 不需額外欄位
       return op;

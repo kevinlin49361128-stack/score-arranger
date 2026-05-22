@@ -34,7 +34,6 @@
 
 from __future__ import annotations
 
-import copy
 from collections.abc import Callable
 from fractions import Fraction
 
@@ -300,29 +299,3 @@ def enrich_part(
             if voice_changed:
                 voice.events = new_events
     return changed
-
-
-def choose_density(
-    part,
-    source: Score,
-    measure_start: int,
-    measure_end: int,
-    target_difficulty: float,
-    texture: Texture = "block",
-) -> Density:
-    """Phase C — 自動挑密度以達到目標難度。
-
-    在 part 的深拷貝上分別試 light / medium / full, 用 difficulty 引擎
-    評分, 回傳「第一個讓難度 >= 目標」的密度; 全部都不到則回 "full"。
-    """
-    from core.difficulty import analyze_part_difficulty
-
-    for d in ("light", "medium", "full"):
-        trial = copy.deepcopy(part)
-        enrich_part(
-            trial.measures, source, measure_start, measure_end, d, texture,
-            part.instrument_id,
-        )
-        if analyze_part_difficulty(trial).score_1_to_5 >= target_difficulty:
-            return d
-    return "full"

@@ -251,7 +251,7 @@ declare global {
 
   interface LLMEditOp {
     op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
-      | "enrich" | "simplify";
+      | "enrich" | "simplify" | "level";
     part_id: string;
     measure_start: number;
     measure_end: number;

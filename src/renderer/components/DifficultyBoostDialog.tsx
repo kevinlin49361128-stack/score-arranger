@@ -31,7 +31,7 @@ type PlayerLite = {
   staves: number;
 };
 
-type Direction = "boost" | "reduce";
+type Direction = "boost" | "reduce" | "target";
 type Intensity = "conservative" | "balanced" | "virtuosic";
 
 interface TechSel {
@@ -85,6 +85,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   );
 
   const [direction, setDirection] = useState<Direction>("boost");
+  const [targetDiff, setTargetDiff] = useState(3);
   const [partId, setPartId] = useState("");
   const [measureCount, setMeasureCount] = useState(0);
   const [mStart, setMStart] = useState(1);
@@ -136,8 +137,8 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   const current = partId ? difficulty[partId] : undefined;
   const anyTech = tech.octave || tech.doubleStop
     || tech.higherPosition || tech.bowing;
-  // 降難度不需勾手法 (simplify 引擎一次套用四種); 加難度需至少一種
-  const canApply = direction === "reduce" || anyTech;
+  // 降難度 / 目標難度不需勾手法; 只有加難度需至少勾一種手法
+  const canApply = direction !== "boost" || anyTech;
 
   const handleApply = async () => {
     if (!partId || !canApply || applying) return;
@@ -154,7 +155,12 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     const base = { part_id: partId, measure_start: lo, measure_end: hi };
     const ops: LLMEditOp[] = [];
 
-    if (direction === "reduce") {
+    if (direction === "target") {
+      ops.push({
+        op: "level", ...base, target_difficulty: targetDiff,
+        reason: t("boost.reason.level"),
+      });
+    } else if (direction === "reduce") {
       ops.push({
         op: "simplify", ...base, level: amount,
         reason: t("boost.reason.simplify"),
@@ -257,6 +263,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   const directionItems: { key: Direction; label: string }[] = [
     { key: "boost", label: t("boost.direction.boost") },
     { key: "reduce", label: t("boost.direction.reduce") },
+    { key: "target", label: t("boost.direction.target") },
   ];
 
   return (
@@ -559,18 +566,77 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                   </div>
                 )}
 
-                {/* 強度 */}
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "var(--fg-muted)",
-                    marginBottom: 6,
-                  }}
-                >
-                  {direction === "boost"
-                    ? t("boost.intensityLabel")
-                    : t("boost.levelLabel")}
-                </div>
+                {/* 目標難度: 1-5 選擇器 */}
+                {direction === "target" && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--fg-muted)",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {t("boost.targetLabel")}
+                    </div>
+                    <div
+                      style={{ display: "flex", gap: 6, marginBottom: 6 }}
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => {
+                        const on = targetDiff === n;
+                        return (
+                          <button
+                            key={n}
+                            onClick={() => setTargetDiff(n)}
+                            style={{
+                              flex: 1,
+                              padding: "7px 4px",
+                              border: `1px solid ${
+                                on ? "var(--accent)" : "var(--border)"
+                              }`,
+                              background: on
+                                ? "var(--accent)"
+                                : "var(--button-bg)",
+                              color: on
+                                ? "var(--accent-fg)"
+                                : "var(--button-fg)",
+                              borderRadius: 4,
+                              cursor: "pointer",
+                              fontSize: 13,
+                              fontWeight: on ? 700 : 400,
+                            }}
+                          >
+                            {n}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--fg-tertiary)",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {t("boost.targetHint")}
+                    </div>
+                  </div>
+                )}
+
+                {/* 強度 (目標難度模式不需要) */}
+                {direction !== "target" && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--fg-muted)",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {direction === "boost"
+                      ? t("boost.intensityLabel")
+                      : t("boost.levelLabel")}
+                  </div>
+                )}
+                {direction !== "target" && (
                 <div
                   style={{
                     display: "flex",
@@ -607,6 +673,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                     );
                   })}
                 </div>
+                )}
 
                 {/* 目前難度 */}
                 {current && (

@@ -1468,7 +1468,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             raise ValueError(f"op #{i}: 格式錯誤")
         kind = op.get("op")
         if kind not in ("transpose", "articulation", "dynamic", "rest",
-                        "enrich", "simplify"):
+                        "enrich", "simplify", "level"):
             raise ValueError(f"op #{i}: 未知 op 類型 {kind!r}")
         if part_by_id(op.get("part_id", "")) is None:
             raise ValueError(
@@ -1506,12 +1506,6 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             texture = op.get("texture", "block")
             if texture not in ("block", "arpeggio", "strum", "octave"):
                 raise ValueError(f"op #{i}: 無效 texture {texture!r}")
-            td = op.get("target_difficulty")
-            if td is not None and not (
-                isinstance(td, (int, float)) and 1 <= td <= 5
-            ):
-                raise ValueError(
-                    f"op #{i}: target_difficulty 須為 1-5 的數字")
             if sess.current_arrangement.source_score is None:
                 raise ValueError(
                     f"op #{i}: enrich 需要 source_score "
@@ -1520,6 +1514,15 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             level = op.get("level", "medium")
             if level not in ("light", "medium", "full"):
                 raise ValueError(f"op #{i}: 無效 level {level!r}")
+        elif kind == "level":
+            td = op.get("target_difficulty")
+            if not (isinstance(td, (int, float)) and 1 <= td <= 5):
+                raise ValueError(
+                    f"op #{i}: level 需 target_difficulty 為 1-5 的數字")
+            if sess.current_arrangement.source_score is None:
+                raise ValueError(
+                    f"op #{i}: level 需要 source_score "
+                    "(舊版 .sarr 沒有, 請重新 arrange)")
 
     # ── 階段二: 一次 history snapshot, 然後套用 ───────────────────────
     new_history = list(sess.history)
@@ -1539,19 +1542,28 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         changed = 0
         if kind == "enrich":
             # additive 操作 — 把旋律單音擴成和弦 (見 core/enrich.py)
-            from core.enrich import choose_density, enrich_part
+            from core.enrich import enrich_part
             texture = op.get("texture", "block")
-            td = op.get("target_difficulty")
-            if td is not None:
-                # Phase C — 依目標難度自動挑密度
-                density = choose_density(
-                    part, src_score, m_start, m_end, float(td), texture,
-                )
-            else:
-                density = op.get("density", "medium")
+            density = op.get("density", "medium")
             changed = enrich_part(
                 part.measures, src_score, m_start, m_end, density, texture,
                 part.instrument_id,
+            )
+            results.append({
+                "op": kind,
+                "part_id": op["part_id"],
+                "measure_start": m_start,
+                "measure_end": m_end,
+                "changed": changed,
+            })
+            continue
+        if kind == "level":
+            # 難度閉環 — 逐小節抹平到目標難度
+            # (見 core/difficulty_control.py)
+            from core.difficulty_control import level_difficulty
+            target = float(op["target_difficulty"])
+            changed = level_difficulty(
+                part, src_score, m_start, m_end, target,
             )
             results.append({
                 "op": kind,
