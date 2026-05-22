@@ -22,6 +22,17 @@ macOS 安裝檔（`.dmg`，已經過 Apple 公證）：到 **[介紹網頁](http
 - **互動**：雙面板譜面顯示（OSMD）、問題面板、In-app 編輯、播放、A/B 比較
 - **匯出**：MusicXML、MIDI、PDF 分譜
 
+## 亮點 — 引擎裡的演算法
+
+幾個值得指出的設計選擇：
+
+- **帶約束的聲部分配 + 定向修復迴圈** —— 改編不只是「把音符搬位置」。引擎先做帶約束的聲部分配，再用定向修復處理可演奏性問題（移八度 → 省略次要音 → 重分配聲部 → 整段重分配）。每輪必須嚴格減少全局問題數，否則回滾；最大迭代 10 次，超過交由人類處理。
+- **樂器知識庫 + 弦樂指法 Viterbi DP** —— 每個樂器有完整 profile（音域、多音能力、弓法、技術約束）。弦樂和弦過專屬檢查器（≤4 音、相鄰弦、可達把位）；`fingering.py` 的 `find_best_fingering_sequence` 跨事件做維特比 DP，把位轉移成本內建，不是逐音貪婪。
+- **難度閉環控制器** —— `enrich`（加厚）與 `simplify`（簡化）是雙向運算元，`difficulty.py` 是 5 因子（音域 / 密度 / 和弦 / 節奏 / 技巧）的目標函式，`difficulty_control` 把它們接成閉環：給定目標難度，系統自動加厚 / 簡化 / 逐小節抹平。
+- **人機協作護欄** —— LLM 改譜面板把自然語言轉成 8 種結構化操作（transpose / articulation / dynamic / rest / reassign / enrich / simplify / level），使用者勾選確認才套用；每次編輯後顯示品質 delta（旋律保留 / 和聲完整 / 可演奏性）作為護欄。
+- **MCP server** —— 把整套引擎能力（arrange、apply_edit_ops、compute_difficulty、compute_quality 等）暴露給外部 AI agent（Claude Desktop、Cursor 等），可跑完整自主改編對話。
+- **IR → MusicXML 直接序列化** —— 繞過 music21 匯出，自製 hairpin / ornament 補充解析，解掉 music21 匯出時丟失的標記。
+
 ## 技術棧
 
 - **前端**：Electron + React + TypeScript + Vite + Zustand

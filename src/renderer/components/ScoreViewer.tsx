@@ -1043,6 +1043,50 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
             <div style={{ fontSize: 13, color: "var(--fg-tertiary)" }}>
               {t("scoreViewer.empty")}
             </div>
+            {/* 功能按鈕 — 直接走捷徑, 不必先找 toolbar.
+                CustomEvent 解耦: Toolbar / PresetLibrary 自己 useEffect listen,
+                避免 ScoreViewer 跟它們耦合。 */}
+            <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent("sa:request-open-score"),
+                  );
+                }}
+                style={{
+                  padding: "7px 16px",
+                  fontSize: 13,
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  background: "var(--accent)",
+                  color: "var(--accent-fg)",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                {t("scoreViewer.empty.openScore")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(
+                    new CustomEvent("sa:request-open-preset-library"),
+                  );
+                }}
+                style={{
+                  padding: "7px 16px",
+                  fontSize: 13,
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  background: "var(--button-bg)",
+                  color: "var(--button-fg)",
+                  cursor: "pointer",
+                }}
+              >
+                {t("scoreViewer.empty.trySample")}
+              </button>
+            </div>
           </div>
         )}
         {error && (

@@ -380,6 +380,15 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
+  // 空狀態功能按鈕 — ScoreViewer 用 CustomEvent 呼叫
+  useEffect(() => {
+    const handler = () => { setOpen(true); };
+    window.addEventListener("sa:request-open-preset-library", handler);
+    return () => {
+      window.removeEventListener("sa:request-open-preset-library", handler);
+    };
+  }, []);
+
   /** 對超大樂譜 (>200 小節) 載入前先要使用者確認 */
   const LARGE_THRESHOLD = 200;
   const HUGE_THRESHOLD = 600;

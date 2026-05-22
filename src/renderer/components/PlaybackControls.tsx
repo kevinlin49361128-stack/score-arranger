@@ -257,6 +257,9 @@ export function PlaybackControls(
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [loopEnabled, setLoopEnabled] = useState(false);
+  /** 慢速練習 — 1.0 = 原速, 0.75 = 75%, 0.5 = 50%. 排程時把 note.time /
+   * note.duration 都 ×(1/rate), measureStarts 同樣縮放, 所以播放游標跟得上. */
+  const [playbackRate, setPlaybackRate] = useState<number>(1);
   // Refs 鏡像給 RAF loop 用 (避免 stale closure)
   const loopStartRef = useRef<number | null>(null);
   const loopEndRef = useRef<number | null>(null);
@@ -714,24 +717,30 @@ export function PlaybackControls(
       } catch {
         /* listNavigation 失敗 → 假設無起拍 */
       }
-      measureStartsRef.current = computeMeasureStarts(midi, pickupQuarters);
+      // 慢速練習 — 把所有時間軸 ×(1/rate). 注意要在 scheduling 跟 measure
+      // starts 同時套用, 不然播放游標位置會跟聲音脫節。
+      const stretch = 1 / playbackRate;
+      measureStartsRef.current = computeMeasureStarts(midi, pickupQuarters)
+        .map((s) => s * stretch);
 
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
         for (const note of track.notes) {
+          const noteTime = note.time * stretch;
+          const noteDur = note.duration * stretch;
           const id = Tone.Transport.schedule((time) => {
             instrument.triggerAttackRelease(
               note.name,
-              note.duration,
+              noteDur,
               time,
               note.velocity,
             );
-          }, note.time);
+          }, noteTime);
           scheduledIdsRef.current.push(id);
-          if (note.time + note.duration > lastTime) {
-            lastTime = note.time + note.duration;
+          if (noteTime + noteDur > lastTime) {
+            lastTime = noteTime + noteDur;
           }
         }
       });
@@ -911,6 +920,38 @@ export function PlaybackControls(
           }}
         />
       </div>
+      {!compact && (
+        <label
+          title={t("playback.rate.title")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 11,
+            color: "var(--fg-muted)",
+            marginLeft: 8,
+          }}
+        >
+          🐢
+          <select
+            value={playbackRate}
+            onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
+            disabled={state !== "idle"}
+            style={{
+              fontSize: 11,
+              padding: "1px 4px",
+              border: "1px solid var(--border)",
+              borderRadius: 3,
+              background: "var(--bg-panel)",
+              color: "var(--fg-primary)",
+            }}
+          >
+            <option value={1}>1.0x</option>
+            <option value={0.75}>0.75x</option>
+            <option value={0.5}>0.5x</option>
+          </select>
+        </label>
+      )}
       {!compact && (
         <label
           title={

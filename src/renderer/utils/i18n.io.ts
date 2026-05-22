@@ -460,6 +460,11 @@ export const IO_STRINGS: BiDict = {
     en: "Check to use Salamander piano samples (requires network)",
     ja: "Salamander のピアノサンプルを使用するにはチェック (ネットワークが必要)",
   },
+  "playback.rate.title": {
+    "zh-TW": "慢速練習 — 開始播放前選擇速率",
+    en: "Slow practice — pick a rate before starting playback",
+    ja: "スロー練習 — 再生前に速度を選択",
+  },
   "playback.samples.label": {
     "zh-TW": "取樣",
     en: "Samples",
@@ -500,6 +505,16 @@ export const IO_STRINGS: BiDict = {
     "zh-TW": "(尚未載入樂譜)",
     en: "(No score loaded yet)",
     ja: "(楽譜がまだ読み込まれていません)",
+  },
+  "scoreViewer.empty.openScore": {
+    "zh-TW": "開啟樂譜",
+    en: "Open Score",
+    ja: "楽譜を開く",
+  },
+  "scoreViewer.empty.trySample": {
+    "zh-TW": "試用範例",
+    en: "Try a Sample",
+    ja: "サンプルを試す",
   },
   "scoreViewer.overlay.difficulty": {
     "zh-TW": "m.{measure} — 難度 {score}/5",

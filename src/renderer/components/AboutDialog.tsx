@@ -37,6 +37,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
 
   return (
     <div
+      className="fx-modal-backdrop"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -49,6 +50,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
       }}
     >
       <div
+        className="fx-modal-card"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 720,
@@ -76,7 +78,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             Score Arranger
           </strong>
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            v0.1.12
+            v0.1.13
           </span>
           <button
             onClick={onClose}

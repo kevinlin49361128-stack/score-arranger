@@ -501,6 +501,15 @@ export function Toolbar() {
     await runImport(path);
   };
 
+  // 空狀態功能按鈕 — ScoreViewer 用 CustomEvent 呼叫, 避免雙向耦合
+  useEffect(() => {
+    const handler = () => { void handleImport(); };
+    window.addEventListener("sa:request-open-score", handler);
+    return () => {
+      window.removeEventListener("sa:request-open-score", handler);
+    };
+  }, [handleImport]);
+
   const handleAnalyze = async () => {
     if (!sourcePath) return;
     setLoading(true, tr("toolbar.loading.analyzing"));
