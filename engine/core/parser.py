@@ -198,6 +198,8 @@ def parse_musicxml(path: str) -> Score:
         enrich_score(ir, path)
     except Exception:
         pass  # 補充解析失敗不影響主解析
+    # 留下原始路徑 — 之後 continuo / figured-bass 解析需要回讀 <figure>。
+    ir.metadata.setdefault("source_path", path)
     _cache_put(_IR_CACHE, key, ir)
     return copy.deepcopy(ir)
 

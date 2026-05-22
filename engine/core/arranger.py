@@ -447,6 +447,9 @@ def _apply_melody_handoff(
     主旋律在原曲不同聲部間遊走時 (例如旋律從第一小提琴移到大提琴),
     讓目標旋律樂器逐樂句跟著正確的來源聲部走。
 
+    v2 (技能感知): 找得到「副旋律手」(skill_level 較低但音域夠用) 時,
+    把容易的樂句分給副手, 困難的樂句留給主手, 自動分擔負擔。
+
     無偵測到換手 (只有一個樂句, 或每個樂句都同一來源) → 不動原指派。
     """
     melody_assigns = [
@@ -473,25 +476,163 @@ def _apply_melody_handoff(
 
     # 用逐樂句指派取代原本的 section 級 MELODY 指派
     primary = melody_assigns[0]
+    secondary = _find_secondary_melody_target(arrangement, primary)
+    primary_player = next(
+        (p for p in arrangement.players
+         if p.player_id == primary.target_player_id),
+        None,
+    )
+
+    # v2 樂句分配 — 找得到副手時, 依「相對難度」分配:
+    # 該 section 內難度後 50% 的樂句 → 副手, 前 50% → 主手. 這樣即使
+    # 全曲難度相近, 仍會有平衡的分擔; 而難度差大時則嚴格按比例分.
+    secondary_spans: set[tuple[int, int]] = set()
+    if secondary is not None and primary_player is not None and len(spans) >= 2:
+        difficulties = [
+            (sp[0], sp[1], _estimate_phrase_difficulty(
+                score, sp[2], sp[0], sp[1], primary_player,
+            ))
+            for sp in spans
+        ]
+        # 過濾掉「音域超出副手」(回 None) 的樂句 — 那些只能留主手
+        feasible = [d for d in difficulties if d[2] is not None]
+        if feasible:
+            sorted_d = sorted(feasible, key=lambda x: x[2])  # type: ignore[arg-type]
+            # 後 50% 容易的 → 副手
+            half = max(1, len(sorted_d) // 2)
+            for (s, e, _) in sorted_d[:half]:
+                secondary_spans.add((s, e))
+
     others = [
         a for a in arrangement.assignments
         if a.function != VoiceFunction.MELODY
     ]
-    new_melody = [
-        Assignment(
+    new_melody: list[Assignment] = []
+    for (start_m, end_m, part_id) in spans:
+        if secondary is not None and (start_m, end_m) in secondary_spans:
+            target_player, target_inst, target_staff = secondary
+        else:
+            target_player = primary.target_player_id
+            target_inst = primary.target_instrument
+            target_staff = primary.target_staff
+        new_melody.append(Assignment(
             assignment_id=0,
             source_part_id=part_id,
-            target_player_id=primary.target_player_id,
-            target_instrument=primary.target_instrument,
-            target_staff=primary.target_staff,
+            target_player_id=target_player,
+            target_instrument=target_inst,
+            target_staff=target_staff,
             span=(start_m, end_m),
             function=VoiceFunction.MELODY,
-        )
-        for (start_m, end_m, part_id) in spans
-    ]
+        ))
     arrangement.assignments = others + new_melody
     for i, a in enumerate(arrangement.assignments):
         a.assignment_id = i
+
+
+def _find_secondary_melody_target(
+    arrangement: Arrangement,
+    primary: Assignment,
+) -> Optional[tuple[str, str, Staff]]:
+    """找一個比主旋律手「低一階」的副手 — 同類樂器, 較低 skill_level,
+    且尚未在 section 內被指派 MELODY/BASS。
+
+    回傳 (player_id, instrument_id, staff). 找不到回 None — 維持單一主手。
+    """
+    occupied_in_section = {
+        (a.target_player_id, a.target_staff)
+        for a in arrangement.assignments
+        if a.function in (
+            VoiceFunction.MELODY,
+            VoiceFunction.BASS,
+        )
+    }
+    primary_player = next(
+        (p for p in arrangement.players
+         if p.player_id == primary.target_player_id),
+        None,
+    )
+    if primary_player is None:
+        return None
+    primary_skill = _skill_rank(primary_player.skill_level)
+    primary_family = (
+        get_profile(primary_player.primary_instrument).family
+        if get_profile(primary_player.primary_instrument) else None
+    )
+    # 候選: 同樂器家族 + skill < primary_skill + 還能容納旋律的 staff
+    candidates: list[tuple[str, str, Staff]] = []
+    for p in arrangement.players:
+        if p.player_id == primary_player.player_id:
+            continue
+        if _skill_rank(p.skill_level) >= primary_skill:
+            continue
+        prof = get_profile(p.primary_instrument)
+        if prof is None or prof.family != primary_family:
+            continue
+        staff: Staff = "upper" if p.staves == 2 else "main"
+        if (p.player_id, staff) in occupied_in_section:
+            continue
+        candidates.append((p.player_id, p.primary_instrument, staff))
+    if not candidates:
+        return None
+    # 多副手: 取技能最高那位 (例如 amateur 與 intermediate 中, 選 intermediate).
+    candidates.sort(
+        key=lambda c: _skill_rank(next(
+            pl.skill_level for pl in arrangement.players if pl.player_id == c[0]
+        )),
+        reverse=True,
+    )
+    return candidates[0]
+
+
+def _estimate_phrase_difficulty(
+    score: Score,
+    source_part_id: str,
+    start_m: int,
+    end_m: int,
+    primary_player: Player,
+) -> Optional[float]:
+    """估算單一樂句的難度 (歸一化 0..1).
+
+    回 None 表示「樂句超出副手音域」 → 強制留主手, 不參與分配排序。
+    其餘回 0..1 值, 數字越大越難 (作為「該不該給副手」的相對排序基準).
+    """
+    src_part = next(
+        (p for p in score.parts if p.part_id == source_part_id), None
+    )
+    if src_part is None:
+        return None
+    pitches: list[int] = []
+    for m in src_part.measures:
+        if not (start_m <= m.number <= end_m):
+            continue
+        voices_iter = (
+            m.voices.values() if isinstance(m.voices, dict) else m.voices
+        )
+        for voice in voices_iter:
+            branches = (voice.divisi_branches
+                        if voice.is_divisi and voice.divisi_branches
+                        else [voice])
+            for v in branches:
+                for ev in v.events:
+                    if isinstance(ev, NoteEvent):
+                        pitches.append(ev.pitch.midi_number)
+                    elif isinstance(ev, ChordEvent):
+                        pitches.extend(p.midi_number for p in ev.pitches)
+    if not pitches:
+        return None
+    profile = get_profile(primary_player.primary_instrument)
+    if profile is None:
+        return None
+    lo, hi = profile.range_comfortable
+    # 副手通常用同類樂器同音域, 拿 primary 的 comfortable 當代理:
+    # 若這段超出 comfortable, 留主手 (回 None 排除此 span).
+    if min(pitches) < lo or max(pitches) > hi:
+        return None
+    n_notes = len(pitches)
+    n_measures = max(1, end_m - start_m + 1)
+    density = min(1.0, n_notes / (n_measures * 8))
+    high_ratio = sum(1 for p in pitches if p > lo + (hi - lo) * 0.7) / n_notes
+    return 0.6 * density + 0.4 * high_ratio
 
 
 def _melody_handoff_spans(

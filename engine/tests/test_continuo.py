@@ -90,3 +90,78 @@ class TestContinuoRealization:
         assert not any(
             "harpsichord" in p.part_id for p in arr.target_score.parts
         )
+
+
+class TestFiguredBassMVP:
+    """figured-bass parser + interpret 單元測試 (不需要實際 MusicXML 檔)."""
+
+    def test_interpret_default_5_3(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        # 預設 / 5-3 / 5 → 不需特殊轉位, 回 None
+        assert interpret_figure("") is None
+        assert interpret_figure("5") is None
+        assert interpret_figure("5/3") is None
+
+    def test_interpret_first_inversion(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        assert interpret_figure("6") == (3, 6)
+        assert interpret_figure("6/3") == (3, 6)
+
+    def test_interpret_second_inversion(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        assert interpret_figure("6/4") == (4, 6)
+        assert interpret_figure("64") == (4, 6)
+
+    def test_interpret_seventh_chord(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        assert interpret_figure("7") == (3, 5, 7)
+
+    def test_interpret_ignores_accidental(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        # MVP: # / b 忽略, 仍認得基本骨架
+        assert interpret_figure("#6") == (3, 6)
+        assert interpret_figure("b7") == (3, 5, 7)
+
+    def test_interpret_unknown_returns_none(self):
+        from core.baroque.figured_bass_parser import interpret_figure
+        assert interpret_figure("9/7/5") is None
+        assert interpret_figure("nonsense") is None
+
+    def test_parse_returns_empty_for_missing_file(self):
+        from core.baroque.figured_bass_parser import parse_figured_bass
+        assert parse_figured_bass("/tmp/nonexistent-xyz.xml") == {}
+
+    def test_parse_extracts_figures_from_inline_xml(self, tmp_path):
+        """端對端 — 寫一個 minimal MusicXML 含 <figured-bass>, parser 應抽出."""
+        from core.baroque.figured_bass_parser import parse_figured_bass
+        from fractions import Fraction
+        xml_path = tmp_path / "test.xml"
+        xml_path.write_text(
+            """<?xml version="1.0"?>
+            <score-partwise>
+              <part-list>
+                <score-part id="P1"><part-name>Bass</part-name></score-part>
+              </part-list>
+              <part id="P1">
+                <measure number="1">
+                  <attributes><divisions>4</divisions></attributes>
+                  <note>
+                    <pitch><step>C</step><octave>3</octave></pitch>
+                    <duration>4</duration>
+                  </note>
+                  <figured-bass>
+                    <figure><figure-number>6</figure-number></figure>
+                  </figured-bass>
+                  <note>
+                    <pitch><step>D</step><octave>3</octave></pitch>
+                    <duration>4</duration>
+                  </note>
+                </measure>
+              </part>
+            </score-partwise>""",
+            encoding="utf-8",
+        )
+        figures = parse_figured_bass(str(xml_path))
+        # figure 在第一 note 後 (beat 1), 對應第二 note
+        assert (1, Fraction(1)) in figures
+        assert figures[(1, Fraction(1))] == "6"

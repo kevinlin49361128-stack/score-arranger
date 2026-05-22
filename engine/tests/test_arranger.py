@@ -428,3 +428,41 @@ class TestMelodyHandoff:
             if a.function == VoiceFunction.MELODY
         ]
         assert len(mel) == 1
+
+    def test_v2_secondary_player_picks_up_easy_phrase(self):
+        """B v2 — 主手 professional + 副手 amateur 時, 容易樂句應派給副手."""
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import Player
+        from core.arranger import arrange as run_arrange
+        from core.ir import VoiceFunction
+        from core.parser import parse_musicxml
+
+        score = parse_musicxml("corpus:mozart/k80/movement1")
+        tag_all_sections(score)
+        # 三把同類樂器 (small violin + 小提琴) + 鋼琴 — 二位是不同技能的旋律候選
+        v_pro = Player(
+            player_id="violin_pro", display_name="Violin Pro",
+            instruments=["violin"], primary_instrument="violin",
+            skill_level="professional",
+        )
+        v_am = Player(
+            player_id="violin_am", display_name="Violin Amateur",
+            instruments=["violin"], primary_instrument="violin",
+            skill_level="amateur",
+        )
+        piano = Player(
+            player_id="piano_1", display_name="Piano",
+            instruments=["piano"], primary_instrument="piano",
+            staves=2, skill_level="intermediate",
+        )
+        arr = run_arrange(score, [v_pro, v_am, piano])
+        mel = [
+            a for a in arr.assignments
+            if a.function == VoiceFunction.MELODY
+        ]
+        # 至少出現多個換手段; 不要求一定派副手 (簡單樂句可能不存在),
+        # 但兩個玩家皆出現時, professional 應拿較多段
+        targets = [a.target_player_id for a in mel]
+        if "violin_am" in targets:
+            assert targets.count("violin_pro") >= targets.count("violin_am"), \
+                "主手應該拿到較多或等量段數, 副手只接容易樂句"

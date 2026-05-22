@@ -56,29 +56,42 @@ _MAJOR_SCALE_SEMITONES = [0, 2, 4, 5, 7, 9, 11]  # ionian
 _MINOR_SCALE_SEMITONES = [0, 2, 3, 5, 7, 8, 10]  # natural minor
 
 
-def _diatonic_triad_above(
-    bass_midi: int, tonic_pc: int, is_major: bool,
+def _diatonic_chord_above(
+    bass_midi: int,
+    tonic_pc: int,
+    is_major: bool,
+    scale_degrees: tuple[int, ...] = (3, 5),
 ) -> list[int]:
-    """從調性 + bass 推 root-position triad 的上方兩音 (3rd + 5th).
+    """從調性 + bass 推 chord 的上方音 (預設 3rd + 5th = 5-3 triad).
 
-    回傳 [third_midi, fifth_midi]; 若無法判定 (bass 不在音階上), 回傳 [].
+    scale_degrees: 從 bass 算的「scale step 距離」, 例:
+        (3, 5) → 預設 5-3 三和弦 (3rd + 5th)
+        (3, 6) → 第一轉位 (6-3): 3rd + 6th
+        (4, 6) → 第二轉位 (6-4): 4th + 6th
+        (3, 5, 7) → 七和弦
+    回傳對應 midi 數字 list; 若無法判定 (bass 不在音階上), 回傳 [].
     """
     scale = _MAJOR_SCALE_SEMITONES if is_major else _MINOR_SCALE_SEMITONES
-    # bass pitch class 相對 tonic 的 degree (0-6)
     pc_offset = (bass_midi - tonic_pc) % 12
     if pc_offset not in scale:
         return []
-    degree = scale.index(pc_offset)  # 0=I, 1=ii, ...
-    # 3rd above = degree+2, 5th above = degree+4 (in scale steps)
-    third_pc = scale[(degree + 2) % 7]
-    fifth_pc = scale[(degree + 4) % 7]
-    # 把 pc 轉成 midi: 至少比 bass 高 1 個半音, 從同八度找最低
+    degree = scale.index(pc_offset)
+    # scale step 1 → degree+0, scale step 3 → degree+2, scale step 5 → degree+4...
+    out_pcs = [scale[(degree + (step - 1)) % 7] for step in scale_degrees]
+
     def first_above(target_pc: int) -> int:
         m = (bass_midi // 12) * 12 + ((tonic_pc + target_pc) % 12)
         while m <= bass_midi:
             m += 12
         return m
-    return [first_above(third_pc), first_above(fifth_pc)]
+    return [first_above(pc) for pc in out_pcs]
+
+
+def _diatonic_triad_above(
+    bass_midi: int, tonic_pc: int, is_major: bool,
+) -> list[int]:
+    """5-3 三和弦的捷徑 — 留作後相容. 內部直接呼叫 _diatonic_chord_above."""
+    return _diatonic_chord_above(bass_midi, tonic_pc, is_major, (3, 5))
 
 
 def realize_continuo(
@@ -137,6 +150,21 @@ def realize_continuo(
     upper_min = max(range_lo, 60)
     upper_max = min(range_hi, 79)
 
+    # MVP figured bass: 從 source MusicXML 抽 <figured-bass>, 拿來決定轉位
+    # / 七和弦. 沒讀到的 bass note 還是用預設 5-3 (回到 diatonic 行為).
+    figures: dict[tuple[int, Fraction], str] = {}
+    src_path = source.metadata.get("source_path") if source.metadata else None
+    if src_path:
+        try:
+            from .figured_bass_parser import parse_figured_bass
+            figures = parse_figured_bass(src_path)
+        except Exception:
+            figures = {}
+    if figures:
+        result.notes.append(
+            f"figured-bass: 讀到 {len(figures)} 個 <figured-bass> 標記"
+        )
+
     # 對 bass 每個音生成 chord
     realized_chords: dict[tuple[int, Fraction], ChordEvent] = {}
     for measure in bass_part.measures:
@@ -145,7 +173,17 @@ def realize_continuo(
                 if not isinstance(ev, NoteEvent):
                     continue
                 bass_midi = ev.pitch.midi_number
-                upper = _diatonic_triad_above(bass_midi, tonic_pc, is_major)
+                # MVP figured-bass: 此 bass 位置有標 figure → 改用對應轉位
+                fig_str = figures.get((measure.number, ev.onset))
+                chord_steps: tuple[int, ...] = (3, 5)  # 預設 5-3
+                if fig_str:
+                    from .figured_bass_parser import interpret_figure
+                    interpreted = interpret_figure(fig_str)
+                    if interpreted is not None:
+                        chord_steps = interpreted
+                upper = _diatonic_chord_above(
+                    bass_midi, tonic_pc, is_major, chord_steps,
+                )
                 if not upper:
                     continue
                 # 把 upper notes 調到 upper staff comfortable
