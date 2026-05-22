@@ -290,6 +290,12 @@ export function PlaybackControls(
   const reverbRef = useRef<Tone.Reverb | null>(null);
   const samplesLoadedRef = useRef(false);
   const sampleLoadFailedRef = useRef(false);
+  // 防重入: 啟動播放是 async (取 MIDI + 首次載入取樣)。期間若再次點擊,
+  // 第二次 handlePlay 會與第一次並行搶 Tone.Transport (singleton) —
+  // stopAllScheduled 互砍排程、startTracking 開出兩個 RAF loop, 造成
+  // 「有聲音沒游標 / 有游標沒聲音」這類錯亂。ref 是同步的, 能擋住連點
+  // (button disabled 依賴 re-render, 來不及擋住極快的第二下)。
+  const playStartingRef = useRef(false);
 
   const scheduledIdsRef = useRef<number[]>([]);
   const rafIdRef = useRef<number | null>(null);
@@ -677,6 +683,8 @@ export function PlaybackControls(
       return;
     }
     if (state === "playing") return;
+    // 已在啟動另一次播放 → 忽略連點 (見 playStartingRef 宣告處)
+    if (playStartingRef.current) return;
     // source 模式: 需要 sourcePath; target 模式: 需要 arrangement
     if (side === "source" && !sourcePath && !sourceMusicXML) {
       setError(t("playback.error.noSource"));
@@ -687,6 +695,7 @@ export function PlaybackControls(
       return;
     }
 
+    playStartingRef.current = true;
     setState("loading");
     setError(null);
     setActiveSide(side);
@@ -755,6 +764,8 @@ export function PlaybackControls(
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setState("idle");
+    } finally {
+      playStartingRef.current = false;
     }
   };
 
