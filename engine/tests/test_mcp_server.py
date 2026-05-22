@@ -14,7 +14,9 @@ from core.mcp_server import DISPATCH, PROMPTS, TOOLS, _get_prompt
 
 class TestToolDefinitions:
     def test_tool_count(self):
-        assert len(TOOLS) == 12
+        # 12 原本工具 + 3 新增 (apply_edit_ops / compute_difficulty /
+        # compute_quality) — F MCP agent 整合, 暴露難度閉環與結構化編輯
+        assert len(TOOLS) == 15
 
     def test_arrange_and_export_schema(self):
         t = next(t for t in TOOLS if t.name == "arrange_and_export")

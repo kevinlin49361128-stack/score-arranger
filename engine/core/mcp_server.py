@@ -363,6 +363,109 @@ TOOLS: list[types.Tool] = [
             "required": ["output_dir"],
         },
     ),
+    types.Tool(
+        name="apply_edit_ops",
+        description=(
+            "**批次套用結構化編輯** — 對目前 session 改編結果套用一組編輯操作, "
+            "整批一次套用、一次可復原 (undo). 8 種操作:\n"
+            "  transpose: 移調區間音符 (semitones ±48)\n"
+            "  articulation: 設定演奏法 (staccato/spiccato/legato/...; "
+            "mode=set/add/clear)\n"
+            "  dynamic: 設定力度 (pp/p/mp/mf/f/ff/...)\n"
+            "  rest: 把區間清成休止符\n"
+            "  reassign: 把來源聲部重新分配給其他演奏者 / 譜表\n"
+            "  enrich: 加厚 — 從原曲和聲補和弦 "
+            "(density=light/medium/full, texture=block/arpeggio/strum/octave)\n"
+            "  simplify: 降難度 — 和弦瘦身 / 八度收摺 / 去裝飾 / 簡化弓法 "
+            "(level=light/medium/full; 旋律保留)\n"
+            "  level: 抹平到目標難度 (target_difficulty 1-5; 雙向收斂, "
+            "自動加厚或簡化)\n"
+            "全部經樂器可演奏性檢查. 適合 agent 規劃完整改編工作流."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "ops": {
+                    "type": "array",
+                    "description": (
+                        "編輯操作清單 — 整批 all-or-nothing, "
+                        "任一個無效則整批拒絕."
+                    ),
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "op": {
+                                "type": "string",
+                                "enum": [
+                                    "transpose", "articulation", "dynamic",
+                                    "rest", "reassign", "enrich",
+                                    "simplify", "level",
+                                ],
+                            },
+                            "part_id": {"type": "string"},
+                            "measure_start": {"type": "integer"},
+                            "measure_end": {"type": "integer"},
+                            "semitones": {"type": "integer"},
+                            "articulation": {"type": "string"},
+                            "mode": {
+                                "type": "string",
+                                "enum": ["set", "add", "clear"],
+                            },
+                            "dynamic": {"type": "string"},
+                            "source_part_id": {"type": "string"},
+                            "target_part_id": {"type": "string"},
+                            "density": {
+                                "type": "string",
+                                "enum": ["light", "medium", "full"],
+                            },
+                            "texture": {
+                                "type": "string",
+                                "enum": [
+                                    "block", "arpeggio", "strum", "octave",
+                                ],
+                            },
+                            "level": {
+                                "type": "string",
+                                "enum": ["light", "medium", "full"],
+                            },
+                            "target_difficulty": {
+                                "type": "number",
+                                "minimum": 1, "maximum": 5,
+                            },
+                            "reason": {"type": "string"},
+                        },
+                        "required": ["op"],
+                    },
+                },
+                **_SESSION_ID_PROP,
+            },
+            "required": ["ops"],
+        },
+    ),
+    types.Tool(
+        name="compute_difficulty",
+        description=(
+            "計算目前 session 改編結果各 part 的演奏難度 (5 因子: 音域 / 密度 / "
+            "和弦 / 節奏 / 技巧, 含 per-measure breakdown). 分數 1-5 "
+            "(1=業餘初級, 3=業餘進階, 5=職業). 回傳 part_id → DifficultyEntry."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {**_SESSION_ID_PROP},
+        },
+    ),
+    types.Tool(
+        name="compute_quality",
+        description=(
+            "計算改編品質: melody_preservation (旋律保留) / "
+            "harmony_completeness (和聲完整) / playability (可演奏性) / "
+            "overall, 各項 0-1. agent 可用此驗證編輯沒破壞旋律."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {**_SESSION_ID_PROP},
+        },
+    ),
 ]
 
 
@@ -592,6 +695,24 @@ def _do_export_all_parts(args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _do_apply_edit_ops(args: dict[str, Any]) -> dict[str, Any]:
+    """批次套用結構化編輯 — 走 server 的 apply_edit_ops 方法."""
+    sid = _session_of(args)
+    return _engine_call("apply_edit_ops", {"ops": args["ops"]}, session=sid)
+
+
+def _do_compute_difficulty(args: dict[str, Any]) -> Any:
+    """計算各 part 的演奏難度 (5 因子)."""
+    sid = _session_of(args)
+    return _engine_call("compute_difficulty", {}, session=sid)
+
+
+def _do_compute_quality(args: dict[str, Any]) -> Any:
+    """計算改編品質: 旋律保留 / 和聲完整 / 可演奏性."""
+    sid = _session_of(args)
+    return _engine_call("compute_quality", {}, session=sid)
+
+
 DISPATCH = {
     "list_corpus": lambda _: _engine_call("list_corpus", {}),
     "arrange_and_export": _do_arrange_and_export,
@@ -605,6 +726,10 @@ DISPATCH = {
     "transcribe_score": _do_transcribe,
     "list_source_parts": _do_list_source_parts,
     "suggest_transposition": _do_suggest_transposition,
+    # F: 暴露難度閉環 / 結構化編輯 / 品質指標給外部 agent
+    "apply_edit_ops": _do_apply_edit_ops,
+    "compute_difficulty": _do_compute_difficulty,
+    "compute_quality": _do_compute_quality,
 }
 
 
