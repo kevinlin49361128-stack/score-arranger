@@ -106,7 +106,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const osmdContainerRef = useRef<HTMLDivElement>(null);
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
-    const cursorMeasureIdxRef = useRef<number>(0);
     /** 音符級游標已 advance 過的 onset 步數 (從 reset() 後計算).
      * 若 playbackOnsetIndex < cursorStepRef → 需要 reset 重來; > 則增量 next(). */
     const cursorStepRef = useRef<number>(-1);
@@ -116,6 +115,10 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const pendingRestoreRef = useRef<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [flashBox, setFlashBox] = useState<FlashBox | null>(null);
+    /** 播放游標 — 自繪 measure 級 overlay (取代被深色背景蓋掉的 OSMD <img> cursor) */
+    const [playbackBox, setPlaybackBox] = useState<FlashBox | null>(null);
+    /** 持久「選取小節」高亮 — 點 issue / 點小節後留著, 直到下次點別處 */
+    const [selectedBox, setSelectedBox] = useState<FlashBox | null>(null);
     // 拖曳狀態: 顯示中的 ghost tooltip (像素位置 + 語意 semitones)
     const [dragGhost, setDragGhost] = useState<
       { x: number; y: number; semitones: number } | null
@@ -215,7 +218,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
           }
           osmd.render();
           if (cancelled) return;
-          cursorMeasureIdxRef.current = 0;
           const cursor = (osmd as unknown as {
             cursor?: { hide: () => void; reset: () => void };
           }).cursor;
@@ -717,27 +719,52 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [highlightedMeasure, highlightFlashTick]);
 
+    // 持久「選取小節」高亮 — 點 issue / 點小節後留著, 直到下次點別處。
+    // flash 只閃 1.5s 太容易錯過 (尤其視線還在 issue 面板上時),
+    // 故額外畫一個持久外框, 並在 zoom / 重渲後重算位置。
+    useEffect(() => {
+      if (highlightedMeasure == null) {
+        setSelectedBox(null);
+        return;
+      }
+      const compute = () => {
+        const box = getMeasureBox(highlightedMeasure);
+        if (box) setSelectedBox(box);
+      };
+      compute();
+      // 重渲 (zoom / 換譜) 後 OSMD layout 是 async, 補一拍重算
+      const id = window.setTimeout(compute, 60);
+      return () => window.clearTimeout(id);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [highlightedMeasure, zoom, musicXmlContent]);
+
     // 反應 playbackMeasure — 只在 *本面板是 active playback 對象時* 顯示游標.
     // 另一面板播放時, 此 panel 不顯示任何 cursor / 高亮.
+    //
+    // 游標改用「自繪 overlay」: OSMD 內建 cursor <img> 在深色 pageBackground
+    // 下會被不透明的背景 rect 整片蓋住而完全看不見 (這就是 task #66
+    // 「ribbon cursor 看不到」的根因)。改用 getMeasureBox 算出當前小節 bbox,
+    // 自己畫一個半透明綠色高亮 — z-index / 顏色 / 位置全在掌控中,
+    // 不再受 OSMD 內部渲染順序左右。
     useEffect(() => {
       const cursor = (osmdRef.current as unknown as {
         cursor?: { hide: () => void };
       })?.cursor;
+      // 一律隱藏 OSMD 內建 cursor — 避免與自繪 overlay 重疊 / 殘影
+      cursor?.hide?.();
       if (playbackMeasure == null || !isActivePlaybackPanel) {
-        cursor?.hide?.();
         clearNoteHighlights();
+        setPlaybackBox(null);
         return;
       }
-      if (cursorMode !== "note") {
-        moveCursorToMeasure(playbackMeasure);
-      }
-      // 播放跟隨: 用我們自己受控的 scrollToMeasure (非 OSMD 內建 follow —
-      // 那個會「一播放就滾到底」, 已被三層保險擋掉)。alwaysCenter=false →
-      // 只在當前小節捲出視窗時才捲; behavior=smooth → 平順滑動跟隨,
-      // 不再瞬間跳動。
+      const box = getMeasureBox(playbackMeasure);
+      if (box) setPlaybackBox(box);
+      // 播放跟隨: 用我們自己受控的 scrollToMeasure (非 OSMD 內建 follow)。
+      // alwaysCenter=false → 只在當前小節捲出視窗時才捲;
+      // behavior=smooth → 平順滑動跟隨, 不再瞬間跳動。
       scrollToMeasure(playbackMeasure, "smooth", false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playbackMeasure, cursorMode, isActivePlaybackPanel]);
+    }, [playbackMeasure, isActivePlaybackPanel, zoom]);
 
     // 反應 playbackOnsetIndex — 音符級游標 (cursorMode === "note" 且本面板 active 才生效)
     useEffect(() => {
@@ -1032,49 +1059,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       onMeasureClick(measure);
     };
 
-    /** 把 OSMD 的 cursor 移到指定小節 (1-based)。 */
-    const moveCursorToMeasure = (measureNumber: number) => {
-      const osmd = osmdRef.current;
-      if (!osmd) return;
-      const cursor = (osmd as unknown as {
-        cursor?: {
-          show: () => void;
-          hide: () => void;
-          reset: () => void;
-          next: () => void;
-          iterator?: {
-            currentMeasureIndex?: number;
-            endReached?: boolean;
-          };
-        };
-      }).cursor;
-      if (!cursor) return;
-
-      const targetIdx = measureNumber - 1;
-      try {
-        // 若目標位於目前 cursor 之前, 從頭重置
-        if (targetIdx < cursorMeasureIdxRef.current) {
-          cursor.reset();
-          cursorMeasureIdxRef.current = 0;
-        }
-        // 步進至目標 (上限避免極長作品死循環)
-        let safety = 5000;
-        while (
-          cursor.iterator
-          && (cursor.iterator.currentMeasureIndex ?? 0) < targetIdx
-          && !(cursor.iterator.endReached ?? false)
-          && safety-- > 0
-        ) {
-          cursor.next();
-        }
-        cursorMeasureIdxRef.current =
-          cursor.iterator?.currentMeasureIndex ?? targetIdx;
-        cursor.show();
-      } catch {
-        /* 跨 OSMD 版本可能失敗,忽略 */
-      }
-    };
-
     const osmdBg =
       theme === "dark"
         ? DARK_COLORS.pageBackgroundColor
@@ -1169,6 +1153,36 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                 pointerEvents: "none",
                 borderRadius: 4,
                 zIndex: 2,
+              }}
+            />
+          )}
+          {/* 持久選取小節高亮 (點 issue / 點小節) */}
+          {selectedBox && (
+            <div
+              className="score-selected-measure"
+              style={{
+                position: "absolute",
+                left: selectedBox.left,
+                top: selectedBox.top,
+                width: selectedBox.width,
+                height: selectedBox.height,
+                pointerEvents: "none",
+                zIndex: 3,
+              }}
+            />
+          )}
+          {/* 播放游標 — 自繪 measure 級 overlay (見上方 playbackMeasure effect) */}
+          {playbackBox && (
+            <div
+              className="score-playback-cursor"
+              style={{
+                position: "absolute",
+                left: playbackBox.left,
+                top: playbackBox.top,
+                width: playbackBox.width,
+                height: playbackBox.height,
+                pointerEvents: "none",
+                zIndex: 4,
               }}
             />
           )}

@@ -157,6 +157,26 @@
         animation: score-flash 1.5s ease-out forwards;
       }
 
+      /* 播放游標: 半透明綠色小節高亮, 平順滑動跟隨 (取代被深色背景蓋掉的
+         OSMD 內建 cursor)。transition 讓游標在小節間平順滑過, 不瞬間跳。 */
+      .score-playback-cursor {
+        background: rgba(52, 199, 89, 0.16);
+        box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.85) inset;
+        border-radius: 4px;
+        transition:
+          left 130ms ease-out,
+          top 130ms ease-out,
+          width 130ms ease-out,
+          height 130ms ease-out;
+      }
+
+      /* 持久「選取小節」高亮: 點 issue / 點小節後留著的琥珀色外框 */
+      .score-selected-measure {
+        background: rgba(255, 179, 0, 0.12);
+        box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.9) inset;
+        border-radius: 4px;
+      }
+
       /* 載入遮罩的轉圈動畫 */
       @keyframes score-spin {
         to {
