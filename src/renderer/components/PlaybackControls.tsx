@@ -377,89 +377,87 @@ export function PlaybackControls(
     }
 
     if (useSamples && !samplesLoadedRef.current && !sampleLoadFailedRef.current) {
-      // 平行載入多樂器取樣 — 全部 connect 到 reverb bus 取代 toDestination
-      const piano = new Tone.Sampler({
-        urls: PIANO_URLS,
-        baseUrl: SALAMANDER_BASE,
-        release: 1,
-      });
-      piano.connect(bus);
-      piano.volume.value = -6;
-      const violin = new Tone.Sampler({
-        urls: VIOLIN_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.6,
-      });
-      violin.connect(bus);
-      violin.volume.value = -8;
-      const cello = new Tone.Sampler({
-        urls: CELLO_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.8,
-      });
-      cello.connect(bus);
-      cello.volume.value = -8;
-      const flute = new Tone.Sampler({
-        urls: FLUTE_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.4,
-      });
-      flute.connect(bus);
-      flute.volume.value = -10;
-      const clarinet = new Tone.Sampler({
-        urls: CLARINET_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.5,
-      });
-      clarinet.connect(bus);
-      clarinet.volume.value = -10;
-      const guitar = new Tone.Sampler({
-        urls: GUITAR_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.8,
-      });
-      guitar.connect(bus);
-      guitar.volume.value = -8;
-      const harp = new Tone.Sampler({
-        urls: HARP_URLS,
-        baseUrl: TONEJS_INSTRUMENTS_BASE,
-        release: 0.8,
-      });
-      harp.connect(bus);
-      harp.volume.value = -8;
-      const harpsichord = new Tone.Sampler({
-        urls: HARPSICHORD_URLS,
-        baseUrl: HARPSICHORD_BASE,
-        release: 0.4,
-      });
-      harpsichord.connect(bus);
-      harpsichord.volume.value = -8;
-      try {
-        await Tone.loaded();
-        pianoRef.current = piano;
-        violinRef.current = violin;
-        celloRef.current = cello;
-        fluteRef.current = flute;
-        clarinetRef.current = clarinet;
-        guitarRef.current = guitar;
-        harpRef.current = harp;
-        harpsichordRef.current = harpsichord;
-        samplesLoadedRef.current = true;
-      } catch (e) {
-        console.warn("取樣載入失敗,回退為合成:", e);
-        sampleLoadFailedRef.current = true;
-        piano.dispose?.();
-        violin.dispose?.();
-        cello.dispose?.();
-        flute.dispose?.();
-        clarinet.dispose?.();
-        guitar.dispose?.();
-        harp.dispose?.();
-        harpsichord.dispose?.();
-        pianoRef.current = fallbackRef.current;
-        violinRef.current = violinFallbackRef.current;
-        harpsichordRef.current = harpsichordFallbackRef.current;
+      // 逐樂器獨立載入取樣。關鍵: 不再用全域 await Tone.loaded() —
+      // 那個只要「任何一個」樂器的任何一個取樣檔失敗就整批 reject, 害得
+      // 整個四重奏 (violin/cello) 一起退成刺耳的合成器音色 (使用者回報的
+      // 「音色像合成器/破音」)。改成每個 sampler 用自己的 onload/onerror
+      // 結算, 單一樂器失敗只回退它自己, 其餘樂器照常使用真實取樣。
+      const buildSampler = (
+        urls: Record<string, string>,
+        baseUrl: string,
+        release: number,
+        volume: number,
+      ): { sampler: Tone.Sampler; ready: Promise<void> } => {
+        let settle: () => void = () => {};
+        const ready = new Promise<void>((res) => {
+          settle = res;
+        });
+        const sampler = new Tone.Sampler({
+          urls,
+          baseUrl,
+          release,
+          onload: () => settle(),
+          onerror: () => settle(),
+        });
+        sampler.connect(bus);
+        sampler.volume.value = volume;
+        // 逾時保險: 20 秒還沒結算就放行 (避免 await 永遠卡死)
+        window.setTimeout(() => settle(), 20_000);
+        return { sampler, ready };
+      };
+
+      const piano = buildSampler(PIANO_URLS, SALAMANDER_BASE, 1, -6);
+      const violin = buildSampler(VIOLIN_URLS, TONEJS_INSTRUMENTS_BASE, 0.6, -8);
+      const cello = buildSampler(CELLO_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
+      const flute = buildSampler(FLUTE_URLS, TONEJS_INSTRUMENTS_BASE, 0.4, -10);
+      const clarinet =
+        buildSampler(CLARINET_URLS, TONEJS_INSTRUMENTS_BASE, 0.5, -10);
+      const guitar = buildSampler(GUITAR_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
+      const harp = buildSampler(HARP_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
+      const harpsichord =
+        buildSampler(HARPSICHORD_URLS, HARPSICHORD_BASE, 0.4, -8);
+      const all = [
+        piano, violin, cello, flute, clarinet, guitar, harp, harpsichord,
+      ];
+      await Promise.all(all.map((x) => x.ready));
+
+      // 逐一結算: 真的載入完成 (.loaded) 才用取樣器, 否則回退該樂器合成器。
+      pianoRef.current = piano.sampler.loaded
+        ? piano.sampler
+        : fallbackRef.current;
+      violinRef.current = violin.sampler.loaded
+        ? violin.sampler
+        : violinFallbackRef.current;
+      celloRef.current = cello.sampler.loaded
+        ? cello.sampler
+        : violinFallbackRef.current;
+      fluteRef.current = flute.sampler.loaded
+        ? flute.sampler
+        : fallbackRef.current;
+      clarinetRef.current = clarinet.sampler.loaded
+        ? clarinet.sampler
+        : fallbackRef.current;
+      guitarRef.current = guitar.sampler.loaded
+        ? guitar.sampler
+        : fallbackRef.current;
+      harpRef.current = harp.sampler.loaded
+        ? harp.sampler
+        : fallbackRef.current;
+      harpsichordRef.current = harpsichord.sampler.loaded
+        ? harpsichord.sampler
+        : harpsichordFallbackRef.current;
+      // 沒載成功的 sampler 釋放掉省記憶體
+      for (const x of all) {
+        if (!x.sampler.loaded) x.sampler.dispose?.();
       }
+      const failed = all.filter((x) => !x.sampler.loaded).length;
+      if (failed > 0) {
+        console.warn(
+          `[playback] ${failed} 種樂器取樣未載入, 已逐樂器回退合成`,
+        );
+      }
+      sampleLoadFailedRef.current = failed > 0;
+      samplesLoadedRef.current = true;
     } else if (!pianoRef.current || !violinRef.current) {
       pianoRef.current = pianoRef.current ?? fallbackRef.current;
       violinRef.current = violinRef.current ?? violinFallbackRef.current;
