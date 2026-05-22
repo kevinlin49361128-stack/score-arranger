@@ -47,8 +47,6 @@ export default function App() {
     highlightedMeasure,
     highlightFlashTick,
     playbackMeasure,
-    playbackOnsetIndex,
-    cursorMode,
     mode,
     panelLayout,
     infoPanelPos,
@@ -432,8 +430,6 @@ export default function App() {
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
                 playbackMeasure={playbackMeasure}
-                playbackOnsetIndex={playbackOnsetIndex}
-                cursorMode={cursorMode}
                 isActivePlaybackPanel={activePlaybackSide === "source"}
                 onMeasureClick={setHighlightedMeasure}
                 isAutoFitReference={!targetMusicXML}
@@ -480,8 +476,6 @@ export default function App() {
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
                 playbackMeasure={playbackMeasure}
-                playbackOnsetIndex={playbackOnsetIndex}
-                cursorMode={cursorMode}
                 isActivePlaybackPanel={activePlaybackSide === "target"}
                 onMeasureClick={handleTargetClick}
                 onNoteDrag={handleNoteDrag}

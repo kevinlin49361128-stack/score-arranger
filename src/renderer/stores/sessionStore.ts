@@ -261,15 +261,6 @@ interface SessionState {
   playbackMeasure: number | null;
   setPlaybackMeasure: (m: number | null) => void;
 
-  // 播放中的當前 onset index (對應 MIDI 內所有不同起始時間的 sorted index)
-  // 用於音符級游標跟隨; null = 還沒播放
-  playbackOnsetIndex: number | null;
-  setPlaybackOnsetIndex: (i: number | null) => void;
-
-  // 游標跟隨精細度
-  cursorMode: "measure" | "note";
-  setCursorMode: (m: "measure" | "note") => void;
-
   // 哪邊面板正在播放 (互斥, Tone.Transport 是 singleton)
   activePlaybackSide: "source" | "target" | null;
   setActivePlaybackSide: (s: "source" | "target" | null) => void;
@@ -395,20 +386,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   playbackMeasure: null,
   setPlaybackMeasure: (m) => set({ playbackMeasure: m }),
-  playbackOnsetIndex: null,
-  setPlaybackOnsetIndex: (i) => set({ playbackOnsetIndex: i }),
   activePlaybackSide: null,
   setActivePlaybackSide: (s) => set({ activePlaybackSide: s }),
-  // 游標一律 measure 級。note 級 (MIDI onset index → OSMD cursor 步數) 會因
-  // MIDI 略過休止符、OSMD cursor 卻在休止符停步而逐漸脫鉤, 造成游標位置偏移,
-  // 故移除該模式, 一律用穩定的 measure 級定位。
-  cursorMode: "measure",
-  setCursorMode: (m) => {
-    try {
-      window.localStorage?.setItem("score-arranger.cursor-mode", m);
-    } catch { /* ignore */ }
-    set({ cursorMode: m });
-  },
 
   playbackProgress: 0,
   setPlaybackProgress: (p) => set({ playbackProgress: p }),

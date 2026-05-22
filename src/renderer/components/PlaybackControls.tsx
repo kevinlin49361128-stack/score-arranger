@@ -245,9 +245,6 @@ export function PlaybackControls(
   const sourceMusicXML = useSessionStore((s) => s.sourceMusicXML);
   const setError = useSessionStore((s) => s.setError);
   const setPlaybackMeasure = useSessionStore((s) => s.setPlaybackMeasure);
-  const setPlaybackOnsetIndex = useSessionStore(
-    (s) => s.setPlaybackOnsetIndex,
-  );
   const setPlaybackProgress = useSessionStore((s) => s.setPlaybackProgress);
   const playbackProgress = useSessionStore((s) => s.playbackProgress);
   const activeSide = useSessionStore((s) => s.activePlaybackSide);
@@ -302,12 +299,6 @@ export function PlaybackControls(
   const totalDurationRef = useRef<number>(0);
   /** 預計算的 measure 邊界時間表 (秒),index 0 = 第 1 小節起始 */
   const measureStartsRef = useRef<number[]>([]);
-  /**
-   * 預計算的「不同 onset 起始時間」清單 (秒, sorted asc).
-   * 用於音符級游標: 二分搜尋當前 seconds 對應的 onset index, 即等於 OSMD
-   * cursor 從頭算起需要 .next() 的步數.
-   */
-  const onsetsRef = useRef<number[]>([]);
 
   useEffect(() => {
     return () => {
@@ -548,39 +539,6 @@ export function PlaybackControls(
   };
 
   /** 從 MIDI 預計算每個 measure 起始的秒數 (支援變速 / 變拍號) */
-  /**
-   * 從 MIDI 抽出所有不重複的 onset 時間 (秒, sorted asc).
-   * 二分搜尋這個陣列就能把 transport.seconds 對應到 OSMD cursor 的步數.
-   */
-  const computeOnsets = (midi: Midi): number[] => {
-    const set = new Set<number>();
-    for (const track of midi.tracks) {
-      for (const note of track.notes) {
-        // 用 ms 精度 (1e-3) round 起來避免浮點誤差導致誤差節點
-        const t = Math.round(note.time * 1000) / 1000;
-        set.add(t);
-      }
-    }
-    return [...set].sort((a, b) => a - b);
-  };
-
-  /** 二分搜尋: 找最大的 onset 索引滿足 onsets[i] <= seconds. 找不到回 -1. */
-  const findOnsetIndex = (seconds: number): number => {
-    const arr = onsetsRef.current;
-    if (arr.length === 0 || seconds < arr[0]) return -1;
-    let lo = 0, hi = arr.length - 1, ans = -1;
-    while (lo <= hi) {
-      const mid = (lo + hi) >>> 1;
-      if (arr[mid] <= seconds) {
-        ans = mid;
-        lo = mid + 1;
-      } else {
-        hi = mid - 1;
-      }
-    }
-    return ans;
-  };
-
   const computeMeasureStarts = (midi: Midi): number[] => {
     const tsigs = [...midi.header.timeSignatures].sort(
       (a, b) => a.ticks - b.ticks,
@@ -626,10 +584,22 @@ export function PlaybackControls(
 
   const startTracking = () => {
     let prevMeasure = -1;
-    let prevOnsetIdx = -2;  // -1 是 valid (尚未到任何 onset)
+    // start("+0.1") 後約 100ms 內 Tone.Transport.state 仍是 "stopped" —
+    // 這段啟動空窗期絕不可 return, 否則 rAF loop 第一幀就死掉,
+    // setPlaybackMeasure 永遠不會被呼叫 → playbackMeasure 卡在 null →
+    // 譜面播放游標完全不出現。改用 sawStarted 旗標: 只有「曾 started
+    // 之後又離開 started」才收工; 啟動前最多寬限 4 秒。
+    let sawStarted = false;
+    const trackBegin = performance.now();
     const loop = () => {
-      if (Tone.Transport.state !== "started") {
-        rafIdRef.current = null;
+      const tstate = Tone.Transport.state;
+      if (tstate === "started") {
+        sawStarted = true;
+      } else if (sawStarted) {
+        rafIdRef.current = null;  // 播完 / 暫停 / 停止 → 收工
+        return;
+      } else if (performance.now() - trackBegin > 4000) {
+        rafIdRef.current = null;  // 4 秒還沒啟動 → 視為失敗, 別讓 loop 永跑
         return;
       }
       const seconds = Tone.Transport.seconds;
@@ -638,7 +608,6 @@ export function PlaybackControls(
       setPlaybackProgress(progress);
 
       const measure = findMeasureAt(seconds);
-      const onsetIdx = findOnsetIndex(seconds);
 
       // === 範圍循環 ===
       const lStart = loopStartRef.current;
@@ -657,17 +626,12 @@ export function PlaybackControls(
           const loopStartSec = starts[startIdx] ?? 0;
           Tone.Transport.seconds = loopStartSec;
           prevMeasure = -1;
-          prevOnsetIdx = -2;
         }
       }
 
       if (measure !== prevMeasure) {
         setPlaybackMeasure(measure);
         prevMeasure = measure;
-      }
-      if (onsetIdx !== prevOnsetIdx) {
-        setPlaybackOnsetIndex(onsetIdx);
-        prevOnsetIdx = onsetIdx;
       }
       rafIdRef.current = requestAnimationFrame(loop);
     };
@@ -725,7 +689,6 @@ export function PlaybackControls(
       Tone.Transport.bpm.value = bpm;
       // 預算 measure 起始時間表,支援變速 / 變拍號
       measureStartsRef.current = computeMeasureStarts(midi);
-      onsetsRef.current = computeOnsets(midi);
 
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {
@@ -752,7 +715,6 @@ export function PlaybackControls(
         cancelRaf();
         setState("idle");
         setPlaybackMeasure(null);
-        setPlaybackOnsetIndex(null);
         setPlaybackProgress(1);
         setActiveSide(null);
         stopAllScheduled();
@@ -781,14 +743,12 @@ export function PlaybackControls(
     Tone.Transport.seconds = 0;
     setPlaybackProgress(0);
     setPlaybackMeasure(1);
-    setPlaybackOnsetIndex(onsetsRef.current.length > 0 ? 0 : -1);
   };
 
   const handleStop = () => {
     stopAllScheduled();
     cancelRaf();
     setPlaybackMeasure(null);
-    setPlaybackOnsetIndex(null);
     setPlaybackProgress(0);
     setState("idle");
     setActiveSide(null);
@@ -801,10 +761,9 @@ export function PlaybackControls(
     const target = ratio * totalDurationRef.current;
     Tone.Transport.seconds = target;
     setPlaybackProgress(ratio);
-    // seek 後立即同步 measure + onset (即使在 paused 狀態, 游標也跟著拖曳走)
+    // seek 後立即同步 measure (即使在 paused 狀態, 游標也跟著拖曳走)
     const newMeasure = findMeasureAt(target);
     if (Number.isFinite(newMeasure)) setPlaybackMeasure(newMeasure);
-    setPlaybackOnsetIndex(findOnsetIndex(target));
   };
 
   const btn: React.CSSProperties = {
@@ -1025,7 +984,3 @@ function base64ToUint8Array(b64: string): Uint8Array {
   }
   return out;
 }
-
-
-/** 游標精細度切換: 一鈕雙態 (note ↔ measure), persist 在 localStorage. */
-// (CursorModeToggle 已移除 — 游標一律 measure 級, 見 sessionStore.cursorMode)

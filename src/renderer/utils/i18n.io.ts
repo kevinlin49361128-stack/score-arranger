@@ -490,31 +490,6 @@ export const IO_STRINGS: BiDict = {
     en: "Loop end measure (inclusive)",
     ja: "ループ終了小節 (この小節を含む)",
   },
-  "playback.cursorMode.noteHint": {
-    "zh-TW": "目前: 音符級游標 (高亮當前音符) — 點切換為小節級",
-    en: "Current: note-level cursor (highlights the current note) — "
-      + "click to switch to measure level",
-    ja: "現在: 音符単位カーソル (現在の音符をハイライト) — "
-      + "クリックで小節単位に切り替え",
-  },
-  "playback.cursorMode.measureHint": {
-    "zh-TW": "目前: 小節級游標 (整小節綠線) — 點切換為音符級",
-    en: "Current: measure-level cursor (full-measure green line) — "
-      + "click to switch to note level",
-    ja: "現在: 小節単位カーソル (小節全体の緑の線) — "
-      + "クリックで音符単位に切り替え",
-  },
-  "playback.cursorMode.note": {
-    "zh-TW": "♪ 音符",
-    en: "♪ Note",
-    ja: "♪ 音符",
-  },
-  "playback.cursorMode.measure": {
-    "zh-TW": "▮ 小節",
-    en: "▮ Measure",
-    ja: "▮ 小節",
-  },
-
   // === ScoreViewer ===
   "scoreViewer.error.renderFailed": {
     "zh-TW": "渲染失敗: {message}",

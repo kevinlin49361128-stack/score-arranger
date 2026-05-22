@@ -28,11 +28,7 @@ interface ScoreViewerProps {
   highlightFlashTick?: number;
   /** 播放中的當前小節 (即時捲動, 不平滑以避免延遲) */
   playbackMeasure?: number | null;
-  /** 播放中的當前 onset 步數 (給音符級游標用); -1 = 尚未到任何音符 */
-  playbackOnsetIndex?: number | null;
-  /** 游標模式: "measure" = 一次跳一小節, "note" = 音符級高亮 */
-  cursorMode?: "measure" | "note";
-  /** 是否是當前播放對象 — false 時 cursor / 音符高亮不顯示 */
+  /** 是否是當前播放對象 — false 時 cursor 不顯示 */
   isActivePlaybackPanel?: boolean;
   /** 使用者點選譜面上的小節時觸發.
    *
@@ -91,8 +87,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       highlightedMeasure,
       highlightFlashTick,
       playbackMeasure,
-      playbackOnsetIndex,
-      cursorMode,
       isActivePlaybackPanel,
       onMeasureClick,
       onNoteDrag,
@@ -106,13 +100,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const osmdContainerRef = useRef<HTMLDivElement>(null);
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
-    /** 音符級游標已 advance 過的 onset 步數 (從 reset() 後計算).
-     * 若 playbackOnsetIndex < cursorStepRef → 需要 reset 重來; > 則增量 next(). */
-    const cursorStepRef = useRef<number>(-1);
-    /** 上次音符級游標套色的 SVG 元素 (清除前一輪用) */
-    const highlightedNotesRef = useRef<Element[]>([]);
-    /** 重 render 後恢復 cursor 的 setTimeout id (給切譜時 cancel 用) */
-    const pendingRestoreRef = useRef<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [flashBox, setFlashBox] = useState<FlashBox | null>(null);
     /** 播放游標 — 自繪 measure 級 overlay (取代被深色背景蓋掉的 OSMD <img> cursor) */
@@ -225,29 +212,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
           if (allowAutoFit && isAutoFitReference) {
             scheduleAutoFit();
           }
-          // 重 render 後若仍在播放 (note 模式), 恢復 cursor 位置 + 高亮.
-          // 用 setTimeout 給 OSMD 一拍時間穩定 SVG 結構, 否則
-          // NotesUnderCursor() 可能拿到舊 DOM 參考.
-          if (
-            cursorMode === "note"
-            && playbackOnsetIndex != null
-            && playbackOnsetIndex >= 0
-          ) {
-            const restoreId = window.setTimeout(() => {
-              if (cancelled) return;
-              try {
-                cursorStepRef.current = -1;
-                advanceCursorToOnset(playbackOnsetIndex);
-                highlightNotesAtCursor();
-              } catch (err) {
-                console.warn(
-                  "[ScoreViewer] restore cursor after load failed:", err,
-                );
-              }
-            }, 50);
-            // 同次 effect 的 cleanup 會清掉 restoreId
-            pendingRestoreRef.current = restoreId;
-          }
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
           console.error("[ScoreViewer] OSMD render failed:", e);
@@ -257,10 +221,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       run();
       return () => {
         cancelled = true;
-        if (pendingRestoreRef.current != null) {
-          window.clearTimeout(pendingRestoreRef.current);
-          pendingRestoreRef.current = null;
-        }
       };
     }, [musicXmlContent, zoom, isRibbon, autoFit, isAutoFitReference]);
 
@@ -753,7 +713,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // 一律隱藏 OSMD 內建 cursor — 避免與自繪 overlay 重疊 / 殘影
       cursor?.hide?.();
       if (playbackMeasure == null || !isActivePlaybackPanel) {
-        clearNoteHighlights();
         setPlaybackBox(null);
         return;
       }
@@ -765,129 +724,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       scrollToMeasure(playbackMeasure, "smooth", false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [playbackMeasure, isActivePlaybackPanel, zoom]);
-
-    // 反應 playbackOnsetIndex — 音符級游標 (cursorMode === "note" 且本面板 active 才生效)
-    useEffect(() => {
-      if (cursorMode !== "note" || !isActivePlaybackPanel) {
-        clearNoteHighlights();
-        return;
-      }
-      if (playbackOnsetIndex == null || playbackOnsetIndex < 0) {
-        clearNoteHighlights();
-        return;
-      }
-      // 在 OSMD 還沒 load 完內容前不要 advance cursor (會 throw)
-      if (loadedXmlRef.current !== musicXmlContent) return;
-      try {
-        advanceCursorToOnset(playbackOnsetIndex);
-        highlightNotesAtCursor();
-      } catch (e) {
-        console.warn("[ScoreViewer] cursor advance failed:", e);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playbackOnsetIndex, cursorMode, isActivePlaybackPanel]);
-
-    /**
-     * 增量推進 OSMD cursor 到指定 onset step.
-     * - 若 target >= currentStep: 連續 next() 不 reset (O(delta))
-     * - 若 target < currentStep: reset() 再 next() target 次 (O(target))
-     */
-    const advanceCursorToOnset = (target: number) => {
-      const osmd = osmdRef.current;
-      if (!osmd) return;
-      const cursor = (osmd as unknown as {
-        cursor?: {
-          show: () => void;
-          hide: () => void;
-          reset: () => void;
-          next: () => void;
-          iterator?: { endReached?: boolean };
-          cursorOptions?: { follow?: boolean };
-          cursorElement?: HTMLElement;
-        };
-      }).cursor;
-      if (!cursor) return;
-      // === 3 層保險, 讓 OSMD 完全不要自己 scroll ===
-      try {
-        // 1) 物件層級 follow flag
-        if (cursor.cursorOptions) cursor.cursorOptions.follow = false;
-        // 2) OSMD 全局 FollowCursor
-        (osmd as unknown as { FollowCursor?: boolean }).FollowCursor = false;
-        // 3) Nuclear: 把 cursorElement.scrollIntoView 替換成 no-op
-        const el = cursor.cursorElement;
-        if (el && !(el as unknown as { _siNoOp?: boolean })._siNoOp) {
-          el.scrollIntoView = () => {};
-          (el as unknown as { _siNoOp?: boolean })._siNoOp = true;
-        }
-      } catch {
-        /* 不擋住主流程 */
-      }
-
-      try {
-        let cur = cursorStepRef.current;
-        if (target < cur || cur < 0) {
-          cursor.reset();
-          cur = 0;
-        }
-        let safety = 10000;
-        while (
-          cur < target
-          && !(cursor.iterator?.endReached ?? false)
-          && safety-- > 0
-        ) {
-          cursor.next();
-          cur++;
-        }
-        cursorStepRef.current = cur;
-        cursor.show();
-      } catch {
-        /* OSMD 跨版本可能 throw, 忽略 */
-      }
-    };
-
-    /** 把 cursor 所在的音符 SVG 元素加上 highlight class */
-    const highlightNotesAtCursor = () => {
-      const osmd = osmdRef.current;
-      if (!osmd) return;
-      const cursor = (osmd as unknown as {
-        cursor?: {
-          NotesUnderCursor?: () => any[];
-        };
-      }).cursor;
-      // 先清掉上輪 highlight
-      clearNoteHighlights();
-      if (!cursor?.NotesUnderCursor) return;
-      try {
-        const notes = cursor.NotesUnderCursor() ?? [];
-        const newElems: Element[] = [];
-        for (const n of notes) {
-          // GraphicalNote.getSVGGElement?() / SVGGElement / getSVGElement
-          const el: Element | null =
-            n?.getSVGGElement?.() ?? n?.SVGGElement
-              ?? n?.getSVGElement?.() ?? null;
-          if (el && el instanceof Element) {
-            el.classList.add("score-note-playing");
-            newElems.push(el);
-          }
-        }
-        highlightedNotesRef.current = newElems;
-      } catch {
-        /* ignore */
-      }
-    };
-
-    const clearNoteHighlights = () => {
-      for (const el of highlightedNotesRef.current) {
-        el.classList.remove("score-note-playing");
-      }
-      highlightedNotesRef.current = [];
-    };
-
-    // OSMD 重新 load 時, cursor step 歸零
-    useEffect(() => {
-      cursorStepRef.current = -1;
-      clearNoteHighlights();
-    }, [musicXmlContent]);
 
     /** 點擊 OSMD 容器 → 透過 MeasureList 的 bounding box 找出對應小節。
      *

@@ -183,18 +183,6 @@
           transform: rotate(360deg);
         }
       }
-
-      /* 音符級游標: 把目前播放的音符塗成琥珀黃 + 加 drop-shadow halo */
-      /* (參考 Sibelius/Dorico 風格, 比螢光綠優雅且不撞色) */
-      .score-note-playing {
-        fill: #fbbf24 !important;
-        filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.7));
-        transition: filter 80ms ease-out;
-      }
-      .score-note-playing * {
-        fill: #fbbf24 !important;
-        stroke: #fbbf24 !important;
-      }
     </style>
   </head>
   <body>
