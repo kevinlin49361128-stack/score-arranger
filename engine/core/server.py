@@ -129,6 +129,19 @@ def _session(params: dict[str, Any]) -> _SessionView:
     return _SessionView(sid)
 
 
+def _dbg(tag: str, **kv: Any) -> None:
+    """臨時除錯日誌 — 診斷「改編第二首後播放到舊曲」bug。診斷完移除。"""
+    try:
+        import time
+        line = f"{time.strftime('%H:%M:%S')} [{tag}] " + " ".join(
+            f"{k}={v!r}" for k, v in kv.items()
+        )
+        with open("/tmp/score-arranger-debug.log", "a") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
+
 def _session_disk_path(session_id: str) -> _Path:
     return _SESSION_DIR / f"{session_id}.json"
 
@@ -864,6 +877,12 @@ def _method_arrange(params: dict[str, Any]) -> dict:
 
     # 儲存目前 arrangement 給 apply_suggestion 後續使用
     sess.current_arrangement = arrangement
+    _dbg(
+        "arrange", sid=params.get("session_id"), path=params.get("path"),
+        arr_id=id(arrangement),
+        n_parts=len(arrangement.target_score.parts)
+        if arrangement.target_score else 0,
+    )
     _persist_session(params.get("session_id"))
 
     return {
@@ -2145,6 +2164,11 @@ def _method_to_midi(params: dict[str, Any]) -> dict:
             or sess.current_arrangement.target_score is None:
         raise ValueError("尚無 arrangement")
 
+    _dbg(
+        "to_midi", sid=params.get("session_id"),
+        arr_id=id(sess.current_arrangement),
+        n_parts=len(sess.current_arrangement.target_score.parts),
+    )
     from core.ir_to_music21 import ir_to_music21
     m21 = ir_to_music21(sess.current_arrangement.target_score)
 
