@@ -31,7 +31,6 @@ import { TranscribePanel } from "./components/TranscribePanel";
 import { TabStrip } from "./components/TabStrip";
 import { Toolbar } from "./components/Toolbar";
 import { VariantBar } from "./components/VariantBar";
-import { useScrollSync } from "./hooks/useScrollSync";
 import { useSessionStore } from "./stores/sessionStore";
 import { t as tr, useLocale } from "./utils/i18n";
 import { diffMeasures } from "./utils/measureDiff";
@@ -171,7 +170,6 @@ export default function App() {
   const setHighlightedMeasure = useSessionStore(
     (s) => s.setHighlightedMeasure,
   );
-  const { sourceRef, targetRef } = useScrollSync();
   // target 譜面點選 → 同時打開 MeasureEditor
   const [editorMeasure, setEditorMeasure] = useState<number | null>(null);
   const [pitchHint, setPitchHint] = useState<number | null>(null);
@@ -423,7 +421,6 @@ export default function App() {
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
               <ScoreViewer
-                ref={sourceRef}
                 label={sourceLabel}
                 musicXmlContent={sourceMusicXML}
                 highlightedMeasure={highlightedMeasure}
@@ -462,7 +459,6 @@ export default function App() {
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
               <ScoreViewer
-                ref={targetRef}
                 label={
                   arrangement
                     ? tr("app.panel.targetLabel.result", {
