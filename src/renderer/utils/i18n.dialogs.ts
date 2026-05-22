@@ -124,9 +124,9 @@ export const DIALOG_STRINGS: BiDict = {
     "zh-TW": "版本", en: "Version", ja: "バージョン",
   },
   "about.overview.versionLine": {
-    "zh-TW": "0.1.0 — © 2026 Kevin Lin · GPL-3.0",
-    en: "0.1.0 — © 2026 Kevin Lin · GPL-3.0",
-    ja: "0.1.0 — © 2026 Kevin Lin · GPL-3.0",
+    "zh-TW": "0.1.1 — © 2026 Kevin Lin · GPL-3.0",
+    en: "0.1.1 — © 2026 Kevin Lin · GPL-3.0",
+    ja: "0.1.1 — © 2026 Kevin Lin · GPL-3.0",
   },
 
   // === About: 第三方授權 ===
