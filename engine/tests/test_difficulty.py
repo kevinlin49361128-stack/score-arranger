@@ -143,7 +143,7 @@ class TestDifficulty:
             "factors", "raw_score", "note_count", "chord_count",
         }
         assert set(out["factors"].keys()) == {
-            "range", "density", "chord", "rhythm",
+            "range", "density", "chord", "rhythm", "technique",
         }
 
     def test_score_difficulty_returns_per_part(self):
@@ -171,9 +171,76 @@ class TestDifficultyLabels:
                 part_id="t", instrument_id="violin",
                 score_1_to_5=score,
                 range_factor=0, density_factor=0,
-                chord_factor=0, rhythm_factor=0,
+                chord_factor=0, rhythm_factor=0, technique_factor=0,
                 raw_score=0, note_count=0, chord_count=0,
             )
             assert d.label() == expected, (
                 f"score={score} expected {expected}, got {d.label()}"
             )
+
+
+class TestTechniqueFactor:
+    """Factor 5 — technique (高把位 / 困難弓法 / 多音弦樂和弦)"""
+
+    def test_high_position_raises_technique(self):
+        # 小提琴最高空弦 E5=76, 高把位門檻 = 76+12 = 88; 90 以上算高把位
+        part = _make_simple_part(
+            [(90, (1, 1)), (92, (1, 1)), (94, (1, 1)), (96, (1, 1))],
+            instrument="violin",
+        )
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor > 0.0
+
+    def test_low_position_no_technique(self):
+        # 全在低把位、無特殊弓法 → technique 0
+        part = _make_simple_part(
+            [(69, (1, 1)), (71, (1, 1)), (72, (1, 1))],
+            instrument="violin",
+        )
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor == 0.0
+
+    def test_demanding_articulation_raises_technique(self):
+        events = [
+            NoteEvent(
+                pitch=Pitch(69, "A4"), duration=Fraction(1, 1),
+                onset=Fraction(i), articulations=["spiccato"],
+            )
+            for i in range(4)
+        ]
+        voice = Voice(voice_id=1, events=events)
+        m = Measure(number=1, voices={1: voice}, time_signature=(4, 4))
+        part = Part(part_id="t", name_display="t",
+                    instrument_id="violin", measures=[m])
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor > 0.0
+
+    def test_triple_stop_raises_technique(self):
+        chord = ChordEvent(
+            pitches=[Pitch(60, "C4"), Pitch(64, "E4"), Pitch(67, "G4")],
+            duration=Fraction(1, 1), onset=Fraction(0),
+        )
+        voice = Voice(voice_id=1, events=[chord])
+        m = Measure(number=1, voices={1: voice}, time_signature=(4, 4))
+        part = Part(part_id="t", name_display="t",
+                    instrument_id="violin", measures=[m])
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor > 0.0
+
+    def test_non_string_position_not_counted(self):
+        # 長笛無空弦定義 → 高音不計入 technique 的高把位成分
+        part = _make_simple_part(
+            [(90, (1, 1)), (92, (1, 1))],
+            instrument="flute",
+        )
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor == 0.0
+
+    def test_technique_in_measure_breakdown(self):
+        part = _make_simple_part(
+            [(90, (1, 1)), (92, (1, 1)), (94, (1, 1)), (96, (1, 1))],
+            instrument="violin",
+        )
+        d = analyze_part_difficulty(part)
+        assert len(d.measures) == 1
+        assert d.measures[0].technique_factor > 0.0

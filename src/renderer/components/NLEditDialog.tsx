@@ -146,6 +146,8 @@ function describeOp(
       ? t("nlEdit.texture.arpeggio")
       : op.texture === "strum"
       ? t("nlEdit.texture.strum")
+      : op.texture === "octave"
+      ? t("nlEdit.texture.octave")
       : t("nlEdit.texture.block");
     if (op.target_difficulty != null) {
       return t("nlEdit.opEnrichTargeted", {

@@ -32,6 +32,7 @@ import { AboutDialog } from "./AboutDialog";
 import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog";
 import { ExportMenu } from "./ExportMenu";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
+import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
@@ -159,6 +160,7 @@ export function Toolbar() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const [nlEditOpen, setNlEditOpen] = useState(false);
+  const [boostOpen, setBoostOpen] = useState(false);
   // 改編選項 popover (自動修復 / 技術水平 / 風格)
   const [arrangeOptsOpen, setArrangeOptsOpen] = useState(false);
   const arrangeOptsRef = useRef<HTMLDivElement>(null);
@@ -872,6 +874,14 @@ export function Toolbar() {
       >
         {tr("toolbar.nlEdit")}
       </button>
+      <button
+        onClick={() => setBoostOpen(true)}
+        style={btnBase}
+        disabled={!arrangement || isLoading}
+        title={tr("toolbar.boost.title")}
+      >
+        {tr("toolbar.boost")}
+      </button>
 
       <Sep />
 
@@ -1127,6 +1137,9 @@ export function Toolbar() {
         <LLMSettingsDialog onClose={() => setLlmSettingsOpen(false)} />
       )}
       {nlEditOpen && <NLEditDialog onClose={() => setNlEditOpen(false)} />}
+      {boostOpen && (
+        <DifficultyBoostDialog onClose={() => setBoostOpen(false)} />
+      )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog
           initial={customPlayers ?? undefined}

@@ -262,7 +262,7 @@ declare global {
     source_part_id?: string;
     target_part_id?: string;
     density?: "light" | "medium" | "full";
-    texture?: "block" | "arpeggio" | "strum";
+    texture?: "block" | "arpeggio" | "strum" | "octave";
     target_difficulty?: number;
     reason: string;
   }
@@ -363,6 +363,7 @@ declare global {
       density: number;
       chord: number;
       rhythm: number;
+      technique: number;
     };
     raw_score: number;
     note_count: number;
@@ -377,6 +378,7 @@ declare global {
     density: number;
     chord: number;
     rhythm: number;
+    technique: number;
     note_count: number;
   }
 }

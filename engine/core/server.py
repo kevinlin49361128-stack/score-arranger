@@ -1504,7 +1504,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             if density not in ("light", "medium", "full"):
                 raise ValueError(f"op #{i}: 無效 density {density!r}")
             texture = op.get("texture", "block")
-            if texture not in ("block", "arpeggio", "strum"):
+            if texture not in ("block", "arpeggio", "strum", "octave"):
                 raise ValueError(f"op #{i}: 無效 texture {texture!r}")
             td = op.get("target_difficulty")
             if td is not None and not (
@@ -1547,6 +1547,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                 density = op.get("density", "medium")
             changed = enrich_part(
                 part.measures, src_score, m_start, m_end, density, texture,
+                part.instrument_id,
             )
             results.append({
                 "op": kind,

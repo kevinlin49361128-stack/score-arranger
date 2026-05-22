@@ -298,7 +298,7 @@ export interface LLMEditOp {
   source_part_id?: string;
   target_part_id?: string;
   density?: "light" | "medium" | "full";
-  texture?: "block" | "arpeggio" | "strum";
+  texture?: "block" | "arpeggio" | "strum" | "octave";
   target_difficulty?: number;
   reason: string;
 }
@@ -338,9 +338,10 @@ const EDIT_PLAN_SYSTEM_PROMPT =
 6. enrich — 把區間內稀疏的旋律單音加厚成和弦
    { "op": "enrich", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "density": <string>, "texture": <string>, "target_difficulty": <int 或省略>, "reason": <string> }
    density: "light" (只加在第一拍) / "medium" (整數拍, 預設) / "full" (每個音都加)
-   texture: "block" (方塊和弦, 預設) / "arpeggio" (琶音) / "strum" (刷弦)
+   texture: "block" (方塊和弦, 預設) / "arpeggio" (琶音) / "strum" (刷弦) / "octave" (八度疊置)
    target_difficulty: 選填 1-5。使用者說「加到某難度 / 變難一點 / 提高難度」時填; 填了系統會自動挑 density (此時 density 可省略)。
    適用情境: 使用者覺得某聲部「和弦太少 / 太單薄 / 太空 / 不夠難 / 想加厚加豐富」, 或想要琶音 / 刷弦織體。
+   octave 織體: 把旋律音疊上低八度成八度雙音 — 弦樂 (小提琴等) 想加技巧難度 / 想要八度時用。
    和弦音取自原曲同一時間點的實際和聲 (不會亂編), 並自動過樂器可演奏性檢查;
    只對未鎖定的旋律單音生效, 低音與既有和弦不動。
 
@@ -422,7 +423,8 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
         op.density = (o.density === "light" || o.density === "full")
           ? o.density
           : "medium";
-        op.texture = (o.texture === "arpeggio" || o.texture === "strum")
+        op.texture = (o.texture === "arpeggio" || o.texture === "strum"
+          || o.texture === "octave")
           ? o.texture
           : "block";
         if (

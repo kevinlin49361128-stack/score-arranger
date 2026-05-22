@@ -192,3 +192,74 @@ class TestChooseDensity:
             NoteEvent(pitch=_p(72), duration=Fraction(4), onset=Fraction(0)),
         ])
         assert choose_density(part, src, 1, 1, 5.0, "block") == "full"
+
+
+class TestOctaveTexture:
+    """Phase D — octave 織體 (八度疊置)"""
+
+    def test_octave_doubles_melody(self):
+        # 小提琴旋律單音 A5(81) → 八度雙音 A4(69)+A5(81)
+        src = _src_with_chord([48, 52, 55])  # octave 不查 source
+        measures = _guitar_measure([
+            NoteEvent(pitch=_p(81), duration=Fraction(4), onset=Fraction(0)),
+        ])
+        changed = enrich_part(measures, src, 1, 1, "full", "octave", "violin")
+        assert changed == 1
+        ev = measures[0].voices[1].events[0]
+        assert isinstance(ev, ChordEvent)
+        midis = sorted(p.midi_number for p in ev.pitches)
+        assert midis == [69, 81]
+
+    def test_octave_result_violin_playable(self):
+        src = _src_with_chord([48, 52, 55])
+        measures = _guitar_measure([
+            NoteEvent(pitch=_p(81), duration=Fraction(4), onset=Fraction(0)),
+        ])
+        enrich_part(measures, src, 1, 1, "full", "octave", "violin")
+        ev = measures[0].voices[1].events[0]
+        assert isinstance(ev, ChordEvent)
+        from core.instruments.violin import check_violin_chord
+        assert check_violin_chord(list(ev.pitches)).severity != "error"
+
+    def test_octave_does_not_need_source_harmony(self):
+        # source 在該點完全沒音 — octave 仍應加料 (它不查 source)
+        src_part = Part(
+            part_id="s", name_display="S", instrument_id="violin",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[
+                    RestEvent(duration=Fraction(4), onset=Fraction(0)),
+                ])},
+            )],
+        )
+        src = Score(metadata={}, movements=[], parts=[src_part])
+        measures = _guitar_measure([
+            NoteEvent(pitch=_p(81), duration=Fraction(4), onset=Fraction(0)),
+        ])
+        changed = enrich_part(measures, src, 1, 1, "full", "octave", "violin")
+        assert changed == 1
+
+    def test_octave_too_low_skipped(self):
+        # 旋律音 = 小提琴最低音 G3(55), 下方塞不下八度 → 略過
+        src = _src_with_chord([48, 52, 55])
+        measures = _guitar_measure([
+            NoteEvent(pitch=_p(55), duration=Fraction(4), onset=Fraction(0)),
+        ])
+        changed = enrich_part(measures, src, 1, 1, "full", "octave", "violin")
+        assert changed == 0
+
+
+class TestInstrumentAware:
+    """Phase D — 樂器感知和弦可演奏性檢查"""
+
+    def test_violin_block_uses_violin_checker(self):
+        # 小提琴: block 織體補出的和弦必須過 check_violin_chord
+        src = _src_with_chord([60, 64, 67])  # C major
+        measures = _guitar_measure([
+            NoteEvent(pitch=_p(79), duration=Fraction(4), onset=Fraction(0)),
+        ])
+        changed = enrich_part(measures, src, 1, 1, "full", "block", "violin")
+        if changed:
+            ev = measures[0].voices[1].events[0]
+            from core.instruments.violin import check_violin_chord
+            assert check_violin_chord(list(ev.pitches)).severity != "error"

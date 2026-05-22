@@ -243,6 +243,9 @@ export const EDITING_STRINGS: BiDict = {
   "nlEdit.texture.strum": {
     "zh-TW": "刷弦", en: "strum", ja: "ストラム",
   },
+  "nlEdit.texture.octave": {
+    "zh-TW": "八度疊置", en: "octave doubling", ja: "オクターブ重ね",
+  },
   "nlEdit.density.light": {
     "zh-TW": "輕度・只加強拍", en: "light · downbeats only",
     ja: "軽め・強拍のみ",
@@ -254,6 +257,122 @@ export const EDITING_STRINGS: BiDict = {
   "nlEdit.density.full": {
     "zh-TW": "濃密・每個音", en: "full · every note",
     ja: "濃密・すべての音",
+  },
+  // ── DifficultyBoostDialog (加難度面板) ────────────────────────────────
+  "boost.title": {
+    "zh-TW": "💪 加難度", en: "💪 Boost Difficulty",
+    ja: "💪 難度アップ",
+  },
+  "boost.intro": {
+    "zh-TW": "選一個聲部、一段小節範圍,挑想加的技巧手法 —— 全部會經樂器"
+      + "可演奏性檢查,套用後可用 ↶ 復原。",
+    en: "Pick a part, a measure range and the techniques to add. "
+      + "Everything passes the instrument playability check; "
+      + "use ↶ to undo after applying.",
+    ja: "パート・小節範囲・追加したい技法を選びます。すべて楽器の"
+      + "演奏可能性チェックを通り、適用後は ↶ で取り消せます。",
+  },
+  "boost.partLabel": { "zh-TW": "聲部", en: "Part", ja: "パート" },
+  "boost.rangeLabel": {
+    "zh-TW": "小節範圍", en: "Measure range", ja: "小節範囲",
+  },
+  "boost.rangeTo": { "zh-TW": "到", en: "to", ja: "〜" },
+  "boost.techLabel": {
+    "zh-TW": "加難度手法", en: "Techniques", ja: "技法",
+  },
+  "boost.tech.octave": {
+    "zh-TW": "八度疊置", en: "Octave doubling", ja: "オクターブ重ね",
+  },
+  "boost.tech.octaveDesc": {
+    "zh-TW": "把旋律音疊上低八度,成八度雙音",
+    en: "Doubles each melody note an octave below",
+    ja: "旋律音を1オクターブ下に重ねて重音にする",
+  },
+  "boost.tech.doubleStop": {
+    "zh-TW": "雙音和弦", en: "Double-stops", ja: "重音コード",
+  },
+  "boost.tech.doubleStopDesc": {
+    "zh-TW": "依原曲和聲補相鄰弦的和聲音",
+    en: "Adds harmony notes on adjacent strings from the original",
+    ja: "原曲の和声から隣接弦の和声音を補う",
+  },
+  "boost.tech.higherPosition": {
+    "zh-TW": "移高把位", en: "Higher position", ja: "高ポジション",
+  },
+  "boost.tech.higherPositionDesc": {
+    "zh-TW": "整段升高八度,左手把位隨之提高",
+    en: "Shifts the passage up an octave, raising the playing position",
+    ja: "区間を1オクターブ上げ、運指ポジションを高くする",
+  },
+  "boost.tech.bowing": {
+    "zh-TW": "困難弓法", en: "Demanding bowing", ja: "難しい弓法",
+  },
+  "boost.tech.bowingDesc": {
+    "zh-TW": "加上 spiccato（跳弓）演奏法",
+    en: "Adds spiccato (bouncing bow) articulation",
+    ja: "スピッカート（跳弓）の奏法を追加",
+  },
+  "boost.intensityLabel": {
+    "zh-TW": "炫技強度", en: "Intensity", ja: "強度",
+  },
+  "boost.intensity.conservative": {
+    "zh-TW": "保守", en: "Conservative", ja: "控えめ",
+  },
+  "boost.intensity.balanced": {
+    "zh-TW": "平衡", en: "Balanced", ja: "バランス",
+  },
+  "boost.intensity.virtuosic": {
+    "zh-TW": "炫技", en: "Virtuosic", ja: "ヴィルトゥオーゾ",
+  },
+  "boost.currentDifficulty": {
+    "zh-TW": "目前難度", en: "Current difficulty", ja: "現在の難度",
+  },
+  "boost.apply": {
+    "zh-TW": "套用加難度", en: "Apply", ja: "適用",
+  },
+  "boost.applying": {
+    "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
+  },
+  "boost.applied": {
+    "zh-TW": "已套用 {count} 種手法,改動 {touched} 處。可用 ↶ 復原。",
+    en: "Applied {count} technique(s), {touched} change(s). "
+      + "Use ↶ to undo.",
+    ja: "{count} 種の技法を適用、{touched} 箇所を変更。↶ で取り消せます。",
+  },
+  "boost.appliedNoChange": {
+    "zh-TW": "已套用,但這個範圍沒有可加難度的音符 (可能已是和弦 / 太低 / 已鎖定)。",
+    en: "Applied, but no notes in this range could be boosted "
+      + "(already chords / too low / locked).",
+    ja: "適用しましたが、この範囲に難度を上げられる音符がありません"
+      + "（既にコード / 低すぎ / ロック済み）。",
+  },
+  "boost.noTech": {
+    "zh-TW": "請至少勾選一種手法。",
+    en: "Select at least one technique.",
+    ja: "技法を1つ以上選んでください。",
+  },
+  "boost.failed": {
+    "zh-TW": "套用失敗", en: "Apply failed", ja: "適用に失敗しました",
+  },
+  "boost.reason.octave": {
+    "zh-TW": "八度疊置 — 加技巧難度",
+    en: "Octave doubling — add technical difficulty",
+    ja: "オクターブ重ね — 技巧的難度を追加",
+  },
+  "boost.reason.doubleStop": {
+    "zh-TW": "補雙音和弦 — 依原曲和聲加厚",
+    en: "Double-stops — enrich from original harmony",
+    ja: "重音 — 原曲の和声から加厚",
+  },
+  "boost.reason.higherPosition": {
+    "zh-TW": "升高八度 — 提高演奏把位",
+    en: "Up an octave — raise the playing position",
+    ja: "1オクターブ上 — 演奏ポジションを高くする",
+  },
+  "boost.reason.bowing": {
+    "zh-TW": "加 spiccato 跳弓 — 提高弓法難度",
+    en: "Spiccato — demanding bowing",
+    ja: "スピッカート — 弓法の難度アップ",
   },
   // ── LLMSettingsDialog ─────────────────────────────────────────────────
   "llmSettings.title": {

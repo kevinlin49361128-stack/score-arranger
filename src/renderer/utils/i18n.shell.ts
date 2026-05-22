@@ -129,6 +129,16 @@ export const SHELL_STRINGS: BiDict = {
     ja: "自然言語で AI にアレンジ譜を編集してもらう "
       + "(移調 / 奏法 / 強弱)",
   },
+  "toolbar.boost": {
+    "zh-TW": "💪 加難度", en: "💪 Boost", ja: "💪 難度アップ",
+  },
+  "toolbar.boost.title": {
+    "zh-TW": "為某個聲部加技巧難度 (八度疊置 / 雙音 / 移高把位 / 困難弓法)",
+    en: "Add technical difficulty to a part "
+      + "(octave doubling / double-stops / higher position / demanding bowing)",
+    ja: "パートに技巧的な難度を追加 "
+      + "(オクターブ重ね / 重音 / 高ポジション / 難しい弓法)",
+  },
 
   // === Toolbar: 改編選項 popover ===
   "toolbar.arrangeOpts.heading": {
