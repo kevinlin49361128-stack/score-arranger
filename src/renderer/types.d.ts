@@ -250,7 +250,8 @@ declare global {
   }
 
   interface LLMEditOp {
-    op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign";
+    op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
+      | "enrich";
     part_id: string;
     measure_start: number;
     measure_end: number;
@@ -260,6 +261,7 @@ declare global {
     dynamic?: string;
     source_part_id?: string;
     target_part_id?: string;
+    density?: "light" | "medium" | "full";
     reason: string;
   }
 

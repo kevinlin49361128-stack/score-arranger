@@ -222,6 +222,24 @@ export const EDITING_STRINGS: BiDict = {
     en: "{part} · {range} · set dynamic to {dynamic}",
     ja: "{part}・{range}・強弱を {dynamic} に設定",
   },
+  "nlEdit.opEnrich": {
+    "zh-TW": "{part}・{range}・依原曲和聲加厚成方塊和弦 ({density})",
+    en: "{part} · {range} · enrich into block chords from the "
+      + "original harmony ({density})",
+    ja: "{part}・{range}・原曲の和声からブロックコードに加厚 ({density})",
+  },
+  "nlEdit.density.light": {
+    "zh-TW": "輕度・只加強拍", en: "light · downbeats only",
+    ja: "軽め・強拍のみ",
+  },
+  "nlEdit.density.medium": {
+    "zh-TW": "中度・整數拍", en: "medium · on the beat",
+    ja: "中程度・拍頭",
+  },
+  "nlEdit.density.full": {
+    "zh-TW": "濃密・每個音", en: "full · every note",
+    ja: "濃密・すべての音",
+  },
   // ── LLMSettingsDialog ─────────────────────────────────────────────────
   "llmSettings.title": {
     "zh-TW": "🤖 AI 模型設定",

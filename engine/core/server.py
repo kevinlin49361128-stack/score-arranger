@@ -1467,7 +1467,8 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
         if not isinstance(op, dict):
             raise ValueError(f"op #{i}: 格式錯誤")
         kind = op.get("op")
-        if kind not in ("transpose", "articulation", "dynamic", "rest"):
+        if kind not in ("transpose", "articulation", "dynamic", "rest",
+                        "enrich"):
             raise ValueError(f"op #{i}: 未知 op 類型 {kind!r}")
         if part_by_id(op.get("part_id", "")) is None:
             raise ValueError(
@@ -1498,6 +1499,14 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             if op.get("dynamic") not in _NL_DYNAMICS:
                 raise ValueError(
                     f"op #{i}: 無效 dynamic {op.get('dynamic')!r}")
+        elif kind == "enrich":
+            density = op.get("density", "medium")
+            if density not in ("light", "medium", "full"):
+                raise ValueError(f"op #{i}: 無效 density {density!r}")
+            if sess.current_arrangement.source_score is None:
+                raise ValueError(
+                    f"op #{i}: enrich 需要 source_score "
+                    "(舊版 .sarr 沒有, 請重新 arrange)")
 
     # ── 階段二: 一次 history snapshot, 然後套用 ───────────────────────
     new_history = list(sess.history)
@@ -1508,12 +1517,28 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
     sess.redo_stack = []
 
     results: list[dict] = []
+    src_score = sess.current_arrangement.source_score
     for op in ops:
         kind = op["op"]
         part = part_by_id(op["part_id"])
         m_start = int(op["measure_start"])
         m_end = int(op["measure_end"])
         changed = 0
+        if kind == "enrich":
+            # additive 操作 — 把旋律單音擴成方塊和弦 (見 core/enrich.py)
+            from core.enrich import enrich_part
+            changed = enrich_part(
+                part.measures, src_score, m_start, m_end,
+                op.get("density", "medium"),
+            )
+            results.append({
+                "op": kind,
+                "part_id": op["part_id"],
+                "measure_start": m_start,
+                "measure_end": m_end,
+                "changed": changed,
+            })
+            continue
         for measure in part.measures:
             if not m_start <= measure.number <= m_end:
                 continue

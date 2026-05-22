@@ -286,7 +286,8 @@ export interface LLMEditPlanContext {
 }
 
 export interface LLMEditOp {
-  op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign";
+  op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
+    | "enrich";
   part_id: string;
   measure_start: number;
   measure_end: number;
@@ -296,6 +297,7 @@ export interface LLMEditOp {
   dynamic?: string;
   source_part_id?: string;
   target_part_id?: string;
+  density?: "light" | "medium" | "full";
   reason: string;
 }
 
@@ -308,7 +310,7 @@ export interface LLMEditPlan {
 const EDIT_PLAN_SYSTEM_PROMPT =
   `你是 Score Arranger 的「自然語言改譜」助手。使用者用自然語言描述想對改編後的譜做什麼修改, 你要把它轉成「可直接套用的結構化操作」。
 
-你只能使用以下五種操作 (operation):
+你只能使用以下六種操作 (operation):
 
 1. transpose — 移調區間內所有音符 / 和弦
    { "op": "transpose", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "semitones": <int>, "reason": <string> }
@@ -330,6 +332,13 @@ const EDIT_PLAN_SYSTEM_PROMPT =
    { "op": "reassign", "source_part_id": <string>, "target_part_id": <string>, "reason": <string> }
    source_part_id 必須來自「來源聲部」清單; target_part_id 必須來自「可用聲部」清單。
    注意: reassign 會以來源重建整個目標譜, 不與其他操作合併為同一次復原。
+
+6. enrich — 把區間內稀疏的旋律單音加厚成方塊和弦
+   { "op": "enrich", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "density": <string>, "reason": <string> }
+   density: "light" (只加在第一拍) / "medium" (整數拍, 預設) / "full" (每個音都加)
+   適用情境: 使用者覺得某聲部「和弦太少 / 太單薄 / 太空 / 不夠難 / 想加厚加豐富」。
+   和弦音取自原曲同一時間點的實際和聲 (不會亂編), 並自動過樂器可演奏性檢查;
+   只對未鎖定的旋律單音生效, 低音與既有和弦不動。
 
 規則:
 - 操作 1-4 的 part_id 必須完全等於「可用聲部」清單中列出的值, 不可自創或猜測。
@@ -405,6 +414,10 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
         op.target_part_id = typeof o.target_part_id === "string"
           ? o.target_part_id
           : "";
+      } else if (o.op === "enrich") {
+        op.density = (o.density === "light" || o.density === "full")
+          ? o.density
+          : "medium";
       }
       // "rest" 不需額外欄位
       return op;

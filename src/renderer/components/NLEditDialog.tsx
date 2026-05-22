@@ -78,6 +78,7 @@ const OP_ICON: Record<LLMEditOp["op"], string> = {
   dynamic: "𝆑",
   rest: "𝄽",
   reassign: "⇄",
+  enrich: "✚",
 };
 
 /** 把一個 op 轉成人類可讀的描述。 */
@@ -134,6 +135,18 @@ function describeOp(
   }
   if (op.op === "rest") {
     return t("nlEdit.opRest", { part: partName, range });
+  }
+  if (op.op === "enrich") {
+    const densityLabel = op.density === "light"
+      ? t("nlEdit.density.light")
+      : op.density === "full"
+      ? t("nlEdit.density.full")
+      : t("nlEdit.density.medium");
+    return t("nlEdit.opEnrich", {
+      part: partName,
+      range,
+      density: densityLabel,
+    });
   }
   return t("nlEdit.opDynamic", {
     part: partName,
