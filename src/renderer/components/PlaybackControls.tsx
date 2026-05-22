@@ -927,32 +927,29 @@ export function PlaybackControls(
         />
       </div>
       {!compact && (
-        <>
-          <label
-            title={
-              sampleLoadFailedRef.current
-                ? t("playback.samples.failed")
-                : t("playback.samples.hint")
-            }
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 11,
-              color: "var(--fg-muted)",
-              marginLeft: 4,
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={useSamples}
-              onChange={(e) => setUseSamples(e.target.checked)}
-              disabled={state !== "idle"}
-            />
-            {t("playback.samples.label")}
-          </label>
-          <CursorModeToggle />
-        </>
+        <label
+          title={
+            sampleLoadFailedRef.current
+              ? t("playback.samples.failed")
+              : t("playback.samples.hint")
+          }
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 11,
+            color: "var(--fg-muted)",
+            marginLeft: 4,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={useSamples}
+            onChange={(e) => setUseSamples(e.target.checked)}
+            disabled={state !== "idle"}
+          />
+          {t("playback.samples.label")}
+        </label>
       )}
 
       {!compact && (
@@ -1031,30 +1028,4 @@ function base64ToUint8Array(b64: string): Uint8Array {
 
 
 /** 游標精細度切換: 一鈕雙態 (note ↔ measure), persist 在 localStorage. */
-function CursorModeToggle() {
-  useLocale();
-  const mode = useSessionStore((s) => s.cursorMode);
-  const setMode = useSessionStore((s) => s.setCursorMode);
-  const isNote = mode === "note";
-  return (
-    <button
-      onClick={() => setMode(isNote ? "measure" : "note")}
-      title={isNote
-        ? t("playback.cursorMode.noteHint")
-        : t("playback.cursorMode.measureHint")}
-      style={{
-        padding: "4px 8px",
-        fontSize: 11,
-        border: "1px solid var(--button-border)",
-        background: isNote ? "var(--accent)" : "var(--button-bg)",
-        color: isNote ? "var(--accent-fg)" : "var(--button-fg)",
-        borderRadius: 4,
-        cursor: "pointer",
-        marginLeft: 6,
-        fontWeight: 600,
-      }}
-    >
-      {isNote ? t("playback.cursorMode.note") : t("playback.cursorMode.measure")}
-    </button>
-  );
-}
+// (CursorModeToggle 已移除 — 游標一律 measure 級, 見 sessionStore.cursorMode)

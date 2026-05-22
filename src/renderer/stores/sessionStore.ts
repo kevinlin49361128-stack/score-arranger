@@ -399,13 +399,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setPlaybackOnsetIndex: (i) => set({ playbackOnsetIndex: i }),
   activePlaybackSide: null,
   setActivePlaybackSide: (s) => set({ activePlaybackSide: s }),
-  cursorMode: (() => {
-    try {
-      const raw = window.localStorage?.getItem("score-arranger.cursor-mode");
-      if (raw === "measure" || raw === "note") return raw;
-    } catch { /* ignore */ }
-    return "note" as const;  // 預設音符級 (高品質)
-  })(),
+  // 游標一律 measure 級。note 級 (MIDI onset index → OSMD cursor 步數) 會因
+  // MIDI 略過休止符、OSMD cursor 卻在休止符停步而逐漸脫鉤, 造成游標位置偏移,
+  // 故移除該模式, 一律用穩定的 measure 級定位。
+  cursorMode: "measure",
   setCursorMode: (m) => {
     try {
       window.localStorage?.setItem("score-arranger.cursor-mode", m);
