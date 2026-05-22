@@ -398,9 +398,10 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       if (!svg || !box) {
         const osmd = osmdRef.current;
         const measureList = (osmd as unknown as {
-          GraphicalMusicSheet?: { MeasureList?: unknown[][] };
-        }).GraphicalMusicSheet?.MeasureList;
-        const total = measureList?.[0]?.length ?? 1;
+          GraphicSheet?: { MeasureList?: unknown[][] };
+        }).GraphicSheet?.MeasureList;
+        // MeasureList 結構是 [measureIndex][staffIndex] — 外層長度才是小節數
+        const total = measureList?.length ?? 1;
         const ratio = (measureNumber - 1) / total;
         if (isRibbon) {
           container.scrollTo({
@@ -495,21 +496,23 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       measureNumber: number,
     ): { left: number; top: number; width: number; height: number } | null => {
       const osmd = osmdRef.current as unknown as {
-        GraphicalMusicSheet?: { MeasureList?: any[][] };
+        GraphicSheet?: { MeasureList?: any[][] };
         EngravingRules?: { UnitInPixels?: number };
         zoom?: number;
       } | null;
-      const measureList = osmd?.GraphicalMusicSheet?.MeasureList;
-      if (!measureList?.[0]) return null;
+      const measureList = osmd?.GraphicSheet?.MeasureList;
+      // OSMD MeasureList 結構是 [measureIndex][staffIndex] —
+      // 外層 = 小節, 內層 = 各譜表。先前誤當成 [staff][measure] 反過來索引,
+      // 害游標/捲動/熱圖全錯位 (第 5 小節以後直接 out-of-range 變 null)。
+      if (!measureList?.length) return null;
       const idx = measureNumber - 1;
-      if (idx < 0 || idx >= measureList[0].length) return null;
+      if (idx < 0 || idx >= measureList.length) return null;
       const unitInPixel = osmd?.EngravingRules?.UnitInPixels ?? 10;
       const zoomVal = osmd?.zoom ?? 1;
       const ppu = unitInPixel * zoomVal;
       let minLeft = Infinity, minTop = Infinity;
       let maxRight = -Infinity, maxBottom = -Infinity;
-      for (const staff of measureList) {
-        const m: any = staff?.[idx];
+      for (const m of (measureList[idx] ?? []) as any[]) {
         const pos = m?.PositionAndShape;
         const abs = pos?.AbsolutePosition;
         const size = pos?.Size ?? pos?.BoundingRectangle;
@@ -538,16 +541,17 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
 
     const recomputeOverlayBoxes = () => {
       const osmd = osmdRef.current as unknown as {
-        GraphicalMusicSheet?: { MeasureList?: any[][] };
+        GraphicSheet?: { MeasureList?: any[][] };
         EngravingRules?: { UnitInPixels?: number };
         zoom?: number;
       } | null;
-      const measureList = osmd?.GraphicalMusicSheet?.MeasureList;
-      if (!measureList?.[0]) {
+      const measureList = osmd?.GraphicSheet?.MeasureList;
+      // MeasureList 結構: [measureIndex][staffIndex]
+      if (!measureList?.length) {
         setOverlayBoxes([]);
         return;
       }
-      const total = measureList[0].length;
+      const total = measureList.length;
       const unitInPixel = osmd?.EngravingRules?.UnitInPixels ?? 10;
       const zoomVal = osmd?.zoom ?? 1;
       const ppu = unitInPixel * zoomVal;
@@ -559,12 +563,11 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
         height: number;
       }> = [];
       for (let i = 0; i < total; i++) {
-        // union 所有 staff 的 bounding box
+        // union 該小節在所有譜表上的 bounding box
         let minLeft = Infinity, minTop = Infinity;
         let maxRight = -Infinity, maxBottom = -Infinity;
         let measureNum = i + 1;
-        for (const staff of measureList) {
-          const m: any = staff?.[i];
+        for (const m of (measureList[i] ?? []) as any[]) {
           const pos = m?.PositionAndShape;
           if (!pos) continue;
           const abs = pos.AbsolutePosition;
@@ -607,25 +610,25 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     /** 取得 measure 在 OSMD content 內的 bounding box (像素座標) */
     const getMeasureBox = (measureNumber: number): FlashBox | null => {
       const osmd = osmdRef.current as unknown as {
-        GraphicalMusicSheet?: { MeasureList?: any[][] };
+        GraphicSheet?: { MeasureList?: any[][] };
         EngravingRules?: { UnitInPixels?: number };
         zoom?: number;
       } | null;
-      const measureList = osmd?.GraphicalMusicSheet?.MeasureList;
-      if (!measureList?.[0]) return null;
+      const measureList = osmd?.GraphicSheet?.MeasureList;
+      // MeasureList 結構: [measureIndex][staffIndex]
+      if (!measureList?.length) return null;
       const idx = measureNumber - 1;
-      if (idx < 0 || idx >= measureList[0].length) return null;
+      if (idx < 0 || idx >= measureList.length) return null;
       const unitInPixel = osmd?.EngravingRules?.UnitInPixels ?? 10;
       const zoomVal = osmd?.zoom ?? 1;
       const ppu = unitInPixel * zoomVal;
 
-      // 收集所有 staff 上同一 measure idx 的 bounding box, 取 union
+      // 收集該小節在各譜表上的 bounding box, 取 union (得到整個小節的縱向切片)
       let minLeft = Infinity,
         minTop = Infinity,
         maxRight = -Infinity,
         maxBottom = -Infinity;
-      for (const staff of measureList) {
-        const m: any = staff?.[idx];
+      for (const m of (measureList[idx] ?? []) as any[]) {
         const pos = m?.PositionAndShape;
         if (!pos) continue;
         const abs = pos.AbsolutePosition;
@@ -771,38 +774,47 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       e: React.MouseEvent<HTMLDivElement>,
     ): { measure: number; approxPitch: number } | null => {
       const osmd = osmdRef.current as unknown as {
-        GraphicalMusicSheet?: { MeasureList?: any[][] };
+        GraphicSheet?: { MeasureList?: any[][] };
         EngravingRules?: { UnitInPixels?: number };
         zoom?: number;
       } | null;
-      const measureList = osmd?.GraphicalMusicSheet?.MeasureList;
+      const measureList = osmd?.GraphicSheet?.MeasureList;
       const osmdEl = osmdContainerRef.current;
-      if (!measureList?.[0] || !osmdEl) return null;
+      if (!measureList?.length || !osmdEl) return null;
       const r = osmdEl.getBoundingClientRect();
       const relX = e.clientX - r.left;
       const relY = e.clientY - r.top;
       const unitInPixel = osmd?.EngravingRules?.UnitInPixels ?? 10;
       const zoomVal = osmd?.zoom ?? 1;
       const ppu = unitInPixel * zoomVal;
-      const staff0 = measureList[0];
-      for (let i = 0; i < staff0.length; i++) {
-        const m: any = staff0[i];
-        const pos = m?.PositionAndShape;
-        const abs = pos?.AbsolutePosition;
-        const size = pos?.Size ?? pos?.BoundingRectangle;
-        if (!abs || !size) continue;
-        const left = abs.x * ppu;
-        const top = abs.y * ppu;
-        const w = (size.width ?? 10) * ppu;
-        const h = (size.height ?? 10) * ppu;
-        if (relX >= left && relX <= left + w
-            && relY >= top && relY <= top + h) {
-          const num = m?.MeasureNumber ?? (i + 1);
-          const ratio = h > 0
-            ? Math.max(0, Math.min(1, (relY - top) / h))
+      // MeasureList[measureIndex][staffIndex]: 逐小節 union 各譜表 box
+      for (let mi = 0; mi < measureList.length; mi++) {
+        let mLeft = Infinity, mTop = Infinity;
+        let mRight = -Infinity, mBottom = -Infinity;
+        let measureNum = mi + 1;
+        for (const m of (measureList[mi] ?? []) as any[]) {
+          const pos = m?.PositionAndShape;
+          const abs = pos?.AbsolutePosition;
+          const size = pos?.Size ?? pos?.BoundingRectangle;
+          if (!abs || !size) continue;
+          if (m?.MeasureNumber) measureNum = m.MeasureNumber;
+          const l = abs.x * ppu;
+          const t = abs.y * ppu;
+          const w = (size.width ?? 10) * ppu;
+          const h = (size.height ?? 10) * ppu;
+          mLeft = Math.min(mLeft, l);
+          mTop = Math.min(mTop, t);
+          mRight = Math.max(mRight, l + w);
+          mBottom = Math.max(mBottom, t + h);
+        }
+        if (!Number.isFinite(mLeft)) continue;
+        if (relX >= mLeft && relX <= mRight
+            && relY >= mTop && relY <= mBottom) {
+          const ratio = (mBottom - mTop) > 0
+            ? Math.max(0, Math.min(1, (relY - mTop) / (mBottom - mTop)))
             : 0.5;
           const approxPitch = Math.round(84 - ratio * 48);  // C6 → C2
-          return { measure: num, approxPitch };
+          return { measure: measureNum, approxPitch };
         }
       }
       return null;
@@ -813,13 +825,14 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       if (dragGhost && Math.abs(dragGhost.semitones) >= 1) return;
       if (!onMeasureClick || !osmdRef.current || !containerRef.current) return;
       const osmd = osmdRef.current as unknown as {
-        GraphicalMusicSheet?: { MeasureList?: any[][] };
+        GraphicSheet?: { MeasureList?: any[][] };
         EngravingRules?: { UnitInPixels?: number };
         zoom?: number;
       };
-      const measureList = osmd.GraphicalMusicSheet?.MeasureList;
-      if (!measureList?.[0]) return;
-      const total = measureList[0].length;
+      const measureList = osmd.GraphicSheet?.MeasureList;
+      // MeasureList 結構: [measureIndex][staffIndex]
+      if (!measureList?.length) return;
+      const total = measureList.length;
       if (total === 0) return;
 
       const osmdEl = osmdContainerRef.current;
@@ -836,53 +849,58 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       const zoom = osmd.zoom ?? 1;
       const pixelPerUnit = unitInPixel * zoom;
 
-      // 找到最近的 measure: 用 staff 0 (最上方聲部), 比對 x/y bounding box
-      const staff0 = measureList[0];
-      const candidates: Array<{ idx: number; distance: number }> = [];
-      for (let i = 0; i < staff0.length; i++) {
-        const m: any = staff0[i];
-        const pos = m?.PositionAndShape;
-        if (!pos) continue;
-        const abs = pos.AbsolutePosition;
-        const size = pos.Size ?? pos.BoundingRectangle ?? {};
-        if (!abs) continue;
-        const left = abs.x * pixelPerUnit;
-        const top = abs.y * pixelPerUnit;
-        const w = (size.width ?? 10) * pixelPerUnit;
-        const h = (size.height ?? 10) * pixelPerUnit;
+      // 找到最近的 measure: 逐小節 union 各譜表 box (MeasureList 結構是
+      // [measureIndex][staffIndex]), 比對 x/y bounding box。
+      const candidates: Array<{ num: number; distance: number }> = [];
+      for (let mi = 0; mi < measureList.length; mi++) {
+        let mLeft = Infinity, mTop = Infinity;
+        let mRight = -Infinity, mBottom = -Infinity;
+        let measureNum = mi + 1;
+        for (const m of (measureList[mi] ?? []) as any[]) {
+          const pos = m?.PositionAndShape;
+          if (!pos) continue;
+          const abs = pos.AbsolutePosition;
+          const size = pos.Size ?? pos.BoundingRectangle ?? {};
+          if (!abs) continue;
+          if (m?.MeasureNumber) measureNum = m.MeasureNumber;
+          const l = abs.x * pixelPerUnit;
+          const t = abs.y * pixelPerUnit;
+          const w = (size.width ?? 10) * pixelPerUnit;
+          const h = (size.height ?? 10) * pixelPerUnit;
+          mLeft = Math.min(mLeft, l);
+          mTop = Math.min(mTop, t);
+          mRight = Math.max(mRight, l + w);
+          mBottom = Math.max(mBottom, t + h);
+        }
+        if (!Number.isFinite(mLeft)) continue;
         // 在 bounding box 內 → 直接命中
         if (
-          relX >= left && relX <= left + w
-          && relY >= top && relY <= top + h
+          relX >= mLeft && relX <= mRight
+          && relY >= mTop && relY <= mBottom
         ) {
-          // 用 measure.MeasureNumber 若存在,否則 idx+1
-          const num = m?.MeasureNumber ?? (i + 1);
-          // 估算 y → MIDI pitch (top=高音, bottom=低音); 直接線性映 C6..C2
+          // 估算 y → MIDI pitch (top=高音, bottom=低音); 線性映 C6..C2
           const pitchTop = 84;     // C6
           const pitchBottom = 36;  // C2
-          const ratio = h > 0
-            ? Math.max(0, Math.min(1, (relY - top) / h))
+          const ratio = (mBottom - mTop) > 0
+            ? Math.max(0, Math.min(1, (relY - mTop) / (mBottom - mTop)))
             : 0.5;
           const approxPitch = Math.round(
             pitchTop - ratio * (pitchTop - pitchBottom),
           );
-          onMeasureClick(num, { approxPitch });
+          onMeasureClick(measureNum, { approxPitch });
           return;
         }
         // 不在內: 記錄最近距離 (歐式)
-        const cx = left + w / 2;
-        const cy = top + h / 2;
+        const cx = (mLeft + mRight) / 2;
+        const cy = (mTop + mBottom) / 2;
         candidates.push({
-          idx: i,
+          num: measureNum,
           distance: Math.hypot(relX - cx, relY - cy),
         });
       }
       if (candidates.length > 0) {
         candidates.sort((a, b) => a.distance - b.distance);
-        const closest = candidates[0];
-        const m: any = staff0[closest.idx];
-        const num = m?.MeasureNumber ?? (closest.idx + 1);
-        onMeasureClick(num);
+        onMeasureClick(candidates[0].num);
         return;
       }
 
