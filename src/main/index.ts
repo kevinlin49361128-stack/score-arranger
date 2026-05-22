@@ -11,6 +11,7 @@ import {
   applyEditOps,
   applySuggestion,
   arrangeScore,
+  closeSession,
   detectPhrases,
   editEvent,
   computeDifficulty,
@@ -28,6 +29,7 @@ import {
   reassignPart,
   redoEdit,
   saveProject,
+  setActiveSession,
   suggestTransposition,
   tagFunctions,
   toMidi,
@@ -223,15 +225,16 @@ function registerIpcHandlers(): void {
     ) => safeCall(() =>
       setMeasureArticulation(partId, measure, voiceId, articulation, mode)),
   );
-  ipcMain.handle("engine:setActiveSession", async (_evt, id: string | null) => {
-    const bridge = await import("./python-bridge");
-    bridge.setActiveSession(id);
+  // 注意: 此 handler 必須「同步」設定 activeSessionId — 不可有任何 await。
+  // python-bridge 已在檔案頂端靜態 import; 改用動態 `await import()` 會讓
+  // handler 在設定 session 前先 yield 一個 microtask, 期間後續的 arrange /
+  // to_midi handler 會搶先以「舊」session_id 送進引擎 → 播放到上一首的 MIDI。
+  ipcMain.handle("engine:setActiveSession", (_evt, id: string | null) => {
+    setActiveSession(id);
     return { ok: true };
   });
-  ipcMain.handle("engine:closeSession", async (_evt, id: string) => {
-    const bridge = await import("./python-bridge");
-    return safeCall(() => bridge.closeSession(id));
-  });
+  ipcMain.handle("engine:closeSession", async (_evt, id: string) =>
+    safeCall(() => closeSession(id)));
   ipcMain.handle(
     "engine:applySuggestion",
     async (
