@@ -129,19 +129,6 @@ def _session(params: dict[str, Any]) -> _SessionView:
     return _SessionView(sid)
 
 
-def _dbg(tag: str, **kv: Any) -> None:
-    """臨時除錯日誌 — 診斷「改編第二首後播放到舊曲」bug。診斷完移除。"""
-    try:
-        import time
-        line = f"{time.strftime('%H:%M:%S')} [{tag}] " + " ".join(
-            f"{k}={v!r}" for k, v in kv.items()
-        )
-        with open("/tmp/score-arranger-debug.log", "a") as f:
-            f.write(line + "\n")
-    except Exception:
-        pass
-
-
 def _session_disk_path(session_id: str) -> _Path:
     return _SESSION_DIR / f"{session_id}.json"
 
@@ -877,12 +864,6 @@ def _method_arrange(params: dict[str, Any]) -> dict:
 
     # 儲存目前 arrangement 給 apply_suggestion 後續使用
     sess.current_arrangement = arrangement
-    _dbg(
-        "arrange", sid=params.get("session_id"), path=params.get("path"),
-        arr_id=id(arrangement),
-        n_parts=len(arrangement.target_score.parts)
-        if arrangement.target_score else 0,
-    )
     _persist_session(params.get("session_id"))
 
     return {
@@ -2164,11 +2145,6 @@ def _method_to_midi(params: dict[str, Any]) -> dict:
             or sess.current_arrangement.target_score is None:
         raise ValueError("尚無 arrangement")
 
-    _dbg(
-        "to_midi", sid=params.get("session_id"),
-        arr_id=id(sess.current_arrangement),
-        n_parts=len(sess.current_arrangement.target_score.parts),
-    )
     from core.ir_to_music21 import ir_to_music21
     m21 = ir_to_music21(sess.current_arrangement.target_score)
 
@@ -2200,8 +2176,13 @@ def _method_to_source_midi(params: dict[str, Any]) -> dict:
     """匯出 source 樂譜 (原譜) 為 base64 MIDI.
 
     優先順序:
-      1. 若 session 內已有 arrangement.source_score → 用該 IR
-      2. 否則用 params["path"] 重新 parse
+      1. 若有傳 params["path"] → 一律以該 path 為準 (parse_musicxml 有快取,
+         命中時幾乎零成本)。path 代表「目前載入的原譜」, 是唯一可信來源。
+      2. 否則才退回 session arrangement 的 source_score。
+
+    為何 path 優先: 改編完一首後再載入另一首, session 的
+    arrangement.source_score 仍是上一首。若優先用它, 原譜播放會放到上一首
+    的未改編版本, 而不是剛載入的這首。
     """
     sess = _session(params)
     import base64
@@ -2209,11 +2190,11 @@ def _method_to_source_midi(params: dict[str, Any]) -> dict:
     import os as _os
 
     source_score = None
-    if sess.current_arrangement is not None \
+    if params.get("path"):
+        source_score = parse_musicxml(params["path"])
+    elif sess.current_arrangement is not None \
             and sess.current_arrangement.source_score is not None:
         source_score = sess.current_arrangement.source_score
-    elif params.get("path"):
-        source_score = parse_musicxml(params["path"])
     else:
         raise ValueError("尚無 source_score; 請提供 path 參數")
 
