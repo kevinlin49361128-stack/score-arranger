@@ -84,6 +84,13 @@ def _is_keyboard(player: Player) -> bool:
     return profile is not None and profile.family == "keyboard"
 
 
+def _skill_rank(skill_level: str) -> int:
+    """技能等級的排序權重 — 高技能優先, 用作 MELODY 指派的 tiebreaker。"""
+    return {"professional": 3, "intermediate": 2, "amateur": 1}.get(
+        skill_level, 2,
+    )
+
+
 def _pick_same_instrument(
     source_instrument_id: Optional[str],
     players: list[Player],
@@ -124,7 +131,13 @@ def pick_target_for_function(
 
     if function == VoiceFunction.MELODY:
         # 選音域上界最高的 player → upper staff (若是鍵盤) 或 main
-        sorted_players = sorted(players, key=_profile_upper, reverse=True)
+        # 同音域時用 skill_level 當 tiebreaker — 高技能拿旋律 (技能感知分譜)。
+        # 非平手情況維持原本行為, 不影響既有改編品質。
+        sorted_players = sorted(
+            players,
+            key=lambda p: (_profile_upper(p), _skill_rank(p.skill_level)),
+            reverse=True,
+        )
         for p in sorted_players:
             staff: Staff = "upper" if p.staves == 2 else "main"
             if (p.player_id, staff) not in occupied:

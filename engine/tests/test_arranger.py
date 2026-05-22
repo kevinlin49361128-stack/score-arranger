@@ -127,6 +127,25 @@ class TestPickTarget:
         )
         assert target == ("piano_1", "upper")
 
+    def test_melody_skill_level_tiebreaker(self):
+        """B 技能感知分譜 — 同音域 player 中, 高技能拿旋律。"""
+        from core.arrangement_model import Player
+        # 兩把小提琴, 同音域; v1 業餘, v2 職業 → v2 應該拿旋律
+        v1 = Player(
+            player_id="violin_1", display_name="Violin I",
+            instruments=["violin"], primary_instrument="violin",
+            skill_level="amateur",
+        )
+        v2 = Player(
+            player_id="violin_2", display_name="Violin II",
+            instruments=["violin"], primary_instrument="violin",
+            skill_level="professional",
+        )
+        target = pick_target_for_function(
+            VoiceFunction.MELODY, [v1, v2],
+        )
+        assert target == ("violin_2", "main")  # 高技能勝出
+
 
 # ============================================================================
 # Octave adjust
