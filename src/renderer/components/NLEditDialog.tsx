@@ -79,6 +79,7 @@ const OP_ICON: Record<LLMEditOp["op"], string> = {
   rest: "𝄽",
   reassign: "⇄",
   enrich: "✚",
+  simplify: "➖",
 };
 
 /** 把一個 op 轉成人類可讀的描述。 */
@@ -162,6 +163,18 @@ function describeOp(
       range,
       texture: textureLabel,
       density: densityLabel,
+    });
+  }
+  if (op.op === "simplify") {
+    const levelLabel = op.level === "light"
+      ? t("nlEdit.level.light")
+      : op.level === "full"
+      ? t("nlEdit.level.full")
+      : t("nlEdit.level.medium");
+    return t("nlEdit.opSimplify", {
+      part: partName,
+      range,
+      level: levelLabel,
     });
   }
   return t("nlEdit.opDynamic", {

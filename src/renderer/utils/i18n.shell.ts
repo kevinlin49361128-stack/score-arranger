@@ -130,14 +130,12 @@ export const SHELL_STRINGS: BiDict = {
       + "(移調 / 奏法 / 強弱)",
   },
   "toolbar.boost": {
-    "zh-TW": "💪 加難度", en: "💪 Boost", ja: "💪 難度アップ",
+    "zh-TW": "💪 難度調節", en: "💪 Difficulty", ja: "💪 難度調整",
   },
   "toolbar.boost.title": {
-    "zh-TW": "為某個聲部加技巧難度 (八度疊置 / 雙音 / 移高把位 / 困難弓法)",
-    en: "Add technical difficulty to a part "
-      + "(octave doubling / double-stops / higher position / demanding bowing)",
-    ja: "パートに技巧的な難度を追加 "
-      + "(オクターブ重ね / 重音 / 高ポジション / 難しい弓法)",
+    "zh-TW": "調節某個聲部的演奏難度 — 加難度或降難度",
+    en: "Adjust a part's playing difficulty — boost or reduce",
+    ja: "パートの演奏難度を調整 — 上げる / 下げる",
   },
 
   // === Toolbar: 改編選項 popover ===

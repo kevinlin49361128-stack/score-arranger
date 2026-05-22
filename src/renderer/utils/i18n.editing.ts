@@ -258,19 +258,42 @@ export const EDITING_STRINGS: BiDict = {
     "zh-TW": "濃密・每個音", en: "full · every note",
     ja: "濃密・すべての音",
   },
+  "nlEdit.opSimplify": {
+    "zh-TW": "{part}・{range}・降難度（{level}）",
+    en: "{part} · {range} · simplify ({level})",
+    ja: "{part}・{range}・難易度を下げる（{level}）",
+  },
+  "nlEdit.level.light": {
+    "zh-TW": "輕度・留三和弦", en: "light · keep triads",
+    ja: "軽め・三和音を残す",
+  },
+  "nlEdit.level.medium": {
+    "zh-TW": "中度・留雙音", en: "medium · keep double-stops",
+    ja: "中程度・重音を残す",
+  },
+  "nlEdit.level.full": {
+    "zh-TW": "大幅・退到單音", en: "full · down to single notes",
+    ja: "大幅・単音まで",
+  },
   // ── DifficultyBoostDialog (加難度面板) ────────────────────────────────
   "boost.title": {
-    "zh-TW": "💪 加難度", en: "💪 Boost Difficulty",
-    ja: "💪 難度アップ",
+    "zh-TW": "💪 難度調節", en: "💪 Adjust Difficulty",
+    ja: "💪 難度調整",
   },
   "boost.intro": {
-    "zh-TW": "選一個聲部、一段小節範圍,挑想加的技巧手法 —— 全部會經樂器"
-      + "可演奏性檢查,套用後可用 ↶ 復原。",
-    en: "Pick a part, a measure range and the techniques to add. "
-      + "Everything passes the instrument playability check; "
-      + "use ↶ to undo after applying.",
-    ja: "パート・小節範囲・追加したい技法を選びます。すべて楽器の"
-      + "演奏可能性チェックを通り、適用後は ↶ で取り消せます。",
+    "zh-TW": "選一個聲部、一段小節範圍,決定要加難度或降難度 —— 全部會經"
+      + "樂器可演奏性檢查,套用後可用 ↶ 復原。",
+    en: "Pick a part and a measure range, then boost or reduce its "
+      + "difficulty. Everything passes the instrument playability "
+      + "check; use ↶ to undo after applying.",
+    ja: "パートと小節範囲を選び、難度を上げるか下げるかを決めます。"
+      + "すべて演奏可能性チェックを通り、適用後は ↶ で取り消せます。",
+  },
+  "boost.direction.boost": {
+    "zh-TW": "加難度", en: "Boost", ja: "難度アップ",
+  },
+  "boost.direction.reduce": {
+    "zh-TW": "降難度", en: "Reduce", ja: "難度ダウン",
   },
   "boost.partLabel": { "zh-TW": "聲部", en: "Part", ja: "パート" },
   "boost.rangeLabel": {
@@ -328,7 +351,33 @@ export const EDITING_STRINGS: BiDict = {
     "zh-TW": "目前難度", en: "Current difficulty", ja: "現在の難度",
   },
   "boost.apply": {
-    "zh-TW": "套用加難度", en: "Apply", ja: "適用",
+    "zh-TW": "套用調節", en: "Apply", ja: "適用",
+  },
+  "boost.levelLabel": {
+    "zh-TW": "簡化強度", en: "Simplification level", ja: "簡略化の強さ",
+  },
+  "boost.level.light": {
+    "zh-TW": "輕度", en: "Light", ja: "軽め",
+  },
+  "boost.level.medium": {
+    "zh-TW": "中度", en: "Medium", ja: "中程度",
+  },
+  "boost.level.full": {
+    "zh-TW": "大幅", en: "Full", ja: "大幅",
+  },
+  "boost.reduceDesc": {
+    "zh-TW": "降難度會自動:和弦瘦身、八度收摺、去裝飾、剝除困難弓法。"
+      + "旋律永遠保留。",
+    en: "Reducing automatically thins chords, folds octaves back in, "
+      + "removes ornaments and strips demanding bowing. "
+      + "The melody is always kept.",
+    ja: "難度を下げると自動でコードを薄く、オクターブを畳み込み、"
+      + "装飾を除去、難しい弓法を外します。旋律は必ず残ります。",
+  },
+  "boost.reason.simplify": {
+    "zh-TW": "降難度 — 簡化和弦 / 去裝飾 / 簡化弓法",
+    en: "Reduce difficulty — thin chords / de-ornament / simpler bowing",
+    ja: "難度ダウン — コード簡略化 / 装飾除去 / 弓法簡略化",
   },
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",

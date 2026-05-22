@@ -251,7 +251,7 @@ declare global {
 
   interface LLMEditOp {
     op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
-      | "enrich";
+      | "enrich" | "simplify";
     part_id: string;
     measure_start: number;
     measure_end: number;
@@ -263,6 +263,7 @@ declare global {
     target_part_id?: string;
     density?: "light" | "medium" | "full";
     texture?: "block" | "arpeggio" | "strum" | "octave";
+    level?: "light" | "medium" | "full";
     target_difficulty?: number;
     reason: string;
   }

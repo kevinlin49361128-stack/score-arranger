@@ -1468,7 +1468,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             raise ValueError(f"op #{i}: 格式錯誤")
         kind = op.get("op")
         if kind not in ("transpose", "articulation", "dynamic", "rest",
-                        "enrich"):
+                        "enrich", "simplify"):
             raise ValueError(f"op #{i}: 未知 op 類型 {kind!r}")
         if part_by_id(op.get("part_id", "")) is None:
             raise ValueError(
@@ -1516,6 +1516,10 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                 raise ValueError(
                     f"op #{i}: enrich 需要 source_score "
                     "(舊版 .sarr 沒有, 請重新 arrange)")
+        elif kind == "simplify":
+            level = op.get("level", "medium")
+            if level not in ("light", "medium", "full"):
+                raise ValueError(f"op #{i}: 無效 level {level!r}")
 
     # ── 階段二: 一次 history snapshot, 然後套用 ───────────────────────
     new_history = list(sess.history)
@@ -1548,6 +1552,21 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             changed = enrich_part(
                 part.measures, src_score, m_start, m_end, density, texture,
                 part.instrument_id,
+            )
+            results.append({
+                "op": kind,
+                "part_id": op["part_id"],
+                "measure_start": m_start,
+                "measure_end": m_end,
+                "changed": changed,
+            })
+            continue
+        if kind == "simplify":
+            # subtractive 操作 — 降難度 (見 core/simplify.py)
+            from core.simplify import simplify_part
+            level = op.get("level", "medium")
+            changed = simplify_part(
+                part.measures, m_start, m_end, level, part.instrument_id,
             )
             results.append({
                 "op": kind,

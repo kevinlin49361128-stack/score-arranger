@@ -1,15 +1,15 @@
 /**
- * DifficultyBoostDialog — 加難度
+ * DifficultyBoostDialog — 難度調節 (雙向)
  *
- * 為單一聲部、單一小節範圍, 套用一組「技巧難度」手法:
- *   八度疊置 (enrich octave) / 雙音和弦 (enrich block) /
- *   移高把位 (transpose +12) / 困難弓法 (articulation spiccato)。
- * 四個手法各對應一個 applyEditOps 操作, 整批一次套用、一次復原。
- * 所有結果都經引擎的樂器可演奏性檢查 (小提琴 → check_violin_chord …)。
+ * 為單一聲部、單一小節範圍, 套用「難度調節」:
  *
- * 觸發點: Toolbar「💪 加難度」按鈕 (需先完成一次改編)。
- * 這是「兩者都做」決策中的專屬面板 —— 不會編曲的人也能直接操作;
- * 偏好自然語言的人仍可走 NLEditDialog。
+ *   加難度 (boost): 八度疊置 / 雙音和弦 / 移高把位 / 困難弓法
+ *     —— 對應 enrich / transpose / articulation op。
+ *   降難度 (reduce): 和弦瘦身 / 八度收摺 / 去裝飾 / 簡化弓法
+ *     —— 對應 simplify op (引擎一次套用四種手法)。
+ *
+ * 整批一次套用、一次復原。所有結果都經引擎的樂器可演奏性檢查。
+ * 觸發點: Toolbar「💪 難度調節」按鈕 (需先完成一次改編)。
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,6 +31,7 @@ type PlayerLite = {
   staves: number;
 };
 
+type Direction = "boost" | "reduce";
 type Intensity = "conservative" | "balanced" | "virtuosic";
 
 interface TechSel {
@@ -60,6 +61,11 @@ function derivePartsFromPlayers(players: PlayerLite[]): NamedPart[] {
   return parts;
 }
 
+/** 強度 → enrich density / simplify level (兩者用同一組三檔)。 */
+function intensityToAmount(i: Intensity): "light" | "medium" | "full" {
+  return i === "conservative" ? "light" : i === "virtuosic" ? "full" : "medium";
+}
+
 export function DifficultyBoostDialog({ onClose }: Props) {
   useLocale();
   const {
@@ -78,6 +84,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     [players],
   );
 
+  const [direction, setDirection] = useState<Direction>("boost");
   const [partId, setPartId] = useState("");
   const [measureCount, setMeasureCount] = useState(0);
   const [mStart, setMStart] = useState(1);
@@ -129,9 +136,11 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   const current = partId ? difficulty[partId] : undefined;
   const anyTech = tech.octave || tech.doubleStop
     || tech.higherPosition || tech.bowing;
+  // 降難度不需勾手法 (simplify 引擎一次套用四種); 加難度需至少一種
+  const canApply = direction === "reduce" || anyTech;
 
   const handleApply = async () => {
-    if (!partId || !anyTech || applying) return;
+    if (!partId || !canApply || applying) return;
     let lo = Math.min(mStart, mEnd);
     let hi = Math.max(mStart, mEnd);
     if (measureCount > 0) {
@@ -141,38 +150,41 @@ export function DifficultyBoostDialog({ onClose }: Props) {
       lo = Math.max(1, lo);
       hi = Math.max(1, hi);
     }
-    const density: "light" | "medium" | "full" =
-      intensity === "conservative"
-        ? "light"
-        : intensity === "virtuosic"
-        ? "full"
-        : "medium";
+    const amount = intensityToAmount(intensity);
     const base = { part_id: partId, measure_start: lo, measure_end: hi };
     const ops: LLMEditOp[] = [];
-    if (tech.octave) {
+
+    if (direction === "reduce") {
       ops.push({
-        op: "enrich", ...base, texture: "octave", density,
-        reason: t("boost.reason.octave"),
+        op: "simplify", ...base, level: amount,
+        reason: t("boost.reason.simplify"),
       });
-    }
-    if (tech.doubleStop) {
-      ops.push({
-        op: "enrich", ...base, texture: "block", density,
-        reason: t("boost.reason.doubleStop"),
-      });
-    }
-    if (tech.bowing) {
-      ops.push({
-        op: "articulation", ...base, articulation: "spiccato",
-        mode: "add", reason: t("boost.reason.bowing"),
-      });
-    }
-    // transpose 放最後 — 連同前面加出的和弦一起升高把位
-    if (tech.higherPosition) {
-      ops.push({
-        op: "transpose", ...base, semitones: 12,
-        reason: t("boost.reason.higherPosition"),
-      });
+    } else {
+      if (tech.octave) {
+        ops.push({
+          op: "enrich", ...base, texture: "octave", density: amount,
+          reason: t("boost.reason.octave"),
+        });
+      }
+      if (tech.doubleStop) {
+        ops.push({
+          op: "enrich", ...base, texture: "block", density: amount,
+          reason: t("boost.reason.doubleStop"),
+        });
+      }
+      if (tech.bowing) {
+        ops.push({
+          op: "articulation", ...base, articulation: "spiccato",
+          mode: "add", reason: t("boost.reason.bowing"),
+        });
+      }
+      // transpose 放最後 — 連同前面加出的和弦一起升高把位
+      if (tech.higherPosition) {
+        ops.push({
+          op: "transpose", ...base, semitones: 12,
+          reason: t("boost.reason.higherPosition"),
+        });
+      }
     }
 
     setApplying(true);
@@ -229,10 +241,22 @@ export function DifficultyBoostDialog({ onClose }: Props) {
     },
   ];
 
-  const intensityItems: { key: Intensity; label: string }[] = [
-    { key: "conservative", label: t("boost.intensity.conservative") },
-    { key: "balanced", label: t("boost.intensity.balanced") },
-    { key: "virtuosic", label: t("boost.intensity.virtuosic") },
+  const intensityItems: { key: Intensity; label: string }[] =
+    direction === "boost"
+      ? [
+        { key: "conservative", label: t("boost.intensity.conservative") },
+        { key: "balanced", label: t("boost.intensity.balanced") },
+        { key: "virtuosic", label: t("boost.intensity.virtuosic") },
+      ]
+      : [
+        { key: "conservative", label: t("boost.level.light") },
+        { key: "balanced", label: t("boost.level.medium") },
+        { key: "virtuosic", label: t("boost.level.full") },
+      ];
+
+  const directionItems: { key: Direction; label: string }[] = [
+    { key: "boost", label: t("boost.direction.boost") },
+    { key: "reduce", label: t("boost.direction.reduce") },
   ];
 
   return (
@@ -318,6 +342,44 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                   {t("boost.intro")}
                 </div>
 
+                {/* 方向: 加難度 / 降難度 */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    marginBottom: 14,
+                  }}
+                >
+                  {directionItems.map((item) => {
+                    const on = direction === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setDirection(item.key)}
+                        style={{
+                          flex: 1,
+                          padding: "8px 4px",
+                          border: `1px solid ${
+                            on ? "var(--accent)" : "var(--border)"
+                          }`,
+                          background: on
+                            ? "var(--accent)"
+                            : "var(--button-bg)",
+                          color: on
+                            ? "var(--accent-fg)"
+                            : "var(--button-fg)",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          fontSize: 13,
+                          fontWeight: on ? 700 : 400,
+                        }}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 {/* 聲部 + 小節範圍 */}
                 <div
                   style={{
@@ -401,77 +463,103 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                   </label>
                 </div>
 
-                {/* 技巧手法 */}
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "var(--fg-muted)",
-                    marginBottom: 6,
-                  }}
-                >
-                  {t("boost.techLabel")}
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 8,
-                    marginBottom: 14,
-                  }}
-                >
-                  {techItems.map((item) => {
-                    const on = tech[item.key];
-                    return (
-                      <label
-                        key={item.key}
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          alignItems: "flex-start",
-                          padding: "9px 10px",
-                          border: `1px solid ${
-                            on ? "var(--accent)" : "var(--border-light)"
-                          }`,
-                          borderRadius: 6,
-                          cursor: "pointer",
-                          background: on
-                            ? "var(--bg-secondary)"
-                            : "transparent",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={on}
-                          onChange={(e) =>
-                            setTech((prev) => ({
-                              ...prev,
-                              [item.key]: e.target.checked,
-                            }))}
-                          style={{ marginTop: 2 }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{ fontSize: 12.5, fontWeight: 600 }}
-                          >
-                            {item.label}
-                          </div>
-                          <div
+                {/* 加難度: 技巧手法勾選 */}
+                {direction === "boost" && (
+                  <>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--fg-muted)",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {t("boost.techLabel")}
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 8,
+                        marginBottom: 14,
+                      }}
+                    >
+                      {techItems.map((item) => {
+                        const on = tech[item.key];
+                        return (
+                          <label
+                            key={item.key}
                             style={{
-                              fontSize: 11,
-                              color: "var(--fg-muted)",
-                              marginTop: 2,
-                              lineHeight: 1.5,
+                              display: "flex",
+                              gap: 8,
+                              alignItems: "flex-start",
+                              padding: "9px 10px",
+                              border: `1px solid ${
+                                on
+                                  ? "var(--accent)"
+                                  : "var(--border-light)"
+                              }`,
+                              borderRadius: 6,
+                              cursor: "pointer",
+                              background: on
+                                ? "var(--bg-secondary)"
+                                : "transparent",
                             }}
                           >
-                            {item.desc}
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
+                            <input
+                              type="checkbox"
+                              checked={on}
+                              onChange={(e) =>
+                                setTech((prev) => ({
+                                  ...prev,
+                                  [item.key]: e.target.checked,
+                                }))}
+                              style={{ marginTop: 2 }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontSize: 12.5,
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {item.label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  color: "var(--fg-muted)",
+                                  marginTop: 2,
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {item.desc}
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-                {/* 炫技強度 */}
+                {/* 降難度: 手法說明 */}
+                {direction === "reduce" && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--fg-muted)",
+                      lineHeight: 1.6,
+                      padding: "10px 12px",
+                      background: "var(--bg-secondary)",
+                      borderRadius: 6,
+                      marginBottom: 14,
+                    }}
+                  >
+                    {t("boost.reduceDesc")}
+                  </div>
+                )}
+
+                {/* 強度 */}
                 <div
                   style={{
                     fontSize: 12,
@@ -479,7 +567,9 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                     marginBottom: 6,
                   }}
                 >
-                  {t("boost.intensityLabel")}
+                  {direction === "boost"
+                    ? t("boost.intensityLabel")
+                    : t("boost.levelLabel")}
                 </div>
                 <div
                   style={{
@@ -558,7 +648,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                     ⚠ {error}
                   </div>
                 )}
-                {!anyTech && !error && (
+                {direction === "boost" && !anyTech && !error && (
                   <div
                     style={{
                       marginTop: 12,
@@ -599,7 +689,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
           >
             <button
               onClick={handleApply}
-              disabled={applying || !anyTech || !partId}
+              disabled={applying || !canApply || !partId}
               style={{
                 padding: "7px 18px",
                 background: "var(--accent)",
@@ -609,7 +699,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                 cursor: applying ? "wait" : "pointer",
                 fontSize: 13,
                 fontWeight: 600,
-                opacity: (!anyTech || !partId) ? 0.5 : 1,
+                opacity: (!canApply || !partId) ? 0.5 : 1,
               }}
             >
               {applying ? t("boost.applying") : t("boost.apply")}

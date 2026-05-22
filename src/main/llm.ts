@@ -287,7 +287,7 @@ export interface LLMEditPlanContext {
 
 export interface LLMEditOp {
   op: "transpose" | "articulation" | "dynamic" | "rest" | "reassign"
-    | "enrich";
+    | "enrich" | "simplify";
   part_id: string;
   measure_start: number;
   measure_end: number;
@@ -299,6 +299,7 @@ export interface LLMEditOp {
   target_part_id?: string;
   density?: "light" | "medium" | "full";
   texture?: "block" | "arpeggio" | "strum" | "octave";
+  level?: "light" | "medium" | "full";
   target_difficulty?: number;
   reason: string;
 }
@@ -312,7 +313,7 @@ export interface LLMEditPlan {
 const EDIT_PLAN_SYSTEM_PROMPT =
   `你是 Score Arranger 的「自然語言改譜」助手。使用者用自然語言描述想對改編後的譜做什麼修改, 你要把它轉成「可直接套用的結構化操作」。
 
-你只能使用以下六種操作 (operation):
+你只能使用以下七種操作 (operation):
 
 1. transpose — 移調區間內所有音符 / 和弦
    { "op": "transpose", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "semitones": <int>, "reason": <string> }
@@ -344,6 +345,13 @@ const EDIT_PLAN_SYSTEM_PROMPT =
    octave 織體: 把旋律音疊上低八度成八度雙音 — 弦樂 (小提琴等) 想加技巧難度 / 想要八度時用。
    和弦音取自原曲同一時間點的實際和聲 (不會亂編), 並自動過樂器可演奏性檢查;
    只對未鎖定的旋律單音生效, 低音與既有和弦不動。
+
+7. simplify — 把區間內的譜「降難度」(enrich 的反向)
+   { "op": "simplify", "part_id": <string>, "measure_start": <int>, "measure_end": <int>, "level": <string>, "reason": <string> }
+   level: "light" (和弦留三和弦) / "medium" (留雙音, 預設) / "full" (退到單音)
+   手法: 和弦瘦身、八度收摺 (超音域音收回)、去裝飾、剝除困難弓法。
+   適用情境: 使用者覺得某聲部「太難 / 太複雜 / 想簡單一點 / 給初學者 / 降難度」。
+   旋律永遠保留 (和弦瘦身只省內聲部, 旋律恆在頂端); 只對未鎖定事件生效。
 
 規則:
 - 操作 1-4 的 part_id 必須完全等於「可用聲部」清單中列出的值, 不可自創或猜測。
@@ -434,6 +442,10 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
           const td = Math.round(Number(o.target_difficulty));
           if (td >= 1 && td <= 5) op.target_difficulty = td;
         }
+      } else if (o.op === "simplify") {
+        op.level = (o.level === "light" || o.level === "full")
+          ? o.level
+          : "medium";
       }
       // "rest" 不需額外欄位
       return op;
