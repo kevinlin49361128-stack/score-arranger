@@ -1082,7 +1082,7 @@ export function Toolbar() {
                     : "toolbar.settings.toChinese",
               )}
               icon={
-                locale === "zh-TW" ? "EN" : locale === "en" ? "日" : "中"
+                locale === "zh-TW" ? "EN" : locale === "en" ? "日" : "台"
               }
               onClick={() => {
                 // 三語循環: 繁中 → English → 日本語 → 繁中

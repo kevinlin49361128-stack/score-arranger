@@ -228,8 +228,9 @@ export const SHELL_STRINGS: BiDict = {
     ja: "Switch to English",
   },
   "toolbar.settings.toChinese": {
-    "zh-TW": "切換為繁中", en: "Switch to Traditional Chinese",
-    ja: "繁体字中国語に切り替え",
+    "zh-TW": "切換為繁體字台灣語",
+    en: "Switch to Taiwanese (Traditional)",
+    ja: "繁体字台湾語に切り替え",
   },
   "toolbar.settings.toJapanese": {
     "zh-TW": "切換為日語", en: "Switch to Japanese",
