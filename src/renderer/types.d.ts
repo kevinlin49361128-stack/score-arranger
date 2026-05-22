@@ -338,6 +338,9 @@ declare global {
     movements: NavigationMovement[];
     rehearsal_marks: { measure: number; mark: string }[];
     total_measures: number;
+    /** 不完全小節 (起拍) 的長度 (四分音符); 0 = 沒起拍。
+     * 給播放游標算對 measure 2 起點 — 避免游標延遲 (整個起拍長度的差)。 */
+    pickup_offset_quarters: number;
   }
 
   interface QualityReport {

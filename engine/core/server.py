@@ -2094,10 +2094,37 @@ def _method_list_navigation(params: dict[str, Any]) -> dict:
          for p in score.parts),
         default=0,
     )
+    # 不完全小節 (起拍) 的長度 (四分音符數) — 給播放游標算對 measure 2 起點。
+    # IR 的 onset/duration 以四分音符為單位; 取第一個 part 的第一小節
+    # (若 is_pickup) 內所有事件 max(onset+duration)。
+    pickup_offset_quarters = 0.0
+    if score.parts and score.parts[0].measures:
+        first_measure = score.parts[0].measures[0]
+        if first_measure.is_pickup:
+            voices = (
+                first_measure.voices.values()
+                if isinstance(first_measure.voices, dict)
+                else first_measure.voices
+            )
+            max_end = 0.0
+            for voice in voices:
+                branches = (
+                    voice.divisi_branches
+                    if getattr(voice, "is_divisi", False)
+                    and voice.divisi_branches
+                    else [voice]
+                )
+                for v in branches:
+                    for ev in v.events:
+                        end = float(ev.onset + ev.duration)
+                        if end > max_end:
+                            max_end = end
+            pickup_offset_quarters = max_end
     return {
         "movements": movements,
         "rehearsal_marks": rehearsal,
         "total_measures": max_measure,
+        "pickup_offset_quarters": pickup_offset_quarters,
     }
 
 

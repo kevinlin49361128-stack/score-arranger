@@ -537,7 +537,10 @@ export function PlaybackControls(
   };
 
   /** 從 MIDI 預計算每個 measure 起始的秒數 (支援變速 / 變拍號) */
-  const computeMeasureStarts = (midi: Midi): number[] => {
+  const computeMeasureStarts = (
+    midi: Midi,
+    pickupQuarters: number = 0,
+  ): number[] => {
     const tsigs = [...midi.header.timeSignatures].sort(
       (a, b) => a.ticks - b.ticks,
     );
@@ -575,7 +578,12 @@ export function PlaybackControls(
       }
       const [num, denom] = tsig.timeSignature;
       const measureTickLen = (ppq * num * 4) / denom;
-      measureTicks += measureTickLen;
+      // 第一個小節是起拍 (不完全) 時用較短的 ticks, 後續正常。
+      // 不修這個的話 starts[1] 會晚 (整段 - 起拍) 拍, 游標跟著延遲。
+      const thisMeasureTicks = (i === 0 && pickupQuarters > 0)
+        ? ppq * pickupQuarters
+        : measureTickLen;
+      measureTicks += thisMeasureTicks;
     }
     return starts;
   };
@@ -685,8 +693,18 @@ export function PlaybackControls(
       // (變速由各 note 的 absolute time 處理,不需要 Transport.bpm 動態追)
       const bpm = midi.header.tempos[0]?.bpm ?? 120;
       Tone.Transport.bpm.value = bpm;
-      // 預算 measure 起始時間表,支援變速 / 變拍號
-      measureStartsRef.current = computeMeasureStarts(midi);
+      // 預算 measure 起始時間表,支援變速 / 變拍號 / 起拍 (不完全小節)
+      // 起拍長度從 listNavigation 拿; 沒抓到時當 0 (與舊行為一致)。
+      let pickupQuarters = 0;
+      try {
+        const nav = await window.scoreArranger.engine.listNavigation();
+        if (nav.ok && nav.data) {
+          pickupQuarters = nav.data.pickup_offset_quarters ?? 0;
+        }
+      } catch {
+        /* listNavigation 失敗 → 假設無起拍 */
+      }
+      measureStartsRef.current = computeMeasureStarts(midi, pickupQuarters);
 
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {
