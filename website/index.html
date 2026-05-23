@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Arranger — 智慧樂譜改編工具</title>
+<meta name="description" content="Score Arranger 是一款懂樂理的智慧樂譜改編工具，協助你把管弦樂總譜改編為小編制，並確保每一個音都演奏得出來。免費下載，適用於 macOS。">
+<meta name="theme-color" content="#161311">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Score Arranger — 智慧樂譜改編工具">
+<meta property="og:description" content="一位懂樂理的改編夥伴：替你處理繁瑣的聲部分配與可演奏性檢查，把音樂的判斷留給你。">
+<!-- og:image — 之後可放一張預覽圖： <meta property="og:image" content="https://你的網址/preview.png"> -->
+<style>
+  :root{
+    --bg:#161311; --bg-elev:#211d18; --bg-elev2:#2b261f;
+    --ink:#ece6da; --ink-soft:#b3a896; --ink-faint:#867c6d;
+    --gold:#d9aa63; --gold-bright:#ecc890;
+    --line:rgba(236,230,218,.10); --line-strong:rgba(236,230,218,.17);
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Baskerville,'Noto Serif TC','Songti TC',Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI','PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:88px;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;overflow-x:hidden;
+  }
+  ::selection{background:rgba(217,170,99,.3);color:var(--ink)}
+  a{color:inherit}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px;border-radius:5px}
+  img,svg{display:block}
+
+  .container{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+  .skip{position:absolute;left:-9999px;top:0;z-index:120;background:var(--gold);
+    color:#1a1510;padding:11px 18px;font-weight:600;border-radius:0 0 9px 0}
+  .skip:focus{left:0}
+
+  /* ---- header ---- */
+  .site-header{position:fixed;top:0;left:0;right:0;z-index:60;
+    transition:background .28s ease,border-color .28s ease,backdrop-filter .28s ease}
+  .site-header.scrolled{background:rgba(20,17,15,.84);
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line)}
+  .header-inner{display:flex;align-items:center;justify-content:space-between;
+    height:70px;gap:22px}
+  .brand{font-family:var(--serif);font-size:22px;font-weight:600;
+    text-decoration:none;letter-spacing:.005em;display:flex;align-items:center;gap:9px}
+  .brand .mark{width:11px;height:11px;border-radius:3px;
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));flex:0 0 auto}
+  .nav-links{display:flex;gap:32px}
+  .nav-links a{color:var(--ink-soft);text-decoration:none;font-size:14.5px;
+    transition:color .2s ease}
+  .nav-links a:hover{color:var(--gold)}
+  .header-actions{display:flex;align-items:center;gap:12px}
+  .lang-toggle{background:transparent;border:1px solid var(--line-strong);
+    color:var(--ink-soft);font:600 12.5px/1 var(--sans);letter-spacing:.07em;
+    padding:9px 13px;border-radius:999px;cursor:pointer;transition:.2s ease}
+  .lang-toggle:hover{color:var(--gold);border-color:var(--gold)}
+  .icon-link{display:flex;align-items:center;justify-content:center;
+    width:38px;height:38px;flex:0 0 auto;border:1px solid var(--line-strong);
+    border-radius:999px;color:var(--ink-soft);transition:.2s ease}
+  .icon-link:hover{color:var(--gold);border-color:var(--gold)}
+  .icon-link svg{width:17px;height:17px}
+
+  /* ---- buttons ---- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    font:600 15px/1 var(--sans);padding:15px 28px;border-radius:999px;
+    border:1px solid transparent;cursor:pointer;text-decoration:none;
+    white-space:nowrap;transition:transform .15s ease,background .2s ease,
+    border-color .2s ease,box-shadow .2s ease,color .2s ease}
+  .btn svg{width:18px;height:18px}
+  .btn-primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    color:#1a1510;box-shadow:0 10px 26px -12px rgba(217,170,99,.65)}
+  .btn-primary:hover{transform:translateY(-2px);
+    box-shadow:0 14px 32px -12px rgba(217,170,99,.8)}
+  .btn-ghost{background:transparent;border-color:var(--line-strong);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold-bright);transform:translateY(-2px)}
+  .btn-sm{padding:10px 19px;font-size:13.5px}
+
+  /* ---- generic section ---- */
+  .section{position:relative;padding:clamp(72px,11vw,128px) 0}
+  .section-head{text-align:center;max-width:680px;margin:0 auto}
+  .eyebrow{display:inline-block;font-size:12px;font-weight:600;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  .section-title{font-family:var(--serif);font-weight:600;
+    font-size:clamp(28px,3.7vw,43px);line-height:1.18;
+    letter-spacing:-.012em;margin-top:15px}
+
+  /* ---- hero ---- */
+  .hero{position:relative;padding:156px 0 96px;text-align:center;overflow:hidden}
+  .hero::before{content:"";position:absolute;top:-220px;left:50%;
+    width:1000px;height:780px;transform:translateX(-50%);pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(217,170,99,.17),transparent 62%)}
+  .hero-inner{position:relative;z-index:1}
+  .hero-title{font-family:var(--serif);font-weight:600;
+    font-size:clamp(35px,5.7vw,63px);line-height:1.12;letter-spacing:-.018em;
+    margin:20px auto 0;max-width:900px}
+  .hero-sub{color:var(--ink-soft);font-size:clamp(16px,1.5vw,19px);
+    line-height:1.78;max-width:630px;margin:24px auto 0}
+  .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+  .hero-note{color:var(--ink-faint);font-size:13px;letter-spacing:.05em;margin-top:20px}
+
+  /* ---- app mockup ---- */
+  .mockup{position:relative;z-index:1;max-width:920px;margin:66px auto 0;
+    border:1px solid var(--line-strong);border-radius:16px;
+    background:linear-gradient(180deg,#231e19,#1a1614);
+    box-shadow:0 44px 90px -34px rgba(0,0,0,.85);overflow:hidden}
+  .mockup-bar{display:flex;align-items:center;gap:7px;padding:13px 17px;
+    border-bottom:1px solid var(--line)}
+  .mockup-bar .dot{width:10px;height:10px;border-radius:50%;
+    background:rgba(236,230,218,.15)}
+  .mockup-title{margin-left:11px;font-size:12px;color:var(--ink-faint);
+    letter-spacing:.05em}
+  .mockup-body{display:flex;gap:14px;padding:18px}
+  .panel{flex:1;min-width:0;background:rgba(0,0,0,.26);
+    border:1px solid var(--line);border-radius:11px;padding:15px 15px 19px}
+  .panel-label{font-size:10.5px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px}
+  .panel--target .panel-label{color:var(--gold)}
+  .tracks{display:flex;flex-direction:column;gap:9px}
+  .track{position:relative;height:12px;border-radius:6px;
+    background:rgba(236,230,218,.045)}
+  .note{position:absolute;top:3px;height:6px;border-radius:3px;
+    background:rgba(236,230,218,.26)}
+  .panel--target .track{background:rgba(217,170,99,.06)}
+  .panel--target .note{background:linear-gradient(90deg,var(--gold),var(--gold-bright));
+    box-shadow:0 0 9px rgba(217,170,99,.45)}
+  .mock-arrow{align-self:center;flex:0 0 auto;color:var(--gold);opacity:.7}
+  .mock-arrow svg{width:22px;height:22px}
+
+  /* ---- story ---- */
+  .story-body{max-width:680px;margin:32px auto 0}
+  .story-body p{color:var(--ink-soft);font-size:17px;line-height:1.82;margin-top:18px}
+  .story-quote{font-family:var(--serif);font-weight:500;
+    font-size:clamp(22px,2.9vw,31px);line-height:1.42;color:var(--ink);
+    text-align:center;max-width:760px;margin:48px auto 0;padding-top:40px;
+    border-top:1px solid var(--line)}
+
+  /* ---- features ---- */
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);
+    gap:18px;margin-top:54px}
+  .feature-card{background:var(--bg-elev);border:1px solid var(--line);
+    border-radius:15px;padding:31px 27px;
+    transition:transform .2s ease,border-color .2s ease,background .2s ease}
+  .feature-card:hover{transform:translateY(-4px);
+    border-color:var(--line-strong);background:var(--bg-elev2)}
+  .feature-icon{width:47px;height:47px;border-radius:12px;display:flex;
+    align-items:center;justify-content:center;color:var(--gold);
+    background:rgba(217,170,99,.1);border:1px solid rgba(217,170,99,.22)}
+  .feature-icon svg{width:23px;height:23px}
+  .feature-card h3{font-size:18px;font-weight:600;margin-top:19px;
+    letter-spacing:.005em}
+  .feature-card p{color:var(--ink-soft);font-size:14.7px;line-height:1.74;
+    margin-top:9px}
+
+  /* ---- how it works ---- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:54px}
+  .step{position:relative;padding:32px 26px;border:1px solid var(--line);
+    border-radius:15px;background:var(--bg-elev)}
+  .step-num{font-family:var(--serif);font-size:32px;font-weight:600;
+    color:var(--gold);line-height:1}
+  .step h3{font-size:18px;font-weight:600;margin-top:13px}
+  .step p{color:var(--ink-soft);font-size:14.6px;line-height:1.72;margin-top:9px}
+
+  /* ---- support ---- */
+  .support-card{max-width:760px;margin:0 auto;text-align:center;
+    padding:clamp(42px,6vw,70px) 32px;border:1px solid var(--line-strong);
+    border-radius:22px;
+    background:radial-gradient(ellipse at top,rgba(217,170,99,.09),transparent 70%),var(--bg-elev)}
+  .support-card .section-title{margin-top:14px}
+  .support-body{max-width:600px;margin:22px auto 0;color:var(--ink-soft);
+    font-size:16.5px;line-height:1.8}
+  .kofi-wrap{margin-top:34px}
+
+  /* ---- download ---- */
+  .download{text-align:center;overflow:hidden}
+  .download::before{content:"";position:absolute;bottom:-260px;left:50%;
+    width:1000px;height:680px;transform:translateX(-50%);pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(217,170,99,.14),transparent 64%)}
+  .download .container{position:relative;z-index:1}
+  .download-sub{color:var(--ink-soft);font-size:17px;margin-top:18px}
+  .download-cta{margin-top:32px}
+  .download-note{color:var(--ink-faint);font-size:13px;letter-spacing:.05em;
+    margin-top:16px}
+
+  /* ---- footer ---- */
+  .site-footer{border-top:1px solid var(--line);padding:48px 0 56px}
+  .footer-inner{display:flex;flex-wrap:wrap;gap:24px;
+    justify-content:space-between;align-items:flex-start}
+  .footer-brand{font-family:var(--serif);font-size:19px;font-weight:600}
+  .footer-tag{color:var(--ink-faint);font-size:13px;margin-top:6px}
+  .footer-meta{color:var(--ink-faint);font-size:13px;line-height:1.85;text-align:right}
+  .footer-meta a{color:var(--ink-soft);text-decoration:none;transition:color .2s ease}
+  .footer-meta a:hover{color:var(--gold)}
+
+  /* ---- reveal animation ---- */
+  .reveal{opacity:0;transform:translateY(22px);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.is-visible{opacity:1;transform:none}
+  .features-grid .feature-card:nth-child(2),.steps .step:nth-child(2){transition-delay:.08s}
+  .features-grid .feature-card:nth-child(3),.steps .step:nth-child(3){transition-delay:.16s}
+  .features-grid .feature-card:nth-child(4){transition-delay:.08s}
+  .features-grid .feature-card:nth-child(5){transition-delay:.16s}
+  .features-grid .feature-card:nth-child(6){transition-delay:.24s}
+
+  /* ---- responsive ---- */
+  @media (max-width:920px){
+    .features-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:820px){
+    .nav-links{display:none}
+    .header-inner{height:62px}
+  }
+  @media (max-width:680px){
+    .container{padding:0 22px}
+    .features-grid,.steps{grid-template-columns:1fr}
+    .hero{padding-top:124px}
+    .mockup-body{flex-direction:column}
+    .mock-arrow{transform:rotate(90deg);margin:1px 0}
+    .footer-inner{flex-direction:column;text-align:center;align-items:center}
+    .footer-meta{text-align:center}
+  }
+  @media (max-width:560px){
+    .icon-link{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1!important;transform:none!important;transition:none!important}
+    .btn,.feature-card{transition:none!important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">跳至主要內容</a>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span>Score Arranger</a>
+    <nav class="nav-links" aria-label="主選單">
+      <a href="#features" data-i18n="navFeatures">功能</a>
+      <a href="#how" data-i18n="navHow">運作方式</a>
+      <a href="#support" data-i18n="navSupport">支持</a>
+    </nav>
+    <div class="header-actions">
+      <!-- TODO: 換成你的 GitHub repo 連結 -->
+      <a class="icon-link" href="https://github.com/kevinlin49361128-stack/score-arranger" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.02-1.49-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.55 7.55 0 0 1 8 4.36c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+      <button id="langToggle" class="lang-toggle" type="button">EN</button>
+      <a class="btn btn-primary btn-sm" href="#download"><span data-i18n="navCta">下載</span></a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="top">
+    <div class="container hero-inner">
+      <p class="eyebrow" data-i18n="heroEyebrow">智慧樂譜改編工具</p>
+      <h1 class="hero-title" data-i18n="heroTitle">把為管弦樂團寫的曲子，<br>編成你們奏得出的樣子。</h1>
+      <p class="hero-sub" data-i18n="heroSub">Score Arranger 是一位懂樂理的改編夥伴。它替你處理繁瑣的聲部分配與可演奏性檢查，把音樂的判斷與品味，留給你。</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
+          <span data-i18n="heroCta1">免費下載</span>
+        </a>
+        <a class="btn btn-ghost" href="#how">
+          <span data-i18n="heroCta2">看看它如何運作</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+      </div>
+      <p class="hero-note" data-i18n="heroNote">macOS · 免費開源 · 無需註冊</p>
+
+      <div class="mockup reveal" role="img" aria-label="Score Arranger 介面預覽：左側原始總譜，右側改編譜">
+        <div class="mockup-bar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="mockup-title">Score Arranger</span>
+        </div>
+        <div class="mockup-body">
+          <div class="panel panel--source">
+            <div class="panel-label" data-i18n="mockSource">原始總譜</div>
+            <div class="tracks" id="srcTracks"></div>
+          </div>
+          <div class="mock-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </div>
+          <div class="panel panel--target">
+            <div class="panel-label" data-i18n="mockTarget">改編譜</div>
+            <div class="tracks" id="tgtTracks"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STORY ===== -->
+  <section class="section story" id="story">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" data-i18n="storyEyebrow">為什麼</p>
+        <h2 class="section-title" data-i18n="storyTitle">編曲是手藝，<br>不該被瑣事淹沒。</h2>
+      </div>
+      <div class="story-body reveal">
+        <p data-i18n="storyP1">你聽見一首動人的管弦樂曲，心想：要是能和幾位朋友一起演奏，該有多好。於是你坐下來改編 —— 然後花掉整個週末，逐一確認每個和弦小提琴按不按得到、每個音有沒有超出音域、主旋律有沒有不小心換了聲部。</p>
+        <p data-i18n="storyP2">Score Arranger 把這些瑣事接了過去。它讀懂樂曲的結構，提出一份尊重樂器限制、確實演奏得出來的改編；你則專注在真正重要的事 —— 這段旋律該由誰來唱、這個織體要不要保留、這裡的情緒對不對。</p>
+      </div>
+      <p class="story-quote reveal" data-i18n="storyQuote">智慧輔助，而不是全自動取代。<br>最後拍板的，永遠是你。</p>
+    </div>
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section class="section features" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" data-i18n="featEyebrow">它會做的事</p>
+        <h2 class="section-title" data-i18n="featTitle">一位讀得懂樂譜的夥伴</h2>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14l3-8 3 12 3-15 3 10 3-5h3"/></svg></div>
+          <h3 data-i18n="feat1Title">聽得懂音樂的分析</h3>
+          <p data-i18n="feat1Body">它先讀懂這首曲子：辨識主旋律、分析和聲、標記每個聲部的功能。改編的每一步，都建立在理解之上。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4H4v16h3"/><path d="M17 4h3v16h-3"/><circle cx="12" cy="12" r="2.5"/></svg></div>
+          <h3 data-i18n="feat2Title">帶著樂理約束改編</h3>
+          <p data-i18n="feat2Body">小提琴的和弦不超過四音、只落在相鄰的弦上；每件樂器都待在自己的音域與技巧範圍裡。約束不是事後檢查，而是改編當下就遵守。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.2 12.3 2.7 2.7 4.9-5.6"/></svg></div>
+          <h3 data-i18n="feat3Title">演奏得出來才算數</h3>
+          <p data-i18n="feat3Body">改編完成前，它逐一檢查可演奏性，並以定向修復一步步消除問題 —— 不是隨機嘗試，而是每一次都讓問題確實減少。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3 data-i18n="feat4Title">難度，可以自己定</h3>
+          <p data-i18n="feat4Body">給定一個目標難度（1–5 級），它會逐小節抹平：太簡單的自動加厚，太難的自動簡化。為學生編譜，再也不用反覆試湊。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h2"/><path d="M3 12h2"/><path d="M3 16h2"/><path d="M9 6c0 2-2 3-2 6 0 2 1 4 3 4s3-2 3-4-2-4-2-6"/><path d="M16 8h5"/><path d="M16 12h5"/><path d="M16 16h5"/></svg></div>
+          <h3 data-i18n="feat5Title">弦樂手的把位提示</h3>
+          <p data-i18n="feat5Body">點選任何一個難小節，立刻顯示弦樂各聲部的最佳指法 —— 哪一弦、哪一把位。Viterbi DP 把跨小節換把成本一起算，不是逐音貪婪。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c0-5 4-9 9-9s9 4 9 9c0 3-2 5-4 5h-2"/><path d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0z"/><path d="M2 22l4-4"/></svg></div>
+          <h3 data-i18n="feat6Title">用講的就能改譜</h3>
+          <p data-i18n="feat6Body">「第二小提琴太單薄，加和弦」「結尾要弱一點」 —— 用自然語言描述，AI 翻成可套用的結構化操作，每一步都顯示對品質的影響。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="7.5" height="14" rx="1.5"/><rect x="13.5" y="5" width="7.5" height="14" rx="1.5"/></svg></div>
+          <h3 data-i18n="feat7Title">原譜與改編，並排對照</h3>
+          <p data-i18n="feat7Body">雙面板讓你同時看見原始總譜與改編結果。可以單獨靜音某個聲部、慢速播放（0.5x / 0.75x），逐處試聽、逐處微調。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7z"/><path d="M14 3v4h4"/><path d="M12 11v6m-2.6-2.6L12 17l2.6-2.6"/></svg></div>
+          <h3 data-i18n="feat8Title">從 PDF / 錄音直接匯入</h3>
+          <p data-i18n="feat8Body">手邊只有掃描的 PDF？內建光學樂譜辨識（OMR）。連鋼琴錄音也能：basic-pitch AMT 把音訊轉成 MusicXML，再進改編流程。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4.2L16.6 4.2a2 2 0 0 1 2.8 2.8L7.8 18.6z"/><path d="m14 6.8 3.2 3.2"/></svg></div>
+          <h3 data-i18n="feat9Title">你是最後的決定者</h3>
+          <p data-i18n="feat9Body">每一個改編建議，你都能微調、否決、或自己重寫。版本樹自動記錄每一次嘗試，A/B 比較不同方案。最終的音樂由你定義。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="section how" id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" data-i18n="howEyebrow">三步</p>
+        <h2 class="section-title" data-i18n="howTitle">從一份總譜，到你們的演出</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">01</div>
+          <h3 data-i18n="how1Title">匯入樂曲</h3>
+          <p data-i18n="how1Body">MusicXML、MIDI，或直接掃描的 PDF —— 把原曲交給 Score Arranger。</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">02</div>
+          <h3 data-i18n="how2Title">選定編制，取得改編</h3>
+          <p data-i18n="how2Body">弦樂四重奏、小提琴與鋼琴、鋼琴獨奏…… 選擇目標編制，它隨即提出一份改編。</p>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">03</div>
+          <h3 data-i18n="how3Title">校對、聆聽、匯出</h3>
+          <p data-i18n="how3Body">並排檢視、聆聽試奏、微調每一處細節，再匯出總譜與分譜。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SUPPORT ===== -->
+  <section class="section support" id="support">
+    <div class="container">
+      <div class="support-card reveal">
+        <p class="eyebrow" data-i18n="supEyebrow">支持</p>
+        <h2 class="section-title" data-i18n="supTitle">免費提供。<br>如果它幫上了忙……</h2>
+        <p class="support-body" data-i18n="supBody">Score Arranger 免費、開源，提供給每一位想編曲的人，未來也會持續如此。它由一個人在工作之餘打造 —— 如果它替你省下了一個週末，歡迎請我喝杯咖啡。完全不勉強；你願意使用它，本身就是最好的鼓勵。</p>
+        <div class="kofi-wrap">
+          <!-- TODO: 換成你的 Ko-fi 連結，例如 https://ko-fi.com/kevinlin -->
+          <a class="btn btn-primary" href="https://ko-fi.com/yourhandle" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2.3a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8 2.6v2.7M11.5 2.6v2.7"/></svg>
+            <span data-i18n="supCta">請我喝杯咖啡</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DOWNLOAD ===== -->
+  <section class="section download" id="download">
+    <div class="container">
+      <div class="reveal">
+        <p class="eyebrow" data-i18n="dlEyebrow">開始使用</p>
+        <h2 class="section-title" data-i18n="dlTitle">讓那首曲子，被演奏出來。</h2>
+        <p class="download-sub" data-i18n="dlSub">免費下載，不需要註冊帳號。</p>
+        <div class="download-cta">
+          <a class="btn btn-primary" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
+            <span data-i18n="dlCta">下載 Score Arranger</span>
+          </a>
+        </div>
+        <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證)</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <div class="footer-brand">Score Arranger</div>
+      <div class="footer-tag" data-i18n="footTagline">智慧樂譜改編工具</div>
+    </div>
+    <div class="footer-meta">
+      <div data-i18n="footMade">由一位熱愛音樂的開發者，在工作之餘打造。</div>
+      <div>© 2026 Score Arranger · <a href="#support" data-i18n="footSupport">支持本專案</a> · <a href="https://github.com/kevinlin49361128-stack/score-arranger" target="_blank" rel="noopener" data-i18n="footSource">GitHub 原始碼</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 中英雙語 ---------- */
+  var EN = {
+    skip:"Skip to main content",
+    navFeatures:"Features", navHow:"How it works", navSupport:"Support", navCta:"Download",
+    heroEyebrow:"Intelligent score arranging",
+    heroTitle:"Music written for the orchestra,<br>rearranged for the players you have.",
+    heroSub:"Score Arranger is an arranging partner that understands music theory. It handles the tedious voice distribution and playability checks — and leaves the musical judgment, and the taste, to you.",
+    heroCta1:"Download free", heroCta2:"See how it works",
+    heroNote:"macOS · Free & open source · No sign-up",
+    mockSource:"Original score", mockTarget:"Arrangement",
+    storyEyebrow:"Why",
+    storyTitle:"Arranging is a craft.<br>It shouldn't drown in busywork.",
+    storyP1:"You hear a moving orchestral piece and think: if only a few friends and I could play it together. So you sit down to arrange it — and lose a whole weekend checking whether every chord is reachable on the violin, whether every note stays in range, whether the melody quietly slipped into another voice.",
+    storyP2:"Score Arranger takes that busywork off your hands. It reads the structure of the music and proposes an arrangement that respects each instrument's limits and is genuinely playable. You stay with what matters — who should carry this line, whether to keep this texture, whether the feeling is right.",
+    storyQuote:"Smart assistance — not full automation.<br>The final call is always yours.",
+    featEyebrow:"What it does",
+    featTitle:"A partner that can read a score",
+    feat1Title:"Analysis that understands music",
+    feat1Body:"It reads the piece first — detecting the melody, analysing the harmony, tagging what each voice is doing. Every arranging decision is built on understanding.",
+    feat2Title:"Arrangement with real constraints",
+    feat2Body:"Violin chords stay within four notes on adjacent strings; every instrument stays inside its range and technique. Constraints aren't a later check — they're respected as it arranges.",
+    feat3Title:"It only counts if it's playable",
+    feat3Body:"Before it finishes, it checks playability point by point and clears issues with directed repair — not random attempts, but steps that measurably reduce the problems each time.",
+    feat4Title:"Difficulty, on your terms",
+    feat4Body:"Set a target level (1–5) and it levels the piece bar by bar: too easy gets thickened, too hard gets simplified. No more trial-and-error when arranging for students.",
+    feat5Title:"String fingerings on demand",
+    feat5Body:"Click any tough measure and see the best fingering for each string part — which string, which position. A Viterbi DP factors in cross-bar position changes, not a greedy note-by-note pass.",
+    feat6Title:"Edit with your words",
+    feat6Body:"\"Second violin is too thin, add chords.\" \"Soften the ending.\" Describe what you want in plain language; the AI turns it into structured operations and shows the quality delta of each one.",
+    feat7Title:"Original and arrangement, side by side",
+    feat7Body:"A dual-panel view shows the source and the arrangement together. Mute individual parts, play back at half speed — listen and tweak point by point.",
+    feat8Title:"Import straight from a PDF or recording",
+    feat8Body:"Only have a scanned PDF? Built-in optical music recognition reads it in. Got a piano recording? basic-pitch AMT converts it to MusicXML, ready for arranging.",
+    feat9Title:"You make the final call",
+    feat9Body:"Every suggestion can be adjusted, rejected, or rewritten. A version tree records every attempt; A/B compare alternatives. The final music is yours to define.",
+    howEyebrow:"Three steps",
+    howTitle:"From a full score to your performance",
+    how1Title:"Bring in the music",
+    how1Body:"MusicXML, MIDI, or a scanned PDF — hand the original to Score Arranger.",
+    how2Title:"Choose an ensemble, get an arrangement",
+    how2Body:"String quartet, violin and piano, solo piano… pick the target ensemble and it proposes an arrangement.",
+    how3Title:"Review, listen, export",
+    how3Body:"Compare side by side, listen through, refine every detail — then export the score and the parts.",
+    supEyebrow:"Support",
+    supTitle:"Free to use.<br>And if it helped…",
+    supBody:"Score Arranger is free and open source, for everyone who arranges music, and it will stay that way. It is built by one person in their spare time — if it saved you a weekend, you're welcome to buy me a coffee. There is no pressure at all; your using it is encouragement enough.",
+    supCta:"Buy me a coffee",
+    dlEyebrow:"Get started",
+    dlTitle:"Let that piece be played.",
+    dlSub:"Free download. No account required.",
+    dlCta:"Download Score Arranger",
+    dlNote:"For macOS",
+    footTagline:"Intelligent score arranging",
+    footMade:"Built in spare time by a developer who loves music.",
+    footSupport:"Support this project",
+    footSource:"Source on GitHub"
+  };
+  var TITLE = { zh:"Score Arranger — 智慧樂譜改編工具", en:"Score Arranger — Intelligent score arranging" };
+
+  var nodes = document.querySelectorAll("[data-i18n]");
+  var ZH = {};
+  nodes.forEach(function(el){ ZH[el.getAttribute("data-i18n")] = el.innerHTML; });
+  var toggle = document.getElementById("langToggle");
+
+  function applyLang(lang){
+    var en = (lang === "en");
+    nodes.forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      var val = en ? (EN[key] != null ? EN[key] : ZH[key]) : ZH[key];
+      if (val != null) el.innerHTML = val;
+    });
+    document.documentElement.lang = en ? "en" : "zh-Hant";
+    document.title = en ? TITLE.en : TITLE.zh;
+    if (toggle){
+      toggle.textContent = en ? "TW" : "EN";
+      toggle.setAttribute("aria-label", en ? "切換為中文" : "Switch to English");
+    }
+    try { localStorage.setItem("sa-lang", lang); } catch(e){}
+  }
+
+  var saved = null;
+  try { saved = localStorage.getItem("sa-lang"); } catch(e){}
+  applyLang(saved === "en" ? "en" : "zh");
+
+  if (toggle){
+    toggle.addEventListener("click", function(){
+      applyLang(document.documentElement.lang === "en" ? "zh" : "en");
+    });
+  }
+
+  /* ---------- 介面預覽：音符 ---------- */
+  var MOCK = {
+    source: [
+      [[4,11],[20,8],[33,14],[52,9],[66,12],[83,10]],
+      [[6,9],[19,13],[38,8],[52,15],[73,11],[88,8]],
+      [[3,14],[22,9],[36,12],[53,8],[67,16],[87,7]],
+      [[8,10],[23,12],[40,9],[55,13],[73,10],[87,9]],
+      [[4,12],[21,8],[34,15],[55,9],[68,11],[84,11]],
+      [[6,9],[20,14],[41,8],[54,12],[72,9],[85,10]]
+    ],
+    target: [
+      [[5,21],[32,14],[52,26],[83,12]],
+      [[4,16],[26,24],[56,13],[75,19]],
+      [[6,19],[31,15],[52,28],[85,10]]
+    ]
+  };
+  function fillTracks(id, rows){
+    var box = document.getElementById(id);
+    if (!box) return;
+    rows.forEach(function(notes){
+      var track = document.createElement("div");
+      track.className = "track";
+      notes.forEach(function(n){
+        var note = document.createElement("span");
+        note.className = "note";
+        note.style.left = n[0] + "%";
+        note.style.width = n[1] + "%";
+        track.appendChild(note);
+      });
+      box.appendChild(track);
+    });
+  }
+  fillTracks("srcTracks", MOCK.source);
+  fillTracks("tgtTracks", MOCK.target);
+
+  /* ---------- 捲動時顯現 ---------- */
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold:0.12, rootMargin:"0px 0px -40px 0px" });
+    reveals.forEach(function(el){ io.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add("is-visible"); });
+  }
+
+  /* ---------- 標題列捲動樣式 ---------- */
+  var header = document.querySelector(".site-header");
+  function onScroll(){
+    if (window.scrollY > 24) header.classList.add("scrolled");
+    else header.classList.remove("scrolled");
+  }
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive:true });
+})();
+</script>
+</body>
+</html>
