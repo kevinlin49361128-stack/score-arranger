@@ -25,6 +25,9 @@ export const DIALOG_STRINGS: BiDict = {
   "about.tab.aiPrivacy": {
     "zh-TW": "AI / 隱私", en: "AI / privacy", ja: "AI / プライバシー",
   },
+  "about.tab.disclaimer": {
+    "zh-TW": "免責 / 使用條款", en: "Disclaimer / terms", ja: "免責事項 / 利用条件",
+  },
   "about.tab.trademarks": {
     "zh-TW": "商標", en: "Trademarks", ja: "商標",
   },
@@ -519,6 +522,181 @@ export const DIALOG_STRINGS: BiDict = {
     ja:
       " — 「外部エディタで開く」を使用する際の一時ファイル。"
       + "システムによって自動的に削除されます",
+  },
+
+  // === About: 免責 / 使用條款 (EULA 雛形) ===
+  // 改作權 — 使用者責任. AS IS — 演算法非保證. 賠償限制 — 損失自負.
+  // 將來上 App Store 會把這幾段轉為強制同意流程.
+  "about.disclaimer.copyrightHeading": {
+    "zh-TW": "著作權與改作權",
+    en: "Copyright & derivative works",
+    ja: "著作権と派生著作物",
+  },
+  "about.disclaimer.copyrightIntro": {
+    "zh-TW":
+      "Score Arranger 是「樂譜改編工具」, 將你匯入的樂譜重新分配 / 改寫. "
+      + "改編後的譜在法律上屬於原作的「衍生作品」, 你的合法使用權繫於原譜:",
+    en:
+      "Score Arranger is a tool that re-arranges scores you provide. "
+      + "Arrangements are legally considered derivative works of the input; "
+      + "your right to use the output is bound by your right to the input:",
+    ja:
+      "Score Arranger は入力された楽譜を再構成するツールです. "
+      + "編曲結果は原作の派生著作物に該当し, 出力の使用権は入力楽譜への "
+      + "あなたの権利に拘束されます:",
+  },
+  "about.disclaimer.copyright.publicDomain": {
+    "zh-TW":
+      "若原譜屬公共領域 (例如 18-19 世紀古典作品), 你可自由使用改編譜.",
+    en:
+      "If the source is in the public domain (e.g. 18-19th century classical "
+      + "works), you may use the arrangement freely.",
+    ja:
+      "原譜がパブリックドメイン (例: 18-19 世紀の古典作品) であれば, "
+      + "編曲結果を自由に使用できます.",
+  },
+  "about.disclaimer.copyright.copyrightedTerm": {
+    "zh-TW": "受版權保護的作品 — ",
+    en: "Copyrighted works — ",
+    ja: "著作権で保護された作品 — ",
+  },
+  "about.disclaimer.copyright.copyrightedBody": {
+    "zh-TW":
+      "若原譜仍受版權保護, 未經原著作權人授權, 你不得公開演出、散布或商用 "
+      + "改編譜. 教育 / 個人練習可能受合理使用保護, 但因國別而異.",
+    en:
+      "If the source is still under copyright, you may not perform, "
+      + "distribute, or commercially use the arrangement without the rights "
+      + "holder's authorization. Educational / personal-practice use may "
+      + "qualify under fair use / fair dealing, but rules vary by jurisdiction.",
+    ja:
+      "原譜が著作権保護下にある場合, 権利者の許諾なしに公演 / 配布 / 商用 "
+      + "利用はできません. 教育・個人練習は fair use 等で許される場合が "
+      + "ありますが, 国により異なります.",
+  },
+  "about.disclaimer.copyright.userResponsibility": {
+    "zh-TW":
+      "使用者必須自行確保擁有匯入樂譜的合法使用權. 因侵權產生的所有法律 "
+      + "責任由使用者承擔, 開發者不負連帶責任.",
+    en:
+      "You are responsible for ensuring you have lawful rights to any score "
+      + "you import. All liability for infringement rests with the user; "
+      + "the developer assumes no joint responsibility.",
+    ja:
+      "あなたは, インポートする楽譜の合法な使用権を有することを自ら確認 "
+      + "する責任があります. 侵害に関する一切の法的責任は使用者が負い, "
+      + "開発者は連帯責任を負いません.",
+  },
+
+  "about.disclaimer.asIsHeading": {
+    "zh-TW": "演算法輔助, 非保證",
+    en: "Algorithmic assistance — not a guarantee",
+    ja: "アルゴリズム支援 — 保証ではない",
+  },
+  "about.disclaimer.asIsIntro": {
+    "zh-TW":
+      "Score Arranger 的「可演奏性檢查」、「難度評估」與「改編建議」是 "
+      + "演算法輔助, 並非專業認證:",
+    en:
+      "Score Arranger's playability checks, difficulty scoring, and "
+      + "arrangement suggestions are algorithmic aids — not professional "
+      + "endorsements:",
+    ja:
+      "Score Arranger の演奏可能性チェック・難易度評価・編曲提案は "
+      + "アルゴリズム支援であり, 専門家による保証ではありません:",
+  },
+  "about.disclaimer.asIs.advisoryOnly": {
+    "zh-TW":
+      "綠燈 (無問題) 不等於「絕對可演奏」— 演算法可能漏掉樂手體型差異、 "
+      + "個別樂器條件、特殊技巧或表演脈絡.",
+    en:
+      "A green light is not absolute proof of playability — the algorithm "
+      + "may miss performer body differences, individual instrument "
+      + "condition, specialized technique, or context.",
+    ja:
+      "「問題なし」の判定は絶対的な演奏可能性を意味しません — 演奏者の "
+      + "体格差・個別楽器の状態・特殊技法・演奏文脈などを見落とす可能性が "
+      + "あります.",
+  },
+  "about.disclaimer.asIs.noWarranty": {
+    "zh-TW":
+      "本軟體依現狀 (\"AS IS\") 提供, 不附帶任何明示或默示的保證, 包含但 "
+      + "不限於適售性、特定用途適用性與不侵權.",
+    en:
+      "This software is provided \"AS IS\" without any express or implied "
+      + "warranties, including merchantability, fitness for a particular "
+      + "purpose, and non-infringement.",
+    ja:
+      "本ソフトウェアは現状有姿 (\"AS IS\") で提供され, 明示または黙示の "
+      + "保証 (商品性・特定目的適合性・非侵害を含む) を一切伴いません.",
+  },
+  "about.disclaimer.asIs.userVerification": {
+    "zh-TW":
+      "正式排練 / 演出 / 錄音前, 強烈建議由樂手或專業編曲家對最終譜面進行 "
+      + "可演奏性的最終確認.",
+    en:
+      "Before formal rehearsals, performances, or recordings, we strongly "
+      + "recommend having a performer or professional arranger verify the "
+      + "final score's playability.",
+    ja:
+      "正式なリハーサル・演奏・録音の前に, 演奏者または専門編曲家による "
+      + "最終楽譜の演奏可能性確認を強くお勧めします.",
+  },
+
+  "about.disclaimer.liabilityHeading": {
+    "zh-TW": "賠償責任限制",
+    en: "Limitation of liability",
+    ja: "賠償責任の制限",
+  },
+  "about.disclaimer.liabilityBody": {
+    "zh-TW":
+      "在法律允許的最大範圍內, 開發者在任何情況下均不對因使用本軟體而 "
+      + "產生的任何直接、間接、特殊、衍生或附帶性損害負責, 包含但不限於 "
+      + "排練時間損失、演出失敗、錄音室費用、收入損失或商譽損害, 無論 "
+      + "事前是否被告知有此可能性. 本條款的詳細法律條文以 GNU General "
+      + "Public License v3.0 第 15、16 條為準.",
+    en:
+      "To the maximum extent permitted by law, the developer is not liable "
+      + "for any direct, indirect, special, consequential, or incidental "
+      + "damages arising from use of this software, including but not "
+      + "limited to lost rehearsal time, failed performances, studio "
+      + "costs, lost revenue, or reputational harm — whether or not "
+      + "advised of the possibility. The formal terms of this clause are "
+      + "set out in Sections 15 and 16 of the GNU General Public License v3.0.",
+    ja:
+      "法律で認められる最大限において, 開発者は本ソフトウェアの使用から "
+      + "生じる直接・間接・特別・派生・付随的損害 (リハーサル時間の損失・ "
+      + "演奏失敗・スタジオ費用・収益損失・信用毀損などを含むがこれに "
+      + "限らない) について, 事前通知の有無を問わず一切責任を負いません. "
+      + "本条項の正式な法的文面は GNU General Public License v3.0 第 15・ "
+      + "16 条に従います.",
+  },
+
+  "about.disclaimer.aiThirdPartyHeading": {
+    "zh-TW": "AI 第三方資料傳輸",
+    en: "AI third-party data transmission",
+    ja: "AI 第三者データ送信",
+  },
+  "about.disclaimer.aiThirdPartyBody": {
+    "zh-TW":
+      "若你啟用了雲端 AI (Anthropic / Gemini 等), 啟用時你的樂譜內容會 "
+      + "依照該供應商的隱私權政策被傳輸與處理. Score Arranger 本身不 "
+      + "上傳、不儲存、不轉發任何使用者資料. 雲端 AI 的資料安全與保密 "
+      + "事項應參考各供應商的條款; 開發者對第三方服務的處理結果不負責.",
+    en:
+      "If you enable cloud AI (Anthropic / Gemini / etc.), your score "
+      + "content is transmitted to and processed by that provider under "
+      + "their privacy policy. Score Arranger itself does not upload, "
+      + "store, or forward your data. Refer to each provider's terms for "
+      + "data security; the developer is not responsible for third-party "
+      + "service handling.",
+    ja:
+      "クラウド AI (Anthropic / Gemini など) を有効化した場合, 楽譜の "
+      + "内容は当該プロバイダーのプライバシーポリシーに従って送信・ "
+      + "処理されます. Score Arranger 自体はあなたのデータを送信・保存・ "
+      + "転送しません. データセキュリティについては各プロバイダーの規約 "
+      + "を参照してください. 第三者サービスの処理結果について, 開発者は "
+      + "責任を負いません.",
   },
 
   // === About: 商標 ===

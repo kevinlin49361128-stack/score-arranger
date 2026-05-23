@@ -20,6 +20,7 @@ type Section =
   | "samples"
   | "corpus"
   | "ai-privacy"
+  | "disclaimer"
   | "trademarks";
 
 const SECTION_LABEL_KEYS: Record<Section, string> = {
@@ -28,6 +29,7 @@ const SECTION_LABEL_KEYS: Record<Section, string> = {
   samples: "about.tab.samples",
   corpus: "about.tab.corpus",
   "ai-privacy": "about.tab.aiPrivacy",
+  disclaimer: "about.tab.disclaimer",
   trademarks: "about.tab.trademarks",
 };
 
@@ -78,7 +80,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             Score Arranger
           </strong>
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            v0.1.26
+            v0.1.27
           </span>
           <button
             onClick={onClose}
@@ -149,6 +151,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             {section === "samples" && <Samples />}
             {section === "corpus" && <Corpus />}
             {section === "ai-privacy" && <AIPrivacy />}
+            {section === "disclaimer" && <Disclaimer />}
             {section === "trademarks" && <Trademarks />}
           </main>
         </div>
@@ -476,6 +479,48 @@ function AIPrivacy() {
           {t("about.aiPrivacy.will.tmp")}
         </li>
       </ul>
+    </div>
+  );
+}
+
+function Disclaimer() {
+  useLocale();
+  return (
+    <div>
+      {/*
+        免責 / 使用條款 (informal EULA). 三大重點:
+        1. 改作權 — 使用者自負匯入樂譜的合法使用權.
+        2. AS IS — 演算法輔助非保證, 開發者不擔賠償.
+        3. 預期用途 — 教育 / 編曲輔助, 不是「機械式自動產譜」.
+        為將來上 App Store 預埋的 EULA 條文. 現在不強制使用者勾選同意,
+        但已明確列在 About 對話框內供查閱.
+      */}
+      <H2>{t("about.disclaimer.copyrightHeading")}</H2>
+      <p>{t("about.disclaimer.copyrightIntro")}</p>
+      <ul style={{ paddingLeft: 18 }}>
+        <li>{t("about.disclaimer.copyright.publicDomain")}</li>
+        <li>
+          <strong>{t("about.disclaimer.copyright.copyrightedTerm")}</strong>
+          {t("about.disclaimer.copyright.copyrightedBody")}
+        </li>
+        <li>{t("about.disclaimer.copyright.userResponsibility")}</li>
+      </ul>
+
+      <H2>{t("about.disclaimer.asIsHeading")}</H2>
+      <p>{t("about.disclaimer.asIsIntro")}</p>
+      <ul style={{ paddingLeft: 18 }}>
+        <li>{t("about.disclaimer.asIs.advisoryOnly")}</li>
+        <li>{t("about.disclaimer.asIs.noWarranty")}</li>
+        <li>{t("about.disclaimer.asIs.userVerification")}</li>
+      </ul>
+
+      <H2>{t("about.disclaimer.liabilityHeading")}</H2>
+      <p style={{ color: "var(--fg-muted)" }}>
+        {t("about.disclaimer.liabilityBody")}
+      </p>
+
+      <H2>{t("about.disclaimer.aiThirdPartyHeading")}</H2>
+      <p>{t("about.disclaimer.aiThirdPartyBody")}</p>
     </div>
   );
 }

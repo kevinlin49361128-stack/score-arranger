@@ -38,6 +38,7 @@ import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { PracticePanel } from "./PracticePanel";
 import { OMRInstallDialog } from "./OMRInstallDialog";
+import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
 import { PresetLibrary } from "./PresetLibrary";
@@ -204,6 +205,12 @@ export function Toolbar() {
   // PDF 匯入前的「預防針」提醒 — 確認後才進 OMR 流程
   const [pdfWarning, setPdfWarning] = useState<{
     pendingPdfPath: string;
+  } | null>(null);
+  // OMR 跑完後的「核對結果」對話框 — 確認後才實際 setSourcePath.
+  // Audiveris 常產出嚴重錯誤 (漏小節 / 0 聲部), 先讓使用者核對基本資訊.
+  const [omrReview, setOmrReview] = useState<{
+    omrPath: string;
+    pdfPath: string;
   } | null>(null);
 
   // 點 popover 外部 → 關閉 (設定 / 改編選項 / 溢出選單)
@@ -417,63 +424,16 @@ export function Toolbar() {
     }
   };
 
-  /** 實際執行匯入 — path 已確定 (PDF 已先過預防針提醒)。 */
-  const runImport = async (path: string) => {
+  /**
+   * 已拿到最終 MusicXML 路徑 — setSourcePath + 抓 scoreInfo + 載 MusicXML.
+   * 從 runImport (非 PDF 路徑) 與 OMRReviewDialog 確認流程兩處共用.
+   */
+  const finishImportFromScorePath = async (scorePath: string) => {
     try {
-      setError(null);
-      setMode("setup");
-      if (!activeTabId && tabs.length === 0) {
-        newTab();
-      }
-
-      // PDF: 先檢查 Audiveris, 沒裝就跳安裝指引 modal
-      let scorePath: string = path;
-      const lower = path.toLowerCase();
-      if (lower.endsWith(".pdf")) {
-        setLoading(true, tr("toolbar.loading.omrCheck"));
-        const statusRes = await window.scoreArranger.engine.omrStatus();
-        if (!statusRes.ok || !statusRes.data?.available) {
-          setLoading(false);
-          setOmrDialog({
-            missing: statusRes.data?.missing ?? ["unknown"],
-            hints: statusRes.data?.install_hints ?? {},
-            pendingPdfPath: path,
-          });
-          return;
-        }
-        const omrPath = await runOMR(path);
-        if (!omrPath) return;
-        scorePath = omrPath;
-      } else if (/\.(wav|mp3|m4a|flac|ogg|aac)$/.test(lower)) {
-        // 音訊: 跑 basic-pitch AMT
-        setLoading(true, tr("toolbar.loading.amtCheck"));
-        const amtRes = await window.scoreArranger.engine.amtStatus();
-        if (!amtRes.ok || !amtRes.data?.available) {
-          setLoading(false);
-          const hints = amtRes.data?.install_hints ?? {};
-          const missing = amtRes.data?.missing ?? ["basic-pitch"];
-          setError(
-            tr("toolbar.error.amtMissing", {
-              missing: missing.join(", "),
-              hints: Object.values(hints).join("\n"),
-            }),
-          );
-          return;
-        }
-        setLoading(true, tr("toolbar.loading.amtRunning"));
-        const amtConv = await window.scoreArranger.engine.audioToMusicXML(path);
-        if (!amtConv.ok || !amtConv.data) {
-          setError(amtConv.error ?? tr("toolbar.error.amtFailed"));
-          return;
-        }
-        scorePath = amtConv.data.musicxml_path;
-      }
-
       setSourcePath(scorePath);
       setLoading(true, tr("toolbar.loading.scoreSize"));
       // 大譜偵測: >800 measures 自動切前 200 小節預覽 (改編仍走完整譜).
-      // 記下總小節數 → sessionStore.sourceSlice, App.tsx 可顯示翻頁 UI.
-      let maxMeasures: number | undefined ;
+      let maxMeasures: number | undefined;
       let totalMeasures = 0;
       try {
         const info = await window.scoreArranger.engine.scoreInfo(scorePath);
@@ -500,7 +460,6 @@ export function Toolbar() {
       );
       if (xmlRes.ok && xmlRes.data) {
         setSourceMusicXML(xmlRes.data);
-        // 只在有切片時設; 完整顯示維持 null (App.tsx 才不會顯示翻頁 UI)
         if (maxMeasures && totalMeasures > maxMeasures) {
           useSessionStore.getState().setSourceSlice({
             startMeasure: 1,
@@ -517,6 +476,70 @@ export function Toolbar() {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
+      setLoading(false);
+    }
+  };
+
+  /** 實際執行匯入 — path 已確定 (PDF 已先過預防針提醒)。 */
+  const runImport = async (path: string) => {
+    try {
+      setError(null);
+      setMode("setup");
+      if (!activeTabId && tabs.length === 0) {
+        newTab();
+      }
+
+      // PDF: 先檢查 Audiveris, 沒裝就跳安裝指引 modal
+      let scorePath: string = path;
+      const lower = path.toLowerCase();
+      if (lower.endsWith(".pdf")) {
+        setLoading(true, tr("toolbar.loading.omrCheck"));
+        const statusRes = await window.scoreArranger.engine.omrStatus();
+        if (!statusRes.ok || !statusRes.data?.available) {
+          setLoading(false);
+          setOmrDialog({
+            missing: statusRes.data?.missing ?? ["unknown"],
+            hints: statusRes.data?.install_hints ?? {},
+            pendingPdfPath: path,
+          });
+          return;
+        }
+        const omrPath = await runOMR(path);
+        if (!omrPath) return;
+        // OMR 完成 → 不直接進匯入流程, 先彈核對對話框讓使用者確認.
+        // 確認後 finishImport(omrPath) 才實際 setSourcePath.
+        setLoading(false);
+        setOmrReview({ omrPath, pdfPath: path });
+        return;
+      } else if (/\.(wav|mp3|m4a|flac|ogg|aac)$/.test(lower)) {
+        // 音訊: 跑 basic-pitch AMT
+        setLoading(true, tr("toolbar.loading.amtCheck"));
+        const amtRes = await window.scoreArranger.engine.amtStatus();
+        if (!amtRes.ok || !amtRes.data?.available) {
+          setLoading(false);
+          const hints = amtRes.data?.install_hints ?? {};
+          const missing = amtRes.data?.missing ?? ["basic-pitch"];
+          setError(
+            tr("toolbar.error.amtMissing", {
+              missing: missing.join(", "),
+              hints: Object.values(hints).join("\n"),
+            }),
+          );
+          return;
+        }
+        setLoading(true, tr("toolbar.loading.amtRunning"));
+        const amtConv = await window.scoreArranger.engine.audioToMusicXML(path);
+        if (!amtConv.ok || !amtConv.data) {
+          setError(amtConv.error ?? tr("toolbar.error.amtFailed"));
+          return;
+        }
+        scorePath = amtConv.data.musicxml_path;
+      }
+
+      // 把後續流程委交給 helper (OMR 路徑也走同一個函式, 確認後才呼叫)
+      await finishImportFromScorePath(scorePath);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
     }
   };
@@ -1258,6 +1281,18 @@ export function Toolbar() {
           }}
         />
       )}
+      {omrReview && (
+        <OMRReviewDialog
+          omrPath={omrReview.omrPath}
+          pdfPath={omrReview.pdfPath}
+          onCancel={() => setOmrReview(null)}
+          onConfirm={() => {
+            const path = omrReview.omrPath;
+            setOmrReview(null);
+            void finishImportFromScorePath(path);
+          }}
+        />
+      )}
       {omrDialog && (
         <OMRInstallDialog
           missing={omrDialog.missing}
@@ -1268,23 +1303,11 @@ export function Toolbar() {
             if (res.ok && res.data?.available) {
               const pdfPath = omrDialog.pendingPdfPath;
               setOmrDialog(null);
-              try {
-                const scorePath = await runOMR(pdfPath);
-                if (scorePath) {
-                  setSourcePath(scorePath);
-                  setLoading(true, tr("toolbar.loading.loadingScore"));
-                  const xmlRes = await window.scoreArranger.engine.toMusicXML(
-                    scorePath,
-                  );
-                  if (xmlRes.ok && xmlRes.data) {
-                    setSourceMusicXML(xmlRes.data);
-                    snapshotToTab();
-                  } else {
-                    setError(xmlRes.error ?? tr("toolbar.error.loadScoreFailed"));
-                  }
-                }
-              } finally {
-                setLoading(false);
+              const scorePath = await runOMR(pdfPath);
+              setLoading(false);
+              if (scorePath) {
+                // 與 runImport 一致 — 先彈核對對話框, 確認後才進匯入
+                setOmrReview({ omrPath: scorePath, pdfPath });
               }
               return true;
             }

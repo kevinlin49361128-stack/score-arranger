@@ -481,6 +481,66 @@ export const SHELL_STRINGS: BiDict = {
     ja: "経過時間 {sec}s · 大きな PDF は 1-3 分かかります",
   },
 
+  // === OMRReviewDialog (PDF → MusicXML 糾錯前置確認) ===
+  "omrReview.title": {
+    "zh-TW": "OMR 辨識結果 — 請核對",
+    en: "OMR result — please verify",
+    ja: "OMR 認識結果 — 確認してください",
+  },
+  "omrReview.sourceFile": {
+    "zh-TW": "來源 PDF", en: "Source PDF", ja: "ソース PDF",
+  },
+  "omrReview.intro": {
+    "zh-TW":
+      "Audiveris 對複雜總譜常產出錯誤. 在匯入前先核對基本資訊, "
+      + "若小節數 / 聲部數與你預期落差大 (例如 50 小節辨成 5 小節), "
+      + "建議放棄並改用 MuseScore 預先匯出.",
+    en:
+      "Audiveris often makes mistakes on complex scores. Verify the "
+      + "basic info before importing — if the measure / part counts "
+      + "don't match your expectation (e.g. 50 measures detected as 5), "
+      + "consider canceling and re-exporting via MuseScore instead.",
+    ja:
+      "Audiveris は複雑な楽譜でしばしば誤認識します. インポート前に "
+      + "基本情報を確認してください. 期待と大きく異なる場合 "
+      + "(例: 50 小節が 5 小節として認識), キャンセルして MuseScore で "
+      + "再エクスポートすることをお勧めします.",
+  },
+  "omrReview.loading": {
+    "zh-TW": "讀取辨識結果中…",
+    en: "Reading detection result…",
+    ja: "認識結果を読み込み中…",
+  },
+  "omrReview.error.fetchFailed": {
+    "zh-TW": "讀取辨識結果失敗",
+    en: "Failed to read detection result",
+    ja: "認識結果の読み込みに失敗しました",
+  },
+  "omrReview.warnSuspicious": {
+    "zh-TW": "辨識結果可能完全失敗 (0 小節或 0 聲部), 強烈建議放棄並重試.",
+    en:
+      "Detection may have failed entirely (0 measures or parts). "
+      + "Strongly recommend canceling and retrying.",
+    ja:
+      "認識が完全に失敗した可能性があります (0 小節または 0 声部). "
+      + "キャンセルしてやり直すことを強くお勧めします.",
+  },
+  "omrReview.field.measures": {
+    "zh-TW": "總小節數", en: "Total measures", ja: "総小節数",
+  },
+  "omrReview.field.parts": {
+    "zh-TW": "聲部數", en: "Parts detected", ja: "声部数",
+  },
+  "omrReview.partListHeading": {
+    "zh-TW": "聲部清單", en: "Part list", ja: "声部一覧",
+  },
+  "omrReview.cancel": {
+    "zh-TW": "放棄", en: "Cancel", ja: "キャンセル",
+  },
+  "omrReview.confirm": {
+    "zh-TW": "確認匯入", en: "Confirm import", ja: "インポート確定",
+  },
+
   // === ZoomControls ===
   "zoom.control": {
     "zh-TW": "縮放 (⌘+ / ⌘- / ⌘0)", en: "Zoom (⌘+ / ⌘- / ⌘0)",
