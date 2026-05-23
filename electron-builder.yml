@@ -30,6 +30,13 @@ afterPack: build/after-pack.js
 
 asar: true
 
+# 安全升 Electron 31→42 後, electron-rebuild 會試圖 rebuild OSMD 的 optional
+# dep `gl@9.x` (headless WebGL for SSR), 但它的 C++ 不過 Node 22+ ABI 而失敗.
+# 這個 app 完全不需要 native node_modules —— main process 只用 node:* +
+# electron, Python engine 是獨立的 PyInstaller binary —— 所以禁掉 rebuild
+# 既安全又解掉 build break.
+npmRebuild: false
+
 mac:
   category: public.app-category.music
   icon: build/icon.icns
