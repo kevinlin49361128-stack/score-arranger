@@ -260,6 +260,25 @@ export function PlaybackControls(
   /** 慢速練習 — 1.0 = 原速, 0.75 = 75%, 0.5 = 50%. 排程時把 note.time /
    * note.duration 都 ×(1/rate), measureStarts 同樣縮放, 所以播放游標跟得上. */
   const [playbackRate, setPlaybackRate] = useState<number>(1);
+  /** 聲部 mute — set of track index. 在 handlePlay scheduling 時跳過. */
+  const [mutedTracks, setMutedTracks] = useState<Set<number>>(new Set());
+  /** 上一次播放 MIDI 的 track 列表 — 提供 mute popover 用 */
+  const [knownTracks, setKnownTracks] = useState<
+    { idx: number; name: string }[]
+  >([]);
+  /** mute popover 開關 */
+  const [muteOpen, setMuteOpen] = useState(false);
+  const muteRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!muteOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (muteRef.current && !muteRef.current.contains(e.target as Node)) {
+        setMuteOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [muteOpen]);
   // Refs 鏡像給 RAF loop 用 (避免 stale closure)
   const loopStartRef = useRef<number | null>(null);
   const loopEndRef = useRef<number | null>(null);
@@ -723,8 +742,17 @@ export function PlaybackControls(
       measureStartsRef.current = computeMeasureStarts(midi, pickupQuarters)
         .map((s) => s * stretch);
 
+      // 把 track 列表更新到 state, 給 mute popover 顯示用. 用 idx 區分,
+      // name 為空時 fallback 給 "Track N+1" — 避免 popover 顯示空白行.
+      setKnownTracks(midi.tracks.map((t, i) => ({
+        idx: i,
+        name: t.name?.trim() || `Track ${i + 1}`,
+      })));
+
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {
+        // mute: 此 track 在 mutedTracks 內 → 整段跳過排程 (連 lastTime 都不算)
+        if (mutedTracks.has(trackIdx)) return;
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
         for (const note of track.notes) {
@@ -920,38 +948,146 @@ export function PlaybackControls(
           }}
         />
       </div>
-      {!compact && (
-        <label
-          title={t("playback.rate.title")}
+      {/* 速度 — compact / non-compact 都顯示, 練習用很常切 */}
+      <label
+        title={t("playback.rate.title")}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 3,
+          fontSize: 11,
+          color: "var(--fg-muted)",
+          marginLeft: 8,
+        }}
+      >
+        🐢
+        <select
+          value={playbackRate}
+          onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
+          disabled={state !== "idle"}
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
             fontSize: 11,
-            color: "var(--fg-muted)",
-            marginLeft: 8,
+            padding: "1px 3px",
+            border: "1px solid var(--border)",
+            borderRadius: 3,
+            background: "var(--bg-panel)",
+            color: "var(--fg-primary)",
           }}
         >
-          🐢
-          <select
-            value={playbackRate}
-            onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
-            disabled={state !== "idle"}
+          <option value={1}>1.0x</option>
+          <option value={0.75}>0.75x</option>
+          <option value={0.5}>0.5x</option>
+        </select>
+      </label>
+      {/* 聲部 mute — compact / non-compact 都顯示. 內容 popover, 點外部關閉 */}
+      <div
+        ref={muteRef}
+        style={{ position: "relative", marginLeft: 4 }}
+      >
+        <button
+          type="button"
+          onClick={() => setMuteOpen((x) => !x)}
+          title={t("playback.mute.title")}
+          style={{
+            ...btn,
+            fontSize: 11,
+            padding: "4px 8px",
+            minWidth: 0,
+            background: mutedTracks.size > 0
+              ? "var(--accent)" : btn.background,
+            color: mutedTracks.size > 0
+              ? "var(--accent-fg)" : btn.color,
+          }}
+        >
+          {mutedTracks.size > 0 ? `🔇 ${mutedTracks.size}` : "🎚"}
+        </button>
+        {muteOpen && (
+          <div
             style={{
-              fontSize: 11,
-              padding: "1px 4px",
-              border: "1px solid var(--border)",
-              borderRadius: 3,
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              right: 0,
+              minWidth: 180,
+              maxHeight: 280,
+              overflowY: "auto",
               background: "var(--bg-panel)",
-              color: "var(--fg-primary)",
+              border: "1px solid var(--border)",
+              borderRadius: 6,
+              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+              padding: 8,
+              zIndex: 100,
+              fontSize: 12,
             }}
           >
-            <option value={1}>1.0x</option>
-            <option value={0.75}>0.75x</option>
-            <option value={0.5}>0.5x</option>
-          </select>
-        </label>
-      )}
+            <div style={{
+              fontSize: 11,
+              color: "var(--fg-muted)",
+              marginBottom: 6,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}>
+              <span>{t("playback.mute.heading")}</span>
+              {mutedTracks.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMutedTracks(new Set())}
+                  style={{
+                    fontSize: 10,
+                    padding: "1px 6px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 3,
+                    background: "transparent",
+                    color: "var(--fg-muted)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("playback.mute.clear")}
+                </button>
+              )}
+            </div>
+            {knownTracks.length === 0 ? (
+              <div style={{ color: "var(--fg-tertiary)", fontSize: 11 }}>
+                {t("playback.mute.empty")}
+              </div>
+            ) : (
+              knownTracks.map((tr) => {
+                const muted = mutedTracks.has(tr.idx);
+                return (
+                  <label
+                    key={tr.idx}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "3px 0",
+                      cursor: "pointer",
+                      color: muted
+                        ? "var(--fg-tertiary)"
+                        : "var(--fg-primary)",
+                      textDecoration: muted ? "line-through" : "none",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!muted}
+                      onChange={(e) => {
+                        setMutedTracks((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.delete(tr.idx);
+                          else next.add(tr.idx);
+                          return next;
+                        });
+                      }}
+                    />
+                    {tr.name}
+                  </label>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
       {!compact && (
         <label
           title={

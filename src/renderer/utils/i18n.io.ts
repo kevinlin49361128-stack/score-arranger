@@ -465,6 +465,26 @@ export const IO_STRINGS: BiDict = {
     en: "Slow practice — pick a rate before starting playback",
     ja: "スロー練習 — 再生前に速度を選択",
   },
+  "playback.mute.title": {
+    "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
+    en: "Mute parts — pick which tracks to silence (available after first playback)",
+    ja: "パートをミュート — 再生後にトラックを選択",
+  },
+  "playback.mute.heading": {
+    "zh-TW": "聲部 mute",
+    en: "Mute tracks",
+    ja: "トラックミュート",
+  },
+  "playback.mute.clear": {
+    "zh-TW": "全部恢復",
+    en: "Unmute all",
+    ja: "全て解除",
+  },
+  "playback.mute.empty": {
+    "zh-TW": "(先按 ▶ 一次, 才能看到聲部列表)",
+    en: "(Press ▶ once to populate the track list)",
+    ja: "(▶ を一度押すとトラック一覧が表示されます)",
+  },
   "playback.samples.label": {
     "zh-TW": "取樣",
     en: "Samples",

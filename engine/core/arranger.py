@@ -291,6 +291,14 @@ def arrange(
         except Exception:
             pass
 
+    # Voice-leading DP — 對內聲部跑 Viterbi 把八度選到平行 5/8 / 聲部交叉
+    # 最少的位置. 失敗不阻塞改編 (內聲部原樣保留, MELODY/BASS 不受影響).
+    try:
+        from .voice_leading_dp import optimize_inner_voices
+        optimize_inner_voices(arrangement)
+    except Exception:
+        pass
+
     return arrangement
 
 

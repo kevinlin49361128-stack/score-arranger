@@ -29,6 +29,11 @@ import { app } from "electron";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  formatExamplesForPrompt,
+  retrieveExamples,
+} from "./llm-examples";
+
 export interface LLMSuggestionContext {
   context: string;
   userQuery: string;
@@ -493,6 +498,12 @@ export async function callLLMEditPlan(
       "",
     ]
     : [];
+  // RAG: 從庫中找跟 userRequest 相關的 few-shot examples 注入 prompt.
+  // 對小模型 (Ollama) 命中率提升明顯, 大模型也減少在罕見 op (level / enrich
+  // octave) 上的亂寫。retrieveExamples 找不到相關時回空陣列, 不影響原行為。
+  const examples = retrieveExamples(ctx.userRequest, 3);
+  const examplesBlock = formatExamplesForPrompt(examples);
+
   const userMessage = [
     `編制: ${ctx.ensemble ?? "未指定"}`,
     `總小節數: ${ctx.measureCount}`,
@@ -501,7 +512,7 @@ export async function callLLMEditPlan(
     partList,
     "來源聲部 (僅供 reassign 操作使用):",
     sourceList,
-    "",
+    examplesBlock,
     ...historyBlock,
     "使用者要求:",
     ctx.userRequest,
