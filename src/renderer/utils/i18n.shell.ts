@@ -260,6 +260,112 @@ export const SHELL_STRINGS: BiDict = {
     "zh-TW": "關於 Score Arranger", en: "About Score Arranger",
     ja: "Score Arranger について",
   },
+  "toolbar.settings.guidanceOn": {
+    "zh-TW": "開啟引導模式",
+    en: "Turn guidance on",
+    ja: "ガイドモードをオン",
+  },
+  "toolbar.settings.guidanceOff": {
+    "zh-TW": "關閉引導模式",
+    en: "Turn guidance off",
+    ja: "ガイドモードをオフ",
+  },
+  "toolbar.settings.guidanceReset": {
+    "zh-TW": "重新看一次教學",
+    en: "Show all tutorials again",
+    ja: "すべてのガイドを再表示",
+  },
+
+  // === Coachmark 「知道了」按鈕 ===
+  "coachmark.gotIt": {
+    "zh-TW": "知道了",
+    en: "Got it",
+    ja: "了解",
+  },
+
+  // === Coachmark: 改編 (arrange) ===
+  "coachmark.arrange.title": {
+    "zh-TW": "改編",
+    en: "Arrange",
+    ja: "編曲",
+  },
+  "coachmark.arrange.body": {
+    "zh-TW":
+      "把原譜重新分配給你選的編制. 不需要 AI — 引擎會自動處理音域、和弦、聲部分配.",
+    en:
+      "Re-distribute the source score to your chosen ensemble. No AI needed — the engine handles range, chords, and voicing automatically.",
+    ja:
+      "元の楽譜を選んだ編成に再配分します. AI は不要 — エンジンが音域・和音・声部配分を自動処理します.",
+  },
+
+  // === Coachmark: 改譜 (nl edit) ===
+  "coachmark.nlEdit.title": {
+    "zh-TW": "改譜 (AI)",
+    en: "Edit with AI",
+    ja: "AI で改譜",
+  },
+  "coachmark.nlEdit.body": {
+    "zh-TW":
+      "用文字描述你要的修改 — 例如「小提琴第 5-8 小節降一個八度」. 需要 AI 模型 (第一次點會帶你設定).",
+    en:
+      "Describe edits in plain text — e.g. \"transpose violin m. 5-8 down an octave\". Needs an AI model (first click guides you through setup).",
+    ja:
+      "テキストで編集を指示 — 例: 「ヴァイオリン 5-8 小節を 1 オクターブ下げる」. AI モデルが必要 (初回はセットアップに案内します).",
+  },
+
+  // === Coachmark: 難度調節 (boost) ===
+  "coachmark.boost.title": {
+    "zh-TW": "難度調節",
+    en: "Adjust difficulty",
+    ja: "難易度調節",
+  },
+  "coachmark.boost.body": {
+    "zh-TW":
+      "把譜變難 (加和聲、八度織體) 或變簡單 (移除內聲部、降密度). 不需要 AI.",
+    en:
+      "Make the score harder (add harmony, octave textures) or simpler (drop inner voices, reduce density). No AI needed.",
+    ja:
+      "楽譜を難しく (和音追加・オクターブ織体) または易しく (内声削除・密度低減) 調節. AI は不要.",
+  },
+
+  // === Coachmark: 練習 (practice) ===
+  "coachmark.practice.title": {
+    "zh-TW": "練習模式",
+    en: "Practice mode",
+    ja: "練習モード",
+  },
+  "coachmark.practice.body": {
+    "zh-TW":
+      "選擇要練的聲部, 慢速播放, 看指法提示. 適合演奏者一段一段練習改編後的譜.",
+    en:
+      "Pick a part, slow-play, see fingering hints. Built for players to drill the arranged score section-by-section.",
+    ja:
+      "声部を選び, 低速再生, 運指ヒント表示. 演奏者が編曲後の楽譜を段階的に練習するのに最適.",
+  },
+
+  // === Coachmark: 載入後 / 改編後「下一步」 ===
+  "coachmark.nextStep.afterLoad.title": {
+    "zh-TW": "下一步",
+    en: "Next step",
+    ja: "次のステップ",
+  },
+  "coachmark.nextStep.afterLoad.body": {
+    "zh-TW": "樂譜載入了 — 點 [改編] 把它分配給你選的編制.",
+    en: "Score loaded — click [Arrange] to distribute it to your chosen ensemble.",
+    ja: "楽譜が読み込まれました — [編曲] をクリックして編成に配分します.",
+  },
+  "coachmark.nextStep.afterArrange.title": {
+    "zh-TW": "下一步",
+    en: "Next step",
+    ja: "次のステップ",
+  },
+  "coachmark.nextStep.afterArrange.body": {
+    "zh-TW": "改編完成 — 試試 [播放] 比對效果, 或從工具列匯出 PDF / MusicXML.",
+    en:
+      "Arrangement done — try [Play] to compare with the original, or export PDF/MusicXML from the toolbar.",
+    ja:
+      "編曲完了 — [再生] で原譜と比較するか, ツールバーから PDF/MusicXML をエクスポートしてみましょう.",
+  },
 
   // === Toolbar: 載入 / 進度訊息 ===
   "toolbar.loading.undo": {

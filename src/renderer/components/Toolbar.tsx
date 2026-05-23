@@ -29,9 +29,11 @@ import {
   useState,
 } from "react";
 import { AboutDialog } from "./AboutDialog";
+import { Coachmark } from "./Coachmark";
 import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog";
 import { ExportMenu } from "./ExportMenu";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
+import { LLMSetupWizard } from "./LLMSetupWizard";
 import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { PracticePanel } from "./PracticePanel";
@@ -98,6 +100,9 @@ export function Toolbar() {
     setMode,
     theme,
     toggleTheme,
+    guidanceMode,
+    setGuidanceMode,
+    resetSeenCoachmarks,
     canUndo,
     canRedo,
     setHistoryFlags,
@@ -163,6 +168,17 @@ export function Toolbar() {
   const [nlEditOpen, setNlEditOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
+  // LLM 入門精靈: 點需要 AI 的功能且 LLM 未設定時, 自動跳出
+  // 設完後 pendingLLMAction 決定要打開哪個對話框
+  const [setupWizardOpen, setSetupWizardOpen] = useState(false);
+  const [pendingLLMAction, setPendingLLMAction] = useState<
+    "nlEdit" | "boost" | null
+  >(null);
+  // 引導模式 — 4 個主要動作按鈕的 anchor ref, 給 Coachmark 用
+  const arrangeBtnRef = useRef<HTMLButtonElement>(null);
+  const nlEditBtnRef = useRef<HTMLButtonElement>(null);
+  const boostBtnRef = useRef<HTMLButtonElement>(null);
+  const practiceBtnRef = useRef<HTMLButtonElement>(null);
   // 改編選項 popover (自動修復 / 技術水平 / 風格)
   const [arrangeOptsOpen, setArrangeOptsOpen] = useState(false);
   const arrangeOptsRef = useRef<HTMLDivElement>(null);
@@ -702,6 +718,7 @@ export function Toolbar() {
         }}
       >
         <button
+          ref={arrangeBtnRef}
           onClick={handleArrange}
           style={{
             ...btnPrimary,
@@ -893,7 +910,22 @@ export function Toolbar() {
         )}
       </div>
       <button
-        onClick={() => setNlEditOpen(true)}
+        ref={nlEditBtnRef}
+        onClick={async () => {
+          // 改譜 需要 LLM — 沒設定就跳入門精靈, 設完後自動開改譜
+          try {
+            const ok = await window.scoreArranger.llmIsAvailable();
+            if (ok) {
+              setNlEditOpen(true);
+            } else {
+              setPendingLLMAction("nlEdit");
+              setSetupWizardOpen(true);
+            }
+          } catch {
+            setPendingLLMAction("nlEdit");
+            setSetupWizardOpen(true);
+          }
+        }}
         style={btnBase}
         disabled={!arrangement || isLoading}
         title={tr("toolbar.nlEdit.title")}
@@ -901,6 +933,7 @@ export function Toolbar() {
         {tr("toolbar.nlEdit")}
       </button>
       <button
+        ref={boostBtnRef}
         onClick={() => setBoostOpen(true)}
         style={btnBase}
         disabled={!arrangement || isLoading}
@@ -909,6 +942,7 @@ export function Toolbar() {
         {tr("toolbar.boost")}
       </button>
       <button
+        ref={practiceBtnRef}
         onClick={() => setPracticeOpen(true)}
         style={btnBase}
         disabled={!arrangement || isLoading}
@@ -1159,6 +1193,26 @@ export function Toolbar() {
               }}
             />
             <MenuRow
+              label={guidanceMode
+                ? tr("toolbar.settings.guidanceOff")
+                : tr("toolbar.settings.guidanceOn")}
+              icon="💡"
+              onClick={() => {
+                setGuidanceMode(!guidanceMode);
+                setSettingsOpen(false);
+              }}
+            />
+            {guidanceMode && (
+              <MenuRow
+                label={tr("toolbar.settings.guidanceReset")}
+                icon="↺"
+                onClick={() => {
+                  resetSeenCoachmarks();
+                  setSettingsOpen(false);
+                }}
+              />
+            )}
+            <MenuRow
               label={tr("toolbar.settings.about")}
               icon="ⓘ"
               onClick={() => {
@@ -1172,6 +1226,19 @@ export function Toolbar() {
       {aboutOpen && <AboutDialog onClose={() => setAboutOpen(false)} />}
       {llmSettingsOpen && (
         <LLMSettingsDialog onClose={() => setLlmSettingsOpen(false)} />
+      )}
+      {setupWizardOpen && (
+        <LLMSetupWizard
+          onClose={() => {
+            setSetupWizardOpen(false);
+            setPendingLLMAction(null);
+          }}
+          onConfigured={() => {
+            // 設完後接續使用者本來想做的事
+            if (pendingLLMAction === "nlEdit") setNlEditOpen(true);
+            setPendingLLMAction(null);
+          }}
+        />
       )}
       {nlEditOpen && <NLEditDialog onClose={() => setNlEditOpen(false)} />}
       {boostOpen && (
@@ -1268,6 +1335,52 @@ export function Toolbar() {
             setPdfWarning(null);
             void runImport(pdfPath);
           }}
+        />
+      )}
+      {/*
+       * 引導模式 coachmarks (顯示一次, 之後在設定裡可重置).
+       * Phase 3: 每個按鈕的功能介紹 (是否需要 AI / 在做什麼).
+       * Phase 4: 觸發時機 = 按鈕剛變得能用 → 等於「下一步」hint.
+       *   - 改編: sourcePath 載入後 & 還沒改編 → 提示「下一步」
+       *   - 改譜/難度/練習: 改編完成後 → 解鎖時介紹
+       * Note: arrangement loading 過程 isLoading=true, coachmark 不顯示.
+       */}
+      {!!sourcePath && !arrangement && !isLoading && (
+        <Coachmark
+          id="arrange-intro"
+          anchorRef={arrangeBtnRef}
+          title={tr("coachmark.nextStep.afterLoad.title")}
+          body={tr("coachmark.nextStep.afterLoad.body")}
+          placement="bottom"
+        />
+      )}
+      {!!arrangement && !isLoading && (
+        <Coachmark
+          id="nl-edit-intro"
+          anchorRef={nlEditBtnRef}
+          title={tr("coachmark.nlEdit.title")}
+          body={tr("coachmark.nlEdit.body")}
+          placement="bottom"
+        />
+      )}
+      {!!arrangement && !isLoading && (
+        <Coachmark
+          id="boost-intro"
+          anchorRef={boostBtnRef}
+          title={tr("coachmark.boost.title")}
+          body={tr("coachmark.boost.body")}
+          placement="bottom"
+          delayMs={800}
+        />
+      )}
+      {!!arrangement && !isLoading && (
+        <Coachmark
+          id="practice-intro"
+          anchorRef={practiceBtnRef}
+          title={tr("coachmark.practice.title")}
+          body={tr("coachmark.practice.body")}
+          placement="bottom"
+          delayMs={1200}
         />
       )}
     </header>

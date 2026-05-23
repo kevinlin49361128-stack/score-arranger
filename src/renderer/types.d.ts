@@ -58,6 +58,7 @@ declare global {
         provider?: "anthropic" | "openai_compat" | "ollama";
         baseUrl?: string;
         model?: string;
+        apiKey?: string;
       }) => Promise<LLMConfigUI>;
       llmEditPlan: (ctx: {
         userRequest: string;

@@ -254,6 +254,21 @@
         animation: fx-pulse 0.4s ease-out;
       }
 
+      /* Coachmark 引導模式 — anchor 元素持續脈動, 引導使用者注意 */
+      @keyframes coachmark-pulse {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(217, 170, 99, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(217, 170, 99, 0);
+        }
+      }
+      .coachmark-pulse {
+        animation: coachmark-pulse 1.6s ease-out infinite;
+        position: relative;
+        z-index: 1;
+      }
+
       /* 歡迎空狀態的譜號意象 — 極緩呼吸浮動 */
       @keyframes fx-breathe {
         0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }

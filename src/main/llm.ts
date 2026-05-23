@@ -67,11 +67,16 @@ const SYSTEM_PROMPT =
 
 
 // ── app 內可設定的 LLM 設定 (持久化到 userData) ─────────────────────────
-// 只存非機密的 provider / baseUrl / model; API key 仍走環境變數 (不落地)。
+// 0.1.25 後也可選擇性持久化 apiKey — 給音樂老師用 LLM 入門精靈 (一鍵設定)
+// 而不必教他們改 ~/.zshrc 環境變數. 仍保留 LLM_API_KEY 環境變數做進階用法.
+// 安全考量: apiKey 寫到 userData (預設權限 700), 不送 renderer (見
+// getLLMConfigForUI 不回傳 apiKey). 進階用戶 (CI / 多帳號) 仍可用環境變數
+// 覆寫 (環境優先, 見 resolveConfig).
 export interface LLMSettings {
   provider?: ProviderKind;
   baseUrl?: string;
   model?: string;
+  apiKey?: string;
 }
 
 function settingsPath(): string {
@@ -123,10 +128,13 @@ function resolveSettings(): {
 
 function resolveConfig(): LLMConfig | null {
   const { provider, baseUrl, model } = resolveSettings();
+  const saved = getLLMSettings();
 
-  // API key: 優先用 generic LLM_API_KEY, anthropic 仍接受舊的 ANTHROPIC_API_KEY
+  // API key 優先序: env > 設定檔 (LLM 入門精靈寫的). 環境變數放第一是
+  // 給進階用戶 (CI / 多帳號 / 安全敏感) overriding 用.
   const apiKey = process.env.LLM_API_KEY
     ?? (provider === "anthropic" ? process.env.ANTHROPIC_API_KEY : null)
+    ?? saved.apiKey
     ?? null;
 
   // anthropic 強制要 key; openai_compat 也要 (除非 base_url 是 localhost);

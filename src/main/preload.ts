@@ -30,11 +30,16 @@ const api = {
   }) => ipcRenderer.invoke("llm:suggest", ctx),
   /** 讀取目前 LLM 設定 (provider / baseUrl / model + 是否可用) */
   llmGetConfig: () => ipcRenderer.invoke("llm:getConfig"),
-  /** 儲存 LLM 設定 — 只存 provider/baseUrl/model, API key 不落地 */
+  /**
+   * 儲存 LLM 設定. 0.1.25 起 apiKey 可選擇性持久化 — 給 LLM 入門精靈用
+   * (音樂老師等非工程使用者). 環境變數 (LLM_API_KEY / ANTHROPIC_API_KEY)
+   * 仍優先於檔案 apiKey.
+   */
   llmSetConfig: (partial: {
     provider?: "anthropic" | "openai_compat" | "ollama";
     baseUrl?: string;
     model?: string;
+    apiKey?: string;
   }) => ipcRenderer.invoke("llm:setConfig", partial),
   /** 自然語言改譜 — LLM 產生可套用的結構化操作 */
   llmEditPlan: (ctx: {

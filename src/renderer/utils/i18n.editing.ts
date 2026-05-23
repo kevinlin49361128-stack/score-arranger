@@ -832,4 +832,216 @@ export const EDITING_STRINGS: BiDict = {
     en: "{desc}, duration {duration}{dyn}",
     ja: "{desc}、音価 {duration}{dyn}",
   },
+  // ── LLMSetupWizard (引導模式 Phase 1) ─────────────────────────────────
+  "llmSetup.title": {
+    "zh-TW": "AI 模型設定 — 入門教學",
+    en: "AI Model Setup — Getting Started",
+    ja: "AI モデル設定 — はじめに",
+  },
+  "llmSetup.close": { "zh-TW": "關閉", en: "Close", ja: "閉じる" },
+  "llmSetup.intro": {
+    "zh-TW": "Score Arranger 大部分功能 (自動改編 / 聲部分配 / 可演奏性檢查 / 匯出) 都不需要 AI. 只有「自然語言改譜」會用到. 你可以申請免費的 Google Gemini API, 或在本地跑 Ollama (完全免費 + 私密).",
+    en: "Most Score Arranger features (auto-arranging, voice assignment, playability checks, export) don't need AI. Only \"natural-language editing\" uses it. You can get a free Google Gemini API key, or run Ollama locally (completely free + private).",
+    ja: "Score Arranger のほとんどの機能（自動編曲、声部割当、演奏可能性チェック、書き出し）は AI を必要としません。「自然言語編曲」のみ使用します。無料の Google Gemini API キーを取得するか、ローカルで Ollama を実行（完全無料 + プライベート）できます。",
+  },
+  "llmSetup.tab.gemini": {
+    "zh-TW": "Google Gemini (免費)",
+    en: "Google Gemini (Free)",
+    ja: "Google Gemini (無料)",
+  },
+  "llmSetup.tab.ollama": {
+    "zh-TW": "Ollama (本地)",
+    en: "Ollama (Local)",
+    ja: "Ollama (ローカル)",
+  },
+  "llmSetup.tab.skip": {
+    "zh-TW": "跳過",
+    en: "Skip",
+    ja: "スキップ",
+  },
+  "llmSetup.gemini.banner": {
+    "zh-TW": "Google AI Studio 提供免費 API key, 每分鐘有額度限制但對改譜用量綽綽有餘. 你的樂譜內容會送到 Google.",
+    en: "Google AI Studio offers a free API key with per-minute rate limits — plenty for arranging use. Your score content will be sent to Google.",
+    ja: "Google AI Studio は無料 API キーを提供します。分単位のレート制限がありますが、編曲用途には十分です。楽譜の内容は Google に送信されます。",
+  },
+  "llmSetup.gemini.step1.title": {
+    "zh-TW": "開啟 Google AI Studio",
+    en: "Open Google AI Studio",
+    ja: "Google AI Studio を開く",
+  },
+  "llmSetup.gemini.step1.body": {
+    "zh-TW": "點下面的按鈕, 用 Google 帳號登入. (沒有 Google 帳號? 可以免費申請)",
+    en: "Click the button below and sign in with your Google account. (Don't have one? Free to register.)",
+    ja: "下のボタンをクリックして、Google アカウントでサインインします。（アカウントがない場合は無料で登録できます）",
+  },
+  "llmSetup.gemini.step1.cta": {
+    "zh-TW": "前往 aistudio.google.com",
+    en: "Go to aistudio.google.com",
+    ja: "aistudio.google.com へ移動",
+  },
+  "llmSetup.gemini.step2.title": {
+    "zh-TW": "建立 API key",
+    en: "Create API key",
+    ja: "API キーを作成",
+  },
+  "llmSetup.gemini.step2.body": {
+    "zh-TW": "登入後, 點頁面上的「Create API key」(建立 API 金鑰) 按鈕. 系統會產生一串長字串, 複製起來.",
+    en: "After signing in, click the \"Create API key\" button on the page. It will generate a long string — copy it.",
+    ja: "サインイン後、ページの「Create API key」ボタンをクリックします。長い文字列が生成されるのでコピーします。",
+  },
+  "llmSetup.gemini.step3.title": {
+    "zh-TW": "貼到下方, 測試連線",
+    en: "Paste below and test",
+    ja: "下に貼り付けてテスト",
+  },
+  "llmSetup.gemini.step3.body": {
+    "zh-TW": "API key 只會存在本機, 不會傳出去.",
+    en: "The API key is stored locally only. It is never sent elsewhere.",
+    ja: "API キーはローカルにのみ保存されます。他へは送信されません。",
+  },
+  "llmSetup.gemini.step3.placeholder": {
+    "zh-TW": "AIzaSy...",
+    en: "AIzaSy...",
+    ja: "AIzaSy...",
+  },
+  "llmSetup.ollama.banner": {
+    "zh-TW": "Ollama 在本機跑 LLM, 完全免費、完全私密、不需網路 (下載模型時除外). 第一次設定要 ~5 分鐘.",
+    en: "Ollama runs LLMs locally — completely free, completely private, no internet needed (except for first model download). Initial setup ~5 minutes.",
+    ja: "Ollama はローカルで LLM を実行します。完全無料、完全プライベート、ネット不要（モデル初回ダウンロード時を除く）。初期設定約 5 分。",
+  },
+  "llmSetup.ollama.step1.title": {
+    "zh-TW": "安裝 Ollama",
+    en: "Install Ollama",
+    ja: "Ollama をインストール",
+  },
+  "llmSetup.ollama.step1.body": {
+    "zh-TW": "下載 Ollama for Mac, 開啟 dmg 把 Ollama 拖到「應用程式」.",
+    en: "Download Ollama for Mac. Open the dmg and drag Ollama to Applications.",
+    ja: "Mac 用 Ollama をダウンロード。dmg を開いて Ollama を「アプリケーション」にドラッグ。",
+  },
+  "llmSetup.ollama.step1.cta": {
+    "zh-TW": "下載 Ollama",
+    en: "Download Ollama",
+    ja: "Ollama をダウンロード",
+  },
+  "llmSetup.ollama.step2.title": {
+    "zh-TW": "啟動 Ollama",
+    en: "Start Ollama",
+    ja: "Ollama を起動",
+  },
+  "llmSetup.ollama.step2.body": {
+    "zh-TW": "在「應用程式」中打開 Ollama. 你會在 macOS 狀態列看到一隻羊駝圖示 — 那代表 Ollama 已在背景執行.",
+    en: "Open Ollama from Applications. You'll see a llama icon in the macOS menu bar — Ollama is now running in the background.",
+    ja: "「アプリケーション」から Ollama を開きます。macOS のメニューバーにラマのアイコンが表示されたら、Ollama がバックグラウンドで動作しています。",
+  },
+  "llmSetup.ollama.step3.title": {
+    "zh-TW": "下載一個模型",
+    en: "Download a model",
+    ja: "モデルをダウンロード",
+  },
+  "llmSetup.ollama.step3.body": {
+    "zh-TW": "選一個模型, 複製下方指令貼到 macOS 終端機 (Cmd+Space → 輸入 Terminal). 下載過程約 5-10 分鐘 (~5GB).",
+    en: "Pick a model. Copy the command below and paste into Terminal (Cmd+Space → type Terminal). Takes 5-10 minutes (~5GB).",
+    ja: "モデルを選択。下のコマンドをコピーしてターミナルに貼り付け（Cmd+Space → Terminal）。5～10 分で完了（約 5GB）。",
+  },
+  "llmSetup.ollama.step3.hint": {
+    "zh-TW": "提示: 中文樂譜建議用 qwen2.5:7b. 想要最快可選 phi3:mini.",
+    en: "Hint: For Chinese scores try qwen2.5:7b. For fastest results pick phi3:mini.",
+    ja: "ヒント: 中国語の楽譜は qwen2.5:7b 推奨。最速は phi3:mini。",
+  },
+  "llmSetup.ollama.copyCmd": {
+    "zh-TW": "複製指令",
+    en: "Copy command",
+    ja: "コマンドをコピー",
+  },
+  "llmSetup.ollama.step4.title": {
+    "zh-TW": "測試連線",
+    en: "Test connection",
+    ja: "接続テスト",
+  },
+  "llmSetup.ollama.step4.body": {
+    "zh-TW": "下載完成後, 點下方按鈕測試. Score Arranger 會送一個簡單訊息確認 Ollama 在跑.",
+    en: "After download finishes, click the button below to test. Score Arranger will send a simple ping to verify Ollama is running.",
+    ja: "ダウンロード完了後、下のボタンでテスト。Score Arranger が Ollama の稼働を確認します。",
+  },
+  "llmSetup.skip.banner": {
+    "zh-TW": "沒問題 — Score Arranger 大部分功能不需要 AI.",
+    en: "No problem — most Score Arranger features don't need AI.",
+    ja: "問題ありません — ほとんどの機能は AI 不要です。",
+  },
+  "llmSetup.skip.body1": {
+    "zh-TW": "以下功能完全不需要 AI 模型:",
+    en: "These features don't need AI at all:",
+    ja: "以下の機能は AI 不要です:",
+  },
+  "llmSetup.skip.feature1": {
+    "zh-TW": "自動改編 (改編 + 聲部分配 + 可演奏性檢查)",
+    en: "Auto-arranging (assignment + playability checks)",
+    ja: "自動編曲（声部割当 + 演奏可能性チェック）",
+  },
+  "llmSetup.skip.feature2": {
+    "zh-TW": "難度調節 (升難度 / 簡化 / 抹平到目標難度)",
+    en: "Difficulty adjustment (boost / simplify / level to target)",
+    ja: "難易度調整（高める / 簡略化 / 目標難度に均す）",
+  },
+  "llmSetup.skip.feature3": {
+    "zh-TW": "練習模式 (找最難小節 + 弦樂指法 + 慢速練習)",
+    en: "Practice mode (hardest measures + string fingering + slow practice)",
+    ja: "練習モード（最難小節 + 弦楽指使い + スロー再生）",
+  },
+  "llmSetup.skip.body2": {
+    "zh-TW": "只有「自然語言改譜」(用文字描述修改) 需要 AI. 你之後想用時, 在「設定 → AI 模型設定」可隨時開啟此精靈.",
+    en: "Only \"natural-language editing\" needs AI. You can open this wizard later from Settings → AI Model Settings.",
+    ja: "AI が必要なのは「自然言語編曲」のみ。後で「設定 → AI モデル設定」からこのウィザードを再度開けます。",
+  },
+  "llmSetup.skip.cta": {
+    "zh-TW": "繼續使用 Score Arranger",
+    en: "Continue using Score Arranger",
+    ja: "Score Arranger を使い続ける",
+  },
+  "llmSetup.testConnection": {
+    "zh-TW": "測試連線",
+    en: "Test connection",
+    ja: "接続テスト",
+  },
+  "llmSetup.testing": {
+    "zh-TW": "測試中…",
+    en: "Testing…",
+    ja: "テスト中…",
+  },
+  "llmSetup.testingInProgress": {
+    "zh-TW": "正在送出測試訊息…",
+    en: "Sending test message…",
+    ja: "テストメッセージを送信中…",
+  },
+  "llmSetup.success": {
+    "zh-TW": "連線成功! AI 模型已設定好.",
+    en: "Connected! AI model is configured.",
+    ja: "接続成功！AI モデルが設定されました。",
+  },
+  "llmSetup.failPrefix": {
+    "zh-TW": "連線失敗: ",
+    en: "Connection failed: ",
+    ja: "接続失敗: ",
+  },
+  "llmSetup.error.noKey": {
+    "zh-TW": "請先貼上 API key",
+    en: "Please paste an API key first",
+    ja: "API キーを貼り付けてください",
+  },
+  "llmSetup.error.connFailed": {
+    "zh-TW": "連線失敗, 請檢查 API key 是否正確",
+    en: "Connection failed. Check the API key",
+    ja: "接続失敗。API キーを確認してください",
+  },
+  "llmSetup.error.ollamaNotRunning": {
+    "zh-TW": "Ollama 似乎沒在跑. 請確認狀態列有羊駝圖示",
+    en: "Ollama doesn't seem to be running. Check the menu bar for the llama icon",
+    ja: "Ollama が稼働していないようです。メニューバーのラマアイコンを確認してください",
+  },
+  "llmSetup.error.ollamaHint": {
+    "zh-TW": "請確認 Ollama 已啟動且該模型已下載 (執行 `ollama list` 看)",
+    en: "Make sure Ollama is running and the model is downloaded (`ollama list`)",
+    ja: "Ollama が起動中でモデルがダウンロード済みか確認（`ollama list`）",
+  },
 };

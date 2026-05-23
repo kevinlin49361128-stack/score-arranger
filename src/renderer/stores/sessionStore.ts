@@ -96,6 +96,36 @@ function loadInitialInfoPanelPos(): InfoPanelPos {
   }
   return "side"; // 預設側邊欄
 }
+
+const GUIDANCE_MODE_KEY = "score-arranger.guidance-mode";
+const SEEN_COACHMARKS_KEY = "score-arranger.seen-coachmarks";
+
+function loadInitialGuidanceMode(): boolean {
+  // 首次安裝預設 ON — 音樂老師等非工程用戶需要引導. 進階用戶可關掉.
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage?.getItem(GUIDANCE_MODE_KEY);
+    if (raw === "off") return false;
+    if (raw === "on") return true;
+  } catch {
+    /* ignore */
+  }
+  return true;
+}
+
+function loadInitialSeenCoachmarks(): Record<string, true> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage?.getItem(SEEN_COACHMARKS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
 const ZOOM_MIN = 0.3;
 const ZOOM_MAX = 2.0;
 const ZOOM_STEP = 0.1;
@@ -317,6 +347,17 @@ interface SessionState {
   // 譜面難度熱圖 (target panel 上疊紅/黃/綠色塊)
   showHeatmap: boolean;
   toggleHeatmap: () => void;
+
+  /** 引導模式 — 首次使用功能時顯示 coachmark 氣泡 (給音樂老師等非工程
+   * 用戶). 預設 true; 使用者可在設定中關掉. localStorage 持久化. */
+  guidanceMode: boolean;
+  setGuidanceMode: (v: boolean) => void;
+  /** 已看過的 coachmark id 集合 — 一旦標記就不再顯示 (即使 guidanceMode
+   * 仍 true). localStorage 持久化. */
+  seenCoachmarks: Record<string, true>;
+  markCoachmarkSeen: (id: string) => void;
+  /** 重置所有 seen 標記 (給「重新看一次教學」按鈕用). */
+  resetSeenCoachmarks: () => void;
 
   // Tabs (Phase 1 MVP: 只保存核心顯示狀態快照)
   tabs: TabSnapshot[];
@@ -706,6 +747,30 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   showHeatmap: false,
   toggleHeatmap: () => set((s) => ({ showHeatmap: !s.showHeatmap })),
+
+  guidanceMode: loadInitialGuidanceMode(),
+  setGuidanceMode: (v) => {
+    set({ guidanceMode: v });
+    try {
+      window.localStorage?.setItem(GUIDANCE_MODE_KEY, v ? "on" : "off");
+    } catch { /* ignore */ }
+  },
+  seenCoachmarks: loadInitialSeenCoachmarks(),
+  markCoachmarkSeen: (id) => {
+    set((s) => {
+      const next = { ...s.seenCoachmarks, [id]: true as const };
+      try {
+        window.localStorage?.setItem(SEEN_COACHMARKS_KEY, JSON.stringify(next));
+      } catch { /* ignore */ }
+      return { seenCoachmarks: next };
+    });
+  },
+  resetSeenCoachmarks: () => {
+    set({ seenCoachmarks: {} });
+    try {
+      window.localStorage?.removeItem(SEEN_COACHMARKS_KEY);
+    } catch { /* ignore */ }
+  },
 
   theme: _initialTheme,
   setTheme: (t) => {
