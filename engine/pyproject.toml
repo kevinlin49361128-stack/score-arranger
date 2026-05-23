@@ -31,7 +31,16 @@ include = ["core*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short"
+# --cov 跑覆蓋率, --cov-fail-under=50 ratchet 機制 (現況約 60%+, 設 50 留緩衝)
+addopts = "-v --tb=short --cov=core --cov-report=term-missing --cov-fail-under=50"
+
+[tool.coverage.run]
+source = ["core"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/mcp_server.py",  # MCP server 走 stdio, 不在 pytest fixture 覆蓋
+]
 
 [tool.ruff]
 line-length = 100
@@ -41,8 +50,24 @@ target-version = "py311"
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 ignore = ["E501"]  # line length handled by formatter
 
+# === mypy ===
+# 策略: 不啟用 strict 全套 (會抓太多「未標型別」warning, 非真實 bug),
+#       只啟用會抓出實際 type bug 的子集.
+# 開: check_untyped_defs (進到 untyped 函式內檢查), warn_return_any,
+#     warn_unused_ignores, strict_optional (None vs T 分清).
+# 關: disallow_untyped_defs (現有大量內部函式沒標, 改造成本太高).
+# 整批清零後可改回 strict = true.
 [tool.mypy]
 python_version = "3.11"
-strict = true
+ignore_missing_imports = true
+check_untyped_defs = true
 warn_return_any = true
+warn_unused_ignores = true
+warn_redundant_casts = true
 warn_unused_configs = true
+strict_optional = true
+# 第三方 / generated 不查
+exclude = [
+    "build-pyi/",
+    "tests/",
+]

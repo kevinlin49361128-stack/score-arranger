@@ -1,17 +1,24 @@
 /**
  * App — Score Arranger 頂層元件
  *
- * 結構參照 UX 提案 §2.2.C 雙欄譜面板 + 問題面板:
+ * 結構:
  * ┌──────────────────────────────────┐
  * │ Toolbar (匯入/分析/改編/暗色切換) │
  * ├──────────────────────────────────┤
  * │ ModeBar (Setup/Analyze/...)      │
  * ├─────────────────┬────────────────┤
- * │ 原始樂譜面板   │ 目標樂譜面板   │
- * │ (ScoreViewer)  │ (ScoreViewer)  │
+ * │ SourcePanel    │ TargetPanel    │
  * ├─────────────────┴────────────────┤
- * │ Issue Panel                       │
+ * │ Issue Panel / Mode footer        │
  * └──────────────────────────────────┘
+ *
+ * 0.1.28 拆分 (C1): 原 753 行的 App.tsx 拆出四個獨立元件:
+ *   - PanelResizer        — 拖曳分隔列
+ *   - SourcePanel         — 原始樂譜面板 + 大譜切片翻頁
+ *   - TargetPanel         — 改編樂譜面板
+ *   - usePersistentSize   — localStorage 持久 size hook
+ * App.tsx 現在只負責: 全局 layout / mode-based 路由 / 跨面板互動
+ * (onMeasureClick → MeasureEditor, onNoteDrag → transpose IPC).
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -23,14 +30,16 @@ import { LoadingOverlay } from "./components/LoadingOverlay";
 import { MeasureEditor } from "./components/MeasureEditor";
 import { ModeBar } from "./components/ModeBar";
 import { OnboardingWizard } from "./components/OnboardingWizard";
-import { PlaybackControls } from "./components/PlaybackControls";
-import { ScoreViewer } from "./components/ScoreViewer";
+import { PanelResizer } from "./components/PanelResizer";
 import { SectionNavigator } from "./components/SectionNavigator";
 import { SetupHint } from "./components/SetupHint";
-import { TranscribePanel } from "./components/TranscribePanel";
+import { SourcePanel } from "./components/SourcePanel";
 import { TabStrip } from "./components/TabStrip";
+import { TargetPanel } from "./components/TargetPanel";
 import { Toolbar } from "./components/Toolbar";
+import { TranscribePanel } from "./components/TranscribePanel";
 import { VariantBar } from "./components/VariantBar";
+import { usePersistentSize } from "./hooks/usePersistentSize";
 import { useSessionStore } from "./stores/sessionStore";
 import { t as tr, useLocale } from "./utils/i18n";
 import { diffMeasures } from "./utils/measureDiff";
@@ -40,23 +49,13 @@ export default function App() {
   const {
     error,
     sourcePath,
-    sourceMusicXML,
     targetMusicXML,
-    arrangement,
-    highlightedMeasure,
-    highlightFlashTick,
-    playbackMeasure,
-    activePlaybackSide,
-    playbackSyncBoth,
-    editFlash,
     mode,
     panelLayout,
     infoPanelPos,
     showHeatmap,
-    sourceSlice,
-    setSourceSlice,
   } = useSessionStore();
-  const [slicePageLoading, setSlicePageLoading] = useState(false);
+
   // 載入 per-measure difficulty (僅在 showHeatmap 開啟時)
   const [difficultyData, setDifficultyData] = useState<
     Record<string, DifficultyEntry>
@@ -91,7 +90,6 @@ export default function App() {
   }, [showHeatmap, difficultyData]);
 
   // === Onboarding wizard 觸發 ===
-  // 條件: localStorage 沒 onboarded 旗標, 且目前沒任何來源樂譜載入
   const [showWizard, setShowWizard] = useState(() => {
     if (typeof localStorage === "undefined") return false;
     return !localStorage.getItem("score-arranger.onboarded");
@@ -176,6 +174,7 @@ export default function App() {
   const setHighlightedMeasure = useSessionStore(
     (s) => s.setHighlightedMeasure,
   );
+
   // target 譜面點選 → 同時打開 MeasureEditor
   const [editorMeasure, setEditorMeasure] = useState<number | null>(null);
   const [pitchHint, setPitchHint] = useState<number | null>(null);
@@ -186,15 +185,12 @@ export default function App() {
   };
 
   /** 譜面拖音符 → 找最接近的事件並 transpose */
-  const setTargetMusicXMLLocal = useSessionStore((s) => s.setTargetMusicXML);
-  const setLoadingState = useSessionStore((s) => s.setLoading);
-  const setErrorState = useSessionStore((s) => s.setError);
   const handleNoteDrag = async (
     measure: number,
     approxPitch: number,
     semitones: number,
   ) => {
-    setLoadingState(true, tr("app.loading.transpose", {
+    setLoading(true, tr("app.loading.transpose", {
       semitones: `${semitones > 0 ? "+" : ""}${semitones}`,
     }));
     try {
@@ -228,16 +224,16 @@ export default function App() {
       );
       if (res.ok && res.data) {
         if (res.data.target_musicxml) {
-          setTargetMusicXMLLocal(res.data.target_musicxml);
+          setTargetMusicXML(res.data.target_musicxml);
         }
         setArrangementIssues(res.data.issues);
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
-        setErrorState(null);
+        setError(null);
       } else {
-        setErrorState(res.error ?? tr("app.error.dragTransposeFailed"));
+        setError(res.error ?? tr("app.error.dragTransposeFailed"));
       }
     } finally {
-      setLoadingState(false);
+      setLoading(false);
     }
   };
 
@@ -264,60 +260,20 @@ export default function App() {
     mode === "analyze" ? 320 :
     mode === "setup" && !sourcePath ? 0 :
     240;
-  // 使用者拖曳設定的 footer 高度 (override mode default)
-  const [userFooterHeight, setUserFooterHeight] = useState<number | null>(() => {
-    try {
-      const raw = window.localStorage?.getItem("score-arranger.footer-h");
-      if (raw) {
-        const v = parseInt(raw, 10);
-        if (Number.isFinite(v) && v > 0) return v;
-      }
-    } catch { /* ignore */ }
-    return null;
-  });
+  // 使用者拖曳設定的尺寸 — 兩個都走泛用 hook
+  const footerSize = usePersistentSize("score-arranger.footer-h");
+  const sideSize = usePersistentSize("score-arranger.side-w");
   const footerHeight = mode === "setup" && !sourcePath
     ? 0
-    : (userFooterHeight ?? modeDefaultFooter);
-  // footer DOM 參照 — 拖曳時直接改 height, 避免每次 mousemove 都 re-render 整個 App
+    : (footerSize.value ?? modeDefaultFooter);
+  const sideWidth = sideSize.value ?? 360;
+  // footer DOM 參照 — 拖曳時直接改 height, 避免每次 mousemove 都 re-render
   const footerRef = useRef<HTMLElement>(null);
-
-  const persistFooterHeight = (h: number | null) => {
-    try {
-      if (h == null) {
-        window.localStorage?.removeItem("score-arranger.footer-h");
-      } else {
-        window.localStorage?.setItem("score-arranger.footer-h", String(h));
-      }
-    } catch { /* ignore */ }
-  };
-
-  // 側邊欄寬度 (infoPanelPos === "side" 時用)
-  const [userSideWidth, setUserSideWidth] = useState<number | null>(() => {
-    try {
-      const raw = window.localStorage?.getItem("score-arranger.side-w");
-      if (raw) {
-        const v = parseInt(raw, 10);
-        if (Number.isFinite(v) && v > 0) return v;
-      }
-    } catch { /* ignore */ }
-    return null;
-  });
-  const sideWidth = userSideWidth ?? 360;
-  const persistSideWidth = (w: number | null) => {
-    try {
-      if (w == null) {
-        window.localStorage?.removeItem("score-arranger.side-w");
-      } else {
-        window.localStorage?.setItem("score-arranger.side-w", String(w));
-      }
-    } catch { /* ignore */ }
-  };
 
   const showScorePanels = mode !== "export";
   // export mode 用全螢幕 footer 顯示 ExportPanel; 其他 mode 依 footerHeight
   const showFooter = mode === "export" || footerHeight > 0;
-  // 資訊欄放右側 (side) vs 下方 (bottom)。
-  // showScorePanels 已等於 mode !== "export", 故 export mode 自動排除。
+  // 資訊欄放右側 (side) vs 下方 (bottom)
   const useSideLayout = infoPanelPos === "side" && showScorePanels
     && showFooter;
 
@@ -382,260 +338,73 @@ export default function App() {
           minWidth: 0,
         }}
       >
-      {showScorePanels && (
-        <main
-          style={{
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: panelLayout === "horizontal"
-              ? "1fr 1fr"
-              : "1fr",
-            gridTemplateRows: panelLayout === "vertical"
-              ? "1fr 1fr"
-              : "1fr",
-            gap: 1,
-            background: "var(--bg-divider)",
-            minHeight: 0,
-            minWidth: 0,
-          }}
-        >
-          <div
+        {showScorePanels && (
+          <main
             style={{
-              background: "var(--bg-panel)",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
+              flex: 1,
+              display: "grid",
+              gridTemplateColumns: panelLayout === "horizontal"
+                ? "1fr 1fr" : "1fr",
+              gridTemplateRows: panelLayout === "vertical"
+                ? "1fr 1fr" : "1fr",
+              gap: 1,
+              background: "var(--bg-divider)",
               minHeight: 0,
+              minWidth: 0,
             }}
           >
-            <div
-              style={{
-                padding: "4px 8px",
-                borderBottom: "1px solid var(--border-light)",
-                background: "var(--bg-secondary)",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 11,
-                color: "var(--fg-muted)",
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>
-                {tr("app.panel.sourceTitle")}
-              </span>
-              <PlaybackControls side="source" compact />
-              {sourceSlice && sourcePath && (
-                <span style={{
-                  display: "flex", alignItems: "center", gap: 4,
-                  marginLeft: "auto", fontSize: 11,
-                }}>
-                  <span style={{ color: "var(--fg-tertiary)" }}>
-                    m.{sourceSlice.startMeasure}–
-                    {Math.min(
-                      sourceSlice.startMeasure + sourceSlice.pageSize - 1,
-                      sourceSlice.totalMeasures,
-                    )} / {sourceSlice.totalMeasures}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!sourcePath) return;
-                      const newStart = Math.max(
-                        1, sourceSlice.startMeasure - sourceSlice.pageSize,
-                      );
-                      if (newStart === sourceSlice.startMeasure) return;
-                      setSlicePageLoading(true);
-                      try {
-                        const res = await window.scoreArranger.engine
-                          .toMusicXML(
-                            sourcePath, sourceSlice.pageSize, newStart,
-                          );
-                        if (res.ok && res.data) {
-                          setSourceMusicXML(res.data);
-                          setSourceSlice({
-                            ...sourceSlice, startMeasure: newStart,
-                          });
-                        }
-                      } finally { setSlicePageLoading(false); }
-                    }}
-                    disabled={
-                      slicePageLoading || sourceSlice.startMeasure <= 1
-                    }
-                    style={{
-                      padding: "1px 6px", fontSize: 11,
-                      border: "1px solid var(--button-border)",
-                      background: "var(--button-bg)",
-                      color: "var(--button-fg)",
-                      borderRadius: 3, cursor: "pointer",
-                      opacity: sourceSlice.startMeasure <= 1 ? 0.4 : 1,
-                    }}
-                  >‹</button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!sourcePath) return;
-                      const newStart =
-                        sourceSlice.startMeasure + sourceSlice.pageSize;
-                      if (newStart > sourceSlice.totalMeasures) return;
-                      setSlicePageLoading(true);
-                      try {
-                        const res = await window.scoreArranger.engine
-                          .toMusicXML(
-                            sourcePath, sourceSlice.pageSize, newStart,
-                          );
-                        if (res.ok && res.data) {
-                          setSourceMusicXML(res.data);
-                          setSourceSlice({
-                            ...sourceSlice, startMeasure: newStart,
-                          });
-                        }
-                      } finally { setSlicePageLoading(false); }
-                    }}
-                    disabled={
-                      slicePageLoading
-                        || sourceSlice.startMeasure + sourceSlice.pageSize
-                           > sourceSlice.totalMeasures
-                    }
-                    style={{
-                      padding: "1px 6px", fontSize: 11,
-                      border: "1px solid var(--button-border)",
-                      background: "var(--button-bg)",
-                      color: "var(--button-fg)",
-                      borderRadius: 3, cursor: "pointer",
-                      opacity: sourceSlice.startMeasure + sourceSlice.pageSize
-                                 > sourceSlice.totalMeasures
-                        ? 0.4 : 1,
-                    }}
-                  >›</button>
-                </span>
-              )}
-            </div>
-            <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-              <ScoreViewer
-                label={sourceLabel}
-                musicXmlContent={sourceMusicXML}
-                highlightedMeasure={highlightedMeasure}
-                highlightFlashTick={highlightFlashTick}
-                // 游標只在「源譜自己在播」或「toolbar 同步比對模式」時顯示.
-                // 改編譜自己的 compact 播放器不會點亮這邊.
-                playbackMeasure={
-                  activePlaybackSide === "source" || playbackSyncBoth
-                    ? playbackMeasure
-                    : null
-                }
-                onMeasureClick={setHighlightedMeasure}
-                isAutoFitReference={!targetMusicXML}
-              />
-            </div>
-          </div>
-          <div
-            style={{
-              background: "var(--bg-panel)",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 0,
-            }}
-          >
-            <div
-              style={{
-                padding: "4px 8px",
-                borderBottom: "1px solid var(--border-light)",
-                background: "var(--bg-secondary)",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 11,
-                color: "var(--fg-muted)",
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>
-                {tr("app.panel.targetTitle")}
-              </span>
-              <PlaybackControls side="target" compact />
-            </div>
-            <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-              <ScoreViewer
-                label={
-                  arrangement
-                    ? tr("app.panel.targetLabel.result", {
-                      name: arrangement.name,
-                    })
-                    : tr("app.panel.targetLabel.default")
-                }
-                musicXmlContent={targetMusicXML}
-                highlightedMeasure={highlightedMeasure}
-                highlightFlashTick={highlightFlashTick}
-                // 同 source: 改編譜自己在播 或 toolbar 同步模式時才顯示游標.
-                playbackMeasure={
-                  activePlaybackSide === "target" || playbackSyncBoth
-                    ? playbackMeasure
-                    : null
-                }
-                onMeasureClick={handleTargetClick}
-                onNoteDrag={handleNoteDrag}
-                measureDifficulty={measureDifficulty}
-                diffMeasures={diffSet}
-                editFlash={editFlash}
-                isAutoFitReference={!!targetMusicXML}
-              />
-            </div>
-          </div>
-        </main>
-      )}
+            <SourcePanel sourceLabel={sourceLabel} />
+            <TargetPanel
+              onMeasureClick={handleTargetClick}
+              onNoteDrag={handleNoteDrag}
+              measureDifficulty={measureDifficulty}
+              diffMeasures={diffSet}
+            />
+          </main>
+        )}
 
-      {showFooter && showScorePanels && (
-        <PanelResizer
-          orientation={useSideLayout ? "vertical" : "horizontal"}
-          currentSize={useSideLayout ? sideWidth : footerHeight}
-          panelRef={footerRef}
-          onCommit={(size) => {
-            if (useSideLayout) {
-              setUserSideWidth(size);
-              persistSideWidth(size);
-            } else {
-              setUserFooterHeight(size);
-              persistFooterHeight(size);
-            }
-          }}
-          onReset={() => {
-            if (useSideLayout) {
-              setUserSideWidth(null);
-              persistSideWidth(null);
-            } else {
-              setUserFooterHeight(null);
-              persistFooterHeight(null);
-            }
-          }}
-        />
-      )}
-      {showFooter && (
-        <footer
-          ref={footerRef}
-          style={useSideLayout
-            ? {
-              // 側邊欄: 固定寬度, 不縮放
-              width: sideWidth,
-              flexGrow: 0,
-              flexShrink: 0,
-              background: "var(--bg-panel)",
-              overflow: "hidden",
-            }
-            : {
-              // 下方欄: 一般 mode 固定高度; export mode 撐滿
-              // 一律用 flexGrow/Shrink/Basis longhand, 不混 flex 簡寫
-              // (避免 React「mixing shorthand」rerender 警告)
-              height: showScorePanels ? footerHeight : undefined,
-              flexGrow: showScorePanels ? 0 : 1,
-              flexShrink: showScorePanels ? 0 : 1,
-              flexBasis: showScorePanels ? "auto" : 0,
-              background: "var(--bg-panel)",
-              overflow: "hidden",
+        {showFooter && showScorePanels && (
+          <PanelResizer
+            orientation={useSideLayout ? "vertical" : "horizontal"}
+            currentSize={useSideLayout ? sideWidth : footerHeight}
+            panelRef={footerRef}
+            onCommit={(size) => {
+              if (useSideLayout) sideSize.set(size);
+              else footerSize.set(size);
             }}
-        >
-          {renderFooterPanel()}
-        </footer>
-      )}
+            onReset={() => {
+              if (useSideLayout) sideSize.reset();
+              else footerSize.reset();
+            }}
+          />
+        )}
+        {showFooter && (
+          <footer
+            ref={footerRef}
+            style={useSideLayout
+              ? {
+                // 側邊欄: 固定寬度, 不縮放
+                width: sideWidth,
+                flexGrow: 0,
+                flexShrink: 0,
+                background: "var(--bg-panel)",
+                overflow: "hidden",
+              }
+              : {
+                // 下方欄: 一般 mode 固定高度; export mode 撐滿
+                // 一律用 flexGrow/Shrink/Basis longhand, 不混 flex 簡寫
+                // (避免 React「mixing shorthand」rerender 警告)
+                height: showScorePanels ? footerHeight : undefined,
+                flexGrow: showScorePanels ? 0 : 1,
+                flexShrink: showScorePanels ? 0 : 1,
+                flexBasis: showScorePanels ? "auto" : 0,
+                background: "var(--bg-panel)",
+                overflow: "hidden",
+              }}
+          >
+            {renderFooterPanel()}
+          </footer>
+        )}
       </div>
 
       <MeasureEditor
@@ -644,108 +413,6 @@ export default function App() {
         onClose={() => {
           setEditorMeasure(null);
           setPitchHint(null);
-        }}
-      />
-    </div>
-  );
-}
-
-
-/**
- * PanelResizer — 樂譜區與資訊欄之間的拖曳分隔列
- *
- * - orientation="horizontal": 水平分隔列, 上下拖 → 調整下方面板高度
- * - orientation="vertical":   垂直分隔列, 左右拖 → 調整右側面板寬度
- * - 雙擊重置為預設值; hover 時 highlight
- *
- * 效能: 拖曳過程「不」走 React state — 直接改面板 DOM 的 height/width,
- * 由 flexbox 自動讓樂譜區縮放; 只在放開滑鼠時 commit 一次 setState。
- * 否則每個 mousemove 都 re-render 整個 App + OSMD 重排, 會非常卡。
- */
-function PanelResizer(
-  { orientation, currentSize, panelRef, onCommit, onReset }: {
-    orientation: "horizontal" | "vertical";
-    currentSize: number;
-    panelRef: React.RefObject<HTMLElement>;
-    onCommit: (size: number) => void;
-    onReset: () => void;
-  },
-) {
-  useLocale();
-  // horizontal 分隔列 → 拖 Y 改 height; vertical → 拖 X 改 width
-  const isH = orientation === "horizontal";
-  const MIN = isH ? 60 : 220;
-  const MAX = isH ? 700 : 900;
-  const dragRef = useRef<
-    { start: number; startSize: number; live: number } | null
-  >(null);
-  const [hover, setHover] = useState(false);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragRef.current) return;
-      const delta = (isH ? e.clientY : e.clientX) - dragRef.current.start;
-      // 面板在下方/右方 → 往該方向拖會變小 → startSize - delta
-      const next = Math.max(
-        MIN,
-        Math.min(MAX, dragRef.current.startSize - delta),
-      );
-      dragRef.current.live = next;
-      // 直接改 DOM — 不觸發 React re-render, 樂譜區靠 flexbox 自動縮放
-      if (panelRef.current) {
-        if (isH) panelRef.current.style.height = `${next}px`;
-        else panelRef.current.style.width = `${next}px`;
-      }
-    };
-    const onUp = () => {
-      if (dragRef.current) {
-        // 放開才 commit 一次 → 只此時 re-render + OSMD autofit
-        onCommit(dragRef.current.live);
-        dragRef.current = null;
-        document.body.style.cursor = "";
-      }
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-  }, [onCommit, panelRef, isH, MIN, MAX]);
-
-  return (
-    <div
-      onMouseDown={(e) => {
-        dragRef.current = {
-          start: isH ? e.clientY : e.clientX,
-          startSize: currentSize,
-          live: currentSize,
-        };
-        document.body.style.cursor = isH ? "ns-resize" : "ew-resize";
-        e.preventDefault();
-      }}
-      onDoubleClick={onReset}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      title={isH
-        ? tr("app.resizer.footer")
-        : tr("app.resizer.side")}
-      style={{
-        ...(isH ? { height: 6 } : { width: 6, alignSelf: "stretch" }),
-        background: hover ? "var(--accent)" : "var(--border)",
-        cursor: isH ? "ns-resize" : "ew-resize",
-        flexShrink: 0,
-        transition: "background 0.15s ease",
-        position: "relative",
-      }}
-    >
-      {/* 加寬 hit area 至 ±4px (視覺只 6px) */}
-      <div
-        style={{
-          position: "absolute",
-          ...(isH
-            ? { top: -4, bottom: -4, left: 0, right: 0 }
-            : { left: -4, right: -4, top: 0, bottom: 0 }),
         }}
       />
     </div>

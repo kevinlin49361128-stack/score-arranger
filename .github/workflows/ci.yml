@@ -18,10 +18,11 @@ jobs:
         run: |
           cd engine
           python -m pip install --upgrade pip
-          python -m pip install -e .
-          python -m pip install pytest
-      - name: pytest
-        run: cd engine && python -m pytest -q
+          python -m pip install -e ".[dev]"
+      - name: pytest (含 coverage 50% 門檻)
+        run: cd engine && python -m pytest
+      - name: mypy baseline 比對 (regression gate)
+        run: bash engine/scripts/check_mypy_baseline.sh
 
   frontend:
     name: 前端 (typecheck / lint / vitest)

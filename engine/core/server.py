@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import sys
 import traceback
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from core.analyzer import (
     analyze_harmony,
