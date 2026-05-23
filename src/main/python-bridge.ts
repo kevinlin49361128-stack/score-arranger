@@ -119,8 +119,25 @@ class EngineClient {
 
       let readyReceived = false;
 
+      // 安全: 防止惡意 .sarr / 引擎 bug 產生無止盡輸出把 main process 撐爆.
+      // 256MB 對任何正常 IR 序列化都綽綽有餘 (Beethoven 9th 完整譜 IR ~30MB),
+      // 超過視為失控 → kill engine + reject 所有 pending.
+      const BUFFER_LIMIT = 256 * 1024 * 1024;
+
       const onData = (chunk: string) => {
         this.buffer += chunk;
+        if (this.buffer.length > BUFFER_LIMIT) {
+          const err = new Error(
+            `Engine output exceeded ${BUFFER_LIMIT} bytes; killing process`,
+          );
+          this.buffer = "";
+          for (const handler of this.pending.values()) {
+            handler.reject(err);
+          }
+          this.pending.clear();
+          try { proc.kill("SIGKILL"); } catch { /* ignore */ }
+          return;
+        }
         let newlineIdx: number;
         while ((newlineIdx = this.buffer.indexOf("\n")) !== -1) {
           const line = this.buffer.slice(0, newlineIdx).trim();

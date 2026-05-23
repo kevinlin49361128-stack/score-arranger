@@ -270,3 +270,36 @@ class TestPrompts:
     def test_get_prompt_unknown_raises(self):
         with pytest.raises(ValueError):
             asyncio.run(_get_prompt("nonexistent", {}))
+
+
+class TestPathValidation:
+    """M4 安全修: MCP 寫檔 path 限制."""
+
+    def test_documents_path_allowed(self, tmp_path, monkeypatch):
+        from core.mcp_server import _validate_export_path
+        # 模擬 ~/Documents 在 tmp_path 下
+        monkeypatch.setenv("HOME", str(tmp_path))
+        (tmp_path / "Documents").mkdir()
+        ok_path = str(tmp_path / "Documents" / "out.musicxml")
+        assert _validate_export_path(ok_path) == ok_path
+
+    def test_tempdir_path_allowed(self):
+        import tempfile
+        from core.mcp_server import _validate_export_path
+        with tempfile.TemporaryDirectory() as td:
+            target = f"{td}/out.musicxml"
+            result = _validate_export_path(target)
+            assert result.endswith("out.musicxml")
+
+    def test_etc_path_refused(self):
+        """/etc 不在 Documents/Desktop/Downloads/tempdir 任一 → 拒絕."""
+        import pytest as _pytest
+        from core.mcp_server import _validate_export_path
+        with _pytest.raises(ValueError, match="敏感位置"):
+            _validate_export_path("/etc/ssh/sshd_config")
+
+    def test_root_path_refused(self):
+        import pytest as _pytest
+        from core.mcp_server import _validate_export_path
+        with _pytest.raises(ValueError, match="敏感位置"):
+            _validate_export_path("/usr/local/bin/evil")

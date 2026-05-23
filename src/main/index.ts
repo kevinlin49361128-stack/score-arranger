@@ -3,7 +3,7 @@
  */
 
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import { mkdirSync, readFileSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import {
@@ -366,9 +366,18 @@ function registerIpcHandlers(): void {
       try {
         const dir = join(tmpdir(), "score-arranger");
         mkdirSync(dir, { recursive: true });
+        // 安全: realpath 確認 tmpdir 沒被符號連結劫持 (罕見但 macOS 多用戶
+        // shared tmp 攻擊存在). 落點必須仍在 tmpdir 樹下.
+        const realDir = realpathSync(dir);
+        const expectedRoot = realpathSync(tmpdir());
+        if (!realDir.startsWith(expectedRoot)) {
+          throw new Error(
+            `Refused: tmpdir resolves outside expected root (${realDir})`,
+          );
+        }
         const safeName = baseName.replace(/[^\w.-]/g, "_");
         const filePath = join(
-          dir,
+          realDir,
           `${safeName}-${Date.now()}.musicxml`,
         );
         writeFileSync(filePath, musicxml, "utf-8");

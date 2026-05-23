@@ -473,6 +473,49 @@ TOOLS: list[types.Tool] = [
 # Dispatch: MCP tool name + args  →  engine.handle_request
 # ============================================================================
 
+def _validate_export_path(path: str) -> str:
+    """安全: MCP 暴露給外部 agent (Claude Desktop 等) 寫檔, 必須限定在
+    使用者「正常會寫」的目錄之下. 沒這層守護, 惡意 MCP 設定可指任意
+    路徑覆寫 (e.g. ~/.ssh/authorized_keys, ~/Library/LaunchAgents/...).
+
+    允許範圍 (任一即可):
+      - ~/Documents/ (含子目錄)
+      - ~/Desktop/
+      - ~/Downloads/
+      - 系統 tempdir (tempfile.gettempdir(), 通常 /tmp 或 /var/folders/...)
+
+    拒絕:
+      - ~/.ssh, ~/.config 等 dotfile 目錄
+      - ~/Library/ (含 LaunchAgents)
+      - / (root) 或其他不在上列的位置
+
+    回傳 normalize 後的絕對路徑 (resolve 過 symlink). 出範圍 → ValueError.
+    """
+    import tempfile
+    from pathlib import Path
+    home = Path.home()
+    allowed_roots = [
+        (home / "Documents").resolve(),
+        (home / "Desktop").resolve(),
+        (home / "Downloads").resolve(),
+        Path(tempfile.gettempdir()).resolve(),
+    ]
+    # 不存在的檔案 resolve() 是 OK 的 (strict=False 預設)
+    target = Path(path).expanduser().resolve()
+    for root in allowed_roots:
+        try:
+            target.relative_to(root)
+            return str(target)
+        except ValueError:
+            continue
+    raise ValueError(
+        f"Refused export: path must be under one of "
+        f"~/Documents, ~/Desktop, ~/Downloads, or system tempdir, "
+        f"got {target}. (MCP-exposed export 限制, 防止外部 agent "
+        f"寫到 ~/.ssh / ~/Library 等敏感位置.)"
+    )
+
+
 def _engine_call(
     method: str, params: dict[str, Any], session: str | None = None,
 ) -> Any:
@@ -500,7 +543,7 @@ def _session_of(args: dict[str, Any]) -> str:
 def _do_arrange_and_export(args: dict[str, Any]) -> dict[str, Any]:
     source = args["source"]
     ensemble = args["target_ensemble"]
-    output_path = args["output_path"]
+    output_path = _validate_export_path(args["output_path"])
     repair = args.get("repair", True)
     sid = _session_of(args)
 
@@ -634,7 +677,7 @@ def _do_edit_event(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def _do_export_arrangement(args: dict[str, Any]) -> dict[str, Any]:
-    path = args["output_path"]
+    path = _validate_export_path(args["output_path"])
     sid = _session_of(args)
     if path.lower().endswith((".mid", ".midi")):
         return _engine_call("export_target_midi", {"path": path}, session=sid)
@@ -663,7 +706,12 @@ def _do_suggest_transposition(args: dict[str, Any]) -> dict[str, Any]:
 def _do_export_all_parts(args: dict[str, Any]) -> dict[str, Any]:
     """對每位演奏者寫一份 .musicxml 到 output_dir."""
     from pathlib import Path
-    output_dir = Path(args["output_dir"])
+    # 安全: 驗證 output_dir 也在允許範圍內 (重用 _validate_export_path 邏輯,
+    # 先 join 假檔名再 validate, 取其 parent)
+    fake_target = _validate_export_path(
+        str(Path(args["output_dir"]).expanduser() / "_validate.musicxml")
+    )
+    output_dir = Path(fake_target).parent
     output_dir.mkdir(parents=True, exist_ok=True)
     sid = _session_of(args)
     # 透過 get_status (任一含 difficulty) 拿不到 players 列表; 改用內部 session
