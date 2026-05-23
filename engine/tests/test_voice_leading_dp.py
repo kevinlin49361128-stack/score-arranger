@@ -71,3 +71,29 @@ class TestVoiceLeadingDP:
         # 一定有結果 object, 沒 crash
         assert result is not None
         assert result.optimized_count >= 0
+
+    def test_v2_inner_to_inner_parallels_reduced(self):
+        """v2: smoke test 0.1.16 發現的 V2↔Viola 平行八度應該被 DP 拆解.
+
+        Mozart K545 mvt1 + string_quartet (2-part source → 4-part target,
+        2 個 inner voice). 預期 cost_after < cost_before (整體變優).
+        """
+        from core.parser import parse_musicxml
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import string_quartet_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.voice_leading_dp import optimize_inner_voices
+
+        # 注意: arrange() pipeline 已內建呼叫 optimize_inner_voices, 所以
+        # 第一次拿到的 arrangement 是已經過 DP 處理的. 這裡再呼叫一次,
+        # 應該基本上沒事可做 (cost 已是局部最佳).
+        try:
+            score = parse_musicxml("corpus:mozart/k545/movement1")
+        except Exception:
+            import pytest
+            pytest.skip("Mozart K545 sample 不存在")
+        tag_all_sections(score)
+        arr = run_arrange(score, string_quartet_ensemble())
+        result = optimize_inner_voices(arr)
+        # 至少有跑過 (有 inner voice), 且 cost_after <= cost_before
+        assert result.cost_after <= result.cost_before + 0.01

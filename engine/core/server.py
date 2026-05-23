@@ -2251,11 +2251,19 @@ def _method_to_midi(params: dict[str, Any]) -> dict:
     from core.ir_to_music21 import ir_to_music21
     m21 = ir_to_music21(sess.current_arrangement.target_score)
 
-    # 確保每個 part 有可辨識的 track name (對應 IR Part.instrument_id)
+    # Track name 給前端 PlaybackControls (1) 路由音色 (用 instrument_id 比對),
+    # (2) 顯示給使用者 (mute popover). 為了同時滿足兩者, 寫成
+    # "Violin I  [violin]" — 前端會做 trim/match, 使用者看得到 ordinal.
+    # ref: smoke test 0.1.16 發現 "Violin / Violin" 重複看不出 V1/V2.
     for ir_part, m21_part in zip(
         sess.current_arrangement.target_score.parts, m21.parts,
     ):
-        m21_part.partName = ir_part.instrument_id
+        m21_part.partName = (
+            f"{ir_part.name_display}  [{ir_part.instrument_id}]"
+            if ir_part.name_display
+               and ir_part.name_display != ir_part.instrument_id
+            else ir_part.instrument_id
+        )
 
     fd, path = tempfile.mkstemp(suffix=".mid")
     try:
@@ -2303,8 +2311,14 @@ def _method_to_source_midi(params: dict[str, Any]) -> dict:
 
     from core.ir_to_music21 import ir_to_music21
     m21 = ir_to_music21(source_score)
+    # 同 to_midi 處理: name_display + [instrument_id] 同時帶, 前端兩用
     for ir_part, m21_part in zip(source_score.parts, m21.parts):
-        m21_part.partName = ir_part.instrument_id
+        m21_part.partName = (
+            f"{ir_part.name_display}  [{ir_part.instrument_id}]"
+            if ir_part.name_display
+               and ir_part.name_display != ir_part.instrument_id
+            else ir_part.instrument_id
+        )
 
     fd, path = tempfile.mkstemp(suffix=".mid")
     try:

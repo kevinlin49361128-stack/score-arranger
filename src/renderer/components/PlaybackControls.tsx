@@ -266,6 +266,14 @@ export function PlaybackControls(
   const [knownTracks, setKnownTracks] = useState<
     { idx: number; name: string }[]
   >([]);
+  // arrangement / sourceMusicXML 換了 → 重設 mute (track index 對映可能完全變了)
+  // 不重設的話, 舊 arrangement 的 mute(3) 會殘留到新 arrangement 上, 而新譜
+  // 的 track-3 可能根本不是同一個樂器, 變成「不知為何某個聲部沒聲音」。
+  // ref: smoke test 0.1.16 發現的 bug.
+  useEffect(() => {
+    setMutedTracks(new Set());
+    setKnownTracks([]);
+  }, [arrangement, sourceMusicXML]);
   /** mute popover 開關 */
   const [muteOpen, setMuteOpen] = useState(false);
   const muteRef = useRef<HTMLDivElement>(null);
@@ -744,10 +752,14 @@ export function PlaybackControls(
 
       // 把 track 列表更新到 state, 給 mute popover 顯示用. 用 idx 區分,
       // name 為空時 fallback 給 "Track N+1" — 避免 popover 顯示空白行.
-      setKnownTracks(midi.tracks.map((t, i) => ({
-        idx: i,
-        name: t.name?.trim() || `Track ${i + 1}`,
-      })));
+      // engine 送過來的 partName 可能是 "Violin I  [violin]" 格式
+      // (display + instrument_id, 同時給 routeTrack 跟使用者看), popover
+      // 只給使用者看, 去掉 "[...]" 標籤. routeTrack 用 raw t.name, 不受影響.
+      setKnownTracks(midi.tracks.map((t, i) => {
+        const raw = t.name?.trim() || "";
+        const display = raw.replace(/\s*\[[^\]]+\]\s*$/, "").trim();
+        return { idx: i, name: display || raw || `Track ${i + 1}` };
+      }));
 
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {

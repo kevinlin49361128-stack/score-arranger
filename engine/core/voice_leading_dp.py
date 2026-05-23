@@ -24,7 +24,7 @@ cost 模型:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from .arrangement_model import Arrangement
@@ -61,6 +61,9 @@ class _Slot:
     # 該位置同時的外聲部音 (MELODY / BASS) — None 表示該外聲部此 onset 無音
     melody_midi: Optional[int]
     bass_midi: Optional[int]
+    # v2: 已優化過的其他內聲部音, 用來檢測 inner ↔ inner 平行 / 交叉.
+    # list[Optional[int]] 因為可能有多個 inner reference, 每個各自獨立比.
+    other_inner_midis: list[Optional[int]] = field(default_factory=list)
 
 
 @dataclass
@@ -117,10 +120,18 @@ def optimize_inner_voices(arrangement: Arrangement) -> VoiceLeadingDPResult:
     melody_map = _build_outer_map(arrangement, VoiceFunction.MELODY)
     bass_map = _build_outer_map(arrangement, VoiceFunction.BASS)
 
-    for part in target.parts:
-        if part.part_id not in inner_part_ids:
-            continue
-        slots = _collect_slots(part, melody_map, bass_map)
+    # v2: sequential greedy — 把已優化的 inner 當下一個 inner 的「outer」.
+    # full joint DP 對 N inner * K cand 太貴 (O(K^N · M)); 依 part_id 排序後
+    # sequential 是 O(N · K · M), 實用上效果接近. 順序固定 (sorted) 確保結果可重現.
+    inner_optimized_maps: list[dict[tuple[int, float], int]] = []
+
+    for part in sorted(
+        (p for p in target.parts if p.part_id in inner_part_ids),
+        key=lambda p: p.part_id,
+    ):
+        slots = _collect_slots(
+            part, melody_map, bass_map, inner_optimized_maps,
+        )
         if not slots:
             continue
         profile = get_profile(part.instrument_id)
@@ -198,7 +209,28 @@ def optimize_inner_voices(arrangement: Arrangement) -> VoiceLeadingDPResult:
         )
         result.cost_after += _path_cost(chosen, slots, cmf_lo, cmf_hi)
 
+        # v2: 把這一輪的結果寫進 inner_optimized_maps, 下個 inner 算成本時
+        # 會把它當 outer reference, 一起檢測平行/交叉.
+        optimized_map: dict[tuple[int, float], int] = {}
+        for slot, new_midi in zip(slots, chosen):
+            optimized_map[
+                (slot.measure_number, float(_slot_onset(slot, part)))
+            ] = new_midi
+        inner_optimized_maps.append(optimized_map)
+
     return result
+
+
+def _slot_onset(slot: _Slot, part: Part) -> float:
+    """從 slot 拿到 onset (float). slot 沒存 onset, 從 part 反查."""
+    for m in part.measures:
+        if m.number != slot.measure_number:
+            continue
+        v = m.voices.get(slot.voice_id)
+        if v is None or slot.event_index >= len(v.events):
+            continue
+        return float(v.events[slot.event_index].onset)
+    return 0.0
 
 
 def _build_outer_map(
@@ -259,11 +291,16 @@ def _collect_slots(
     part: Part,
     melody_map: dict[tuple[int, float], int],
     bass_map: dict[tuple[int, float], int],
+    inner_optimized_maps: Optional[list[dict[tuple[int, float], int]]] = None,
 ) -> list[_Slot]:
     """從 part 抽出可優化的 NoteEvent 位置 (跳過 ChordEvent / Rest / divisi).
 
+    inner_optimized_maps: v2 — 已優化過的其他 inner voices, 拿來算
+        inner-inner 平行/交叉. 順序保留, 後續比對逐個獨立檢查.
+
     被使用者編輯過 (is_user_edited) 的 measure 不動 — 尊重使用者的選擇。
     """
+    inner_optimized_maps = inner_optimized_maps or []
     slots: list[_Slot] = []
     for measure in part.measures:
         if getattr(measure, "is_user_edited", False):
@@ -283,6 +320,9 @@ def _collect_slots(
                     original_midi=ev.pitch.midi_number,
                     melody_midi=melody_map.get(key),
                     bass_midi=bass_map.get(key),
+                    other_inner_midis=[
+                        m.get(key) for m in inner_optimized_maps
+                    ],
                 ))
     return slots
 
@@ -304,15 +344,25 @@ def _transition_cost(
     prev_midi: int, midi: int,
     prev_slot: _Slot, slot: _Slot,
 ) -> float:
-    """從 prev_midi → midi 的轉移成本 (大跳 + 平行 5/8)."""
+    """從 prev_midi → midi 的轉移成本 (大跳 + 平行 5/8).
+
+    v2: 平行偵測除了 MELODY/BASS, 還包含「先前已優化過的內聲部」 — 修掉
+    smoke test 0.1.16 發現的「25 個 V2↔Viola 平行八度」漏網。
+    """
     cost = W_LEAP * abs(midi - prev_midi)
-    # 平行偵測: 跟外聲部
-    for outer_prev, outer_curr in (
-        (prev_slot.melody_midi, slot.melody_midi),
-        (prev_slot.bass_midi, slot.bass_midi),
+    # 收集要比的外聲部 pair (prev, curr): MELODY/BASS + 已優化內聲部
+    ref_pairs: list[tuple[int, int]] = []
+    if prev_slot.melody_midi is not None and slot.melody_midi is not None:
+        ref_pairs.append((prev_slot.melody_midi, slot.melody_midi))
+    if prev_slot.bass_midi is not None and slot.bass_midi is not None:
+        ref_pairs.append((prev_slot.bass_midi, slot.bass_midi))
+    for prev_inner, curr_inner in zip(
+        prev_slot.other_inner_midis, slot.other_inner_midis,
     ):
-        if outer_prev is None or outer_curr is None:
-            continue
+        if prev_inner is not None and curr_inner is not None:
+            ref_pairs.append((prev_inner, curr_inner))
+
+    for outer_prev, outer_curr in ref_pairs:
         move_inner = midi - prev_midi
         move_outer = outer_curr - outer_prev
         if move_inner == 0 or move_outer == 0:
