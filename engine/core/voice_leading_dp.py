@@ -89,28 +89,30 @@ def optimize_inner_voices(arrangement: Arrangement) -> VoiceLeadingDPResult:
     if target is None or not target.parts:
         return result
 
-    # 找出哪些 target part 是「內聲部」: 該 part 對應的 assignment 不是
-    # MELODY / BASS / PEDAL. 用 (player_id, staff) 對照.
+    # 找出哪些 target part 是「內聲部」.
+    # 兩種來源:
+    #   (1) 有 assignment 且 function 是 HARMONY_FILL / COUNTERMELODY
+    #   (2) **沒有 assignment** — voice_filler 自動補出來的內聲部 part,
+    #       它不在 arrangement.assignments 裡, 但確實存在於 target_score.
+    #       (smoke test 0.1.16 漏的 V2/Viola 就是這類: K545 兩部源 →
+    #       弦四四聲部, V2 跟 Viola 是 fill_inner_voices 生出來的.)
+    # 排除: function 含 MELODY/BASS/PEDAL 的 part (那些不該被動)
     inner_part_ids: set[str] = set()
     for part in target.parts:
-        # 從 part_id 推 player_id + staff
-        # build_target_score 規則: part_id = f"{player_id}_{staff}" (除 main 外)
-        # main → part_id = player_id
         functions: set[VoiceFunction] = set()
         for a in arrangement.assignments:
             staff_suffix = "" if a.target_staff == "main" else f"_{a.target_staff}"
             candidate_pid = f"{a.target_player_id}{staff_suffix}"
             if candidate_pid == part.part_id:
                 functions.add(a.function)
-        if not functions:
-            continue
+        # 有 MELODY/BASS/PEDAL → 跳過 (外聲部, 不動)
         if (functions
                 & {VoiceFunction.MELODY, VoiceFunction.BASS,
                    VoiceFunction.PEDAL}):
             continue
-        if VoiceFunction.HARMONY_FILL in functions \
-                or VoiceFunction.COUNTERMELODY in functions:
-            inner_part_ids.add(part.part_id)
+        # 其餘都當內聲部 — 包括「沒 assignment」(voice_filler 補的) 跟
+        # 明確標 HARMONY_FILL / COUNTERMELODY 的.
+        inner_part_ids.add(part.part_id)
 
     if not inner_part_ids:
         result.skipped_parts.append("no inner voices to optimize")
