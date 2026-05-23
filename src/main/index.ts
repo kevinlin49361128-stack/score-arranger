@@ -108,6 +108,16 @@ async function createWindow(): Promise<BrowserWindow> {
     await win.loadFile(resolve(__dirname, "../../renderer/index.html"));
   }
 
+  // Production mode 也允許 cmd+option+i 開 DevTools — 沒有它使用者回報 bug
+  // 時沒辦法看 console error. 不會影響 sandbox / IPC 安全層 (DevTools 只能
+  // 看到 contextBridge 暴露的 window.scoreArranger, 看不到 main process).
+  win.webContents.on("before-input-event", (_e, input) => {
+    if (input.type === "keyDown" && input.key === "i"
+        && input.alt && (input.meta || input.control)) {
+      win.webContents.toggleDevTools();
+    }
+  });
+
   return win;
 }
 

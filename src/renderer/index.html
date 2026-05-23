@@ -9,10 +9,12 @@
            - tonejs / nbrosowsky / gleitz → SoundFont sample 來源 (硬編 https)
            - api.anthropic.com / api.openai.com → LLM provider
            - http://localhost:* → 自架 Ollama / OpenAI-compat endpoint
-         style 用 'unsafe-inline' 是 React/CSS-in-JS 必需 (component 內 style 屬性).
-         其餘維持嚴格 'self'. -->
+         script-src 'wasm-unsafe-eval' — verovio + 部分 Tone.js 內部需要 WASM.
+         worker-src 'self' blob: — Tone.js 15+ 的 AudioWorklet 從 blob 載入,
+                                    沒這條會直接無聲 (worklet 載不進去).
+         style 用 'unsafe-inline' 是 React/CSS-in-JS 必需 (component 內 style 屬性). -->
     <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
+      content="default-src 'self' file:; script-src 'self' file: 'wasm-unsafe-eval'; worker-src 'self' file: blob:; child-src 'self' file: blob:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
     <title>Score Arranger</title>
     <style>
       :root {
