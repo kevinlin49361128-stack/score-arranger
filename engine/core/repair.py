@@ -38,6 +38,7 @@ from .ir import (
     NoteEvent,
     Part,
     Pitch,
+    RestEvent,
     Score,
     Voice,
 )
@@ -150,7 +151,96 @@ def collect_issues(score: Score) -> list[LocatedIssue]:
         issues.extend(detect_parallel_motion(score))
     except Exception:
         pass
+    # 管樂連續吹奏 (換氣) 檢查 — sustain_type=breath 且超過 max_sustained_beats
+    # 連續無 rest / breath_mark, 提示需要換氣
+    issues.extend(_detect_wind_breathing(score))
     return issues
+
+
+def _detect_wind_breathing(score: Score) -> list[LocatedIssue]:
+    """偵測管樂 (含人聲) 連續吹奏超過肺活量極限的段落.
+
+    策略:
+    - 只查 profile.breath_required == True 的 part
+    - 累積無 RestEvent 且無 breath articulation / breath_mark_after 的 NoteEvent /
+      ChordEvent duration, 超過 profile.max_sustained_beats 給 warning
+    - 觸發後重置累積, 從下一段開始重算
+    - issue 落在「超載點的第一個音符」上 (UI 上能跳到具體位置)
+    """
+    out: list[LocatedIssue] = []
+    for part in score.parts:
+        profile = get_profile(part.instrument_id)
+        if profile is None or not profile.breath_required:
+            continue
+        max_beats = float(profile.max_sustained_beats or 0)
+        if max_beats <= 0:
+            continue
+        # 線性掃過整個 part 的所有 voice; divisi 暫不處理.
+        # 累積跨 measure, 但 RestEvent / breath articulation 重置.
+        accumulated = 0.0
+        breach_event: tuple[int, int, int] | None = None  # (measure, voice_id, idx)
+        for measure in part.measures:
+            for voice_id, voice in measure.voices.items():
+                if voice.is_divisi:
+                    continue
+                for idx, ev in enumerate(voice.events):
+                    # Rest → 自然呼吸點, 重置累積.
+                    if isinstance(ev, RestEvent):
+                        accumulated = 0.0
+                        breach_event = None
+                        continue
+                    if not isinstance(ev, (NoteEvent, ChordEvent)):
+                        continue
+                    # NoteEvent / ChordEvent — 累積拍數.
+                    duration = float(ev.duration)
+                    accumulated += duration
+                    if accumulated > max_beats and breach_event is None:
+                        breach_event = (measure.number, voice_id, idx)
+                    has_breath = (
+                        getattr(ev, "breath_mark_after", False)
+                        or "breath" in getattr(ev, "articulations", [])
+                    )
+                    if has_breath:
+                        # 換氣後重置
+                        accumulated = 0.0
+                        if breach_event is not None:
+                            # 報告超載點
+                            m_no, v_id, ev_idx = breach_event
+                            out.append(LocatedIssue(
+                                part_id=part.part_id,
+                                measure_number=m_no,
+                                voice_id=v_id,
+                                event_index=ev_idx,
+                                result=CheckResult(
+                                    severity="warning",
+                                    code="W_WIND_NO_BREATH",
+                                    params={
+                                        "instrument": part.instrument_id,
+                                        "max_beats": max_beats,
+                                        "accumulated_beats": round(accumulated, 1),
+                                    },
+                                ),
+                            ))
+                            breach_event = None
+        # part 結束時, 若仍有未報告的超載 → 報出
+        if breach_event is not None:
+            m_no, v_id, ev_idx = breach_event
+            out.append(LocatedIssue(
+                part_id=part.part_id,
+                measure_number=m_no,
+                voice_id=v_id,
+                event_index=ev_idx,
+                result=CheckResult(
+                    severity="warning",
+                    code="W_WIND_NO_BREATH",
+                    params={
+                        "instrument": part.instrument_id,
+                        "max_beats": max_beats,
+                        "accumulated_beats": round(accumulated, 1),
+                    },
+                ),
+            ))
+    return out
 
 
 def _check_event(event, instrument_id: str) -> Optional[CheckResult]:

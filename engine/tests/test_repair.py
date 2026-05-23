@@ -615,3 +615,96 @@ def test_pick_best_candidate_single():
     )
     name, _, _ = _pick_best_candidate(arr, [("omit_note", 5.0, Score())])
     assert name == "omit_note"
+
+
+# ============================================================================
+# 管樂換氣檢測 (W_WIND_NO_BREATH)
+# ============================================================================
+
+def _wind_score(instrument_id: str, events: list, measure_count: int = 1) -> Score:
+    """單管樂 part, events 在 measure 1 voice 1. 若 measure_count > 1 重複."""
+    from core.ir import RestEvent
+    measures = []
+    for m_num in range(1, measure_count + 1):
+        # 把 events 依小節切 — 每小節最多 4 拍.
+        measures.append(Measure(
+            number=m_num, time_signature=(4, 4),
+            voices={1: Voice(voice_id=1, events=list(events))},
+        ))
+    return Score(
+        movements=[Movement(
+            movement_id=1, measure_count=measure_count,
+            sections=[Section(0, 1, measure_count)],
+        )],
+        parts=[Part(
+            part_id="flute_1", name_display="Flute",
+            instrument_id=instrument_id, measures=measures,
+        )],
+    )
+
+
+def test_wind_breathing_within_limit_ok():
+    """連續吹奏未超過 max_sustained_beats (flute=16): 不報警告."""
+    # 8 拍長音 — 遠低於 flute 16 拍上限
+    score = _wind_score("flute", [_note(72, dur=Fraction(8))])
+    issues = collect_issues(score)
+    wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
+    assert wind_issues == []
+
+
+def test_wind_breathing_exceed_emits_warning():
+    """連續 20 拍 (flute 上限 16): 應產生 warning."""
+    # 5 個 4-拍長音 = 20 拍, 中間無休止
+    events = [_note(72, dur=Fraction(4))] * 5
+    # 一個 measure 也行 — _detect_wind_breathing 不依賴 measure 切分.
+    score = _wind_score("flute", events, measure_count=1)
+    issues = collect_issues(score)
+    wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
+    assert len(wind_issues) == 1
+    assert wind_issues[0].result.severity == "warning"
+    assert wind_issues[0].result.params["instrument"] == "flute"
+
+
+def test_wind_breathing_rest_resets():
+    """休止符後重置累積; 兩段 12 拍中間有 rest → 不報警."""
+    from core.ir import RestEvent
+    events = [
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+        RestEvent(duration=Fraction(1), onset=Fraction(0)),
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+    ]
+    score = _wind_score("flute", events)
+    issues = collect_issues(score)
+    wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
+    assert wind_issues == []
+
+
+def test_wind_breathing_breath_articulation_resets():
+    """音符上有 'breath' articulation → 視為換氣點, 重置累積."""
+    # 第 4 個音 (累積 16 拍) 帶 breath articulation; 之後再 8 拍應不報警.
+    breath_note = _note(72, dur=Fraction(4))
+    breath_note.articulations.append("breath")
+    events = [
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+        breath_note,
+        _note(72, dur=Fraction(4)),
+        _note(72, dur=Fraction(4)),
+    ]
+    score = _wind_score("flute", events)
+    issues = collect_issues(score)
+    wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
+    assert wind_issues == []
+
+
+def test_wind_breathing_non_wind_skipped():
+    """弦樂 (sustain_type=bow, breath_required=False) 應跳過此檢查."""
+    score = _wind_score("violin", [_note(72, dur=Fraction(40))])
+    issues = collect_issues(score)
+    wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
+    assert wind_issues == []

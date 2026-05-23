@@ -244,3 +244,38 @@ class TestTechniqueFactor:
         d = analyze_part_difficulty(part)
         assert len(d.measures) == 1
         assert d.measures[0].technique_factor > 0.0
+
+    def test_cross_string_raises_technique(self):
+        """A5: 連續跨弦音 (G3 → A4 → G3 → A4) 在 violin 全是低把位,
+        其他三個 technique 成分都為 0, technique_factor 應該被跨弦推高."""
+        # G3=55 (G 弦), A4=69 (A 弦), 切換 4 次
+        midis = [55, 69, 55, 69]
+        part = _make_simple_part(
+            [(m, (1, 1)) for m in midis],
+            instrument="violin",
+        )
+        d = analyze_part_difficulty(part)
+        # 應該有 3 個跨弦 transitions / 4 events = 0.75
+        # _TECH_CROSSSTRING_W = 0.15 → 至少 0.1+ 的 technique_factor
+        assert d.technique_factor > 0.05
+        assert d.technique_factor < 0.5  # 不會比高把位/三音和弦更高
+
+    def test_same_string_no_cross_penalty(self):
+        """A5: 同一條弦上的音 (A4 → B4 → C5) 不算跨弦, 不該加分."""
+        # A4=69 → B4=71 → C5=72 全在 A 弦 (open 69)
+        part = _make_simple_part(
+            [(69, (1, 1)), (71, (1, 1)), (72, (1, 1))],
+            instrument="violin",
+        )
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor == 0.0
+
+    def test_non_string_no_cross_penalty(self):
+        """A5: 非弦樂器 (長笛) 不該被跨弦邏輯影響."""
+        # 長笛沒空弦定義 → 跨弦對 technique 無作用
+        part = _make_simple_part(
+            [(60, (1, 1)), (72, (1, 1)), (60, (1, 1)), (72, (1, 1))],
+            instrument="flute",
+        )
+        d = analyze_part_difficulty(part)
+        assert d.technique_factor == 0.0

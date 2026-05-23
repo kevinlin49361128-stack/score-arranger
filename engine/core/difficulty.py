@@ -99,10 +99,27 @@ _DEMANDING_ARTICULATIONS = {
 # 高把位門檻 = 最高空弦音 + 此偏移 (約 4 把位以上, 需明顯換把)
 _POSITION_OFFSET = 12
 
-# technique_factor 三個成分的內部權重
-_TECH_POSITION_W = 0.45
-_TECH_ARTICULATION_W = 0.35
+# technique_factor 四個成分的內部權重 — sum = 1.0
+#
+# A5 (0.1.26): 加入 cross_string_ratio. 弦樂連續快速跨弦是經典難點
+# (音樂老師回饋: "頻繁跨弦則難度倍增"). 用啟發式挑「能彈這音的最高弦」
+# (= 最低把位) 推測弦序, 連續音變弦的次數歸一化後加權.
+_TECH_POSITION_W = 0.35
+_TECH_ARTICULATION_W = 0.30
 _TECH_MULTISTOP_W = 0.20
+_TECH_CROSSSTRING_W = 0.15
+
+
+def _infer_string_index(midi: int, strings) -> int | None:
+    """推測這個音落在哪條弦. 啟發式: 最低把位 = 能彈該音的最高 open 弦.
+
+    回傳 string.index (0 = 最低弦). 若沒任何弦能彈 (音太低) 回 None.
+    """
+    candidates = [s for s in strings if s.open_pitch.midi_number <= midi]
+    if not candidates:
+        return None
+    chosen = max(candidates, key=lambda s: s.open_pitch.midi_number)
+    return chosen.index
 
 
 def _is_demanding(articulations) -> bool:
@@ -130,8 +147,14 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
     high_notes = 0
     demanding_notes = 0
     multistop_notes = 0
+    cross_string_transitions = 0  # A5: 跨弦次數 (整 part 累計)
     total_events = 0
     total_beats = Fraction(0)
+
+    # 推弦序的可用 string defs (弦樂才有)
+    strings = profile.strings if is_string and profile is not None else None
+    # voice-level 狀態 — 跨 measure 但每 voice 切換時重置
+    last_string_by_voice: dict[int, int | None] = {}
 
     measure_results: list[MeasureDifficulty] = []
 
@@ -144,6 +167,7 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
         m_high = 0
         m_demanding = 0
         m_multi = 0
+        m_cross = 0
         ts = measure.time_signature or (4, 4)
         measure_beats = Fraction(ts[0], ts[1]) * 4
         total_beats += measure_beats
@@ -158,6 +182,7 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
             else:
                 branches = [voice]
             for v in branches:
+                vid = v.voice_id
                 for event in v.events:
                     if isinstance(event, NoteEvent):
                         note_count += 1
@@ -179,6 +204,18 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
                         if _is_demanding(event.articulations):
                             demanding_notes += 1
                             m_demanding += 1
+                        # A5: 跨弦偵測 — 此音的推測弦 vs 前一個音
+                        if strings is not None:
+                            s_idx = _infer_string_index(
+                                event.pitch.midi_number, strings,
+                            )
+                            prev = last_string_by_voice.get(vid)
+                            if (s_idx is not None and prev is not None
+                                    and s_idx != prev):
+                                cross_string_transitions += 1
+                                m_cross += 1
+                            if s_idx is not None:
+                                last_string_by_voice[vid] = s_idx
                     elif isinstance(event, ChordEvent):
                         chord_count += 1
                         m_chords += 1
@@ -204,6 +241,18 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
                         if _is_demanding(event.articulations):
                             demanding_notes += 1
                             m_demanding += 1
+                        # A5: 和弦的最低音作為下一輪比對基準 (簡化)
+                        if strings is not None:
+                            bot_midi = min(
+                                (p.midi_number for p in event.pitches),
+                                default=None,
+                            )
+                            if bot_midi is not None:
+                                s_idx = _infer_string_index(
+                                    bot_midi, strings,
+                                )
+                                if s_idx is not None:
+                                    last_string_by_voice[vid] = s_idx
                         # 三/四音弦樂和弦 — 真正的技巧難點
                         if is_string and len(event.pitches) >= 3:
                             multistop_notes += 1
@@ -222,7 +271,7 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
             m_chord_f = max(m_chord_f, 0.9)
         m_rhythm = (m_short / m_pitched) if m_pitched > 0 else 0.0
         m_technique = _technique_factor(
-            m_pitched, m_high, m_demanding, m_multi, is_string,
+            m_pitched, m_high, m_demanding, m_multi, m_cross, is_string,
         )
         m_raw = (
             _WEIGHTS["range"] * m_range
@@ -269,10 +318,10 @@ def analyze_part_difficulty(part: Part) -> PartDifficulty:
     if total_pitched > 0:
         rhythm_factor = short_notes / total_pitched
 
-    # === Factor 5: technique (高把位 + 困難弓法 + 多音弦樂和弦) ===
+    # === Factor 5: technique (高把位 + 困難弓法 + 多音弦樂和弦 + 跨弦) ===
     technique_factor = _technique_factor(
         total_pitched, high_notes, demanding_notes, multistop_notes,
-        is_string,
+        cross_string_transitions, is_string,
     )
 
     # === 加權平均 ===
@@ -307,21 +356,30 @@ def _technique_factor(
     high_notes: int,
     demanding_notes: int,
     multistop_notes: int,
+    cross_string_transitions: int,
     is_string: bool,
 ) -> float:
-    """把高把位 / 困難弓法 / 多音弦樂和弦三個比例融合成 0-1 技巧難度。
+    """把四個技巧維度融合成 0-1 技巧難度.
 
-    高把位與多音弦樂和弦僅對弦樂計分; 困難弓法 / 演奏法對所有樂器計分。
+    - 高把位 / 多音弦樂和弦 / 跨弦 — 僅對弦樂計分
+    - 困難弓法 / 演奏法 — 對所有樂器計分
     """
     if total_pitched <= 0:
         return 0.0
     pos = (high_notes / total_pitched) if is_string else 0.0
     art = demanding_notes / total_pitched
     multi = (multistop_notes / total_pitched) if is_string else 0.0
+    # 跨弦比例 = transitions / (total_pitched - 1), 但 total_pitched=1 沒意義
+    # 用 transitions / total_pitched 做歸一化, 不依賴 -1 邊界, 略偏寬鬆.
+    cross = (
+        min(cross_string_transitions / total_pitched, 1.0)
+        if is_string else 0.0
+    )
     return min(
         _TECH_POSITION_W * pos
         + _TECH_ARTICULATION_W * art
-        + _TECH_MULTISTOP_W * multi,
+        + _TECH_MULTISTOP_W * multi
+        + _TECH_CROSSSTRING_W * cross,
         1.0,
     )
 

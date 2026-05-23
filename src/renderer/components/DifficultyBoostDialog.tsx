@@ -24,13 +24,38 @@ interface Props {
 interface NamedPart {
   part_id: string;
   name: string;
+  /** 樂器 id (例: "violin", "piano") — 用來過濾不適用的加難度手法. */
+  instrument_id: string;
 }
 
 type PlayerLite = {
   player_id: string;
   display_name: string;
   staves: number;
+  primary_instrument: string;
 };
+
+/** 樂器分類 — 決定哪些加難度手法可用. */
+type InstrumentFamily =
+  | "bowed_string"   // violin, viola, cello, double_bass — 可弓法 + 雙音
+  | "plucked"        // guitar, lute, harp — 雙音 OK, 沒弓法
+  | "keyboard"       // piano, harpsichord — 雙音 OK, 沒弓法
+  | "wind_mono"      // flute, clarinet, oboe, trumpet 等單音管樂 — 都不行
+  | "other";         // voice / 未知
+
+function classifyInstrument(id: string): InstrumentFamily {
+  const i = id.toLowerCase();
+  if (
+    i.startsWith("violin") || i.startsWith("viola") || i.startsWith("cello")
+    || i === "double_bass" || i === "contrabass"
+  ) return "bowed_string";
+  if (i === "guitar" || i === "lute" || i === "harp") return "plucked";
+  if (i === "piano" || i === "harpsichord") return "keyboard";
+  if (i === "voice" || i.startsWith("soprano") || i.startsWith("alto")
+    || i.startsWith("tenor") || i.startsWith("bass_voice")) return "other";
+  // 預設管樂 (flute/oboe/clarinet/bassoon/trumpet/horn/trombone/tuba/sax/recorder)
+  return "wind_mono";
+}
 
 type Direction = "boost" | "reduce" | "target";
 type Intensity = "conservative" | "balanced" | "virtuosic";
@@ -50,13 +75,19 @@ function derivePartsFromPlayers(players: PlayerLite[]): NamedPart[] {
       parts.push({
         part_id: `${p.player_id}_upper`,
         name: t("nlEdit.partRightHand", { name: p.display_name }),
+        instrument_id: p.primary_instrument,
       });
       parts.push({
         part_id: `${p.player_id}_lower`,
         name: t("nlEdit.partLeftHand", { name: p.display_name }),
+        instrument_id: p.primary_instrument,
       });
     } else {
-      parts.push({ part_id: p.player_id, name: p.display_name });
+      parts.push({
+        part_id: p.player_id,
+        name: p.display_name,
+        instrument_id: p.primary_instrument,
+      });
     }
   }
   return parts;
@@ -266,6 +297,42 @@ export function DifficultyBoostDialog({ onClose }: Props) {
       setApplying(false);
     }
   };
+
+  // 樂器感知過濾 — 不同樂器 family 適用不同加難度手法.
+  // 規則:
+  //   - octave (八度疊置): 通用 — 所有樂器都能升八度
+  //   - doubleStop (雙音和弦): 不適用 monophonic 管樂 (flute/oboe/clarinet 等)
+  //   - higherPosition (整段升八度 / 移高把位): 通用 — 任何樂器
+  //   - bowing (spiccato 跳弓): 只適用弓弦樂 (violin/viola/cello/double_bass)
+  const currentFamily: InstrumentFamily = useMemo(() => {
+    const p = parts.find((x) => x.part_id === partId);
+    return p ? classifyInstrument(p.instrument_id) : "other";
+  }, [parts, partId]);
+
+  const techApplies = useCallback(
+    (key: keyof TechSel): boolean => {
+      switch (key) {
+        case "octave":
+        case "higherPosition":
+          return true;
+        case "doubleStop":
+          return currentFamily !== "wind_mono";
+        case "bowing":
+          return currentFamily === "bowed_string";
+      }
+    },
+    [currentFamily],
+  );
+
+  // 切換聲部時自動取消不適用的勾選, 避免送出無效 op
+  useEffect(() => {
+    setTech((prev) => ({
+      octave: prev.octave && techApplies("octave"),
+      doubleStop: prev.doubleStop && techApplies("doubleStop"),
+      higherPosition: prev.higherPosition && techApplies("higherPosition"),
+      bowing: prev.bowing && techApplies("bowing"),
+    }));
+  }, [techApplies]);
 
   const techItems: {
     key: keyof TechSel;
@@ -539,7 +606,7 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                         marginBottom: 14,
                       }}
                     >
-                      {techItems.map((item) => {
+                      {techItems.filter((it) => techApplies(it.key)).map((item) => {
                         const on = tech[item.key];
                         return (
                           <label
