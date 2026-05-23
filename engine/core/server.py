@@ -1558,9 +1558,17 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             from core.enrich import enrich_part
             texture = op.get("texture", "block")
             density = op.get("density", "medium")
+            # 找對應 player 的 skill_level — 業餘給雙音為限, 職業才放 4 音.
+            # 跟 0.1.14 'B 技能感知分譜' 邏輯一致.
+            skill_level = "professional"
+            for pl in sess.current_arrangement.players:
+                if part.part_id == pl.player_id or \
+                        part.part_id.startswith(f"{pl.player_id}_"):
+                    skill_level = pl.skill_level or "professional"
+                    break
             changed = enrich_part(
                 part.measures, src_score, m_start, m_end, density, texture,
-                part.instrument_id,
+                part.instrument_id, skill_level,
             )
             results.append({
                 "op": kind,
