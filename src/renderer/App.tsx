@@ -46,6 +46,8 @@ export default function App() {
     highlightedMeasure,
     highlightFlashTick,
     playbackMeasure,
+    activePlaybackSide,
+    playbackSyncBoth,
     editFlash,
     mode,
     panelLayout,
@@ -514,7 +516,13 @@ export default function App() {
                 musicXmlContent={sourceMusicXML}
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
-                playbackMeasure={playbackMeasure}
+                // 游標只在「源譜自己在播」或「toolbar 同步比對模式」時顯示.
+                // 改編譜自己的 compact 播放器不會點亮這邊.
+                playbackMeasure={
+                  activePlaybackSide === "source" || playbackSyncBoth
+                    ? playbackMeasure
+                    : null
+                }
                 onMeasureClick={setHighlightedMeasure}
                 isAutoFitReference={!targetMusicXML}
               />
@@ -558,7 +566,12 @@ export default function App() {
                 musicXmlContent={targetMusicXML}
                 highlightedMeasure={highlightedMeasure}
                 highlightFlashTick={highlightFlashTick}
-                playbackMeasure={playbackMeasure}
+                // 同 source: 改編譜自己在播 或 toolbar 同步模式時才顯示游標.
+                playbackMeasure={
+                  activePlaybackSide === "target" || playbackSyncBoth
+                    ? playbackMeasure
+                    : null
+                }
                 onMeasureClick={handleTargetClick}
                 onNoteDrag={handleNoteDrag}
                 measureDifficulty={measureDifficulty}

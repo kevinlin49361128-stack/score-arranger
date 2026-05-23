@@ -234,10 +234,16 @@ interface PlaybackControlsProps {
   side?: "source" | "target";
   /** Compact 模式: 只顯示 ▶/⏸/⏹ 與 progress, 隱藏 loop / 取樣 / 游標模式. */
   compact?: boolean;
+  /** 同步比對模式 — 啟用時兩邊面板都顯示游標 (toolbar 主播放器用). 預設
+   * false: 只有自己 side 的面板顯示游標 (源譜 / 改編譜 各自的 compact 用,
+   * 互不干擾). */
+  syncBoth?: boolean;
 }
 
 export function PlaybackControls(
-  { side = "target", compact = false }: PlaybackControlsProps = {} as any,
+  {
+    side = "target", compact = false, syncBoth = false,
+  }: PlaybackControlsProps = {} as any,
 ) {
   useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
@@ -249,6 +255,7 @@ export function PlaybackControls(
   const playbackProgress = useSessionStore((s) => s.playbackProgress);
   const activeSide = useSessionStore((s) => s.activePlaybackSide);
   const setActiveSide = useSessionStore((s) => s.setActivePlaybackSide);
+  const setPlaybackSyncBoth = useSessionStore((s) => s.setPlaybackSyncBoth);
   const requestedLoop = useSessionStore((s) => s.requestedLoop);
 
   const [state, setState] = useState<PlayState>("idle");
@@ -690,6 +697,7 @@ export function PlaybackControls(
       startTracking();
       setState("playing");
       setActiveSide(side);
+      setPlaybackSyncBoth(syncBoth);
       return;
     }
     if (state === "playing") return;
@@ -709,6 +717,9 @@ export function PlaybackControls(
     setState("loading");
     setError(null);
     setActiveSide(side);
+    // toolbar 同步比對模式: 設旗標, 讓兩邊面板都顯示游標 (ScoreViewer 那邊
+    // 透過 store 判斷). 各自獨立的源譜/改編譜 compact 不設 → 只自己面板顯示.
+    setPlaybackSyncBoth(syncBoth);
     try {
       const res = side === "source"
         ? await window.scoreArranger.engine.toSourceMidi(
@@ -719,6 +730,7 @@ export function PlaybackControls(
         setError(res.error ?? t("playback.error.getMidiFailed"));
         setState("idle");
         setActiveSide(null);
+        setPlaybackSyncBoth(false);
         return;
       }
       const midiBytes = base64ToUint8Array(res.data.midi_base64);
@@ -792,6 +804,7 @@ export function PlaybackControls(
         setPlaybackMeasure(null);
         setPlaybackProgress(1);
         setActiveSide(null);
+        setPlaybackSyncBoth(false);
         stopAllScheduled();
       }, lastTime + 0.3);
 
@@ -823,6 +836,7 @@ export function PlaybackControls(
   const handleStop = () => {
     stopAllScheduled();
     cancelRaf();
+    setPlaybackSyncBoth(false);
     setPlaybackMeasure(null);
     setPlaybackProgress(0);
     setState("idle");

@@ -282,6 +282,12 @@ interface SessionState {
   activePlaybackSide: "source" | "target" | null;
   setActivePlaybackSide: (s: "source" | "target" | null) => void;
 
+  /** 同步比對模式 — toolbar 那顆「主播放」啟用時設 true, 兩邊面板都顯示
+   * 游標 (對照用). 源譜 / 改編譜 各自的播放器 (compact, 在面板標題列) 設
+   * false, 只有自己那邊顯示游標, 不互相干擾. */
+  playbackSyncBoth: boolean;
+  setPlaybackSyncBoth: (v: boolean) => void;
+
   // 播放進度 (0-1)
   playbackProgress: number;
   setPlaybackProgress: (p: number) => void;
@@ -424,6 +430,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setPlaybackMeasure: (m) => set({ playbackMeasure: m }),
   activePlaybackSide: null,
   setActivePlaybackSide: (s) => set({ activePlaybackSide: s }),
+  playbackSyncBoth: false,
+  setPlaybackSyncBoth: (v) => set({ playbackSyncBoth: v }),
 
   playbackProgress: 0,
   setPlaybackProgress: (p) => set({ playbackProgress: p }),

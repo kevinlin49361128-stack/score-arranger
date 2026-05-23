@@ -940,7 +940,10 @@ export function Toolbar() {
       <Sep />
 
       {/* === Group 4: 播放 === */}
-      <PlaybackControls compact />
+      {/* toolbar 主播放器: 同步比對模式 — 播改編譜, 同時兩邊 (原譜 + 改編譜)
+          面板都顯示游標, 方便對照. 源譜/改編譜面板自己的 compact 播放器
+          (App.tsx 內) 不傳 syncBoth, 只各自播自己. */}
+      <PlaybackControls compact syncBoth />
 
       {/* === 檔名 (吃所有剩餘空間, 視窗變窄時優先壓縮) === */}
       <span
