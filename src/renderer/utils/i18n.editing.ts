@@ -449,6 +449,26 @@ export const EDITING_STRINGS: BiDict = {
     en: "Difficulty computation failed",
     ja: "難度の計算に失敗しました",
   },
+  "practice.fingering.loading": {
+    "zh-TW": "計算指法中…",
+    en: "Computing fingering…",
+    ja: "指使いを計算中…",
+  },
+  "practice.fingering.empty": {
+    "zh-TW": "此編制無弦樂 part",
+    en: "No string parts in this ensemble",
+    ja: "この編成に弦楽パートはありません",
+  },
+  "practice.fingering.tooltip": {
+    "zh-TW": "{pitch} → {string} 弦 第 {fret} 把位",
+    en: "{pitch} → {string} string, position {fret}",
+    ja: "{pitch} → {string} 弦、第 {fret} ポジション",
+  },
+  "practice.fingering.loopBtn": {
+    "zh-TW": "開始循環練習",
+    en: "Start loop practice",
+    ja: "ループ練習を開始",
+  },
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },

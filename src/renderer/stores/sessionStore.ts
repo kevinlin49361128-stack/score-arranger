@@ -217,6 +217,15 @@ interface SessionState {
   targetMusicXML: string | null;
   setTargetMusicXML: (xml: string | null) => void;
 
+  /** 大譜分頁顯示資訊 (null = 完整顯示, 沒有分頁). 大譜虛擬化 MVP:
+   * 譜 > 800 measures 時自動切 200 一頁, 使用者可以翻頁瀏覽其他段落. */
+  sourceSlice: {
+    startMeasure: number;  // 1-based
+    pageSize: number;
+    totalMeasures: number;
+  } | null;
+  setSourceSlice: (slice: SessionState["sourceSlice"]) => void;
+
   // 分析結果
   analysis: AnalysisReport | null;
   setAnalysis: (a: AnalysisReport | null) => void;
@@ -355,6 +364,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setSourceMusicXML: (xml) => set({ sourceMusicXML: xml }),
   targetMusicXML: _activeRestored?.targetMusicXML ?? null,
   setTargetMusicXML: (xml) => set({ targetMusicXML: xml }),
+
+  sourceSlice: null,
+  setSourceSlice: (slice) => set({ sourceSlice: slice }),
 
   analysis: null,
   setAnalysis: (a) => set({ analysis: a }),

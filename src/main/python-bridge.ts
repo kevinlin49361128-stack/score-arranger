@@ -391,10 +391,11 @@ export async function arrangeCustom(
 }
 
 export async function toMusicXML(
-  path: string, maxMeasures?: number,
+  path: string, maxMeasures?: number, startMeasure?: number,
 ): Promise<string> {
   const params: Record<string, unknown> = { path };
   if (maxMeasures && maxMeasures > 0) params.max_measures = maxMeasures;
+  if (startMeasure && startMeasure > 1) params.start_measure = startMeasure;
   return (await client.call("to_musicxml", params)) as string;
 }
 
@@ -603,6 +604,12 @@ export async function computeQuality(): Promise<unknown> {
 
 export async function listNavigation(): Promise<unknown> {
   return client.call("list_navigation", {});
+}
+
+export async function getMeasureFingering(
+  measure: number,
+): Promise<unknown> {
+  return client.call("get_measure_fingering", { measure });
 }
 
 export async function listSourceParts(path: string): Promise<unknown> {

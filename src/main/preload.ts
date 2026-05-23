@@ -104,8 +104,12 @@ const api = {
       ipcRenderer.invoke(
         "engine:arrangeCustom", path, players, repair, skillLevel, stylePreset,
       ),
-    toMusicXML: (path: string, maxMeasures?: number) =>
-      ipcRenderer.invoke("engine:toMusicXML", path, maxMeasures),
+    toMusicXML: (
+      path: string, maxMeasures?: number, startMeasure?: number,
+    ) =>
+      ipcRenderer.invoke(
+        "engine:toMusicXML", path, maxMeasures, startMeasure,
+      ),
     scoreInfo: (path: string) =>
       ipcRenderer.invoke("engine:scoreInfo", path),
     omrStatus: () => ipcRenderer.invoke("engine:omrStatus"),
@@ -211,6 +215,8 @@ const api = {
       ipcRenderer.invoke("engine:computeQuality"),
     listNavigation: () =>
       ipcRenderer.invoke("engine:listNavigation"),
+    getMeasureFingering: (measure: number) =>
+      ipcRenderer.invoke("engine:getMeasureFingering", measure),
     listSourceParts: (path: string) =>
       ipcRenderer.invoke("engine:listSourceParts", path),
     suggestTransposition: (source: string, target: string) =>

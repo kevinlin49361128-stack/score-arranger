@@ -151,6 +151,26 @@ class TestServerMethods:
         assert "<?xml" in resp["data"]
         assert "<score-partwise" in resp["data"].lower()
 
+    def test_to_musicxml_slice_with_start(self):
+        """大譜分頁: max_measures + start_measure 拿到指定範圍切片"""
+        # 完整版有 N 個 measure → 切第 3 個開始, 2 個
+        full_resp = handle_request({
+            "id": "f", "method": "to_musicxml",
+            "params": {"path": "corpus:bach/bwv66.6"},
+        })
+        slice_resp = handle_request({
+            "id": "s", "method": "to_musicxml",
+            "params": {
+                "path": "corpus:bach/bwv66.6",
+                "max_measures": 2, "start_measure": 3,
+            },
+        })
+        assert full_resp["ok"] and slice_resp["ok"]
+        # 切片版內容應比完整版短
+        assert len(slice_resp["data"]) < len(full_resp["data"])
+        # 應該有 <measure> 元素 (數量正確留給 OSMD 渲染端驗證)
+        assert "<measure" in slice_resp["data"]
+
     def test_arrange_with_corpus_prefix(self):
         resp = handle_request({
             "id": "ca", "method": "arrange",

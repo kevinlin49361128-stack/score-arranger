@@ -115,7 +115,7 @@ declare global {
           stylePreset?: string,
         ) => Promise<IpcResponse<ArrangementResult>>;
         toMusicXML: (
-          path: string, maxMeasures?: number,
+          path: string, maxMeasures?: number, startMeasure?: number,
         ) => Promise<IpcResponse<string>>;
         scoreInfo: (path: string) => Promise<IpcResponse<{
           measure_count: number;
@@ -224,6 +224,9 @@ declare global {
         >;
         computeQuality: () => Promise<IpcResponse<QualityReport>>;
         listNavigation: () => Promise<IpcResponse<NavigationResult>>;
+        getMeasureFingering: (measure: number) => Promise<
+          IpcResponse<MeasureFingeringResult>
+        >;
         listSourceParts: (
           path: string,
         ) => Promise<IpcResponse<SourcePartInfo[]>>;
@@ -341,6 +344,25 @@ declare global {
     /** 不完全小節 (起拍) 的長度 (四分音符); 0 = 沒起拍。
      * 給播放游標算對 measure 2 起點 — 避免游標延遲 (整個起拍長度的差)。 */
     pickup_offset_quarters: number;
+  }
+
+  interface FingeringEvent {
+    pitch: string;
+    midi: number;
+    string_name: string;
+    fret: number;
+  }
+
+  interface MeasureFingeringPart {
+    part_id: string;
+    instrument_id: string;
+    display_name: string;
+    events: FingeringEvent[];
+  }
+
+  interface MeasureFingeringResult {
+    measure: number;
+    parts: MeasureFingeringPart[];
   }
 
   interface QualityReport {

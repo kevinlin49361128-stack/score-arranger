@@ -1,6 +1,6 @@
 {
   "name": "score-arranger",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "private": true,
   "description": "Score Arranger — 智慧輔助管弦樂譜改編工具",
   "main": "dist/main/main/index.js",

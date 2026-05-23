@@ -262,18 +262,23 @@ def _method_parse(params: dict[str, Any]) -> Any:
 def _method_to_musicxml(params: dict[str, Any]) -> str:
     """Score 路徑 → MusicXML 字串.
 
-    可選 max_measures: 若指定且 > 0, 只回傳前 N 個小節的切片 (大譜預覽用,
+    可選 max_measures: 若指定且 > 0, 只回傳指定範圍小節的切片 (大譜預覽用,
     OSMD 對 >800 小節的譜常 freeze). 改編引擎仍走完整譜, 這只影響 viewer.
+    可選 start_measure (1-based, 預設 1): 從第幾小節開始切, 用於翻頁瀏覽
+    大譜 — 例如「200 個小節為一頁」, 第二頁就是 start=201, max=200.
     """
     from music21 import musicxml as m21_musicxml
     from core.parser import load_m21
     path = params["path"]
     max_measures = params.get("max_measures")
+    start_measure = int(params.get("start_measure") or 1)
     m21_score = load_m21(path)
 
     if max_measures and max_measures > 0:
         try:
-            m21_score = _slice_measures(m21_score, int(max_measures))
+            m21_score = _slice_measures(
+                m21_score, int(max_measures), start_measure,
+            )
         except Exception:
             pass  # 切片失敗時退回完整譜
 
@@ -291,14 +296,21 @@ def _method_to_musicxml(params: dict[str, Any]) -> str:
         raise
 
 
-def _slice_measures(m21_score, max_measures: int):
-    """回傳只含前 max_measures 個小節的新 Score (拷貝, 不 mutate)."""
+def _slice_measures(
+    m21_score, max_measures: int, start_measure: int = 1,
+):
+    """回傳指定範圍小節的新 Score (拷貝, 不 mutate).
+
+    start_measure 1-based; 取出 measures[start-1 : start-1 + max_measures].
+    超出範圍時自動 clamp 到合法區間.
+    """
     from music21 import stream as m21_stream, metadata as m21_metadata
     new_score = m21_stream.Score()
     # 保留 metadata
     md = m21_score.getElementsByClass(m21_metadata.Metadata)
     if md:
         new_score.insert(0, md[0])
+    start_idx = max(0, start_measure - 1)
     for part in m21_score.parts:
         new_part = m21_stream.Part()
         new_part.partName = part.partName
@@ -307,7 +319,8 @@ def _slice_measures(m21_score, max_measures: int):
         for el in part.iter().getElementsByClass(("Instrument",)):
             new_part.insert(0, el)
         measures = list(part.getElementsByClass(m21_stream.Measure))
-        for m in measures[:max_measures]:
+        end_idx = min(len(measures), start_idx + max_measures)
+        for m in measures[start_idx:end_idx]:
             new_part.append(m)
         new_score.insert(0, new_part)
     return new_score
@@ -2401,6 +2414,128 @@ def _method_close_session(params: dict[str, Any]) -> dict:
     return {"closed": False, "reason": "session not found or default"}
 
 
+def _method_get_measure_fingering(params: dict[str, Any]) -> dict:
+    """回傳指定 measure 中, 所有弦樂 part 的 viterbi 指法建議.
+
+    用於 PracticePanel: 使用者點難小節 → 顯示「V1 把位 / V2 把位 / ...」.
+
+    params:
+      measure: int  — 目標小節編號 (1-based)
+      context: int = 4  — 為了讓 viterbi 連貫, 多抓前 N 個 measure 一起算,
+        實際回傳只給目標 measure 的部分
+
+    回傳:
+      {
+        "measure": <int>,
+        "parts": [
+          {
+            "part_id": "violin_1",
+            "instrument_id": "violin",
+            "display_name": "Violin I",
+            "events": [
+              {"pitch": "E5", "midi": 76, "string_name": "E", "fret": 9},
+              ...
+            ],
+          },
+          ...
+        ]
+      }
+    """
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+
+    target_measure = int(params.get("measure", 0))
+    if target_measure <= 0:
+        raise ValueError("measure 必須是正整數")
+    context = int(params.get("context", 4))
+
+    from core.instruments.fingering import find_best_fingering_sequence
+    from core.instruments import get_profile
+    from core.ir import ChordEvent, NoteEvent
+
+    target = sess.current_arrangement.target_score
+    result_parts = []
+
+    for part in target.parts:
+        profile = get_profile(part.instrument_id)
+        if profile is None or not getattr(profile, "strings", None):
+            continue  # 非弦樂 part 跳過
+
+        # 抽出 [measure - context, measure] 範圍的 chord pitches 序列
+        start_measure = max(1, target_measure - context)
+        seq_chords: list[list] = []
+        target_indices_in_seq: list[int] = []  # 對應 target_measure 的 idx
+        for m in part.measures:
+            if not (start_measure <= m.number <= target_measure):
+                continue
+            voices_iter = (
+                m.voices.values()
+                if isinstance(m.voices, dict) else m.voices
+            )
+            for voice in voices_iter:
+                branches = (voice.divisi_branches
+                            if voice.is_divisi and voice.divisi_branches
+                            else [voice])
+                for v in branches:
+                    for ev in v.events:
+                        if isinstance(ev, NoteEvent):
+                            chord_pitches = [ev.pitch]
+                        elif isinstance(ev, ChordEvent):
+                            chord_pitches = list(ev.pitches)
+                        else:
+                            continue
+                        if m.number == target_measure:
+                            target_indices_in_seq.append(len(seq_chords))
+                        seq_chords.append(chord_pitches)
+
+        if not seq_chords or not target_indices_in_seq:
+            continue
+
+        fingerings = find_best_fingering_sequence(
+            seq_chords,
+            profile.strings,
+            max_fret=24,
+            max_stretch_semitones=6,
+        )
+
+        events_out = []
+        for idx in target_indices_in_seq:
+            if idx >= len(fingerings):
+                continue
+            fingering = fingerings[idx]
+            if fingering is None:
+                continue
+            for pitch, string_idx, fret in fingering.assignments:
+                # string_idx → string letter (e.g. "G", "D", "A", "E" for violin)
+                # 從 open_pitch.spelling 取字母 + 變化音 (去掉 octave 數字)
+                string_def = next(
+                    (s for s in profile.strings if s.index == string_idx),
+                    None,
+                )
+                string_name = (
+                    string_def.open_pitch.spelling.rstrip("0123456789-")
+                    if string_def else f"S{string_idx}"
+                )
+                events_out.append({
+                    "pitch": pitch.spelling,
+                    "midi": pitch.midi_number,
+                    "string_name": string_name,
+                    "fret": fret,
+                })
+
+        if events_out:
+            result_parts.append({
+                "part_id": part.part_id,
+                "instrument_id": part.instrument_id,
+                "display_name": part.name_display or part.instrument_id,
+                "events": events_out,
+            })
+
+    return {"measure": target_measure, "parts": result_parts}
+
+
 METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "ping": _method_ping,
     "close_session": _method_close_session,
@@ -2444,6 +2579,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "compute_difficulty": _method_compute_difficulty,
     "compute_quality": _method_compute_quality,
     "list_navigation": _method_list_navigation,
+    "get_measure_fingering": _method_get_measure_fingering,
 }
 
 

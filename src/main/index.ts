@@ -18,6 +18,7 @@ import {
   computeQuality,
   exportTargetMidi,
   listNavigation,
+  getMeasureFingering,
   exportTargetMusicXML,
   targetPartMusicXML,
   historyStatus,
@@ -200,8 +201,9 @@ function registerIpcHandlers(): void {
     arrangeCustom(path, players, repair, skillLevel, stylePreset)));
   ipcMain.handle(
     "engine:toMusicXML",
-    async (_evt, path: string, maxMeasures?: number) =>
-      safeCall(() => toMusicXML(path, maxMeasures)),
+    async (
+      _evt, path: string, maxMeasures?: number, startMeasure?: number,
+    ) => safeCall(() => toMusicXML(path, maxMeasures, startMeasure)),
   );
   ipcMain.handle("engine:scoreInfo", async (_evt, path: string) =>
     safeCall(() => scoreInfo(path)));
@@ -392,6 +394,11 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "engine:listNavigation",
     async () => safeCall(() => listNavigation()),
+  );
+  ipcMain.handle(
+    "engine:getMeasureFingering",
+    async (_evt, measure: number) =>
+      safeCall(() => getMeasureFingering(measure)),
   );
   ipcMain.handle(
     "engine:listSourceParts",

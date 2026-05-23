@@ -455,30 +455,45 @@ export function Toolbar() {
 
       setSourcePath(scorePath);
       setLoading(true, tr("toolbar.loading.scoreSize"));
-      // 大譜偵測: >800 measures 自動切前 200 小節預覽 (改編仍走完整譜)
+      // 大譜偵測: >800 measures 自動切前 200 小節預覽 (改編仍走完整譜).
+      // 記下總小節數 → sessionStore.sourceSlice, App.tsx 可顯示翻頁 UI.
       let maxMeasures: number | undefined ;
+      let totalMeasures = 0;
       try {
         const info = await window.scoreArranger.engine.scoreInfo(scorePath);
-        if (info.ok && info.data && info.data.measure_count > 800) {
-          maxMeasures = 200;
-          setLoading(
-            true,
-            tr("toolbar.loading.largeScore", {
-              count: info.data.measure_count,
-              preview: maxMeasures,
-            }),
-          );
-        } else {
-          setLoading(true, tr("toolbar.loading.loadingScore"));
+        if (info.ok && info.data) {
+          totalMeasures = info.data.measure_count;
+          if (info.data.measure_count > 800) {
+            maxMeasures = 200;
+            setLoading(
+              true,
+              tr("toolbar.loading.largeScore", {
+                count: info.data.measure_count,
+                preview: maxMeasures,
+              }),
+            );
+          } else {
+            setLoading(true, tr("toolbar.loading.loadingScore"));
+          }
         }
       } catch {
         setLoading(true, tr("toolbar.loading.loadingScore"));
       }
       const xmlRes = await window.scoreArranger.engine.toMusicXML(
-        scorePath, maxMeasures,
+        scorePath, maxMeasures, 1,
       );
       if (xmlRes.ok && xmlRes.data) {
         setSourceMusicXML(xmlRes.data);
+        // 只在有切片時設; 完整顯示維持 null (App.tsx 才不會顯示翻頁 UI)
+        if (maxMeasures && totalMeasures > maxMeasures) {
+          useSessionStore.getState().setSourceSlice({
+            startMeasure: 1,
+            pageSize: maxMeasures,
+            totalMeasures,
+          });
+        } else {
+          useSessionStore.getState().setSourceSlice(null);
+        }
         snapshotToTab();
       } else {
         setError(xmlRes.error ?? tr("toolbar.error.loadScoreFailed"));

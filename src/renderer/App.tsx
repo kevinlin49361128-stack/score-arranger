@@ -51,7 +51,10 @@ export default function App() {
     panelLayout,
     infoPanelPos,
     showHeatmap,
+    sourceSlice,
+    setSourceSlice,
   } = useSessionStore();
+  const [slicePageLoading, setSlicePageLoading] = useState(false);
   // 載入 per-measure difficulty (僅在 showHeatmap 開啟時)
   const [difficultyData, setDifficultyData] = useState<
     Record<string, DifficultyEntry>
@@ -419,6 +422,91 @@ export default function App() {
                 {tr("app.panel.sourceTitle")}
               </span>
               <PlaybackControls side="source" compact />
+              {sourceSlice && sourcePath && (
+                <span style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  marginLeft: "auto", fontSize: 11,
+                }}>
+                  <span style={{ color: "var(--fg-tertiary)" }}>
+                    m.{sourceSlice.startMeasure}–
+                    {Math.min(
+                      sourceSlice.startMeasure + sourceSlice.pageSize - 1,
+                      sourceSlice.totalMeasures,
+                    )} / {sourceSlice.totalMeasures}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!sourcePath) return;
+                      const newStart = Math.max(
+                        1, sourceSlice.startMeasure - sourceSlice.pageSize,
+                      );
+                      if (newStart === sourceSlice.startMeasure) return;
+                      setSlicePageLoading(true);
+                      try {
+                        const res = await window.scoreArranger.engine
+                          .toMusicXML(
+                            sourcePath, sourceSlice.pageSize, newStart,
+                          );
+                        if (res.ok && res.data) {
+                          setSourceMusicXML(res.data);
+                          setSourceSlice({
+                            ...sourceSlice, startMeasure: newStart,
+                          });
+                        }
+                      } finally { setSlicePageLoading(false); }
+                    }}
+                    disabled={
+                      slicePageLoading || sourceSlice.startMeasure <= 1
+                    }
+                    style={{
+                      padding: "1px 6px", fontSize: 11,
+                      border: "1px solid var(--button-border)",
+                      background: "var(--button-bg)",
+                      color: "var(--button-fg)",
+                      borderRadius: 3, cursor: "pointer",
+                      opacity: sourceSlice.startMeasure <= 1 ? 0.4 : 1,
+                    }}
+                  >‹</button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!sourcePath) return;
+                      const newStart =
+                        sourceSlice.startMeasure + sourceSlice.pageSize;
+                      if (newStart > sourceSlice.totalMeasures) return;
+                      setSlicePageLoading(true);
+                      try {
+                        const res = await window.scoreArranger.engine
+                          .toMusicXML(
+                            sourcePath, sourceSlice.pageSize, newStart,
+                          );
+                        if (res.ok && res.data) {
+                          setSourceMusicXML(res.data);
+                          setSourceSlice({
+                            ...sourceSlice, startMeasure: newStart,
+                          });
+                        }
+                      } finally { setSlicePageLoading(false); }
+                    }}
+                    disabled={
+                      slicePageLoading
+                        || sourceSlice.startMeasure + sourceSlice.pageSize
+                           > sourceSlice.totalMeasures
+                    }
+                    style={{
+                      padding: "1px 6px", fontSize: 11,
+                      border: "1px solid var(--button-border)",
+                      background: "var(--button-bg)",
+                      color: "var(--button-fg)",
+                      borderRadius: 3, cursor: "pointer",
+                      opacity: sourceSlice.startMeasure + sourceSlice.pageSize
+                                 > sourceSlice.totalMeasures
+                        ? 0.4 : 1,
+                    }}
+                  >›</button>
+                </span>
+              )}
             </div>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
               <ScoreViewer
