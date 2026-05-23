@@ -404,10 +404,18 @@ function parseEditPlan(raw: string, ctx: LLMEditPlanContext): LLMEditPlan {
     if (!Number.isFinite(n)) return 1;
     return Math.min(maxM, Math.max(1, n));
   };
+  // 安全: defense-in-depth — 即使 prompt injection 讓 LLM 寫出未來才會加的
+  // 危險 op (如 system_exec / load_plugin), 在這裡先擋下來. 引擎端
+  // apply_edit_ops 也會擋, 雙重保險.
+  const ALLOWED_OPS = new Set([
+    "transpose", "articulation", "dynamic", "rest", "reassign",
+    "enrich", "simplify", "level",
+  ]);
   const rawOps = Array.isArray(parsed.operations) ? parsed.operations : [];
   const operations: LLMEditOp[] = rawOps
     .filter((o): o is Record<string, unknown> =>
       !!o && typeof o === "object")
+    .filter((o) => typeof o.op === "string" && ALLOWED_OPS.has(o.op))
     .map((o) => {
       let ms = clampM(o.measure_start);
       let me = clampM(o.measure_end);

@@ -73,7 +73,31 @@ async function createWindow(): Promise<BrowserWindow> {
       preload: resolve(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      // Defense-in-depth: 即使 renderer 被攻破, sandbox 也擋掉非 IPC 的 Node
+      // API. preload 已全走 contextBridge, 開 sandbox 不需改 code.
+      sandbox: true,
     },
+  });
+
+  // 安全: window.open / target=_blank → 一律阻止繼承 webPreferences, 改用
+  // shell.openExternal 把連結交給系統瀏覽器 (跳脫 app sandbox).
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) {
+      void shell.openExternal(url);
+    }
+    return { action: "deny" };
+  });
+
+  // 安全: 拒絕 in-app 導航到非預期 URL (dev 是 vite, 打包後是 file://).
+  // 沒有這層防護, 惡意樂譜內嵌 link 點到可在 app 視窗內導去 phishing.
+  win.webContents.on("will-navigate", (e, url) => {
+    const allowed = isDev
+      ? url.startsWith("http://localhost:5173")
+      : url.startsWith("file://");
+    if (!allowed) {
+      e.preventDefault();
+      if (/^https?:\/\//i.test(url)) void shell.openExternal(url);
+    }
   });
 
   if (isDev) {
@@ -90,6 +114,32 @@ async function createWindow(): Promise<BrowserWindow> {
 // ============================================================================
 // IPC handlers — 暴露給 renderer
 // ============================================================================
+
+/**
+ * 安全: dialog 通過 → 把核可的寫入路徑記下, 之後寫檔 handler 必須驗證
+ * 路徑已被 dialog 核可. 沒這層守護, renderer 被 XSS / LLM-prompt-injection
+ * 攻破時可以直接呼 engine:saveProject("/Users/X/.ssh/authorized_keys", ...)
+ * 把任意檔案覆寫.
+ *
+ * 設計: session 內任何被 dialog 核可的路徑都加進 Set; 不過期 (使用者明確
+ * 同意過, 沒理由要他再同意一次). app 關掉就清空.
+ */
+const approvedWritePaths = new Set<string>();
+
+function rememberApprovedPath(path: string | null | undefined): string | null {
+  if (!path) return null;
+  approvedWritePaths.add(path);
+  return path;
+}
+
+function requireApprovedPath(path: string): void {
+  if (!approvedWritePaths.has(path)) {
+    throw new Error(
+      "Refused write to non-dialog-approved path. "
+      + "Renderer must obtain path via dialog:saveProject / dialog:exportFile first.",
+    );
+  }
+}
 
 function registerIpcHandlers(): void {
   ipcMain.handle("dialog:openScore", async () => {
@@ -130,7 +180,7 @@ function registerIpcHandlers(): void {
       ],
     });
     if (result.canceled || !result.filePath) return null;
-    return result.filePath;
+    return rememberApprovedPath(result.filePath);
   });
 
   ipcMain.handle("dialog:openProject", async () => {
@@ -160,7 +210,7 @@ function registerIpcHandlers(): void {
         filters,
       });
       if (result.canceled || !result.filePath) return null;
-      return result.filePath;
+      return rememberApprovedPath(result.filePath);
     },
   );
 
@@ -365,18 +415,26 @@ function registerIpcHandlers(): void {
   );
   ipcMain.handle(
     "engine:saveProject",
-    async (_evt, path: string, sourcePath: string) =>
-      safeCall(() => saveProject(path, sourcePath)),
+    async (_evt, path: string, sourcePath: string) => {
+      requireApprovedPath(path);
+      return safeCall(() => saveProject(path, sourcePath));
+    },
   );
   ipcMain.handle("engine:loadProject", async (_evt, path: string) =>
     safeCall(() => loadProject(path)));
   ipcMain.handle(
     "engine:exportTargetMusicXML",
-    async (_evt, path: string) => safeCall(() => exportTargetMusicXML(path)),
+    async (_evt, path: string) => {
+      requireApprovedPath(path);
+      return safeCall(() => exportTargetMusicXML(path));
+    },
   );
   ipcMain.handle(
     "engine:exportTargetMidi",
-    async (_evt, path: string) => safeCall(() => exportTargetMidi(path)),
+    async (_evt, path: string) => {
+      requireApprovedPath(path);
+      return safeCall(() => exportTargetMidi(path));
+    },
   );
   ipcMain.handle(
     "engine:targetPartMusicXML",

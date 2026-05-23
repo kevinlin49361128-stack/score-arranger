@@ -3,6 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Content-Security-Policy — 防止第三方域名被 takeover 後注入 JS.
+         connect-src 白名單:
+           - 'self' / file: → 本地 (Vite dev / 打包後 file://)
+           - tonejs / nbrosowsky / gleitz → SoundFont sample 來源 (硬編 https)
+           - api.anthropic.com / api.openai.com → LLM provider
+           - http://localhost:* → 自架 Ollama / OpenAI-compat endpoint
+         style 用 'unsafe-inline' 是 React/CSS-in-JS 必需 (component 內 style 屬性).
+         其餘維持嚴格 'self'. -->
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self' file:; script-src 'self' file:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
     <title>Score Arranger</title>
     <style>
       :root {
