@@ -184,8 +184,13 @@
   .download .container{position:relative;z-index:1}
   .download-sub{color:var(--ink-soft);font-size:17px;margin-top:18px}
   .download-cta{margin-top:32px}
+  .dl-version{margin-left:10px;padding:2px 8px;font-size:11px;font-weight:600;
+    letter-spacing:.04em;background:rgba(255,255,255,0.18);border-radius:3px;
+    color:rgba(255,255,255,0.92)}
   .download-note{color:var(--ink-faint);font-size:13px;letter-spacing:.05em;
     margin-top:16px}
+  .download-note a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)}
+  .download-note a:hover{color:var(--gold-bright);border-color:var(--gold-bright)}
 
   /* ---- footer ---- */
   .site-footer{border-top:1px solid var(--line);padding:48px 0 56px}
@@ -426,9 +431,10 @@
           <a class="btn btn-primary" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
             <span data-i18n="dlCta">下載 Score Arranger</span>
+            <span class="dl-version">v0.1.22</span>
           </a>
         </div>
-        <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證)</p>
+        <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證) · <a href="https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.22" target="_blank" rel="noopener" data-i18n="dlChangelog">看本版更新內容</a></p>
       </div>
     </div>
   </section>
@@ -503,7 +509,8 @@
     dlTitle:"Let that piece be played.",
     dlSub:"Free download. No account required.",
     dlCta:"Download Score Arranger",
-    dlNote:"For macOS",
+    dlNote:"For macOS (Apple Silicon, signed + notarized) · <a href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.22\" target=\"_blank\" rel=\"noopener\">See what's new</a>",
+    dlChangelog:"See what's new",
     footTagline:"Intelligent score arranging",
     footMade:"Built in spare time by a developer who loves music.",
     footSupport:"Support this project",
