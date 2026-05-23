@@ -708,3 +708,96 @@ def test_wind_breathing_non_wind_skipped():
     issues = collect_issues(score)
     wind_issues = [i for i in issues if i.result.code == "W_WIND_NO_BREATH"]
     assert wind_issues == []
+
+
+# ============================================================================
+# Viola/Cello stretch + fret 修復 (0.1.29 regression — Schumann Op48no2 case)
+# ============================================================================
+
+def _viola_chord_score(midis: list[int]) -> Score:
+    """單一 viola part, 給一個和弦 ChordEvent 在 measure 1."""
+    chord = _chord(midis, dur=Fraction(1), onset=Fraction(0))
+    return Score(
+        movements=[Movement(
+            movement_id=1, measure_count=1,
+            sections=[Section(0, 1, 1)],
+        )],
+        parts=[Part(
+            part_id="viola_1", name_display="Viola",
+            instrument_id="viola",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[chord])},
+            )],
+        )],
+    )
+
+
+def test_viola_stretch_repair_omit_codes_listed():
+    """E_VIOLA_STRETCH_EXCEED 必須在 strategy_omit_note 的 codes 集合,
+    否則 repair 會 skip 這個 issue (Schumann Op48no2 場景 bug)."""
+    # E4=64, G4=67, A4=69, C#5=73 — viola 4-音和弦, fret 距離超過 max 6
+    score = _viola_chord_score([64, 67, 69, 73])
+    issues = collect_issues(score)
+    viola_errs = [i for i in issues if i.result.code == "E_VIOLA_STRETCH_EXCEED"]
+    assert len(viola_errs) == 1, "test fixture 該觸發 stretch error"
+
+    # Strategy 必須能 act on 這個 code (不能直接 return False)
+    issue = viola_errs[0]
+    initial_chord = score.parts[0].measures[0].voices[1].events[0]
+    initial_n = len(initial_chord.pitches)
+    result = strategy_omit_note(score, issue)
+    assert result is True, (
+        "strategy_omit_note 應 act on E_VIOLA_STRETCH_EXCEED — "
+        "0.1.28 之前因 omit_codes 沒列此 code 導致 skip"
+    )
+    # 確認真的少一個音
+    after_chord = score.parts[0].measures[0].voices[1].events[0]
+    after_n = (
+        len(after_chord.pitches) if isinstance(after_chord, ChordEvent) else 1
+    )
+    assert after_n == initial_n - 1
+
+
+def test_viola_stretch_repair_clears_error():
+    """跑完 repair_loop 後, viola stretch error 應被清零 (brute-force omit
+    chooser 找得到能讓 fret stretch ≤ max 的 omit candidate)."""
+    score = _viola_chord_score([64, 67, 69, 73])
+    arr = Arrangement(
+        arrangement_id="x", name="x", source_id="x",
+        players=[], assignments=[], target_score=score,
+    )
+    from core.repair import repair_loop
+    repair_loop(arr, max_iterations=20)
+    final = collect_issues(arr.target_score)
+    errs = [i for i in final if i.result.severity == "error"]
+    assert errs == [], f"viola stretch repair 未清零: {[i.result.code for i in errs]}"
+
+
+def test_cello_fret_too_high_repair_omit_codes_listed():
+    """E_CELLO_FRET_TOO_HIGH 必須能被 omit_note 處理.
+    [57, 69] = A3+A4 — A4 (fret 26) 太高, 刪 A4 → 剩 A3 (合法)."""
+    chord = _chord([57, 69], dur=Fraction(1), onset=Fraction(0))
+    score = Score(
+        movements=[Movement(
+            movement_id=1, measure_count=1,
+            sections=[Section(0, 1, 1)],
+        )],
+        parts=[Part(
+            part_id="cello_1", name_display="Cello",
+            instrument_id="cello",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[chord])},
+            )],
+        )],
+    )
+    issues = collect_issues(score)
+    fret_errs = [i for i in issues if i.result.code == "E_CELLO_FRET_TOO_HIGH"]
+    assert len(fret_errs) == 1, "test fixture 該觸發 fret_too_high error"
+
+    result = strategy_omit_note(score, fret_errs[0])
+    assert result is True, (
+        "strategy_omit_note 應 act on E_CELLO_FRET_TOO_HIGH — "
+        "0.1.28 之前因 omit_codes 沒列此 code 導致 skip"
+    )

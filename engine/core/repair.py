@@ -421,22 +421,178 @@ def _harmonic_omit_choice(pitches: list) -> int:
     return min(inner, key=essential)
 
 
+def _stretch_omit_choice(pitches: list, max_stretch_semitones: int) -> int:
+    """對「跨度過大 (stretch)」問題挑該省的音 — 必須真能縮 stretch.
+
+    `_harmonic_omit_choice` 的「保留外聲部」邏輯對 stretch 問題會失敗 —
+    例 [64, 68, 71] span=7, 刪中間 68 → [64, 71] 仍 7. 對 stretch 必須
+    刪「最外側的音之一」(最高 or 最低).
+
+    策略:
+    1. 嘗試刪最高音或最低音, 取能讓 new span <= max_stretch 的
+    2. 若兩個都行, 依 _harmonic_omit_choice 的 essential 分數選較不關鍵
+       (刪「離 essential 較遠」的音)
+    3. 若兩個都不行 (即只刪一音 stretch 仍超 — 例 4 音 stretch 12), 仍刪
+       能縮最多 stretch 的那個, 留給後續 repair 迭代再縮
+    """
+    order = sorted(range(len(pitches)), key=lambda i: pitches[i].midi_number)
+    if len(order) < 2:
+        return order[0]  # 退化保護
+    if len(order) == 2:
+        return order[-1]  # 2 音 → 省最高 (與 _harmonic_omit_choice 一致)
+
+    lo_idx, hi_idx = order[0], order[-1]
+    lo, hi = pitches[lo_idx].midi_number, pitches[hi_idx].midi_number
+    # 刪 lo → 新 span = hi - 第二低
+    new_span_no_lo = hi - pitches[order[1]].midi_number
+    # 刪 hi → 新 span = 倒數第二高 - lo
+    new_span_no_hi = pitches[order[-2]].midi_number - lo
+
+    # 若至少一個能讓 span 達標 — 挑能達標的
+    lo_ok = new_span_no_lo <= max_stretch_semitones
+    hi_ok = new_span_no_hi <= max_stretch_semitones
+    if lo_ok and not hi_ok:
+        return lo_idx
+    if hi_ok and not lo_ok:
+        return hi_idx
+    # 兩個都行 — 用 essential score 決定 (刪較不關鍵)
+    if lo_ok and hi_ok:
+        root_midi = lo
+        pcs = [pitches[i].midi_number % 12 for i in range(len(pitches))]
+
+        def essential(gi: int) -> int:
+            iv = (pitches[gi].midi_number - root_midi) % 12
+            if pcs.count(pitches[gi].midi_number % 12) > 1:
+                return 0
+            if iv in (3, 4, 10, 11):
+                return 3
+            if iv in (1, 2, 5, 6, 8, 9):
+                return 2
+            return 1
+
+        return lo_idx if essential(lo_idx) <= essential(hi_idx) else hi_idx
+    # 兩個都不行 — 挑縮最多的, 下一輪 repair 繼續處理
+    return lo_idx if new_span_no_lo < new_span_no_hi else hi_idx
+
+
+# Per-instrument 和弦 checker — lazy import 避免循環依賴
+_CHORD_CHECKERS: dict[str, Any] = {}
+
+
+def _get_chord_checker(instrument_id: str) -> Optional[Callable]:
+    """Lazy 載入該樂器的 chord checker. None = 此樂器沒專屬 chord checker."""
+    if instrument_id in _CHORD_CHECKERS:
+        return _CHORD_CHECKERS[instrument_id]
+    checker: Optional[Callable] = None
+    try:
+        if instrument_id.startswith("violin"):
+            from .instruments import check_violin_chord as checker  # type: ignore
+        elif instrument_id.startswith("viola"):
+            from .instruments import check_viola_chord as checker  # type: ignore
+        elif instrument_id.startswith("cello"):
+            from .instruments import check_cello_chord as checker  # type: ignore
+    except ImportError:
+        checker = None
+    _CHORD_CHECKERS[instrument_id] = checker
+    return checker
+
+
+def _pick_best_stretch_omit(
+    pitches: list, instrument_id: str,
+) -> Optional[int]:
+    """Brute-force: 試每個 omit, 重新跑 checker, 挑嚴重度降最低者.
+
+    Stretch 計算用 fret 距離 (不是 pitch semitone), 而 fret 取決於弦 assignment
+    邏輯. 為避免在 repair 裡 reimplement 整套 assignment, 直接呼叫 checker
+    驗證每個 candidate, 選結果 severity 最佳者.
+
+    Severity ranking: ok(0) < info(1) < warning(2) < error(3).
+    若多個 candidate severity 相同, 選保留外聲部者 (與 _harmonic_omit_choice
+    啟發式一致).
+
+    回傳 None 代表「沒一個 omit 改善現狀」, 留給 split_to_parts 等其他策略.
+    """
+    checker = _get_chord_checker(instrument_id)
+    if checker is None:
+        # 沒專屬 checker — 退回 essential-based 選擇
+        return _harmonic_omit_choice(pitches)
+
+    sev_rank = {"ok": 0, "info": 1, "warning": 2, "error": 3}
+    # 當前 severity (起點)
+    current_result = checker(pitches)
+    current_rank = sev_rank.get(current_result.severity, 3)
+
+    best_idx: Optional[int] = None
+    best_rank = current_rank + 1  # 必須嚴格小於當前
+    # 多個 candidate 並列時, 偏好不刪外聲部 (lo / hi)
+    sorted_indices = sorted(
+        range(len(pitches)), key=lambda i: pitches[i].midi_number,
+    )
+    inner_ids = set(sorted_indices[1:-1]) if len(sorted_indices) >= 3 else set()
+
+    for omit_idx in range(len(pitches)):
+        candidate = [p for i, p in enumerate(pitches) if i != omit_idx]
+        if not candidate:
+            continue
+        try:
+            r = checker(candidate)
+        except Exception:
+            continue
+        rank = sev_rank.get(r.severity, 3)
+        if rank < best_rank:
+            best_rank = rank
+            best_idx = omit_idx
+        elif rank == best_rank and best_idx is not None:
+            # tie-break: 偏好刪內聲部 (omit_idx in inner)
+            if omit_idx in inner_ids and best_idx not in inner_ids:
+                best_idx = omit_idx
+    return best_idx
+
+
 def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     """策略 2 (Phase 1 範圍): 對和弦超載問題省略一個音。
 
     和聲感知啟發式: 保留外聲部, 內聲部中省略和聲上最不關鍵的音 (疊音 /
-    完全五度 / 八度優先省, 三度與七度保留)。2 音和弦則省最高。
+    完全五度 / 八度優先省, 三度與七度保留)。2 音和弦則省最高.
+
+    Stretch (跨度過大) 問題例外: 用 _stretch_omit_choice — 必須刪外側音
+    (最高 or 最低) 才能縮 stretch, 不然刪內聲部後 stretch 不變.
+
+    0.1.29: omit_codes 補齊 viola/cello/fretted/harp 對應 code; stretch
+    類 issue 改走 _stretch_omit_choice (修 Schumann Op48no2 鋼琴→SQ 場景).
     """
-    omit_codes = {
+    # 一般 omit (適合「太多音」/「非相鄰弦」/「fret 太高」等問題)
+    general_omit_codes = {
         "E_STRING_CHORD_EXCEED",
         "E_NON_ADJACENT_STRINGS",
         "E_PIANO_HAND_SPAN_EXCEED",
         "W_PIANO_HAND_SPAN_LARGE",
+        "E_HARPSICHORD_HAND_SPAN_EXCEED",
+        "W_HARPSICHORD_HAND_SPAN_LARGE",
         "W_VIOLIN_TRIPLE_QUAD_STOP",
-        "W_VIOLIN_STRETCH_LARGE",
-        "E_VIOLIN_STRETCH_EXCEED",
+        "W_VIOLA_TRIPLE_QUAD_STOP",
+        "W_CELLO_TRIPLE_QUAD_STOP",
+        "E_CELLO_FRET_TOO_HIGH",
+        "E_VIOLA_FRET_TOO_HIGH",
+        "E_FRETTED_CHORD_INFEASIBLE",
+        "E_FRETTED_FRET_TOO_HIGH",
+        "W_FRETTED_HIGH_POSITION",
+        "E_HARP_TOO_MANY_NOTES",
+        "E_HARP_SAME_STRING",
+        "W_HARP_WIDE_SPAN",
     }
-    if issue.result.code not in omit_codes:
+    # Stretch 類 — 用專屬 chooser (必須刪外側音才能縮 span)
+    stretch_omit_codes = {
+        "E_VIOLIN_STRETCH_EXCEED",
+        "W_VIOLIN_STRETCH_LARGE",
+        "E_VIOLA_STRETCH_EXCEED",
+        "W_VIOLA_STRETCH_LARGE",
+        "E_CELLO_STRETCH_EXCEED",
+        "W_CELLO_STRETCH_LARGE",
+        "W_FRETTED_STRETCH_LARGE",
+    }
+    code = issue.result.code
+    if code not in general_omit_codes and code not in stretch_omit_codes:
         return False
 
     event = _get_event(score, issue)
@@ -445,7 +601,21 @@ def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     if len(event.pitches) < 2:
         return False
 
-    omit_idx = _harmonic_omit_choice(event.pitches)
+    if code in stretch_omit_codes:
+        # Stretch 用 fret 距離算 (不是 pitch semitone 距離), 而 fret 取決於
+        # 「哪個音放哪根弦」的 assignment 邏輯 — 不能只看 semitone span 推測.
+        # 改用 brute-force: 試每個 omit, 重新跑 checker, 挑能讓嚴重度降到
+        # 最低的那個 omit. 4-音和弦最多試 4 次, 成本可接受.
+        part = _get_part(score, issue.part_id)
+        instrument_id = part.instrument_id if part is not None else ""
+        omit_idx = _pick_best_stretch_omit(
+            event.pitches, instrument_id,
+        )
+        if omit_idx is None:
+            # 沒一個 omit 能改善 — 交給其他策略 (例 split_to_parts)
+            return False
+    else:
+        omit_idx = _harmonic_omit_choice(event.pitches)
     sorted_pitches = sorted(
         (p for i, p in enumerate(event.pitches) if i != omit_idx),
         key=lambda p: p.midi_number,
