@@ -90,6 +90,19 @@ architecture.md  完整架構設計書
 - [`docs/`](docs/) — IR 規格、樂句偵測規格、MCP 設定等
 - [`NOTICE.md`](NOTICE.md) — 第三方元件授權與致謝
 
+## 支持開發
+
+Score Arranger 是免費的開源軟體，所有功能都不付費鎖定。若這個工具對你有幫助，歡迎透過 Lemon Squeezy 隨意贊助 — 贊助會用於以下開支：
+
+- Apple Developer Program 年費（$99/yr）
+- 程式碼簽章 + macOS 公證
+- 開發時間（新樂器、新編制、Bug 修復）
+
+<!-- TODO: LMS 批准後改成 product 直連 -->
+**[☕ Buy me a coffee on Lemon Squeezy](https://kevin-lin.lemonsqueezy.com)** _(Pay what you want; minimum $1)_
+
+贊助是純粹自願 — 不影響任何功能可用性。
+
 ## 授權
 
 Score Arranger 以 **GNU General Public License v3.0** 釋出（全文見 [`LICENSE`](LICENSE)）。

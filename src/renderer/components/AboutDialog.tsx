@@ -277,6 +277,39 @@ function Overview() {
           notice: <Code>NOTICE.md</Code>,
         })}
       </p>
+
+      {/*
+        贊助區塊 — 完全自願, 不影響任何功能可用性. LMS 批准產品後把 href
+        改成 product 直連 (目前指向 store 首頁也合法可用).
+        TODO: LMS 批准後改成 https://kevin-lin.lemonsqueezy.com/buy/<UUID>
+      */}
+      <H2>{t("about.overview.supportHeading")}</H2>
+      <p>{t("about.overview.supportIntro")}</p>
+      <p style={{ marginTop: 8 }}>
+        <a
+          href="https://kevin-lin.lemonsqueezy.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block",
+            padding: "8px 16px",
+            background: "var(--accent)",
+            color: "var(--accent-fg)",
+            borderRadius: 6,
+            textDecoration: "none",
+            fontWeight: 600,
+            fontSize: 13,
+          }}
+        >
+          ☕ {t("about.overview.supportCta")}
+        </a>
+      </p>
+      <p style={{
+        marginTop: 8, color: "var(--fg-tertiary)", fontSize: 12,
+      }}>
+        {t("about.overview.supportNote")}
+      </p>
+
       <H2>{t("about.overview.versionHeading")}</H2>
       <p>{t("about.overview.versionLine")}</p>
     </div>
