@@ -1,0 +1,36 @@
+name: Deploy website to Pages
+
+# Pages 來源是 /website 子資料夾 (GitHub 內建 Pages source 只支援 / 或 /docs,
+# 用 actions/upload-pages-artifact 才能 deploy 任意子資料夾)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./website
+      - id: deployment
+        uses: actions/deploy-pages@v4
