@@ -167,6 +167,57 @@ class TestCandidateExpansion:
         cands = _generate_candidates(slot, prac_lo=60, prac_hi=60)
         assert cands == [60]
 
+    def test_transition_cost_hidden_parallel_octave(self):
+        """同向跳到 P8 應加 W_HIDDEN_PARALLEL penalty."""
+        from core.voice_leading_dp import (
+            W_HIDDEN_PARALLEL,
+            _Slot,
+            _transition_cost,
+        )
+        # inner: F4 (65) → G5 (79), outer (melody): C4 (60) → G4 (67)
+        # 起始 inner-melody = |65-60| = 5 (P4), 結束 |79-67| = 12 (P8)
+        # 同向 (兩部都上), inner 跳 14, outer 跳 7 → 應加 hidden penalty
+        prev_slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=65, melody_midi=60, bass_midi=None,
+            other_inner_midis=[],
+        )
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=1,
+            original_midi=79, melody_midi=67, bass_midi=None,
+            other_inner_midis=[],
+        )
+        cost = _transition_cost(65, 79, prev_slot, slot)
+        # W_LEAP * 14 = 14, + W_HIDDEN_PARALLEL (80) = 94 約
+        assert cost >= W_HIDDEN_PARALLEL, (
+            f"hidden parallel penalty 應被加入: cost={cost}"
+        )
+
+    def test_transition_cost_contrary_motion_no_hidden(self):
+        """反向動進 → 不算 hidden, 不加 penalty."""
+        from core.voice_leading_dp import (
+            W_HIDDEN_PARALLEL,
+            _Slot,
+            _transition_cost,
+        )
+        # inner: F4 (65) → G5 (79), outer (melody): C5 (72) → G4 (67) 下行
+        # 同向 = (上, 下) → 反向, 不應加 hidden penalty
+        prev_slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=65, melody_midi=72, bass_midi=None,
+            other_inner_midis=[],
+        )
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=1,
+            original_midi=79, melody_midi=67, bass_midi=None,
+            other_inner_midis=[],
+        )
+        cost = _transition_cost(65, 79, prev_slot, slot)
+        # 只有 W_LEAP * 14 = 14, 沒有 hidden penalty
+        assert cost < W_HIDDEN_PARALLEL, (
+            f"反向動進不該加 hidden penalty: cost={cost}"
+        )
+
     def test_state_cost_penalizes_pitch_class_change(self):
         """改 pc 比保留 pc 成本高 (W_DIFF_PITCH_CLASS=50). 確保 DP
         不會無端把 G 換成 C 除非真的有 W_PARALLEL 級別的好處可拿."""

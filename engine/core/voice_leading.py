@@ -87,6 +87,95 @@ def detect_parallel_motion(score: Score):
     return issues
 
 
+def detect_hidden_parallels(score: Score):
+    """偵測隱伏五度 / 隱伏八度 (hidden / direct parallels).
+
+    古典樂理: 兩聲部以同向動進 (similar motion) 抵達一個完全五度或完全
+    八度, 且至少一個聲部 (傳統上指上聲部) 是跳進 (leap, >2 半音) → 被
+    視為違規, 因為聽起來像平行五/八度的「弱化版」.
+
+    判斷:
+    - 兩部同向
+    - 目的音程是 P5 / P8 (mod 12 = 7 或 0)
+    - 起始音程不是 P5 / P8 (否則就是真正的平行, 由 detect_parallel_motion 處理)
+    - 至少一個聲部跳超過 2 半音
+    """
+    from .repair import LocatedIssue
+
+    issues: list[LocatedIssue] = []
+    parts = score.parts
+    for i in range(len(parts)):
+        for j in range(i + 1, len(parts)):
+            line_a = _extract_line(parts[i])
+            line_b = _extract_line(parts[j])
+            issues.extend(
+                _check_pair_hidden(parts[j], line_a, line_b, LocatedIssue)
+            )
+    return issues
+
+
+def _check_pair_hidden(
+    part_b: Part,
+    line_a: list[_Onset],
+    line_b: list[_Onset],
+    LocatedIssue,
+) -> list:
+    """檢查兩聲部間的隱伏五/八度."""
+    issues = []
+    b_by_pos: dict[tuple[int, Fraction], _Onset] = {
+        (o.measure, o.onset): o for o in line_b
+    }
+    common: list[tuple[_Onset, _Onset]] = []
+    for oa in line_a:
+        ob = b_by_pos.get((oa.measure, oa.onset))
+        if ob is not None:
+            common.append((oa, ob))
+    common.sort(key=lambda pair: (pair[0].measure, pair[0].onset))
+
+    for k in range(len(common) - 1):
+        a1, b1 = common[k]
+        a2, b2 = common[k + 1]
+        move_a = a2.midi - a1.midi
+        move_b = b2.midi - b1.midi
+        # 必須兩部都動且同向 (similar motion)
+        if move_a == 0 or move_b == 0:
+            continue
+        if (move_a > 0) != (move_b > 0):
+            continue
+        int1 = _is_perfect(abs(a1.midi - b1.midi))
+        int2 = _is_perfect(abs(a2.midi - b2.midi))
+        # 目的音程必須是 P5/P8, 起始音程不可是同類 P5/P8
+        # (相同類型已歸真正平行, 由 detect_parallel_motion 處理)
+        if int2 is None:
+            continue
+        if int1 is not None and int1 == int2:
+            continue
+        # 至少一聲部跳進 (>2 半音 = 大於大二度)
+        if abs(move_a) <= 2 and abs(move_b) <= 2:
+            continue
+        code = (
+            "W_HIDDEN_FIFTHS" if int2 == "fifth"
+            else "W_HIDDEN_OCTAVES"
+        )
+        issues.append(LocatedIssue(
+            part_id=part_b.part_id,
+            measure_number=b2.measure,
+            voice_id=b2.voice_id,
+            event_index=b2.event_index,
+            result=CheckResult(
+                severity="warning",
+                code=code,
+                params={
+                    "interval": int2,
+                    "from_measure": b1.measure,
+                    "to_measure": b2.measure,
+                },
+                difficulty_score=0.0,
+            ),
+        ))
+    return issues
+
+
 def _check_pair(
     part_b: Part,
     line_a: list[_Onset],

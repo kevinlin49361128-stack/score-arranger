@@ -145,10 +145,14 @@ def collect_issues(score: Score) -> list[LocatedIssue]:
                             event_index=idx,
                             result=result,
                         ))
-    # 跨聲部 voice-leading 檢查 (平行五度 / 八度)
+    # 跨聲部 voice-leading 檢查 (平行五度 / 八度 + 隱伏五/八度)
     try:
-        from .voice_leading import detect_parallel_motion
+        from .voice_leading import (
+            detect_hidden_parallels,
+            detect_parallel_motion,
+        )
         issues.extend(detect_parallel_motion(score))
+        issues.extend(detect_hidden_parallels(score))
     except Exception:
         pass
     # 管樂連續吹奏 (換氣) 檢查 — sustain_type=breath 且超過 max_sustained_beats

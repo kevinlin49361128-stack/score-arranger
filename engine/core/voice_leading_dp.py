@@ -49,6 +49,12 @@ W_DIFF_FROM_ORIG = 0.5
 # 改 pitch class 是「更激進」的編輯, 給高 penalty 避免無謂改動 — 但比
 # W_PARALLEL (1000) 低很多, 故 DP 仍會為了消解平行五/八度選擇 chord tone.
 W_DIFF_PITCH_CLASS = 50.0
+# 0.1.31 樂理深化 #2: 隱伏五/八度 (direct / hidden parallels) — 兩部同向
+# 抵達 P5/P8 且至少一聲部跳進. 比真正的平行 (1000) 輕, 但仍夠重讓 DP
+# 在等價選項中避開 — 設 80 = 平行 1/12.5.
+W_HIDDEN_PARALLEL = 80.0
+# 「跳進」的閾值: > 2 半音 (= 大二度以上的移動)
+_LEAP_THRESHOLD = 2
 
 # 平行音程: 完全五度 (7 半音) / 完全八度 / 同音 (0 / 12, mod 12 = 0)
 _PERFECT_MODS = {0, 7}
@@ -431,6 +437,12 @@ def _transition_cost(
         if int_prev in _PERFECT_MODS and int_curr in _PERFECT_MODS \
                 and int_prev == int_curr:
             cost += W_PARALLEL
+            continue  # 已罰真正平行, 不再加隱伏 penalty
+        # 隱伏五/八度: 同向 + 抵達 P5/P8 + 至少一聲部跳進
+        if int_curr in _PERFECT_MODS and int_prev != int_curr:
+            if abs(move_inner) > _LEAP_THRESHOLD \
+                    or abs(move_outer) > _LEAP_THRESHOLD:
+                cost += W_HIDDEN_PARALLEL
     return cost
 
 
