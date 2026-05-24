@@ -149,6 +149,94 @@ def test_collect_dynamic_issues_skips_non_string():
     assert len(issues) == 0  # piano 不在 Phase 1 範圍
 
 
+# ============================================================================
+# 0.1.31 樂理深化 #3: 撥弦 (吉他/魯特琴) 跨事件指法 DP
+# ============================================================================
+
+class TestFrettedPositionSimulator:
+    """吉他/魯特琴跨事件指法 DP 模擬器 — 結構鏡像弦樂版."""
+
+    def _make_guitar_part(self, events: list) -> Part:
+        return Part(
+            part_id="guitar_1", name_display="Guitar",
+            instrument_id="guitar",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=events)},
+            )],
+        )
+
+    def test_slow_passage_no_issue(self):
+        """全音符慢速 (60bpm) → 不論怎麼跑都不該產生 issue."""
+        from core.validator_dynamic import FrettedPositionSimulator
+        profile = get_profile("guitar")
+        part = self._make_guitar_part([
+            _note(40, dur=Fraction(4)),
+            _note(70, dur=Fraction(4), onset=Fraction(4)),
+        ])
+        sim = FrettedPositionSimulator(profile=profile, max_fret=19)
+        issues = sim.simulate_part(part, tempo_bpm=60)
+        assert len(issues) == 0
+
+    def test_fast_fret_jump_flagged(self):
+        """16 分音符快速跨幅大 fret 跳 → 應觸發 fret jump issue."""
+        from core.validator_dynamic import FrettedPositionSimulator
+        profile = get_profile("guitar")
+        # 1st fret 附近 (E4=64=open 6, F4=65=fret1 on 6) → 高把位 (~fret 14)
+        # 中間沒有 rest, 32 分音符給的時間極少
+        part = self._make_guitar_part([
+            _note(41, dur=Fraction(1, 16)),    # F2, low fret
+            _note(78, onset=Fraction(1, 16),    # F#5, fret ~14
+                  dur=Fraction(1, 16)),
+        ])
+        sim = FrettedPositionSimulator(profile=profile, max_fret=19)
+        issues = sim.simulate_part(part, tempo_bpm=180)
+        codes = {i.result.code for i in issues}
+        assert any("FRETTED_POSITION_JUMP" in c for c in codes)
+
+    def test_collect_dynamic_issues_processes_guitar(self):
+        """collect_dynamic_issues 應對 plucked family 跑 simulator."""
+        score = Score(
+            default_tempo_bpm=200,
+            parts=[Part(
+                part_id="guitar_1", name_display="Guitar",
+                instrument_id="guitar",
+                measures=[Measure(
+                    number=1, time_signature=(4, 4),
+                    voices={1: Voice(voice_id=1, events=[
+                        _note(41, dur=Fraction(1, 16)),
+                        _note(78, onset=Fraction(1, 16),
+                              dur=Fraction(1, 16)),
+                    ])},
+                )],
+            )],
+        )
+        issues = collect_dynamic_issues(score)
+        codes = {i.result.code for i in issues}
+        assert any("FRETTED_POSITION_JUMP" in c for c in codes)
+
+    def test_lute_uses_lower_max_fret(self):
+        """魯特琴 max_fret=12, 超過會無 fingering. 但本測試只確認執行不崩."""
+        from core.validator_dynamic import FrettedPositionSimulator
+        profile = get_profile("lute")
+        # 普通的中段把位序列
+        part = Part(
+            part_id="lute_1", name_display="Lute",
+            instrument_id="lute",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[
+                    _note(55, dur=Fraction(2)),
+                    _note(60, onset=Fraction(2), dur=Fraction(2)),
+                ])},
+            )],
+        )
+        sim = FrettedPositionSimulator(profile=profile, max_fret=12)
+        issues = sim.simulate_part(part, tempo_bpm=80)
+        # 不該崩, issue 數量不限
+        assert isinstance(issues, list)
+
+
 def test_collect_dynamic_issues_processes_violin():
     score = Score(
         default_tempo_bpm=240,  # 極快速度

@@ -172,6 +172,7 @@ def find_best_fingering_sequence(
     max_fret: int = 24,
     max_stretch_semitones: int = 6,
     transition_weight: float = TRANSITION_WEIGHT,
+    require_adjacent: bool = True,
 ) -> list[Optional[Fingering]]:
     """Viterbi DP: 對一段聲部的和弦序列找出總代價最低的指法路徑。
 
@@ -181,6 +182,7 @@ def find_best_fingering_sequence(
         max_fret: 最大把位。
         max_stretch_semitones: 跨弦最大音程。
         transition_weight: 換把位懲罰係數 (把位差 × transition_weight)。
+        require_adjacent: True (擦弦, 弦必須相鄰) / False (撥弦, 可跨越未用弦).
 
     Returns:
         長度與 chords 相同的列表; 若某事件無合法指法則回傳 None。
@@ -193,7 +195,10 @@ def find_best_fingering_sequence(
     # 1. 枚舉每個時間步的候選
     all_candidates: list[list[Fingering]] = [
         _enumerate_candidates(
-            chord, strings, max_fret=max_fret, max_stretch_semitones=max_stretch_semitones
+            chord, strings,
+            max_fret=max_fret,
+            max_stretch_semitones=max_stretch_semitones,
+            require_adjacent=require_adjacent,
         )
         for chord in chords
     ]
