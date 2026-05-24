@@ -2,7 +2,7 @@
  * Electron main process — 視窗管理 + IPC 對外接口
  */
 
-import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
 import { mkdirSync, readFileSync, realpathSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -543,6 +543,16 @@ async function safeCall<T>(
 // ============================================================================
 
 app.whenReady().then(async () => {
+  // 0.1.35: Performance-Following 需要麥克風 — 准許 renderer 的
+  // navigator.mediaDevices.getUserMedia({audio:true}) 通過 Electron 的
+  // permission gate. macOS 系統的麥克風授權 (NSMicrophoneUsageDescription
+  // 提示框) 仍會出現, 由作業系統把關.
+  session.defaultSession.setPermissionRequestHandler(
+    (_wc, permission, callback) => {
+      // 只准 media (mic + camera, 我們其實只用 mic). 其他一律拒.
+      callback(permission === "media");
+    },
+  );
   registerIpcHandlers();
   await createWindow();
 

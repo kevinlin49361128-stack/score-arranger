@@ -481,6 +481,57 @@ export const EDITING_STRINGS: BiDict = {
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },
+  // 0.1.35: Performance-Following 麥克風練習評估
+  "micPractice.title": {
+    "zh-TW": "麥克風練習",
+    en: "Microphone Practice",
+    ja: "マイク練習",
+  },
+  "micPractice.close": {
+    "zh-TW": "關閉", en: "Close", ja: "閉じる",
+  },
+  "micPractice.intro": {
+    "zh-TW":
+      "對著麥克風唱 / 拉 / 吹 — 即時顯示音高與音準偏差. "
+      + "音訊不離開電腦, 不錄音, 不上傳.",
+    en:
+      "Sing, bow, or blow into the mic — see your pitch and tuning in "
+      + "real time. Audio stays on your machine; nothing is recorded or "
+      + "uploaded.",
+    ja:
+      "マイクに向かって歌う / 弾く / 吹く — 音高とピッチのずれをリアルタイム"
+      + "表示. 音声は端末から外に出ず, 録音もアップロードもされません.",
+  },
+  "micPractice.startBtn": {
+    "zh-TW": "開啟麥克風", en: "Start microphone", ja: "マイクを開始",
+  },
+  "micPractice.stopBtn": {
+    "zh-TW": "停止", en: "Stop", ja: "停止",
+  },
+  "micPractice.requestingPermission": {
+    "zh-TW": "請允許麥克風使用權限…",
+    en: "Waiting for microphone permission…",
+    ja: "マイクの使用許可を待っています…",
+  },
+  "micPractice.waitingForSignal": {
+    "zh-TW": "聆聽中… 對著麥克風發出聲音",
+    en: "Listening… make a sound",
+    ja: "聞いています… 音を出してください",
+  },
+  "micPractice.errorPrefix": {
+    "zh-TW": "麥克風錯誤", en: "Microphone error", ja: "マイクエラー",
+  },
+  "micPractice.legendHint": {
+    "zh-TW":
+      "綠 = 準 (±10¢ 內) / 橘 = 偏一點 / 紅 = 偏太多. 橫向是時間 (5 秒), "
+      + "縱向是音高 (半音格線, C 標示).",
+    en:
+      "Green = in tune (±10¢) / Orange = slightly off / Red = significantly "
+      + "off. X axis is time (5s), Y axis is pitch (semitone grid, C marked).",
+    ja:
+      "緑 = 正確 (±10¢) / オレンジ = 少しずれ / 赤 = 大きくずれ. 横軸は時間 "
+      + "(5秒), 縦軸は音高 (半音線, C 表示).",
+  },
   "boost.applied": {
     "zh-TW": "已套用 {count} 種手法,改動 {touched} 處。可用 ↶ 復原。",
     en: "Applied {count} technique(s), {touched} change(s). "

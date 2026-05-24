@@ -145,6 +145,12 @@ export const SHELL_STRINGS: BiDict = {
     en: "Find the hardest measures and auto-loop them — focused practice",
     ja: "難しい小節を自動ループ — 難所を集中練習",
   },
+  // 0.1.35: 麥克風練習
+  "toolbar.micPractice.title": {
+    "zh-TW": "麥克風練習 — 即時音高 / 音準偵測 (Performance-Following)",
+    en: "Microphone practice — real-time pitch & tuning (Performance-Following)",
+    ja: "マイク練習 — リアルタイム音高・ピッチ検出",
+  },
 
   // === Toolbar: 改編選項 popover ===
   "toolbar.arrangeOpts.heading": {

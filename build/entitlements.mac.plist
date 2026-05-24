@@ -15,5 +15,10 @@
     <!-- 網路存取 — LLM 改編建議 API 呼叫 (Anthropic / OpenAI compat) -->
     <key>com.apple.security.network.client</key>
     <true/>
+    <!-- 0.1.35: 麥克風 — Performance-Following 練習評估
+         比對 user 即時演奏的音高與 target 譜. 音訊不離開機器, 不錄音.
+         Info.plist 也需設 NSMicrophoneUsageDescription (在 electron-builder.yml). -->
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
 </dict>
 </plist>

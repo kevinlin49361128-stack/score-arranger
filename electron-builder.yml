@@ -74,6 +74,10 @@ mac:
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
+  # 0.1.35: 麥克風用途說明 — Performance-Following 練習評估需要此權限,
+  # 首次使用 Mic Practice 時 macOS 會出系統提示框, 顯示這段文字.
+  extendInfo:
+    NSMicrophoneUsageDescription: "Score Arranger 需要使用麥克風來分析你的練習音準, 比對改編譜的目標音高. 音訊不會離開你的電腦, 也不會被錄製或上傳."
   # macOS 26 / Xcode 26 的 stapler bug 會讓 electron-builder 內建 staple
   # 噴 Error 65 → 改在 release 腳本手動 `xcrun notarytool submit`。
   notarize: false

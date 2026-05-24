@@ -37,6 +37,7 @@ import { LLMSetupWizard } from "./LLMSetupWizard";
 import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { PracticePanel } from "./PracticePanel";
+import { MicPracticePanel } from "./MicPracticePanel";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
@@ -169,6 +170,7 @@ export function Toolbar() {
   const [nlEditOpen, setNlEditOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [micPracticeOpen, setMicPracticeOpen] = useState(false);
   // LLM 入門精靈: 點需要 AI 的功能且 LLM 未設定時, 自動跳出
   // 設完後 pendingLLMAction 決定要打開哪個對話框
   const [setupWizardOpen, setSetupWizardOpen] = useState(false);
@@ -973,6 +975,15 @@ export function Toolbar() {
       >
         {tr("toolbar.practice")}
       </button>
+      {/* 0.1.35: 麥克風練習 — 不需 arrangement 就能用 (純調音 / 練音準) */}
+      <button
+        onClick={() => setMicPracticeOpen(true)}
+        style={btnBase}
+        disabled={isLoading}
+        title={tr("toolbar.micPractice.title")}
+      >
+        🎤
+      </button>
 
       <Sep />
 
@@ -1269,6 +1280,9 @@ export function Toolbar() {
       )}
       {practiceOpen && (
         <PracticePanel onClose={() => setPracticeOpen(false)} />
+      )}
+      {micPracticeOpen && (
+        <MicPracticePanel onClose={() => setMicPracticeOpen(false)} />
       )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog
