@@ -222,6 +222,8 @@ const api = {
       ipcRenderer.invoke("engine:listNavigation"),
     getMeasureFingering: (measure: number) =>
       ipcRenderer.invoke("engine:getMeasureFingering", measure),
+    getChordFingering: (instrument: string, pitches: number[]) =>
+      ipcRenderer.invoke("engine:getChordFingering", instrument, pitches),
     listSourceParts: (path: string) =>
       ipcRenderer.invoke("engine:listSourceParts", path),
     suggestTransposition: (source: string, target: string) =>

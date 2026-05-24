@@ -7,8 +7,13 @@
  *   - 紅點: 衝突 (兩音被迫同弦 / 跨非相鄰弦 / 把位過高)
  *
  * 弦的調音是物理常數, 直接寫在前端.
+ *
+ * 0.1.32: 改先呼叫 engine `get_chord_fingering` (Python viterbi /
+ * find_best_fingering) 取得權威結果, 再退回前端 placeChord() greedy
+ * 作為 fallback. 解決評論者批評的「前後端規則不一致」問題.
  */
 
+import { useEffect, useState } from "react";
 import { t, useLocale } from "../utils/i18n";
 
 interface Props {
@@ -131,8 +136,39 @@ function placeChord(
 export function FingerboardSimulator({ instrument, pitches }: Props) {
   useLocale();
   const strings = TUNINGS[instrument];
-  const placed = placeChord(pitches, strings);
+  // 0.1.32: 先問 engine viterbi, 失敗 / 未回應前用 greedy fallback,
+  // 確保前後端規則一致 (評論者批的「畫面說可行/引擎說不行」)
+  const [enginePlaced, setEnginePlaced] = useState<PlacedNote[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setEnginePlaced(null);
+    window.scoreArranger.engine.getChordFingering(instrument, pitches)
+      .then((res) => {
+        if (cancelled) return;
+        if (!res.ok || !res.data || !res.data.feasible) {
+          setEnginePlaced(null);
+          return;
+        }
+        // 把 engine 結果包成 PlacedNote (engine 認可的指法 → conflict=none)
+        const placed: PlacedNote[] = res.data.assignments.map((a) => ({
+          midi: a.midi,
+          stringIndex: a.string_idx,
+          position: a.fret,
+          conflict: "none",
+        }));
+        setEnginePlaced(placed);
+      })
+      .catch(() => setEnginePlaced(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [instrument, pitches.join(",")]);
+
+  const placed = enginePlaced ?? placeChord(pitches, strings);
   const hasConflict = placed.some((p) => p.conflict !== "none");
+  const sourceLabel = enginePlaced
+    ? t("fingerboard.sourceEngine")
+    : t("fingerboard.sourceFallback");
 
   // SVG 尺寸
   const W = 360;
@@ -181,6 +217,14 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
           {hasConflict
             ? t("fingerboard.conflictDetected")
             : t("fingerboard.playable")}
+        </span>
+        <span style={{
+          fontSize: 9,
+          fontWeight: 400,
+          color: "var(--fg-tertiary)",
+          marginLeft: "auto",
+        }}>
+          {sourceLabel}
         </span>
       </div>
 

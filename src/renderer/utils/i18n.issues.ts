@@ -190,4 +190,71 @@ export const ISSUE_STRINGS: BiDict = {
     en: "{instrument} position {fret} is high, more technically demanding",
     ja: "{instrument} のポジション {fret} が高めで、技術的な難度が高くなります",
   },
+  // 0.1.31 樂理深化: 隱伏五/八度
+  W_HIDDEN_FIFTHS: {
+    "zh-TW":
+      "隱伏五度 (m.{from_measure}→{to_measure}) — 同向跳進到完全五度, "
+      + "古典聲部寫作應避免",
+    en:
+      "Hidden fifths (m.{from_measure}→{to_measure}) — similar motion into "
+      + "a perfect fifth, avoid in classical voice leading",
+    ja:
+      "隠伏5度 (m.{from_measure}→{to_measure}) — 同方向の跳躍で完全5度に"
+      + "達しており、古典声部進行では避けるべきです",
+  },
+  W_HIDDEN_OCTAVES: {
+    "zh-TW":
+      "隱伏八度 (m.{from_measure}→{to_measure}) — 同向跳進到完全八度, "
+      + "古典聲部寫作應避免",
+    en:
+      "Hidden octaves (m.{from_measure}→{to_measure}) — similar motion into "
+      + "a perfect octave, avoid in classical voice leading",
+    ja:
+      "隠伏8度 (m.{from_measure}→{to_measure}) — 同方向の跳躍で完全8度に"
+      + "達しており、古典声部進行では避けるべきです",
+  },
+  // 0.1.31 樂理深化: 導音 / V7 七度未解決
+  W_UNRESOLVED_LEADING_TONE: {
+    "zh-TW":
+      "{key} V → I 中導音 (pc={from_pc}) 未解決到主音, 卻跳到 pc={to_pc}",
+    en:
+      "{key} V → I leading tone (pc={from_pc}) did not resolve to tonic; "
+      + "jumped to pc={to_pc}",
+    ja:
+      "{key} の V → I で導音 (pc={from_pc}) が主音に解決せず、"
+      + "pc={to_pc} に跳んでいます",
+  },
+  W_UNRESOLVED_CHORD7TH: {
+    "zh-TW":
+      "{key} V7 七度 (pc={from_pc}) 未下行解決到主和弦三度, 卻去 pc={to_pc}",
+    en:
+      "{key} V7 chord 7th (pc={from_pc}) did not resolve down to tonic 3rd; "
+      + "moved to pc={to_pc}",
+    ja:
+      "{key} の V7 七度 (pc={from_pc}) が主和音の三度に下降解決せず、"
+      + "pc={to_pc} へ動いています",
+  },
+  // 0.1.31 樂理深化 #3: 撥弦樂器跨事件指法跳躍
+  E_FRETTED_POSITION_JUMP_TOO_FAST: {
+    "zh-TW":
+      "{instrument} {tempo_bpm} BPM 下從 fret {from_fret} 跳到 {to_fret} "
+      + "時間不夠 ({time_needed_sec}s 需要 / {time_available_sec}s 可用)",
+    en:
+      "{instrument} at {tempo_bpm} BPM, fret {from_fret} → {to_fret} too "
+      + "fast ({time_needed_sec}s needed / {time_available_sec}s available)",
+    ja:
+      "{instrument} は {tempo_bpm} BPM でフレット {from_fret} → {to_fret} の"
+      + "移動が間に合いません ({time_needed_sec}s 必要 / {time_available_sec}s)",
+  },
+  W_FRETTED_POSITION_JUMP_DIFFICULT: {
+    "zh-TW":
+      "{instrument} 從 fret {from_fret} 跳到 {to_fret} 在 {tempo_bpm} BPM "
+      + "下難度高",
+    en:
+      "{instrument} fret {from_fret} → {to_fret} at {tempo_bpm} BPM is "
+      + "technically demanding",
+    ja:
+      "{instrument} フレット {from_fret} → {to_fret} の移動は {tempo_bpm} "
+      + "BPM では難度が高いです",
+  },
 };

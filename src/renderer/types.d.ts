@@ -228,6 +228,11 @@ declare global {
         getMeasureFingering: (measure: number) => Promise<
           IpcResponse<MeasureFingeringResult>
         >;
+        /** 0.1.32: 單一和弦指法 — 給 FingerboardSimulator 對齊 engine 用 */
+        getChordFingering: (
+          instrument: string,
+          pitches: number[],
+        ) => Promise<IpcResponse<ChordFingeringResult>>;
         listSourceParts: (
           path: string,
         ) => Promise<IpcResponse<SourcePartInfo[]>>;
@@ -366,6 +371,18 @@ declare global {
   interface MeasureFingeringResult {
     measure: number;
     parts: MeasureFingeringPart[];
+  }
+
+  /** 0.1.32: 單一和弦指法 — get_chord_fingering RPC 回傳 */
+  interface ChordFingeringResult {
+    feasible: boolean;
+    assignments: {
+      midi: number;
+      string_idx: number;
+      string_name: string;
+      fret: number;
+    }[];
+    score?: number;
   }
 
   interface QualityReport {

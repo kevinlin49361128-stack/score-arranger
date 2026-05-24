@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger — 視覺特效 規劃決策</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --accent: #3b6ea5;
+    --ok: #2e7d52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang TC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 220px;
+  }
+  header.page { max-width: 980px; margin: 0 auto; padding: 36px 24px 12px; }
+  header.page h1 { font-size: 23px; margin: 0 0 6px; }
+  header.page p { color: var(--muted); margin: 4px 0; font-size: 14px; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  .ctx {
+    background: #fbfcfd;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ctx b { color: var(--ink); }
+  .ctx ul { margin: 8px 0 0; padding-left: 18px; }
+  .ctx li { margin: 3px 0; }
+
+  section.q {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section.q > h2 {
+    font-size: 16px; margin: 0 0 4px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  section.q > h2 .num {
+    color: #fff; background: var(--accent); font-size: 12px;
+    border-radius: 999px; width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  section.q > h2 .multi {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px;
+    padding: 1px 7px; white-space: nowrap;
+  }
+  section.q > .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .opts { display: grid; gap: 12px; }
+  .opt {
+    border: 2px solid var(--line); border-radius: 10px; padding: 14px;
+    cursor: pointer; background: #fff;
+    transition: border-color .12s, box-shadow .12s; position: relative;
+  }
+  .opt:hover { border-color: #b6c2d2; }
+  .opt.sel {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,110,165,.14);
+  }
+  .opt .otitle { font-weight: 700; font-size: 14px; padding-right: 26px; }
+  .opt .odesc { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .opt .check {
+    position: absolute; top: 10px; right: 12px;
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 2px solid var(--line);
+  }
+  .opt.sel .check { border-color: var(--accent); background: var(--accent); }
+  .opt.sel .check::after {
+    content: "✓"; color: #fff; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; margin-top: -1px;
+  }
+  .rec {
+    font-size: 11px; font-weight: 700; color: var(--ok);
+    border: 1px solid var(--ok); border-radius: 999px;
+    padding: 1px 7px; margin-left: 6px; white-space: nowrap;
+  }
+  .meta { font-size: 11px; color: #8a93a0; margin-top: 8px; }
+  .meta b { color: var(--muted); font-weight: 700; }
+
+  /* ── 特效預覽 (深色, 模擬 app 內) ── */
+  .demo {
+    margin-top: 10px; background: #20242c; border-radius: 8px;
+    padding: 14px; display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .demo .try {
+    font: 700 11.5px/1 inherit; color: #cdd5e0;
+    background: #323a47; border: 1px solid #424b5a;
+    border-radius: 6px; padding: 7px 12px; cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .demo .try:active { transform: translateY(1px); }
+  .demo .stage { flex: 1; min-width: 160px; }
+
+  /* 變動小節閃光 */
+  .d-measure {
+    height: 46px; border-radius: 5px; background: #2b3442;
+    border: 1px solid #3a4453;
+    display: flex; align-items: center; justify-content: center;
+    color: #8b94a3; font-size: 11px;
+  }
+  @keyframes fxflash {
+    0% { background: rgba(59,110,165,.6); border-color: #5b8fc4; }
+    100% { background: #2b3442; border-color: #3a4453; }
+  }
+  .d-measure.go { animation: fxflash .85s ease-out; }
+
+  /* 改編完成揭示 */
+  .d-reveal {
+    height: 60px; border-radius: 5px;
+    background: linear-gradient(#fdfbf5, #f3efe2);
+    border: 1px solid #d8cfb4; opacity: 0;
+  }
+  @keyframes fxreveal {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .d-reveal.go { animation: fxreveal .35s ease-out forwards; }
+
+  /* 對話框動態 */
+  .d-modal {
+    width: 150px; height: 56px; border-radius: 8px;
+    background: #2b3442; border: 1px solid #3a4453;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center;
+    color: #8b94a3; font-size: 11px; opacity: 0;
+  }
+  @keyframes fxmodal {
+    from { opacity: 0; transform: scale(.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .d-modal.go { animation: fxmodal .15s ease-out forwards; }
+
+  /* 套用成功微回饋 */
+  .d-btn {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; padding: 8px 16px; font: 700 12px/1 inherit;
+  }
+  @keyframes fxpulse {
+    0%, 100% { transform: scale(1); }
+    45% { transform: scale(1.07); }
+  }
+  .d-btn.go { animation: fxpulse .4s ease-out; }
+
+  /* 播放游標 */
+  .d-cursor {
+    width: 4px; height: 46px; border-radius: 2px;
+    background: #5b8fc4; margin: 0 auto;
+  }
+  @keyframes fxcursor {
+    0%, 100% { opacity: .6; box-shadow: 0 0 5px 0 rgba(91,143,196,.5); }
+    50% { opacity: 1; box-shadow: 0 0 13px 3px rgba(91,143,196,.7); }
+  }
+  .d-cursor.go { animation: fxcursor 1s ease-in-out infinite; }
+
+  /* 紙感: 兩色卡 */
+  .d-swatch { flex: 1; min-width: 90px; height: 46px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10.5px; color: #555; }
+
+  textarea {
+    width: 100%; min-height: 70px; resize: vertical;
+    border: 2px solid var(--line); border-radius: 8px;
+    padding: 10px; font: inherit; font-size: 13px;
+  }
+
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #bar .inner {
+    max-width: 980px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #summary { flex: 1; font-size: 12.5px; color: var(--muted); }
+  #summary b { color: var(--ink); }
+  #summary .miss { color: #b23; }
+  #copyBtn {
+    flex: 0 0 auto; border: none; background: var(--accent); color: #fff;
+    font: 700 14px/1 inherit; padding: 12px 18px; border-radius: 8px;
+    cursor: pointer;
+  }
+  #copyBtn:active { transform: translateY(1px); }
+  #copyBtn.done { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>視覺特效 — 規劃決策</h1>
+  <p>勾選想加進 app 的特效。多數卡片有「▸ 試看」可直接預覽效果(深色框模擬 app 內)。</p>
+  <p>選完按右下角「複製決策摘要」貼回給我。<b>標 🎯 的是我的推薦,但你說了算。</b></p>
+</header>
+
+<main>
+
+  <div class="ctx">
+    <b>判斷原則:</b>受眾是音樂老師與學生 —— 多半非技術背景。對他們,特效不該是
+    「炫」,而該是「<b>讓人安心、看得懂、覺得這軟體可靠</b>」。所以最好的特效有一個
+    共同點:<b>它同時是功能回饋</b>。純裝飾的特效對這個受眾反而扣分。
+    <br><br>
+    <b>因此這份清單刻意排除:</b>
+    <ul>
+      <li>彩帶 / 粒子 / 慶祝爆破 —— 對專業音樂教育者是「降格」訊號。</li>
+      <li>UI 音效 —— 這是音樂 app,介面叮咚會跟真正的樂音打架。</li>
+      <li>全域重漸層 / 玻璃擬態 —— 退流行快,且譜面需要一塊安靜的視野。</li>
+      <li>關鍵路徑上的長動畫 —— 揭示動畫一律 ≤400ms 且不阻塞操作。</li>
+    </ul>
+    全部點子皆為純 CSS / React,不碰引擎,低風險。
+  </div>
+
+  <!-- 1. 第一印象 -->
+  <section class="q" data-group="第一印象" data-multi="1">
+    <h2><span class="num">1</span> 第一印象 <span class="multi">可複選</span></h2>
+    <p class="hint">使用者最早看到的東西 —— 對「這軟體值不值得信任」的觀感影響最大。</p>
+    <div class="opts">
+      <div class="opt" data-value="歡迎空狀態">
+        <div class="check"></div>
+        <div class="otitle">歡迎空狀態 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">沒載入樂譜時別留白 —— 置中放簡約線條譜號意象(可極緩慢
+          呼吸浮動)、襯線字 app 名、清楚的「開啟樂譜 / 試用範例」。這是字面
+          意義上的第一印象。</div>
+        <div class="meta"><b>價值</b> 高 &nbsp; <b>工程量</b> 中</div>
+      </div>
+      <div class="opt" data-value="改編完成揭示">
+        <div class="check"></div>
+        <div class="otitle">改編完成揭示 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">改編完成時目標譜現在是「啪」地出現。改成柔和淡入 +
+          微微上滑,把核心「哇」時刻做得有質感。</div>
+        <div class="demo">
+          <button class="try" data-fx="reveal">▸ 試看</button>
+          <div class="stage"><div class="d-reveal" id="fx-reveal"></div></div>
+        </div>
+        <div class="meta"><b>價值</b> 高 &nbsp; <b>工程量</b> 低</div>
+      </div>
+      <div class="opt" data-value="啟動淡入">
+        <div class="check"></div>
+        <div class="otitle">啟動淡入</div>
+        <div class="odesc">app 開啟時整體淡入,而非瞬間出現。小細節。</div>
+        <div class="meta"><b>價值</b> 低 &nbsp; <b>工程量</b> 極低</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 特效即回饋 -->
+  <section class="q" data-group="特效即回饋" data-multi="1">
+    <h2><span class="num">2</span> 特效即回饋 <span class="multi">可複選</span></h2>
+    <p class="hint">這一類的特效同時是「功能回饋」—— 最推薦,因為它幫使用者看懂 app 做了什麼。</p>
+    <div class="opts">
+      <div class="opt" data-value="變動小節閃光">
+        <div class="check"></div>
+        <div class="otitle">變動小節閃光 <span class="rec">🎯 最推薦</span></div>
+        <div class="odesc">套用加難度 / 降難度 / 抹平 / 移調後,被改動的小節短暫
+          泛起柔光。老師按「降難度」就看得到 AI 動了哪幾小節。可複用既有
+          issue→譜面的 flash highlight 程式碼。</div>
+        <div class="demo">
+          <button class="try" data-fx="flash">▸ 試看</button>
+          <div class="stage">
+            <div class="d-measure" id="fx-flash">第 8 小節</div>
+          </div>
+        </div>
+        <div class="meta"><b>價值</b> 極高 &nbsp; <b>工程量</b> 低</div>
+      </div>
+      <div class="opt" data-value="播放游標質感化">
+        <div class="check"></div>
+        <div class="otitle">播放游標質感化</div>
+        <div class="odesc">游標是播放時一直被盯著的東西。從綠色硬條改成柔光線、
+          隨拍微脈動、移動更順。</div>
+        <div class="demo">
+          <button class="try" data-fx="cursor">▸ 試看</button>
+          <div class="stage"><div class="d-cursor" id="fx-cursor"></div></div>
+        </div>
+        <div class="meta"><b>價值</b> 中高 &nbsp; <b>工程量</b> 中</div>
+      </div>
+      <div class="opt" data-value="套用成功微回饋">
+        <div class="check"></div>
+        <div class="otitle">套用成功微回饋</div>
+        <div class="odesc">套用編輯後按鈕一個輕脈動 / 浮現勾號,不用 toast 那麼重。</div>
+        <div class="demo">
+          <button class="try" data-fx="pulse">▸ 試看</button>
+          <div class="stage">
+            <button class="d-btn" id="fx-pulse">套用</button>
+          </div>
+        </div>
+        <div class="meta"><b>價值</b> 中 &nbsp; <b>工程量</b> 低</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 整體質感 -->
+  <section class="q" data-group="整體質感" data-multi="1">
+    <h2><span class="num">3</span> 整體質感 <span class="multi">可複選</span></h2>
+    <p class="hint">不直接「做事」,但讓 app 整體像「正經、被細心打磨過的軟體」。</p>
+    <div class="opts">
+      <div class="opt" data-value="對話框動態">
+        <div class="check"></div>
+        <div class="otitle">對話框動態 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">改譜 / 難度調節等對話框現在是「彈」出來。改成 ~150ms
+          淡入 + 輕微放大、背景遮罩同步淡入。最便宜的全 app 質感升級。</div>
+        <div class="demo">
+          <button class="try" data-fx="modal">▸ 試看</button>
+          <div class="stage"><div class="d-modal" id="fx-modal">對話框</div></div>
+        </div>
+        <div class="meta"><b>價值</b> 中 &nbsp; <b>工程量</b> 極低</div>
+      </div>
+      <div class="opt" data-value="樂譜紙感暖化">
+        <div class="check"></div>
+        <div class="otitle">樂譜紙感暖化</div>
+        <div class="odesc">譜面底現在是死白。改成極淡的暖白,不加紋理 —— 給一點
+          溫度又不搶戲。</div>
+        <div class="demo">
+          <div class="d-swatch" style="background:#ffffff;border:1px solid #ddd">
+            現在・死白</div>
+          <div class="d-swatch" style="background:#faf8f3;border:1px solid #e6e1d4">
+            提議・暖白</div>
+        </div>
+        <div class="meta"><b>價值</b> 中 &nbsp; <b>工程量</b> 極低</div>
+      </div>
+      <div class="opt" data-value="難度熱圖漸變">
+        <div class="check"></div>
+        <div class="otitle">難度熱圖漸變</div>
+        <div class="odesc">編輯後難度熱圖重算時用顏色 cross-fade,不要瞬間跳色。</div>
+        <div class="meta"><b>價值</b> 低 &nbsp; <b>工程量</b> 低</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="q">
+    <h2><span class="num">+</span> 其他想法 / 備註</h2>
+    <p class="hint">想調整優先序、有不在清單上的點子、或不想要某個的理由,寫這。</p>
+    <textarea id="notes" placeholder="例:歡迎空狀態想用某個風格 / 變動小節閃光的顏色想用暖金 / 對話框動態先做…"></textarea>
+  </section>
+
+</main>
+
+<div id="bar">
+  <div class="inner">
+    <div id="summary"></div>
+    <button id="copyBtn">複製決策摘要</button>
+  </div>
+</div>
+
+<script>
+  const STORE = "score-arranger-visual-fx-plan";
+  const groups = ["第一印象", "特效即回饋", "整體質感"];
+  const multiGroups = new Set(groups);
+  const choice = {};
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    Object.assign(choice, saved.choice || {});
+    if (saved.notes) document.getElementById("notes").value = saved.notes;
+  } catch (e) { /* ignore */ }
+
+  function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+      choice, notes: document.getElementById("notes").value,
+    }));
+  }
+  function valText(g) {
+    const arr = choice[g];
+    return Array.isArray(arr) && arr.length ? arr.join("、") : "";
+  }
+  function paint() {
+    document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+      const g = sec.dataset.group;
+      sec.querySelectorAll(".opt").forEach((opt) => {
+        const arr = choice[g];
+        opt.classList.toggle(
+          "sel", Array.isArray(arr) && arr.includes(opt.dataset.value));
+      });
+    });
+    const parts = groups.map((g) => {
+      const v = valText(g);
+      return v ? `<b>${g}</b>:${v}` : `<span class="miss">${g}:未選</span>`;
+    });
+    const done = groups.filter((g) => valText(g)).length;
+    document.getElementById("summary").innerHTML =
+      `已選 ${done}/${groups.length} 組 &nbsp; ` + parts.join(" &nbsp;·&nbsp; ");
+  }
+
+  document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+    const g = sec.dataset.group;
+    sec.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", (e) => {
+        if (e.target.closest(".demo")) return;  // 試看區不算選取
+        const v = opt.dataset.value;
+        const arr = Array.isArray(choice[g]) ? choice[g] : [];
+        const i = arr.indexOf(v);
+        if (i >= 0) arr.splice(i, 1);
+        else arr.push(v);
+        choice[g] = arr;
+        save(); paint();
+      });
+    });
+  });
+  document.getElementById("notes").addEventListener("input", save);
+
+  // 特效預覽
+  document.querySelectorAll(".try").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const fx = btn.dataset.fx;
+      const el = document.getElementById("fx-" + fx);
+      if (!el) return;
+      if (fx === "cursor") {
+        el.classList.toggle("go");
+        return;
+      }
+      el.classList.remove("go");
+      void el.offsetWidth;  // reflow → 重新觸發動畫
+      el.classList.add("go");
+    });
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const notes = document.getElementById("notes").value.trim();
+    const lines = ["Score Arranger 視覺特效 — 我的決策", ""];
+    groups.forEach((g) => lines.push(`${g}:${valText(g) || "(未選)"}`));
+    if (notes) lines.push("", "備註:" + notes);
+    const text = lines.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById("copyBtn");
+      b.textContent = "已複製 ✓"; b.classList.add("done");
+      setTimeout(() => {
+        b.textContent = "複製決策摘要"; b.classList.remove("done");
+      }, 1800);
+    }).catch(() => { alert(text); });
+  });
+
+  paint();
+</script>
+</body>
+</html>

@@ -25,6 +25,14 @@ interface HardMeasure {
   score: number;
   partId: string;
   partLabel: string;
+  /** 0.1.32: per-factor breakdown — 給「為什麼難」顯示 */
+  factors: {
+    range: number;
+    density: number;
+    chord: number;
+    rhythm: number;
+    technique: number;
+  };
 }
 
 const TOP_N = 8;
@@ -64,7 +72,13 @@ export function PracticePanel({ onClose }: Props) {
           return;
         }
         // 各 part per-measure 分數 → 每個小節取最高分 (任一聲部難就難)
-        type Acc = { score: number; partId: string; partLabel: string };
+        // 0.1.32: 同時帶入 per-factor 給「為什麼難」展開
+        type Acc = {
+          score: number;
+          partId: string;
+          partLabel: string;
+          factors: HardMeasure["factors"];
+        };
         const byMeasure = new Map<number, Acc>();
         for (const [partId, entry] of Object.entries(res.data)) {
           const e = entry as DifficultyEntry;
@@ -75,6 +89,13 @@ export function PracticePanel({ onClose }: Props) {
                 score: m.score,
                 partId,
                 partLabel: e.label,
+                factors: {
+                  range: m.range,
+                  density: m.density,
+                  chord: m.chord,
+                  rhythm: m.rhythm,
+                  technique: m.technique,
+                },
               });
             }
           }
@@ -275,6 +296,8 @@ export function PracticePanel({ onClose }: Props) {
                             background: "var(--bg-secondary)",
                           }}
                         >
+                          {/* 0.1.32 因子拆解 — 為什麼難 */}
+                          <DifficultyFactorBars factors={h.factors} />
                           {fingeringLoading && (
                             <div style={{
                               fontSize: 11, color: "var(--fg-tertiary)",
@@ -363,6 +386,83 @@ export function PracticePanel({ onClose }: Props) {
             </>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+/**
+ * DifficultyFactorBars — 0.1.32: 把 5 因子畫成水平條, 「為什麼難」一目了然.
+ * 因子值是 0-1, 條寬對應百分比, 顏色越深越主導.
+ */
+function DifficultyFactorBars({
+  factors,
+}: {
+  factors: { range: number; density: number; chord: number;
+             rhythm: number; technique: number };
+}) {
+  const entries: { key: keyof typeof factors; label: string }[] = [
+    { key: "range", label: t("difficulty.factor.range") },
+    { key: "density", label: t("difficulty.factor.density") },
+    { key: "chord", label: t("difficulty.factor.chord") },
+    { key: "rhythm", label: t("difficulty.factor.rhythm") },
+    { key: "technique", label: t("difficulty.factor.technique") },
+  ];
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{
+        fontSize: 10, color: "var(--fg-tertiary)", marginBottom: 4,
+        fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase",
+      }}>
+        {t("difficulty.whyHard")}
+      </div>
+      <div style={{ display: "grid", gap: 3 }}>
+        {entries.map(({ key, label }) => {
+          const v = factors[key];
+          const pct = Math.max(0, Math.min(1, v)) * 100;
+          const colour = v >= 0.7
+            ? "#d8843a"
+            : v >= 0.4 ? "var(--accent)" : "var(--fg-muted)";
+          return (
+            <div
+              key={key}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <span style={{ fontSize: 10, width: 32,
+                             color: "var(--fg-muted)" }}>
+                {label}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 6,
+                  background: "var(--bg-panel)",
+                  borderRadius: 3,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${pct}%`,
+                    height: "100%",
+                    background: colour,
+                    transition: "width .25s ease",
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: 9, width: 26,
+                  textAlign: "right", color: "var(--fg-muted)",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {v.toFixed(2)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

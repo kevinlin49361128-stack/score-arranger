@@ -249,6 +249,89 @@ export const PANEL_STRINGS: BiDict = {
     en: "High position",
     ja: "高ポジション",
   },
+  // 0.1.31 樂理深化 — 隱伏五/八 / 導音 / 撥弦跳把位
+  "issue.short.W_HIDDEN_FIFTHS": {
+    "zh-TW": "隱伏五度",
+    en: "Hidden fifths",
+    ja: "隠伏5度",
+  },
+  "issue.short.W_HIDDEN_OCTAVES": {
+    "zh-TW": "隱伏八度",
+    en: "Hidden octaves",
+    ja: "隠伏8度",
+  },
+  "issue.short.W_UNRESOLVED_LEADING_TONE": {
+    "zh-TW": "導音未解決",
+    en: "Unresolved leading tone",
+    ja: "導音が解決していない",
+  },
+  "issue.short.W_UNRESOLVED_CHORD7TH": {
+    "zh-TW": "V7 七度未解決",
+    en: "Unresolved chord 7th",
+    ja: "V7 七度が解決していない",
+  },
+  "issue.short.E_FRETTED_POSITION_JUMP_TOO_FAST": {
+    "zh-TW": "撥弦把位跳躍過快",
+    en: "Fretted position jump too fast",
+    ja: "撥弦のポジション移動が速すぎる",
+  },
+  "issue.short.W_FRETTED_POSITION_JUMP_DIFFICULT": {
+    "zh-TW": "撥弦把位跳躍偏難",
+    en: "Fretted position jump difficult",
+    ja: "撥弦のポジション移動が難しい",
+  },
+  // 0.1.32 老師評語層
+  "explanation.title": {
+    "zh-TW": "改編說明 (老師評語)",
+    en: "Arrangement Explanation",
+    ja: "編曲解説",
+  },
+  "explanation.preserved": {
+    "zh-TW": "保留",
+    en: "Preserved",
+    ja: "保持",
+  },
+  "explanation.changed": {
+    "zh-TW": "改動",
+    en: "Changed",
+    ja: "変更",
+  },
+  "explanation.cost": {
+    "zh-TW": "音樂代價",
+    en: "Musical cost",
+    ja: "音楽的代償",
+  },
+  // 0.1.32 難度因子拆解
+  "difficulty.factor.range": {
+    "zh-TW": "音域",
+    en: "Range",
+    ja: "音域",
+  },
+  "difficulty.factor.density": {
+    "zh-TW": "密度",
+    en: "Density",
+    ja: "密度",
+  },
+  "difficulty.factor.chord": {
+    "zh-TW": "和弦",
+    en: "Chord",
+    ja: "和音",
+  },
+  "difficulty.factor.rhythm": {
+    "zh-TW": "節奏",
+    en: "Rhythm",
+    ja: "リズム",
+  },
+  "difficulty.factor.technique": {
+    "zh-TW": "技巧",
+    en: "Technique",
+    ja: "技術",
+  },
+  "difficulty.whyHard": {
+    "zh-TW": "為什麼難",
+    en: "Why hard",
+    ja: "難しい理由",
+  },
 
   // suggestion code → 人類標籤 (按鈕 + LLM 解讀)
   "issue.suggestion.S_OMIT_NOTE": {
@@ -559,6 +642,16 @@ export const PANEL_STRINGS: BiDict = {
     "zh-TW": "有音超出指板可演奏範圍",
     en: "A note is outside the playable fingerboard range",
     ja: "指板の演奏可能範囲を超える音があります",
+  },
+  "fingerboard.sourceEngine": {
+    "zh-TW": "(引擎 viterbi)",
+    en: "(engine viterbi)",
+    ja: "(エンジン Viterbi)",
+  },
+  "fingerboard.sourceFallback": {
+    "zh-TW": "(前端 greedy fallback)",
+    en: "(frontend greedy fallback)",
+    ja: "(フロントエンド greedy フォールバック)",
   },
   "fingerboard.conflictHighPosition": {
     "zh-TW": "部分音在高把位 — 技術難度較高",

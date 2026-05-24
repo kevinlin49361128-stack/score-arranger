@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger 介紹網頁 — 規劃決策</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --accent: #3b6ea5;
+    --ok: #2e7d52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang TC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 220px;
+  }
+  header.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 24px 12px;
+  }
+  header.page h1 { font-size: 23px; margin: 0 0 6px; }
+  header.page p { color: var(--muted); margin: 4px 0; font-size: 14px; }
+  main { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  section.q {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section.q > h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  section.q > h2 .num {
+    color: #fff;
+    background: var(--accent);
+    font-size: 12px;
+    border-radius: 999px;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  section.q > .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .opts { display: grid; gap: 12px; }
+  .opts.cols2 { grid-template-columns: 1fr 1fr; }
+  .opts.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) {
+    .opts.cols2, .opts.cols3 { grid-template-columns: 1fr; }
+  }
+  .opt {
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .12s, box-shadow .12s;
+    position: relative;
+  }
+  .opt:hover { border-color: #b6c2d2; }
+  .opt.sel {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,110,165,.14);
+  }
+  .opt .otitle { font-weight: 700; font-size: 14px; }
+  .opt .odesc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .opt .check {
+    position: absolute; top: 10px; right: 12px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--line);
+  }
+  .opt.sel .check { border-color: var(--accent); background: var(--accent); }
+  .opt.sel .check::after {
+    content: "✓"; color: #fff; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; margin-top: -1px;
+  }
+  .rec {
+    font-size: 11px; font-weight: 700; color: var(--ok);
+    border: 1px solid var(--ok); border-radius: 999px;
+    padding: 1px 7px; margin-left: 6px; white-space: nowrap;
+  }
+  .pros { font-size: 12.5px; margin: 8px 0 0; padding-left: 16px; }
+  .pros li { margin: 2px 0; }
+  .con { color: #a05a2c; }
+
+  /* ── 美術風格 mockup ── */
+  .mock {
+    border-radius: 8px;
+    padding: 22px 18px;
+    margin-top: 10px;
+    min-height: 150px;
+    overflow: hidden;
+  }
+  .mock .mh { margin: 0 0 6px; line-height: 1.25; }
+  .mock .ms { margin: 0 0 14px; font-size: 12px; opacity: .85; }
+  .mock .mb {
+    display: inline-block; font-size: 12px; font-weight: 700;
+    padding: 7px 14px; border-radius: 6px;
+  }
+  /* A 簡約淺色 */
+  .m-light { background: #fff; border: 1px solid #e7e7e7; }
+  .m-light .mh { font: 700 21px/1.2 -apple-system, system-ui, sans-serif; color: #111; letter-spacing: -.01em; }
+  .m-light .ms { color: #666; }
+  .m-light .mb { background: #2b6cff; color: #fff; }
+  /* B 優雅深色 */
+  .m-dark { background: #1a1c22; }
+  .m-dark .mh { font: 600 22px/1.2 Georgia, "Songti TC", serif; color: #f3efe6; }
+  .m-dark .ms { color: #b6b2a8; }
+  .m-dark .mb { background: #c9a86a; color: #1a1c22; }
+  /* C 樂譜紙感 */
+  .m-paper {
+    background:
+      repeating-linear-gradient(#f4efe1 0 22px, #e4ddc8 22px 23px) 0 14px/100% 115px no-repeat,
+      #f4efe1;
+    border: 1px solid #d8cfb4;
+  }
+  .m-paper .mh { font: 700 22px/1.2 "Iowan Old Style", Georgia, "Songti TC", serif; color: #3a3026; }
+  .m-paper .ms { color: #6a5f4c; }
+  .m-paper .mb { background: #3a3026; color: #f4efe1; }
+  /* D 現代科技 */
+  .m-tech { background: linear-gradient(135deg, #5b3df5, #2bb6ff); }
+  .m-tech .mh { font: 800 22px/1.15 "Helvetica Neue", system-ui, sans-serif; color: #fff; letter-spacing: -.02em; }
+  .m-tech .ms { color: #e6e9ff; }
+  .m-tech .mb { background: #fff; color: #5b3df5; }
+  /* E 暖色友善 */
+  .m-warm { background: #fff8f0; border: 1px solid #ffe2c4; }
+  .m-warm .mh { font: 700 21px/1.25 "Nunito", -apple-system, system-ui, sans-serif; color: #7a4a2b; }
+  .m-warm .ms { color: #9c7458; }
+  .m-warm .mb { background: #ff7a59; color: #fff; border-radius: 999px; }
+
+  /* ── 敘事 sample ── */
+  .voice { background: #f6f8fa; border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
+  .voice .vh { font-weight: 800; font-size: 16px; color: var(--ink); }
+  .voice .vs { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical;
+    border: 2px solid var(--line); border-radius: 8px;
+    padding: 10px; font: inherit; font-size: 13px;
+  }
+
+  /* ── 摘要列 ── */
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #bar .inner {
+    max-width: 960px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #summary { flex: 1; font-size: 12.5px; color: var(--muted); }
+  #summary b { color: var(--ink); }
+  #summary .miss { color: #b23; }
+  #copyBtn {
+    flex: 0 0 auto; border: none; background: var(--accent); color: #fff;
+    font: 700 14px/1 inherit; padding: 12px 18px; border-radius: 8px;
+    cursor: pointer;
+  }
+  #copyBtn:active { transform: translateY(1px); }
+  #copyBtn.done { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Score Arranger 介紹網頁 — 規劃決策</h1>
+  <p>每個維度挑一個你喜歡的。美術風格是直接渲染的迷你 mockup,點下去看實感。</p>
+  <p>選完按右下角「複製決策摘要」,把內容貼回給我,我就照這個做網頁。<b>標 🎯 建議 的是我的推薦,但你說了算。</b></p>
+</header>
+
+<main>
+
+  <!-- 1. 敘事風格 -->
+  <section class="q" data-group="敘事風格">
+    <h2><span class="num">1</span> 敘事風格 — 文案的語氣</h2>
+    <p class="hint">同一個產品,不同說法。下面是各風格實際會寫出的主標 + 副標。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="專業簡潔">
+        <div class="check"></div>
+        <div class="otitle">專業簡潔</div>
+        <div class="odesc">就事論事、可信賴。給也懂一點的人看。</div>
+        <div class="voice">
+          <div class="vh">把總譜,改編成你要的編制</div>
+          <div class="vs">Score Arranger 將管弦樂總譜智慧改編為弦樂四重奏、小提琴+鋼琴等小編制。人機協作,你保有最終決定權。</div>
+        </div>
+      </div>
+      <div class="opt" data-value="溫暖共鳴">
+        <div class="check"></div>
+        <div class="otitle">溫暖共鳴 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">先講痛點。最能打中不懂編曲的音樂老師。</div>
+        <div class="voice">
+          <div class="vh">湊不齊標準編制?改編交給它</div>
+          <div class="vs">你的學生樂團、社區樂團手上有什麼樂器,它就把總譜改成什麼 —— 不需要你會編曲。</div>
+        </div>
+      </div>
+      <div class="opt" data-value="技術可信">
+        <div class="check"></div>
+        <div class="otitle">技術可信</div>
+        <div class="odesc">強調引擎實力。給挑剔的、專業一點的使用者。</div>
+        <div class="voice">
+          <div class="vh">智慧改編,而且保證拉得動</div>
+          <div class="vs">帶約束的聲部分配、弦樂把位與和弦可演奏性驗證、定向修復迴圈 —— 不只是把音符搬個位置。</div>
+        </div>
+      </div>
+      <div class="opt" data-value="簡約宣言">
+        <div class="check"></div>
+        <div class="otitle">簡約宣言</div>
+        <div class="odesc">極短、有力、中英混用。賭氣場。</div>
+        <div class="voice">
+          <div class="vh">Any score. Your ensemble.</div>
+          <div class="vs">管弦樂總譜 → 你的編制。一鍵智慧改編。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 美術風格 -->
+  <section class="q" data-group="美術風格">
+    <h2><span class="num">2</span> 美術風格 — 視覺調性</h2>
+    <p class="hint">下面每張卡片就是該風格的迷你首頁 mockup(真的 CSS 渲染)。挑一個。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="簡約淺色">
+        <div class="check"></div>
+        <div class="otitle">A. 簡約淺色</div>
+        <div class="odesc">大量留白、單一強調色。乾淨、像 Apple / Linear。</div>
+        <div class="mock m-light">
+          <p class="mh">Score Arranger</p>
+          <p class="ms">把管弦樂總譜,智慧改編成你的編制。</p>
+          <span class="mb">下載 macOS 版</span>
+        </div>
+      </div>
+      <div class="opt" data-value="優雅深色">
+        <div class="check"></div>
+        <div class="otitle">B. 優雅深色 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">深底、襯線標題、暖金強調。和 app 本身的深色主題一致,讀起來像「正經的音樂軟體」。</div>
+        <div class="mock m-dark">
+          <p class="mh">Score Arranger</p>
+          <p class="ms">把管弦樂總譜,智慧改編成你的編制。</p>
+          <span class="mb">下載 macOS 版</span>
+        </div>
+      </div>
+      <div class="opt" data-value="樂譜紙感">
+        <div class="check"></div>
+        <div class="otitle">C. 樂譜紙感</div>
+        <div class="odesc">米色紙、五線譜底紋、襯線。最有「音樂」個性、最好記。</div>
+        <div class="mock m-paper">
+          <p class="mh">Score Arranger</p>
+          <p class="ms">把管弦樂總譜,智慧改編成你的編制。</p>
+          <span class="mb">下載 macOS 版</span>
+        </div>
+      </div>
+      <div class="opt" data-value="現代科技">
+        <div class="check"></div>
+        <div class="otitle">D. 現代科技</div>
+        <div class="odesc">漸層、粗體、幾何感。像開發者工具的 landing page。</div>
+        <div class="mock m-tech">
+          <p class="mh">Score Arranger</p>
+          <p class="ms">把管弦樂總譜,智慧改編成你的編制。</p>
+          <span class="mb">下載 macOS 版</span>
+        </div>
+      </div>
+      <div class="opt" data-value="暖色友善">
+        <div class="check"></div>
+        <div class="otitle">E. 暖色友善</div>
+        <div class="odesc">柔和暖色、圓角、親切。最貼近「音樂老師 / 業餘者」客群。</div>
+        <div class="mock m-warm">
+          <p class="mh">Score Arranger</p>
+          <p class="ms">把管弦樂總譜,智慧改編成你的編制。</p>
+          <span class="mb">下載 macOS 版</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 託管方案 -->
+  <section class="q" data-group="託管方案">
+    <h2><span class="num">3</span> 託管方案 — 網頁放哪</h2>
+    <p class="hint">都是靜態頁,以下全部免費、零維運。差別在設定方式。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="GitHub Pages">
+        <div class="check"></div>
+        <div class="otitle">GitHub Pages <span class="rec">🎯 建議</span></div>
+        <ul class="pros">
+          <li>免費、和 repo 綁一起,push 即部署</li>
+          <li>.dmg 直接放同 repo 的 Releases,下載連結最自然</li>
+          <li class="con">前提:repo 要放上 GitHub</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="Cloudflare Pages">
+        <div class="check"></div>
+        <div class="otitle">Cloudflare Pages</div>
+        <ul class="pros">
+          <li>免費、CDN 快、自訂網域容易</li>
+          <li class="con">多一個 Cloudflare 帳號 / 設定</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="Netlify">
+        <div class="check"></div>
+        <div class="otitle">Netlify</div>
+        <ul class="pros">
+          <li>免費、拖檔即上線、可加表單</li>
+          <li class="con">免費額度足夠,但又一個平台</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="自有網域 + 上述任一">
+        <div class="check"></div>
+        <div class="otitle">自有網域 + 上述任一</div>
+        <ul class="pros">
+          <li>scorearranger.com 之類,最正式</li>
+          <li class="con">網域年費(約 NT$300–500/年),要續約</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 贊助方案 -->
+  <section class="q" data-group="贊助方案">
+    <h2><span class="num">4</span> 贊助方案 — 收款管道</h2>
+    <p class="hint">都需要你自己開帳號(我不能代辦)。台灣收款狀況我標在下面。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="Ko-fi">
+        <div class="check"></div>
+        <div class="otitle">Ko-fi <span class="rec">🎯 建議</span></div>
+        <ul class="pros">
+          <li>一次性贊助平台不抽成(僅金流手續費)</li>
+          <li>單次 / 訂閱皆可,介面友善、國際通用</li>
+          <li>收款走 PayPal / Stripe(台灣可)</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="Buy Me a Coffee">
+        <div class="check"></div>
+        <div class="otitle">Buy Me a Coffee</div>
+        <ul class="pros">
+          <li>介面親切、好上手</li>
+          <li class="con">平台抽 5%</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="GitHub Sponsors">
+        <div class="check"></div>
+        <div class="otitle">GitHub Sponsors</div>
+        <ul class="pros">
+          <li>平台 0 抽成,和開源最搭</li>
+          <li class="con">需 GitHub 帳號;台灣個人收款資格需先確認</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="綠界 / PayPal.me">
+        <div class="check"></div>
+        <div class="otitle">綠界 ECPay / PayPal.me</div>
+        <ul class="pros">
+          <li>台灣在地金流,台灣使用者熟悉</li>
+          <li class="con">綠界偏商用設定較繁;PayPal.me 最陽春</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="先不放贊助">
+        <div class="check"></div>
+        <div class="otitle">先不放贊助</div>
+        <ul class="pros">
+          <li>純免費、零金錢元素,最無負擔</li>
+          <li>之後想加隨時能加</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 其他 -->
+  <section class="q" data-group="頁面語言">
+    <h2><span class="num">5</span> 頁面語言</h2>
+    <p class="hint">app 本身已有中/英 i18n。網頁要不要雙語影響觸及範圍。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="中文為主">
+        <div class="check"></div>
+        <div class="otitle">中文為主</div>
+        <div class="odesc">先服務中文使用者,簡單。</div>
+      </div>
+      <div class="opt" data-value="中英雙語">
+        <div class="check"></div>
+        <div class="otitle">中英雙語 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">音樂教育市場以英文為大宗,雙語觸及更廣。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="q" data-group="開源與否">
+    <h2><span class="num">6</span> 要不要開源 app</h2>
+    <p class="hint">純屬選項。開源能換社群信任與貢獻;不開源也完全沒問題。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="開源">
+        <div class="check"></div>
+        <div class="otitle">開源</div>
+        <div class="odesc">公開原始碼,社群可貢獻,專案不會因你沒空而消失。</div>
+      </div>
+      <div class="opt" data-value="閉源但免費">
+        <div class="check"></div>
+        <div class="otitle">閉源但免費</div>
+        <div class="odesc">只發佈成品 app,原始碼不公開。</div>
+      </div>
+      <div class="opt" data-value="之後再決定">
+        <div class="check"></div>
+        <div class="otitle">之後再決定</div>
+        <div class="odesc">不擋網頁進度,這題晚點再想。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="q">
+    <h2><span class="num">+</span> 其他想法 / 備註</h2>
+    <p class="hint">任何想補充的(想要的區塊、不想要的、參考網站…)寫這,會一起進摘要。</p>
+    <textarea id="notes" placeholder="例:想加一個「使用情境」區塊 / 參考某某網站的排版 / 想放示範影片…"></textarea>
+  </section>
+
+</main>
+
+<div id="bar">
+  <div class="inner">
+    <div id="summary"></div>
+    <button id="copyBtn">複製決策摘要</button>
+  </div>
+</div>
+
+<script>
+  const STORE = "score-arranger-landing-plan";
+  const groups = ["敘事風格","美術風格","託管方案","贊助方案","頁面語言","開源與否"];
+  const choice = {};
+
+  // 還原先前選擇
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    Object.assign(choice, saved.choice || {});
+    if (saved.notes) document.getElementById("notes").value = saved.notes;
+  } catch (e) { /* ignore */ }
+
+  function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+      choice, notes: document.getElementById("notes").value,
+    }));
+  }
+
+  function paint() {
+    document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+      const g = sec.dataset.group;
+      sec.querySelectorAll(".opt").forEach((opt) => {
+        opt.classList.toggle("sel", choice[g] === opt.dataset.value);
+      });
+    });
+    const parts = groups.map((g) =>
+      choice[g]
+        ? `<b>${g}</b>:${choice[g]}`
+        : `<span class="miss">${g}:未選</span>`
+    );
+    const done = groups.filter((g) => choice[g]).length;
+    document.getElementById("summary").innerHTML =
+      `已選 ${done}/${groups.length} &nbsp; ` + parts.join(" &nbsp;·&nbsp; ");
+  }
+
+  document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+    const g = sec.dataset.group;
+    sec.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        choice[g] = opt.dataset.value;
+        save(); paint();
+      });
+    });
+  });
+  document.getElementById("notes").addEventListener("input", save);
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const notes = document.getElementById("notes").value.trim();
+    const lines = ["Score Arranger 介紹網頁 — 我的決策", ""];
+    groups.forEach((g) => lines.push(`${g}:${choice[g] || "(未選)"}`));
+    if (notes) lines.push("", "備註:" + notes);
+    const text = lines.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById("copyBtn");
+      b.textContent = "已複製 ✓"; b.classList.add("done");
+      setTimeout(() => {
+        b.textContent = "複製決策摘要"; b.classList.remove("done");
+      }, 1800);
+    }).catch(() => {
+      alert(text);
+    });
+  });
+
+  paint();
+</script>
+</body>
+</html>

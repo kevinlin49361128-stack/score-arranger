@@ -19,6 +19,7 @@ import {
   exportTargetMidi,
   listNavigation,
   getMeasureFingering,
+  getChordFingering,
   exportTargetMusicXML,
   targetPartMusicXML,
   historyStatus,
@@ -476,6 +477,11 @@ function registerIpcHandlers(): void {
     "engine:getMeasureFingering",
     async (_evt, measure: number) =>
       safeCall(() => getMeasureFingering(measure)),
+  );
+  ipcMain.handle(
+    "engine:getChordFingering",
+    async (_evt, instrument: string, pitches: number[]) =>
+      safeCall(() => getChordFingering(instrument, pitches)),
   );
   ipcMain.handle(
     "engine:listSourceParts",

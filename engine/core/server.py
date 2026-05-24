@@ -502,7 +502,28 @@ def _method_arrange_custom(params: dict[str, Any]) -> dict:
             collect_issues(arrangement.target_score)
         ),
         "repair": repair_info,
+        # 0.1.32 老師評語層
+        "explanation": _safe_generate_explanation(
+            arrangement, repair_info=repair_info,
+        ),
     }
+
+
+def _safe_generate_explanation(
+    arrangement, repair_info: Optional[dict] = None,
+) -> Optional[dict]:
+    """安全產生「老師評語」, 失敗回 None 不影響主流程."""
+    try:
+        from .explainer import explanation_to_dict, generate_explanation
+        exp = generate_explanation(
+            arrangement,
+            quality_dict=_serialize_quality(arrangement),
+            difficulty_dict=_serialize_difficulty(arrangement),
+            repair_dict=repair_info,
+        )
+        return explanation_to_dict(exp)
+    except Exception:
+        return None
 
 
 def _method_amt_status(_params: dict[str, Any]) -> dict[str, Any]:
@@ -879,6 +900,22 @@ def _method_arrange(params: dict[str, Any]) -> dict:
     sess.current_arrangement = arrangement
     _persist_session(params.get("session_id"))
 
+    quality_dict = _serialize_quality(arrangement)
+    difficulty_dict = _serialize_difficulty(arrangement)
+    # 0.1.32 老師評語層 — 把改編 / 修復 / 品質 / 難度聚合成可讀說明
+    explanation_dict = None
+    try:
+        from .explainer import explanation_to_dict, generate_explanation
+        exp = generate_explanation(
+            arrangement,
+            quality_dict=quality_dict,
+            difficulty_dict=difficulty_dict,
+            repair_dict=repair_info,
+        )
+        explanation_dict = explanation_to_dict(exp)
+    except Exception:
+        pass
+
     return {
         "arrangement_id": arrangement.arrangement_id,
         "name": arrangement.name,
@@ -908,8 +945,9 @@ def _method_arrange(params: dict[str, Any]) -> dict:
             collect_issues(arrangement.target_score)
             if arrangement.target_score is not None else []
         ),
-        "difficulty": _serialize_difficulty(arrangement),
-        "quality": _serialize_quality(arrangement),
+        "difficulty": difficulty_dict,
+        "quality": quality_dict,
+        "explanation": explanation_dict,
     }
 
 
@@ -2571,6 +2609,65 @@ def _method_get_measure_fingering(params: dict[str, Any]) -> dict:
     return {"measure": target_measure, "parts": result_parts}
 
 
+def _method_get_chord_fingering(params: dict[str, Any]) -> dict:
+    """0.1.32: 單一和弦指法 — 給 FingerboardSimulator 對齊 engine 用.
+
+    輸入: instrument (violin/viola/cello/guitar/lute), pitches (list[int] MIDI)
+    輸出: {assignments: [{midi, string_idx, string_name, fret}], feasible: bool}
+
+    沒可行指法 → feasible=False, assignments=[].
+    這支 RPC 不需要 session — 純查單一和弦, 給 UI 視覺化用.
+    """
+    from core.instruments import get_profile
+    from core.instruments.fingering import find_best_fingering
+    from core.ir import Pitch
+
+    instrument = str(params.get("instrument", ""))
+    pitches_midi = params.get("pitches", [])
+    if not isinstance(pitches_midi, list) or not pitches_midi:
+        return {"feasible": False, "assignments": []}
+
+    profile = get_profile(instrument)
+    if profile is None or not profile.strings:
+        return {"feasible": False, "assignments": []}
+
+    # 撥弦 family → require_adjacent=False
+    require_adjacent = profile.family != "plucked"
+    # 構造 Pitch 物件 (spelling 簡化為 "n{midi}")
+    pitches = [Pitch(midi_number=int(m), spelling=f"n{m}")
+               for m in pitches_midi]
+    fingering = find_best_fingering(
+        pitches, profile.strings,
+        max_fret=24,
+        max_stretch_semitones=profile.max_stretch_semitones or 7,
+        require_adjacent=require_adjacent,
+    )
+    if fingering is None:
+        return {"feasible": False, "assignments": []}
+
+    assignments_out = []
+    for pitch, string_idx, fret in fingering.assignments:
+        string_def = next(
+            (s for s in profile.strings if s.index == string_idx),
+            None,
+        )
+        string_name = (
+            string_def.open_pitch.spelling.rstrip("0123456789-")
+            if string_def else f"S{string_idx}"
+        )
+        assignments_out.append({
+            "midi": pitch.midi_number,
+            "string_idx": string_idx,
+            "string_name": string_name,
+            "fret": fret,
+        })
+    return {
+        "feasible": True,
+        "assignments": assignments_out,
+        "score": fingering.score,
+    }
+
+
 METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "ping": _method_ping,
     "close_session": _method_close_session,
@@ -2615,6 +2712,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "compute_quality": _method_compute_quality,
     "list_navigation": _method_list_navigation,
     "get_measure_fingering": _method_get_measure_fingering,
+    "get_chord_fingering": _method_get_chord_fingering,
 }
 
 

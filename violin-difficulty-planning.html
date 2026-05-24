@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger — 小提琴「加高難度」功能規劃決策</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --accent: #3b6ea5;
+    --ok: #2e7d52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang TC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 220px;
+  }
+  header.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 24px 12px;
+  }
+  header.page h1 { font-size: 23px; margin: 0 0 6px; }
+  header.page p { color: var(--muted); margin: 4px 0; font-size: 14px; }
+  main { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .ctx {
+    background: #fbfcfd;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ctx b { color: var(--ink); }
+
+  section.q {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section.q > h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  section.q > h2 .num {
+    color: #fff;
+    background: var(--accent);
+    font-size: 12px;
+    border-radius: 999px;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  section.q > h2 .multi {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px;
+    padding: 1px 7px; white-space: nowrap;
+  }
+  section.q > .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .opts { display: grid; gap: 12px; }
+  .opts.cols2 { grid-template-columns: 1fr 1fr; }
+  .opts.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) {
+    .opts.cols2, .opts.cols3 { grid-template-columns: 1fr; }
+  }
+  .opt {
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .12s, box-shadow .12s;
+    position: relative;
+  }
+  .opt:hover { border-color: #b6c2d2; }
+  .opt.sel {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,110,165,.14);
+  }
+  .opt .otitle { font-weight: 700; font-size: 14px; padding-right: 26px; }
+  .opt .odesc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .opt .check {
+    position: absolute; top: 10px; right: 12px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--line);
+  }
+  .opt.sel .check { border-color: var(--accent); background: var(--accent); }
+  .opt.sel .check::after {
+    content: "✓"; color: #fff; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; margin-top: -1px;
+  }
+  /* multi-select section uses square check */
+  section.q[data-multi] .opt .check { border-radius: 4px; }
+  .rec {
+    font-size: 11px; font-weight: 700; color: var(--ok);
+    border: 1px solid var(--ok); border-radius: 999px;
+    padding: 1px 7px; margin-left: 6px; white-space: nowrap;
+  }
+  .pros { font-size: 12.5px; margin: 8px 0 0; padding-left: 16px; }
+  .pros li { margin: 2px 0; }
+  .con { color: #a05a2c; }
+  .tag {
+    display: inline-block; font-size: 10.5px; font-weight: 700;
+    border-radius: 999px; padding: 1px 7px; margin-top: 8px;
+  }
+  .tag.t1 { background: #e3f1e8; color: #2e7d52; }
+  .tag.t2 { background: #fdeede; color: #a05a2c; }
+  .tag.t3 { background: #f4e3e3; color: #b23; }
+
+  /* 譜例 / 行為示意 */
+  .ex {
+    background: #f6f8fa; border-radius: 8px;
+    padding: 10px 13px; margin-top: 10px;
+    font-size: 12.5px;
+  }
+  .ex .el { color: var(--muted); }
+  .ex .ea { color: var(--ink); font-weight: 700; }
+  .ex code {
+    background: #eef1f5; border-radius: 4px;
+    padding: 1px 5px; font-size: 12px;
+  }
+
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical;
+    border: 2px solid var(--line); border-radius: 8px;
+    padding: 10px; font: inherit; font-size: 13px;
+  }
+
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #bar .inner {
+    max-width: 960px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #summary { flex: 1; font-size: 12.5px; color: var(--muted); }
+  #summary b { color: var(--ink); }
+  #summary .miss { color: #b23; }
+  #copyBtn {
+    flex: 0 0 auto; border: none; background: var(--accent); color: #fff;
+    font: 700 14px/1 inherit; padding: 12px 18px; border-radius: 8px;
+    cursor: pointer;
+  }
+  #copyBtn:active { transform: translateY(1px); }
+  #copyBtn.done { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>小提琴「加高難度」功能 — 規劃決策</h1>
+  <p>使用者覺得改編出來的小提琴譜「太簡單、不夠炫技」時,讓 app 能主動加料。每一題挑一個(標「可複選」的可挑多個)。</p>
+  <p>選完按右下角「複製決策摘要」,把內容貼回給我,我就照這個一次做完。<b>標 🎯 建議 的是我的推薦,但你說了算。</b></p>
+</header>
+
+<main>
+
+  <div class="ctx">
+    <b>現況</b>:我們剛做完的 <code>enrich</code> 功能只會「往低音方向疊和弦」(吉他思路 —— 補低音、補內聲部)。
+    小提琴要的是反方向 —— <b>八度疊高、雙音、移高把位、走句、裝飾音</b>。
+    <br><br>
+    <b>三個難度層級</b>:
+    <span class="tag t1">Tier 1 低風險</span> 可演奏性能機械驗證、譜面改動小;
+    <span class="tag t2">Tier 2 中風險</span> 要新邏輯、會改變旋律輪廓;
+    <span class="tag t3">Tier 3 先跳過</span> 人工泛音、左手撥弦、跳弓 —— 記譜與驗證都太複雜,這次不做。
+  </div>
+
+  <!-- 1. 架構起手式 -->
+  <section class="q" data-group="架構起手式">
+    <h2><span class="num">1</span> 架構起手式 — 怎麼接進現有引擎</h2>
+    <p class="hint">小提琴加音的「驗證/復原/LLM 串接」要不要複用 enrich 那一套管線。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="擴充 enrich(樂器感知)">
+        <div class="check"></div>
+        <div class="otitle">擴充 enrich <span class="rec">🎯 建議</span></div>
+        <div class="odesc">讓 enrich 認得目標樂器:小提琴時改用 <code>check_violin_chord</code>(≤4 音、相鄰弦),新增 <code>octave</code> texture。</div>
+        <ul class="pros">
+          <li>復用既有驗證、undo/redo、LLM op 串接</li>
+          <li>新程式碼最少,測試面也最小</li>
+          <li class="con">enrich 語意被撐大,要清楚註解</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="新增獨立 op">
+        <div class="check"></div>
+        <div class="otitle">新增獨立 op</div>
+        <div class="odesc">為小提琴難度新開一個 op kind(例如 <code>embellish</code>)。</div>
+        <ul class="pros">
+          <li>語意乾淨、和 enrich 互不干擾</li>
+          <li class="con">驗證、server 分支、LLM prompt、UI describeOp 全要重做一遍</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="兩者分工">
+        <div class="check"></div>
+        <div class="otitle">兩者分工</div>
+        <div class="odesc">enrich 加樂器感知處理「疊音/雙音」;另開 op 處理「走句/裝飾」。</div>
+        <ul class="pros">
+          <li>各司其職、未來擴充清楚</li>
+          <li class="con">工作量最大,看 Tier 2 是否這輪就做</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Tier 1 手法 -->
+  <section class="q" data-group="Tier1手法" data-multi="1">
+    <h2><span class="num">2</span> Tier 1 — 要納入哪些「加難度」手法 <span class="multi">可複選</span></h2>
+    <p class="hint">四種都是低風險、可演奏性能機械驗證。建議四種全選 —— 越多手法,LLM 越能因地制宜。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="八度疊置">
+        <div class="check"></div>
+        <div class="otitle">八度疊置 octave doubling <span class="rec">🎯 建議</span></div>
+        <div class="odesc">把旋律音同時疊上(或下)八度,瞬間變雙音。只要兩音都在音域內就一定拉得動,最穩。</div>
+        <div class="ex">
+          <span class="el">原:</span> <span class="ea">G4 單音</span> &nbsp;→&nbsp;
+          <span class="el">加料:</span> <span class="ea">G3+G4 八度雙音</span>
+        </div>
+        <span class="tag t1">Tier 1</span>
+      </div>
+      <div class="opt" data-value="雙音和弦">
+        <div class="check"></div>
+        <div class="otitle">雙音 / 和弦 double-stops <span class="rec">🎯 建議</span></div>
+        <div class="odesc">在和聲點上,於相鄰弦補一個和聲音。經 <code>check_violin_chord</code> 把關(≤4 音、相鄰弦、音程可行)。</div>
+        <div class="ex">
+          <span class="el">原:</span> <span class="ea">E5 單音(伴奏和弦為 C 大三)</span> &nbsp;→&nbsp;
+          <span class="el">加料:</span> <span class="ea">C5+E5 三度雙音</span>
+        </div>
+        <span class="tag t1">Tier 1</span>
+      </div>
+      <div class="opt" data-value="困難弓法">
+        <div class="check"></div>
+        <div class="otitle">困難弓法 demanding bowing <span class="rec">🎯 建議</span></div>
+        <div class="odesc">spiccato / staccato / martelé 等較難弓法。已能用現有 <code>articulation</code> op 表達 —— 納入只是讓小提琴 preset 主動建議。</div>
+        <div class="ex">
+          <span class="el">既有能力:</span> <span class="ea">articulation op 已支援,零新引擎碼</span>
+        </div>
+        <span class="tag t1">Tier 1</span>
+      </div>
+      <div class="opt" data-value="移高把位">
+        <div class="check"></div>
+        <div class="otitle">移高把位 higher positions <span class="rec">🎯 建議</span></div>
+        <div class="odesc">把段落整體升高,讓左手落在第 3/5/7 把位。已能用現有 <code>transpose</code> op 表達。</div>
+        <div class="ex">
+          <span class="el">既有能力:</span> <span class="ea">transpose op 已支援,零新引擎碼</span>
+        </div>
+        <span class="tag t1">Tier 1</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Tier 2 進階 -->
+  <section class="q" data-group="Tier2進階">
+    <h2><span class="num">3</span> Tier 2 — 進階手法這輪做不做</h2>
+    <p class="hint">這兩種會「改變旋律輪廓」、需要新邏輯。可以這輪就做,也可以等 Tier 1 上線穩定後再加。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="只做走句化">
+        <div class="check"></div>
+        <div class="otitle">只做走句化 figuration</div>
+        <div class="odesc">把長音 / 持續音拆成跑動音群(分解和弦、音階)。像 enrich 的 arpeggio texture,但作用在旋律上。</div>
+        <div class="ex">
+          <span class="el">原:</span> <span class="ea">全音符 C5</span> &nbsp;→&nbsp;
+          <span class="el">加料:</span> <span class="ea">C5-E5-G5-E5 十六分音群</span>
+        </div>
+        <span class="tag t2">Tier 2 · 中風險</span>
+      </div>
+      <div class="opt" data-value="只做裝飾音">
+        <div class="check"></div>
+        <div class="otitle">只做裝飾音 ornamentation</div>
+        <div class="odesc">加顫音(trill)、漣音(mordent)、倚音(grace note)、迴音(turn)。改動小,但要處理記譜。</div>
+        <div class="ex">
+          <span class="el">原:</span> <span class="ea">二分音符 A4</span> &nbsp;→&nbsp;
+          <span class="el">加料:</span> <span class="ea">A4 + trill 記號</span>
+        </div>
+        <span class="tag t2">Tier 2 · 中風險</span>
+      </div>
+      <div class="opt" data-value="兩者都做">
+        <div class="check"></div>
+        <div class="otitle">兩者都做</div>
+        <div class="odesc">走句化 + 裝飾音這輪一起上。功能最完整,但這輪工作量明顯變大。</div>
+        <span class="tag t2">Tier 2 · 中風險</span>
+      </div>
+      <div class="opt" data-value="這輪都先不做">
+        <div class="check"></div>
+        <div class="otitle">這輪都先不做 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">先把 Tier 1 做穩、上線收使用者回饋,Tier 2 下一輪再加。範圍可控、能更快交付。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 難度量表 -->
+  <section class="q" data-group="難度量表">
+    <h2><span class="num">4</span> 難度量表要不要升級</h2>
+    <p class="hint">目前 <code>difficulty.py</code> 只算 音域 / 密度 / 和弦 / 節奏 四個因子,抓不到「技巧難度」(雙音、把位、弓法)。沒升級的話,加了難度但難度計顯示不太會動。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="加 technique_factor">
+        <div class="check"></div>
+        <div class="otitle">加 technique_factor <span class="rec">🎯 建議</span></div>
+        <div class="odesc">新增第五個因子:統計雙音數、把位高度、難弓法密度。難度計才能真實反映加料效果,Phase C 的 <code>target_difficulty</code> 也才準。</div>
+        <ul class="pros">
+          <li>難度顯示與「加難度」功能一致,使用者有感</li>
+          <li class="con">要動 difficulty.py 與其測試</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="維持現狀">
+        <div class="check"></div>
+        <div class="otitle">維持現狀</div>
+        <div class="odesc">難度計暫不動。加料仍會被「和弦因子」抓到一部分,但雙音/把位/弓法不計入。</div>
+        <ul class="pros">
+          <li>範圍最小、最快</li>
+          <li class="con">使用者加完難度,難度計可能只微微上升</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 觸發方式 -->
+  <section class="q" data-group="觸發方式">
+    <h2><span class="num">5</span> 使用者怎麼觸發</h2>
+    <p class="hint">使用者要怎麼叫出「加難度」。現有的自然語言面板(輸入「這段太簡單,加點難度」)已能承接。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="只走自然語言面板">
+        <div class="check"></div>
+        <div class="otitle">只走自然語言面板 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">使用者打「第 8–16 小節太簡單,加雙音」,LLM 產生 enrich/transpose op。零新 UI。</div>
+        <ul class="pros">
+          <li>沿用現成 NLEditDialog,最快</li>
+          <li>自然語言最彈性</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="另開專屬面板">
+        <div class="check"></div>
+        <div class="otitle">另開「加難度」專屬面板</div>
+        <div class="odesc">獨立 UI:選聲部、選小節範圍、拉難度滑桿、勾手法。</div>
+        <ul class="pros">
+          <li>不會編曲的人也好操作、可預覽</li>
+          <li class="con">要設計新元件,工作量明顯增加</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="兩者都做">
+        <div class="check"></div>
+        <div class="otitle">兩者都做</div>
+        <div class="odesc">先上自然語言,專屬面板列為下一輪。</div>
+        <ul class="pros">
+          <li>體驗最完整</li>
+          <li class="con">這輪範圍最大</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 炫技強度 -->
+  <section class="q" data-group="炫技強度">
+    <h2><span class="num">6</span> 預設炫技強度</h2>
+    <p class="hint">使用者沒特別指定「加多少」時的預設力道。三者都會經可演奏性驗證,差別在「主動加多少」。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="保守">
+        <div class="check"></div>
+        <div class="otitle">保守 conservative</div>
+        <div class="odesc">只在強拍加八度與簡單三/六度雙音。最安全、最不會「過頭」。</div>
+        <div class="ex"><span class="el">一句旋律約加</span> <span class="ea">2–3 處雙音</span></div>
+      </div>
+      <div class="opt" data-value="平衡">
+        <div class="check"></div>
+        <div class="otitle">平衡 balanced <span class="rec">🎯 建議</span></div>
+        <div class="odesc">八度 + 雙音密度適中,偶爾建議把位移高。聽起來「有挑戰但不雜亂」。</div>
+        <div class="ex"><span class="el">一句旋律約加</span> <span class="ea">4–6 處雙音 + 把位建議</span></div>
+      </div>
+      <div class="opt" data-value="炫技">
+        <div class="check"></div>
+        <div class="otitle">炫技 virtuosic</div>
+        <div class="odesc">盡量加滿雙音、移高把位、難弓法。給程度高的演奏者 / 想要華麗版的人。</div>
+        <div class="ex"><span class="el">一句旋律</span> <span class="ea">幾乎每個和聲點都加雙音</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="q">
+    <h2><span class="num">+</span> 其他想法 / 備註</h2>
+    <p class="hint">任何想補充的(想要的手法、不想要的、優先順序、參考的演奏…)寫這,會一起進摘要。</p>
+    <textarea id="notes" placeholder="例:雙音優先用三度六度、少用十度 / 想要能指定「給 ABRSM 八級程度」/ 走句化先支援巴洛克風…"></textarea>
+  </section>
+
+</main>
+
+<div id="bar">
+  <div class="inner">
+    <div id="summary"></div>
+    <button id="copyBtn">複製決策摘要</button>
+  </div>
+</div>
+
+<script>
+  const STORE = "score-arranger-violin-difficulty-plan";
+  // group 名稱; multi 群組值為陣列
+  const groups = [
+    "架構起手式", "Tier1手法", "Tier2進階",
+    "難度量表", "觸發方式", "炫技強度",
+  ];
+  const multiGroups = new Set(["Tier1手法"]);
+  const choice = {};
+
+  // 還原先前選擇
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    Object.assign(choice, saved.choice || {});
+    if (saved.notes) document.getElementById("notes").value = saved.notes;
+  } catch (e) { /* ignore */ }
+
+  function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+      choice, notes: document.getElementById("notes").value,
+    }));
+  }
+
+  function isSel(g, v) {
+    if (multiGroups.has(g)) return Array.isArray(choice[g]) && choice[g].includes(v);
+    return choice[g] === v;
+  }
+
+  function valText(g) {
+    if (multiGroups.has(g)) {
+      const arr = choice[g];
+      return Array.isArray(arr) && arr.length ? arr.join("、") : "";
+    }
+    return choice[g] || "";
+  }
+
+  function paint() {
+    document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+      const g = sec.dataset.group;
+      sec.querySelectorAll(".opt").forEach((opt) => {
+        opt.classList.toggle("sel", isSel(g, opt.dataset.value));
+      });
+    });
+    const parts = groups.map((g) => {
+      const v = valText(g);
+      return v
+        ? `<b>${g}</b>:${v}`
+        : `<span class="miss">${g}:未選</span>`;
+    });
+    const done = groups.filter((g) => valText(g)).length;
+    document.getElementById("summary").innerHTML =
+      `已選 ${done}/${groups.length} &nbsp; ` + parts.join(" &nbsp;·&nbsp; ");
+  }
+
+  document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+    const g = sec.dataset.group;
+    sec.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        const v = opt.dataset.value;
+        if (multiGroups.has(g)) {
+          const arr = Array.isArray(choice[g]) ? choice[g] : [];
+          const i = arr.indexOf(v);
+          if (i >= 0) arr.splice(i, 1);
+          else arr.push(v);
+          choice[g] = arr;
+        } else {
+          choice[g] = v;
+        }
+        save(); paint();
+      });
+    });
+  });
+  document.getElementById("notes").addEventListener("input", save);
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const notes = document.getElementById("notes").value.trim();
+    const lines = ["小提琴「加高難度」功能 — 我的決策", ""];
+    groups.forEach((g) => lines.push(`${g}:${valText(g) || "(未選)"}`));
+    if (notes) lines.push("", "備註:" + notes);
+    const text = lines.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById("copyBtn");
+      b.textContent = "已複製 ✓"; b.classList.add("done");
+      setTimeout(() => {
+        b.textContent = "複製決策摘要"; b.classList.remove("done");
+      }, 1800);
+    }).catch(() => {
+      alert(text);
+    });
+  });
+
+  paint();
+</script>
+</body>
+</html>

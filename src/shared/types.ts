@@ -137,6 +137,29 @@ export interface ArrangementResult {
   issues?: ArrangementIssue[];
   /** 整體改編品質 (melody/harmony/playability) — 給 A/B 版本比較 */
   quality?: QualityScores | null;
+  /** 0.1.32 老師評語層 — 改編完成後輸出的人類可讀說明 */
+  explanation?: ArrangementExplanation | null;
+}
+
+/** 0.1.32: 改編評語 — 對應 engine/core/explainer.py ArrangementExplanation */
+export interface ArrangementExplanation {
+  global: {
+    headline: string;
+    repair: string | null;
+    voice_leading: string | null;
+    quality: string | null;
+  };
+  parts: PartExplanation[];
+}
+
+export interface PartExplanation {
+  part_id: string;
+  display_name: string;
+  function: VoiceFunction | string;
+  source_part_label: string;
+  preserved: string[];
+  changed: string[];
+  cost: string[];
 }
 
 /** 改編品質三項分數 (0~1) — repair 前/後比對用 */

@@ -629,6 +629,13 @@ export async function getMeasureFingering(
   return client.call("get_measure_fingering", { measure });
 }
 
+export async function getChordFingering(
+  instrument: string,
+  pitches: number[],
+): Promise<unknown> {
+  return client.call("get_chord_fingering", { instrument, pitches });
+}
+
 export async function listSourceParts(path: string): Promise<unknown> {
   return client.call("list_source_parts", { path });
 }

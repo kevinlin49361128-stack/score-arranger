@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger — 開源 / 變現策略決策</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --accent: #3b6ea5;
+    --ok: #2e7d52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang TC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 220px;
+  }
+  header.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 24px 12px;
+  }
+  header.page h1 { font-size: 23px; margin: 0 0 6px; }
+  header.page p { color: var(--muted); margin: 4px 0; font-size: 14px; }
+  main { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .ctx {
+    background: #fbfcfd;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ctx b { color: var(--ink); }
+  .ctx ul { margin: 8px 0 0; padding-left: 18px; }
+  .ctx li { margin: 3px 0; }
+
+  section.q {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section.q > h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  section.q > h2 .num {
+    color: #fff;
+    background: var(--accent);
+    font-size: 12px;
+    border-radius: 999px;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  section.q > h2 .multi {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px;
+    padding: 1px 7px; white-space: nowrap;
+  }
+  section.q > .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .opts { display: grid; gap: 12px; }
+  .opts.cols2 { grid-template-columns: 1fr 1fr; }
+  .opts.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) {
+    .opts.cols2, .opts.cols3 { grid-template-columns: 1fr; }
+  }
+  .opt {
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .12s, box-shadow .12s;
+    position: relative;
+  }
+  .opt:hover { border-color: #b6c2d2; }
+  .opt.sel {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,110,165,.14);
+  }
+  .opt .otitle { font-weight: 700; font-size: 14px; padding-right: 26px; }
+  .opt .odesc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .opt .check {
+    position: absolute; top: 10px; right: 12px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--line);
+  }
+  .opt.sel .check { border-color: var(--accent); background: var(--accent); }
+  .opt.sel .check::after {
+    content: "✓"; color: #fff; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; margin-top: -1px;
+  }
+  section.q[data-multi] .opt .check { border-radius: 4px; }
+  .rec {
+    font-size: 11px; font-weight: 700; color: var(--ok);
+    border: 1px solid var(--ok); border-radius: 999px;
+    padding: 1px 7px; margin-left: 6px; white-space: nowrap;
+  }
+  .pros { font-size: 12.5px; margin: 8px 0 0; padding-left: 16px; }
+  .pros li { margin: 2px 0; }
+  .con { color: #a05a2c; }
+
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical;
+    border: 2px solid var(--line); border-radius: 8px;
+    padding: 10px; font: inherit; font-size: 13px;
+  }
+
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #bar .inner {
+    max-width: 960px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #summary { flex: 1; font-size: 12.5px; color: var(--muted); }
+  #summary b { color: var(--ink); }
+  #summary .miss { color: #b23; }
+  #copyBtn {
+    flex: 0 0 auto; border: none; background: var(--accent); color: #fff;
+    font: 700 14px/1 inherit; padding: 12px 18px; border-radius: 8px;
+    cursor: pointer;
+  }
+  #copyBtn:active { transform: translateY(1px); }
+  #copyBtn.done { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>開源 / 變現策略 — 規劃決策</h1>
+  <p>每題挑一個(標「可複選」的可挑多個)。選完按右下角「複製決策摘要」,把內容貼回給我。</p>
+  <p>標 🎯 的是我的推薦,但你說了算。<b>第 1 題沒有建議 —— 它是你的北極星,其他三題都看它。</b></p>
+</header>
+
+<main>
+
+  <div class="ctx">
+    <b>先釐清幾個事實 ——</b>
+    <ul>
+      <li>repo <b>現在就已經是公開 + GPL-3.0</b>。這題不是「要不要開源」,而是「未來要怎麼走」。</li>
+      <li>現有的 0.1.x 程式碼<b>已經收不回來</b> —— 任何人此刻都能合法 fork。閉源只能影響「往後新寫的程式碼」。</li>
+      <li>GPL-3.0 本身就是「<b>開放但防併吞</b>」的授權 —— 別人不能拿你的程式碼做成閉源產品。</li>
+      <li>你已選 Lemon Squeezy <b>隨意支付</b>(捐贈模式) —— 這跟開源是天作之合。</li>
+    </ul>
+    <br>
+    <b>核心觀念:</b>原始碼「開或閉」<b>不是由「功能多好」決定的</b>。突出和開放天天並存
+    (MuseScore、Blender、Krita 都是)。真正的決定因素是下面四題:你想得到什麼、
+    護城河是什麼、你一個人能撐多久、使用者需不需要信任你。
+  </div>
+
+  <!-- 1. 專案定位 -->
+  <section class="q" data-group="專案定位">
+    <h2><span class="num">1</span> 這個專案對你「最主要」是什麼</h2>
+    <p class="hint">這題沒有 🎯 —— 它是你的北極星。選「最主要」的一個,其他三題的建議都會跟著它走。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="收入來源">
+        <div class="check"></div>
+        <div class="otitle">收入來源</div>
+        <div class="odesc">想靠它賺到實質、可持續的收入。</div>
+        <ul class="pros">
+          <li>變現要刻意設計,不能只靠捐贈隨緣</li>
+          <li>開源不擋你,但要搭配明確的付費價值</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="作品集與聲望">
+        <div class="check"></div>
+        <div class="otitle">作品集 / 領域聲望</div>
+        <div class="odesc">求職、接案、在音樂科技圈被看見、累積信譽。</div>
+        <ul class="pros">
+          <li>開源嚴格來說更好 —— GitHub 就是你的履歷</li>
+          <li>被看見 &gt; 被保護</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="服務社群">
+        <div class="check"></div>
+        <div class="otitle">服務音樂教育社群</div>
+        <div class="odesc">理念驅動 —— 讓老師、學生樂團、社區樂團真的用得到。</div>
+        <ul class="pros">
+          <li>開源 + 免費觸及最廣</li>
+          <li>可選擇性接受捐贈,零商業壓力</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="個人興趣">
+        <div class="check"></div>
+        <div class="otitle">個人興趣專案</div>
+        <div class="odesc">做的過程本身就是回報,沒打算認真經營。</div>
+        <ul class="pros">
+          <li>開源是「保險」—— 你沒空時專案還能活</li>
+          <li>不必背任何社群義務</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 原始碼策略 -->
+  <section class="q" data-group="原始碼策略">
+    <h2><span class="num">2</span> 原始碼要怎麼走</h2>
+    <p class="hint">核心問題。三個選項都建立在「現有程式碼已公開」的事實上。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="維持開源 + GPL-3.0">
+        <div class="check"></div>
+        <div class="otitle">維持開源 + GPL-3.0 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">維持現狀。未來若有服務層再另外閉源 (open core)。</div>
+        <ul class="pros">
+          <li>零成本 —— 已經是現狀</li>
+          <li>GPL 防大廠拿去做閉源產品</li>
+          <li>開放驅動「捐贈的善意」與信任票</li>
+          <li>你沒空時,專案還能被別人接手 / fork</li>
+          <li class="con">別人能 fork(但 niche 工具被搶的風險低)</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="改寬鬆授權">
+        <div class="check"></div>
+        <div class="otitle">改寬鬆授權 (MIT / Apache)</div>
+        <div class="odesc">仍開源,但任何人(含商業)都能自由使用、再封裝。</div>
+        <ul class="pros">
+          <li>採用門檻最低,最容易被別的軟體整合</li>
+          <li class="con">別人可拿去做成閉源商品 —— 對單人捐贈模式沒好處</li>
+          <li class="con">失去 GPL 的「防併吞」保護</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="未來版本閉源">
+        <div class="check"></div>
+        <div class="otitle">未來版本轉閉源</div>
+        <div class="odesc">停止公開新程式碼,只發佈編譯好的 binary。</div>
+        <ul class="pros">
+          <li>往後的新功能不外流</li>
+          <li class="con">現有程式碼已收不回,保護有限</li>
+          <li class="con">失去信任票與捐贈善意</li>
+          <li class="con">技術護城河其實很弱(stack 全是開源依賴)</li>
+          <li class="con">你沒空 = 專案直接消失</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 變現路徑 -->
+  <section class="q" data-group="變現路徑" data-multi="1">
+    <h2><span class="num">3</span> 變現路徑 <span class="multi">可複選</span></h2>
+    <p class="hint">你願意採用哪些?全部都和「維持開源」相容 —— 保護的是內容與服務,不是原始碼。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="隨意支付捐贈">
+        <div class="check"></div>
+        <div class="otitle">隨意支付 / 捐贈 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">已串 Lemon Squeezy。與開源天作之合,零商業壓力。</div>
+        <ul class="pros">
+          <li>已經在做,維持即可</li>
+          <li>收入不穩,但無負擔</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="付費簽章版">
+        <div class="check"></div>
+        <div class="otitle">付費「已簽章 / 已公證」預編譯版 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">原始碼仍開源;賣的是「免自己 build、開箱即用、已過公證」的方便。</div>
+        <ul class="pros">
+          <li>Krita 在 app store 就是這個模式</li>
+          <li>會自己 build 的人不付也沒關係 —— 不擋任何人</li>
+          <li>順便解掉 Windows 未簽章的信任問題</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="付費內容包">
+        <div class="check"></div>
+        <div class="otitle">付費內容包</div>
+        <div class="odesc">sample pack、進階樂器知識庫、風格 preset 包。</div>
+        <ul class="pros">
+          <li>保護在「內容」而非「原始碼」—— 與開源不衝突</li>
+          <li>內容可持續產出,形成長尾收入</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="Open-core 服務層">
+        <div class="check"></div>
+        <div class="otitle">Open-core 服務層</div>
+        <div class="odesc">未來雲端改編 / 共享曲庫 / 協作。app 開源,服務層收費。</div>
+        <ul class="pros">
+          <li>最有規模化潛力的變現方式</li>
+          <li class="con">要養伺服器、處理金流與維運,工程量大</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="委託功能">
+        <div class="check"></div>
+        <div class="otitle">委託功能 / 顧問</div>
+        <div class="odesc">學校、出版社、樂團想要特定功能 → 接案開發。</div>
+        <ul class="pros">
+          <li>單價高、需求明確</li>
+          <li class="con">用你的時間換錢,不可規模化</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="先不變現">
+        <div class="check"></div>
+        <div class="otitle">先不主動變現</div>
+        <div class="odesc">純捐贈,其他之後再說。</div>
+        <ul class="pros">
+          <li>零商業壓力,完全照自己節奏</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 社群與貢獻 -->
+  <section class="q" data-group="社群與貢獻">
+    <h2><span class="num">4</span> 社群與貢獻的姿態</h2>
+    <p class="hint">公開原始碼後,你要花多少力氣經營外部協作。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="主動歡迎貢獻">
+        <div class="check"></div>
+        <div class="otitle">主動歡迎貢獻</div>
+        <div class="odesc">寫 CONTRIBUTING、標 good first issue、認真回 PR / issue。</div>
+        <ul class="pros">
+          <li>最可能長出貢獻者、分擔維護</li>
+          <li class="con">回 PR / issue 本身就是時間成本</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="公開但被動">
+        <div class="check"></div>
+        <div class="otitle">公開但被動 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">原始碼公開、issue 開著,但不主動經營,PR 看狀況收。</div>
+        <ul class="pros">
+          <li>單人友善 —— 不被社群義務綁住</li>
+          <li>保有透明度與「能被 fork」的保險</li>
+          <li>之後想轉「主動」隨時可以</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="維持單人開發">
+        <div class="check"></div>
+        <div class="otitle">維持單人開發</div>
+        <div class="odesc">公開只為透明,不收外部 PR。</div>
+        <ul class="pros">
+          <li>完全照自己的節奏與品味</li>
+          <li class="con">放棄「別人幫你維護」的好處</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="q">
+    <h2><span class="num">+</span> 其他想法 / 備註</h2>
+    <p class="hint">任何想補充的(在意的點、想走的方向、擔心的事)寫這,會一起進摘要。</p>
+    <textarea id="notes" placeholder="例:擔心被某某軟體抄 / 想試試 app store 上架 / 想找一兩個貢獻者…"></textarea>
+  </section>
+
+</main>
+
+<div id="bar">
+  <div class="inner">
+    <div id="summary"></div>
+    <button id="copyBtn">複製決策摘要</button>
+  </div>
+</div>
+
+<script>
+  const STORE = "score-arranger-opensource-plan";
+  const groups = ["專案定位", "原始碼策略", "變現路徑", "社群與貢獻"];
+  const multiGroups = new Set(["變現路徑"]);
+  const choice = {};
+
+  // 還原先前選擇
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    Object.assign(choice, saved.choice || {});
+    if (saved.notes) document.getElementById("notes").value = saved.notes;
+  } catch (e) { /* ignore */ }
+
+  function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+      choice, notes: document.getElementById("notes").value,
+    }));
+  }
+
+  function isSel(g, v) {
+    if (multiGroups.has(g)) {
+      return Array.isArray(choice[g]) && choice[g].includes(v);
+    }
+    return choice[g] === v;
+  }
+
+  function valText(g) {
+    if (multiGroups.has(g)) {
+      const arr = choice[g];
+      return Array.isArray(arr) && arr.length ? arr.join("、") : "";
+    }
+    return choice[g] || "";
+  }
+
+  function paint() {
+    document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+      const g = sec.dataset.group;
+      sec.querySelectorAll(".opt").forEach((opt) => {
+        opt.classList.toggle("sel", isSel(g, opt.dataset.value));
+      });
+    });
+    const parts = groups.map((g) => {
+      const v = valText(g);
+      return v
+        ? `<b>${g}</b>:${v}`
+        : `<span class="miss">${g}:未選</span>`;
+    });
+    const done = groups.filter((g) => valText(g)).length;
+    document.getElementById("summary").innerHTML =
+      `已選 ${done}/${groups.length} &nbsp; ` + parts.join(" &nbsp;·&nbsp; ");
+  }
+
+  document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+    const g = sec.dataset.group;
+    sec.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        const v = opt.dataset.value;
+        if (multiGroups.has(g)) {
+          const arr = Array.isArray(choice[g]) ? choice[g] : [];
+          const i = arr.indexOf(v);
+          if (i >= 0) arr.splice(i, 1);
+          else arr.push(v);
+          choice[g] = arr;
+        } else {
+          choice[g] = v;
+        }
+        save(); paint();
+      });
+    });
+  });
+  document.getElementById("notes").addEventListener("input", save);
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const notes = document.getElementById("notes").value.trim();
+    const lines = ["Score Arranger 開源 / 變現策略 — 我的決策", ""];
+    groups.forEach((g) => lines.push(`${g}:${valText(g) || "(未選)"}`));
+    if (notes) lines.push("", "備註:" + notes);
+    const text = lines.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById("copyBtn");
+      b.textContent = "已複製 ✓"; b.classList.add("done");
+      setTimeout(() => {
+        b.textContent = "複製決策摘要"; b.classList.remove("done");
+      }, 1800);
+    }).catch(() => {
+      alert(text);
+    });
+  });
+
+  paint();
+</script>
+</body>
+</html>

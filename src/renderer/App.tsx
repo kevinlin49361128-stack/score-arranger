@@ -25,6 +25,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./types.d";
 import { AnalyzePanel } from "./components/AnalyzePanel";
 import { ExportPanel } from "./components/ExportPanel";
+import { ExplanationPanel } from "./components/ExplanationPanel";
 import { IssuePanel } from "./components/IssuePanel";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { MeasureEditor } from "./components/MeasureEditor";
@@ -249,7 +250,16 @@ export default function App() {
       case "export":
         return <ExportPanel />;
       default:
-        return <IssuePanel />;
+        return (
+          <div style={{ display: "flex", flexDirection: "column",
+                        height: "100%", overflow: "auto" }}>
+            {/* 0.1.32 老師評語層 — 改編完成後出現在 IssuePanel 上方 */}
+            <ExplanationPanel />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <IssuePanel />
+            </div>
+          </div>
+        );
     }
   };
 

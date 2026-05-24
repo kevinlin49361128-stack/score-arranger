@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger — 功能整合 路線決策</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --accent: #3b6ea5;
+    --ok: #2e7d52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang TC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 220px;
+  }
+  header.page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 36px 24px 12px;
+  }
+  header.page h1 { font-size: 23px; margin: 0 0 6px; }
+  header.page p { color: var(--muted); margin: 4px 0; font-size: 14px; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  .ctx {
+    background: #fbfcfd;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .ctx b { color: var(--ink); }
+
+  .rank {
+    width: 100%; border-collapse: collapse;
+    margin: 10px 0 4px; font-size: 12.5px;
+  }
+  .rank th, .rank td {
+    border: 1px solid var(--line); padding: 5px 9px; text-align: left;
+  }
+  .rank th { background: #f1f4f7; color: var(--ink); font-weight: 700; }
+  .rank td.c { text-align: center; white-space: nowrap; }
+  .rank tr.top td { background: #eef6f0; }
+  .rank tr.top td:first-child { font-weight: 700; color: var(--ink); }
+
+  section.q {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 18px 0;
+  }
+  section.q > h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  section.q > h2 .num {
+    color: #fff;
+    background: var(--accent);
+    font-size: 12px;
+    border-radius: 999px;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  section.q > h2 .multi {
+    font-size: 11px; font-weight: 700; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 999px;
+    padding: 1px 7px; white-space: nowrap;
+  }
+  section.q > .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .opts { display: grid; gap: 12px; }
+  .opts.cols2 { grid-template-columns: 1fr 1fr; }
+  .opts.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 760px) {
+    .opts.cols2, .opts.cols3 { grid-template-columns: 1fr; }
+  }
+  .opt {
+    border: 2px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color .12s, box-shadow .12s;
+    position: relative;
+  }
+  .opt:hover { border-color: #b6c2d2; }
+  .opt.sel {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,110,165,.14);
+  }
+  .opt .otitle { font-weight: 700; font-size: 14px; padding-right: 26px; }
+  .opt .odesc { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .opt .check {
+    position: absolute; top: 10px; right: 12px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--line);
+  }
+  .opt.sel .check { border-color: var(--accent); background: var(--accent); }
+  .opt.sel .check::after {
+    content: "✓"; color: #fff; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; margin-top: -1px;
+  }
+  section.q[data-multi] .opt .check { border-radius: 4px; }
+  .rec {
+    font-size: 11px; font-weight: 700; color: var(--ok);
+    border: 1px solid var(--ok); border-radius: 999px;
+    padding: 1px 7px; margin-left: 6px; white-space: nowrap;
+  }
+  .meta {
+    font-size: 11px; color: var(--fg-tertiary, #8a93a0);
+    margin-top: 8px;
+  }
+  .meta b { color: var(--muted); font-weight: 700; }
+  .pros { font-size: 12.5px; margin: 8px 0 0; padding-left: 16px; }
+  .pros li { margin: 2px 0; }
+  .con { color: #a05a2c; }
+
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical;
+    border: 2px solid var(--line); border-radius: 8px;
+    padding: 10px; font: inherit; font-size: 13px;
+  }
+
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  }
+  #bar .inner {
+    max-width: 980px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #summary { flex: 1; font-size: 12.5px; color: var(--muted); }
+  #summary b { color: var(--ink); }
+  #summary .miss { color: #b23; }
+  #copyBtn {
+    flex: 0 0 auto; border: none; background: var(--accent); color: #fff;
+    font: 700 14px/1 inherit; padding: 12px 18px; border-radius: 8px;
+    cursor: pointer;
+  }
+  #copyBtn:active { transform: translateY(1px); }
+  #copyBtn.done { background: var(--ok); }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>功能整合 — 路線決策</h1>
+  <p>把既有功能組合出新能力。下面是 9 個整合機會的評估,挑出要做的、決定順序。</p>
+  <p>選完按右下角「複製決策摘要」貼回給我。<b>標 🎯 的是我的推薦,但你說了算。</b></p>
+</header>
+
+<main>
+
+  <div class="ctx">
+    <b>9 個整合機會 — 評估總表</b>(價值 / 工程量 / 對現有程式碼的複用程度):
+    <table class="rank">
+      <thead>
+        <tr><th>整合</th><th>價值</th><th>工程量</th><th>複用程度</th></tr>
+      </thead>
+      <tbody>
+        <tr class="top"><td>A1 簡化</td><td>★★★★★</td><td class="c">中（repair 策略可複用）</td><td class="c">高</td></tr>
+        <tr class="top"><td>C 練習模式</td><td>★★★★☆</td><td class="c">低</td><td class="c">極高</td></tr>
+        <tr><td>A2 難度抹平</td><td>★★★★☆</td><td class="c">中</td><td class="c">高</td></tr>
+        <tr><td>B 技能感知分譜</td><td>★★★★☆</td><td class="c">中高</td><td class="c">中</td></tr>
+        <tr><td>D2 品質 lint</td><td>★★★☆☆</td><td class="c">低</td><td class="c">高</td></tr>
+        <tr><td>E 哼唱→合奏</td><td>★★★☆☆</td><td class="c">低（串接）</td><td class="c">極高</td></tr>
+        <tr><td>A3 通用控制器</td><td>★★★★☆</td><td class="c">低（A1/A2 後）</td><td class="c">高</td></tr>
+        <tr><td>D1 版本樹</td><td>★★★☆☆</td><td class="c">中高</td><td class="c">中</td></tr>
+        <tr><td>F MCP agent</td><td>★★★☆☆</td><td class="c">低</td><td class="c">高</td></tr>
+      </tbody>
+    </table>
+    <br>
+    <b>關鍵洞察:</b><code>repair.py</code> 其實是一個通用的「導向式優化器」(策略庫 +
+    評分函式 + 候選挑選器),目前只被用在「減少可演奏性問題」。
+    <b>A1/A2/A3 就是把同一個迴圈接上「難度目標」這個新目標 —— 它們是同一個
+    『閉環難度控制器』的三個階段。</b>我的建議:先做 A1,緊接 C。
+  </div>
+
+  <!-- 1. 第一個動工 -->
+  <section class="q" data-group="第一個動工">
+    <h2><span class="num">1</span> 第一個動工做哪個</h2>
+    <p class="hint">不管整體範圍多大,總要有一個「現在就開始」的。</p>
+    <div class="opts cols2">
+      <div class="opt" data-value="A1 簡化">
+        <div class="check"></div>
+        <div class="otitle">A1 — 簡化 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">enrich(加難度)的鏡像:降難度到 N 級 —— 八度收摺、
+          和弦瘦身成三和弦/單音、去裝飾、拉長時值。</div>
+        <ul class="pros">
+          <li>複用 <code>repair.py</code> 既有的 omit/octave 策略,工程量比想像小</li>
+          <li>最貼專案使命 —— 老師「把譜改簡單給學生」比加難度更剛性</li>
+          <li>做完就鋪好 A2/A3 的路</li>
+        </ul>
+        <div class="meta"><b>價值</b> ★★★★★ &nbsp; <b>工程量</b> 中 &nbsp;
+          <b>複用</b> 高</div>
+      </div>
+      <div class="opt" data-value="C 練習模式">
+        <div class="check"></div>
+        <div class="otitle">C — 練習模式</div>
+        <div class="odesc">熱圖找最難小節 + 段落 loop + 播放游標 + 指板模擬器 +
+          指法 DP → 慢速循環練最難幾小節。</div>
+        <ul class="pros">
+          <li>五個現有功能直接串,幾乎不寫新引擎</li>
+          <li>一下打開「演奏者」這個新客群</li>
+        </ul>
+        <div class="meta"><b>價值</b> ★★★★☆ &nbsp; <b>工程量</b> 低 &nbsp;
+          <b>複用</b> 極高</div>
+      </div>
+      <div class="opt" data-value="A2 難度抹平">
+        <div class="check"></div>
+        <div class="otitle">A2 — 難度抹平</div>
+        <div class="odesc">per-measure 難度目標:太難的小節往下簡化、太簡單的往上
+          加厚,收斂成平滑的難度曲線。</div>
+        <ul class="pros">
+          <li>解「整首簡單卻卡一個爆難小節」的痛點</li>
+          <li class="con">依賴 A1 的簡化能力,先做它要連 A1 一起</li>
+        </ul>
+        <div class="meta"><b>價值</b> ★★★★☆ &nbsp; <b>工程量</b> 中 &nbsp;
+          <b>複用</b> 高</div>
+      </div>
+      <div class="opt" data-value="B 技能感知分譜">
+        <div class="check"></div>
+        <div class="otitle">B — 技能感知分譜</div>
+        <div class="odesc">樂句偵測 + per-part 難度 + per-player skill_level →
+          難樂句分給強的演奏者,各人難度貼合級數。</div>
+        <ul class="pros">
+          <li>相當原創的編曲能力</li>
+          <li class="con">要動 arranger 的分配約束,工程量中高</li>
+        </ul>
+        <div class="meta"><b>價值</b> ★★★★☆ &nbsp; <b>工程量</b> 中高 &nbsp;
+          <b>複用</b> 中</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 這輪範圍 -->
+  <section class="q" data-group="這輪範圍" data-multi="1">
+    <h2><span class="num">2</span> 這一輪要納入哪些整合 <span class="multi">可複選</span></h2>
+    <p class="hint">勾選你想在這一輪committed要做的。建議:A1 + C(投入低、開新客群)。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="A1 簡化">
+        <div class="check"></div>
+        <div class="otitle">A1 簡化 <span class="rec">🎯</span></div>
+        <div class="odesc">降難度到 N 級;加難度的鏡像。</div>
+      </div>
+      <div class="opt" data-value="C 練習模式">
+        <div class="check"></div>
+        <div class="otitle">C 練習模式 <span class="rec">🎯</span></div>
+        <div class="odesc">慢速循環練最難小節 + 指板顯示。</div>
+      </div>
+      <div class="opt" data-value="A2 難度抹平">
+        <div class="check"></div>
+        <div class="otitle">A2 難度抹平</div>
+        <div class="odesc">逐小節收斂到平滑難度曲線。</div>
+      </div>
+      <div class="opt" data-value="A3 通用控制器">
+        <div class="check"></div>
+        <div class="otitle">A3 通用控制器</div>
+        <div class="odesc">閉環:全手段一起調到目標難度。</div>
+      </div>
+      <div class="opt" data-value="B 技能感知分譜">
+        <div class="check"></div>
+        <div class="otitle">B 技能感知分譜</div>
+        <div class="odesc">難樂句分給強的演奏者。</div>
+      </div>
+      <div class="opt" data-value="D2 品質 lint">
+        <div class="check"></div>
+        <div class="otitle">D2 品質 lint</div>
+        <div class="odesc">每次編輯回報旋律/和聲/可演奏性 delta。</div>
+      </div>
+      <div class="opt" data-value="E 哼唱→合奏">
+        <div class="check"></div>
+        <div class="otitle">E 哼唱→合奏</div>
+        <div class="odesc">錄音轉譜 → 改編 → 試聽,串成一條流程。</div>
+      </div>
+      <div class="opt" data-value="D1 版本樹">
+        <div class="check"></div>
+        <div class="otitle">D1 版本樹</div>
+        <div class="odesc">線性 undo 升級成可分支版本樹。</div>
+      </div>
+      <div class="opt" data-value="F MCP agent">
+        <div class="check"></div>
+        <div class="otitle">F MCP agent</div>
+        <div class="odesc">外部 agent 跑完整自主改編對話。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 難度閉環 -->
+  <section class="q" data-group="難度閉環">
+    <h2><span class="num">3</span> 「難度閉環」三件套(A1·A2·A3)怎麼走</h2>
+    <p class="hint">A1 簡化、A2 抹平、A3 通用控制器其實是同一個「閉環難度控制器」
+      的三個階段。你想怎麼處理它們的關係。</p>
+    <div class="opts cols3">
+      <div class="opt" data-value="一次規劃分批做">
+        <div class="check"></div>
+        <div class="otitle">一次規劃、分批實作 <span class="rec">🎯 建議</span></div>
+        <div class="odesc">把三者當同一個專案一起設計架構,但分階段交付
+          (A1 → A2 → A3)。</div>
+        <ul class="pros">
+          <li>架構一次想清楚,不會做完 A1 才發現要重構</li>
+          <li>交付節奏仍可控</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="只做A1看回饋">
+        <div class="check"></div>
+        <div class="otitle">只先做 A1,看回饋再說</div>
+        <div class="odesc">A1 上線、收使用者回饋,確認方向對了再規劃 A2/A3。</div>
+        <ul class="pros">
+          <li>範圍最小、最快驗證需求</li>
+          <li class="con">A2/A3 可能要回頭微調 A1 的介面</li>
+        </ul>
+      </div>
+      <div class="opt" data-value="整套一次做完">
+        <div class="check"></div>
+        <div class="otitle">這輪整套做完</div>
+        <div class="odesc">A1+A2+A3 當成一個大功能一次出。</div>
+        <ul class="pros">
+          <li>難度控制一次到位,功能最完整</li>
+          <li class="con">這輪範圍最大、交付最慢</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="q">
+    <h2><span class="num">+</span> 其他想法 / 備註</h2>
+    <p class="hint">想調整優先序、有不在清單上的整合點子、或想先做某個的理由,寫這。</p>
+    <textarea id="notes" placeholder="例:C 練習模式想先做,因為我自己就是演奏者 / D2 品質 lint 順便這輪一起 / B 想等 voice/layer 模型重構後再做…"></textarea>
+  </section>
+
+</main>
+
+<div id="bar">
+  <div class="inner">
+    <div id="summary"></div>
+    <button id="copyBtn">複製決策摘要</button>
+  </div>
+</div>
+
+<script>
+  const STORE = "score-arranger-integration-plan";
+  const groups = ["第一個動工", "這輪範圍", "難度閉環"];
+  const multiGroups = new Set(["這輪範圍"]);
+  const choice = {};
+
+  // 還原先前選擇
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+    Object.assign(choice, saved.choice || {});
+    if (saved.notes) document.getElementById("notes").value = saved.notes;
+  } catch (e) { /* ignore */ }
+
+  function save() {
+    localStorage.setItem(STORE, JSON.stringify({
+      choice, notes: document.getElementById("notes").value,
+    }));
+  }
+
+  function isSel(g, v) {
+    if (multiGroups.has(g)) {
+      return Array.isArray(choice[g]) && choice[g].includes(v);
+    }
+    return choice[g] === v;
+  }
+
+  function valText(g) {
+    if (multiGroups.has(g)) {
+      const arr = choice[g];
+      return Array.isArray(arr) && arr.length ? arr.join("、") : "";
+    }
+    return choice[g] || "";
+  }
+
+  function paint() {
+    document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+      const g = sec.dataset.group;
+      sec.querySelectorAll(".opt").forEach((opt) => {
+        opt.classList.toggle("sel", isSel(g, opt.dataset.value));
+      });
+    });
+    const parts = groups.map((g) => {
+      const v = valText(g);
+      return v
+        ? `<b>${g}</b>:${v}`
+        : `<span class="miss">${g}:未選</span>`;
+    });
+    const done = groups.filter((g) => valText(g)).length;
+    document.getElementById("summary").innerHTML =
+      `已選 ${done}/${groups.length} &nbsp; ` + parts.join(" &nbsp;·&nbsp; ");
+  }
+
+  document.querySelectorAll("section.q[data-group]").forEach((sec) => {
+    const g = sec.dataset.group;
+    sec.querySelectorAll(".opt").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        const v = opt.dataset.value;
+        if (multiGroups.has(g)) {
+          const arr = Array.isArray(choice[g]) ? choice[g] : [];
+          const i = arr.indexOf(v);
+          if (i >= 0) arr.splice(i, 1);
+          else arr.push(v);
+          choice[g] = arr;
+        } else {
+          choice[g] = v;
+        }
+        save(); paint();
+      });
+    });
+  });
+  document.getElementById("notes").addEventListener("input", save);
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    const notes = document.getElementById("notes").value.trim();
+    const lines = ["Score Arranger 功能整合路線 — 我的決策", ""];
+    groups.forEach((g) => lines.push(`${g}:${valText(g) || "(未選)"}`));
+    if (notes) lines.push("", "備註:" + notes);
+    const text = lines.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById("copyBtn");
+      b.textContent = "已複製 ✓"; b.classList.add("done");
+      setTimeout(() => {
+        b.textContent = "複製決策摘要"; b.classList.remove("done");
+      }, 1800);
+    }).catch(() => {
+      alert(text);
+    });
+  });
+
+  paint();
+</script>
+</body>
+</html>
