@@ -377,6 +377,7 @@ def _build_measure(
                 _append_backup(m_el, divisions, measure_ql)
             _emit_voice(
                 m_el, vevents, vi + 1, divisions, measure_ql,
+                time_sig=time_sig,
             )
 
     # 條線
@@ -455,11 +456,13 @@ def _build_grand_staff_measure(
     _emit_staff_into_measure(
         m_el, um, 1, divisions, measure_ql,
         upper_wedges.get(ref.number, []), voice_base=1,
+        time_sig=time_sig,
     )
     _append_backup(m_el, divisions, measure_ql)
     _emit_staff_into_measure(
         m_el, lm, 2, divisions, measure_ql,
         lower_wedges.get(ref.number, []), voice_base=5,
+        time_sig=time_sig,
     )
 
     _append_barlines(m_el, ref)
@@ -468,6 +471,7 @@ def _build_grand_staff_measure(
 def _emit_staff_into_measure(
     m_el: ET.Element, measure, staff: int, divisions: int,
     measure_ql: Fraction, wedges: list, voice_base: int,
+    time_sig: Optional[tuple[int, int]] = None,
 ) -> None:
     """把單一 staff 的內容 (含 wedge) 寫進已建立的 <measure>。"""
     for (offset_ql, wtype) in wedges:
@@ -488,7 +492,7 @@ def _emit_staff_into_measure(
             _append_backup(m_el, divisions, measure_ql)
         _emit_voice(
             m_el, vevents, voice_base + vi, divisions, measure_ql,
-            staff=staff,
+            staff=staff, time_sig=time_sig,
         )
 
 
@@ -537,6 +541,7 @@ def _emit_voice(
     divisions: int,
     measure_ql: Fraction,
     staff: Optional[int] = None,
+    time_sig: Optional[tuple[int, int]] = None,
 ) -> None:
     cursor = Fraction(0)
     prev_dynamic: Optional[str] = None
@@ -544,6 +549,8 @@ def _emit_voice(
     open_slurs: dict[int, int] = {}  # slur_group → slur number
     slur_first, slur_last = _slur_bounds(events)
     tup_first, tup_last = _tuplet_bounds(events)
+    # 0.1.34: 自動 beam — 連續 8th/16th 同拍內加 <beam>begin/continue/end</beam>
+    beams = _compute_beams(events, time_sig)
 
     for idx, ev in enumerate(events):
         onset = Fraction(ev.onset)
@@ -568,6 +575,7 @@ def _emit_voice(
                 m_el, ev, idx, voice_num, divisions,
                 open_slurs, slur_first, slur_last,
                 tup_first, tup_last, staff=staff,
+                beams=beams.get(idx),
             )
         cursor += Fraction(ev.duration)
 
@@ -608,6 +616,138 @@ def _tuplet_bounds(events: list) -> tuple[dict[int, int], dict[int, int]]:
 
 
 # ============================================================================
+# 自動 beam (連桿) — 0.1.34
+# ============================================================================
+# 為什麼需要: OSMD 看到一串 8th 音符若沒 <beam> 標記, 會渲染成個別的旗
+# (♪♪♪♪), 視覺凌亂. 樂譜慣例是把同一拍內的連續 8th/16th 用一條橫線 (beam)
+# 連起來成 ♫♫. 我們直接用 IR 序列 + 拍號 算出每事件的 beam 標記,
+# 寫進 MusicXML, OSMD 就會 render 出正確的橫桿.
+
+# 每種 note type 對應幾條 beam 線 — 例 eighth=1, 16th=2, 32nd=3.
+_BEAM_LEVELS: dict[str, int] = {
+    "eighth": 1,
+    "16th": 2,
+    "32nd": 3,
+    "64th": 4,
+}
+
+
+def _beat_unit(time_sig: Optional[tuple[int, int]]) -> Fraction:
+    """從拍號決定 beam-grouping 的拍子單位 (以四分音符 = 1 計).
+
+    - 簡單拍 (2/4, 3/4, 4/4): beat = 1 quarter
+    - 複合拍 (6/8, 9/8, 12/8): beat = 3 eighth = 1.5 quarter
+    - 半拍系 (2/2, 4/2): beat = 1 half = 2 quarter
+    - 3/8 視同 1 拍 (= 1.5 quarter)
+    - 其他: 退回 1 quarter
+    """
+    if time_sig is None:
+        return Fraction(1)
+    num, denom = time_sig
+    # 6/8, 9/8, 12/8: 複合拍, beat = dotted quarter
+    if denom == 8 and num in (6, 9, 12):
+        return Fraction(3, 2)
+    if denom == 8 and num == 3:
+        return Fraction(3, 2)
+    if denom == 2:
+        return Fraction(2)
+    return Fraction(1)
+
+
+def _compute_beams(
+    events: list,
+    time_sig: Optional[tuple[int, int]],
+) -> dict[int, list[tuple[int, str]]]:
+    """回傳 event_idx → [(beam_number, beam_type)] map.
+
+    beam_type ∈ {"begin", "continue", "end"}.
+    遇到 rest / 比 8th 長的音 / 跨拍邊界 → 切斷 beam group.
+    """
+    if not events:
+        return {}
+    beat = _beat_unit(time_sig)
+
+    # Step 1: 取每事件的 (beam_count, type_name, beat_idx)
+    info: list[tuple[int, Optional[str], int]] = []
+    for ev in events:
+        if isinstance(ev, RestEvent):
+            info.append((0, None, -1))
+            continue
+        type_name, _ = _note_type(
+            Fraction(ev.duration), getattr(ev, "tuplet", None),
+        )
+        count = _BEAM_LEVELS.get(type_name or "", 0)
+        # beat_idx: 用 onset 落在哪一拍, 拍邊界把 group 切開
+        beat_idx = int(Fraction(ev.onset) / beat) if count > 0 else -1
+        info.append((count, type_name, beat_idx))
+
+    # Step 2: 切 group — 連續 beamable + 同拍 + 同 staff (隱含, 因為 events
+    # 來自同 voice). Tuplet 內部也照規則組 — tuplet 本來就該 beam.
+    groups: list[list[int]] = []
+    current: list[int] = []
+    current_beat = -1
+    for i, (count, _, beat_idx) in enumerate(info):
+        if count == 0:
+            if len(current) >= 2:
+                groups.append(current)
+            current = []
+            current_beat = -1
+            continue
+        if beat_idx != current_beat:
+            if len(current) >= 2:
+                groups.append(current)
+            current = [i]
+            current_beat = beat_idx
+        else:
+            current.append(i)
+    if len(current) >= 2:
+        groups.append(current)
+
+    # Step 3: 為每 group 算 beam tags
+    result: dict[int, list[tuple[int, str]]] = {}
+    for group in groups:
+        n = len(group)
+        # 每個 level 1..max_beam_count 算各自 begin/continue/end
+        max_lvl = max(info[i][0] for i in group)
+        for pos, ev_idx in enumerate(group):
+            ev_count = info[ev_idx][0]
+            tags: list[tuple[int, str]] = []
+            for lvl in range(1, ev_count + 1):
+                # 此 level 在這個位置是否「連通」到左右? 用相鄰事件的 beam_count 判斷
+                left_has = (
+                    pos > 0
+                    and info[group[pos - 1]][0] >= lvl
+                )
+                right_has = (
+                    pos < n - 1
+                    and info[group[pos + 1]][0] >= lvl
+                )
+                if lvl == 1:
+                    # Level 1 (8th beam): 必須涵蓋整個 group (8th 是 group 必要條件)
+                    if pos == 0:
+                        tags.append((1, "begin"))
+                    elif pos == n - 1:
+                        tags.append((1, "end"))
+                    else:
+                        tags.append((1, "continue"))
+                else:
+                    # Level 2+ (16th 以下次級 beam): 只在相鄰也有同 level 時連
+                    if left_has and right_has:
+                        tags.append((lvl, "continue"))
+                    elif right_has and not left_has:
+                        tags.append((lvl, "begin"))
+                    elif left_has and not right_has:
+                        tags.append((lvl, "end"))
+                    # 孤立 16th (兩邊都是 8th) — 跳過, MusicXML reader (OSMD)
+                    # 自動補 secondary flag. 完美做法是 "forward hook" /
+                    # "backward hook", 留下一輪.
+            _ = max_lvl  # silence unused
+            if tags:
+                result[ev_idx] = tags
+    return result
+
+
+# ============================================================================
 # <note> 系列
 # ============================================================================
 
@@ -623,6 +763,7 @@ def _append_note_event(
     tup_first: dict[int, int],
     tup_last: dict[int, int],
     staff: Optional[int] = None,
+    beams: Optional[list[tuple[int, str]]] = None,
 ) -> None:
     pitches = (
         ev.pitches if isinstance(ev, ChordEvent) else [ev.pitch]
@@ -657,6 +798,13 @@ def _append_note_event(
             ET.SubElement(tm, "normal-notes").text = str(tup.normal)
         if staff is not None:
             ET.SubElement(note, "staff").text = str(staff)
+        # <beam> — 只掛在和弦的第一個音 (chord 內所有音共用主音的 beam);
+        # MusicXML 規定 beam 位置介於 staff 與 notations 之間.
+        if ci == 0 and beams:
+            for beam_num, beam_type in beams:
+                ET.SubElement(
+                    note, "beam", number=str(beam_num),
+                ).text = beam_type
         # notations 只掛在和弦的第一個音
         if ci == 0:
             _append_notations(
