@@ -140,6 +140,20 @@
     text-align:center;max-width:760px;margin:48px auto 0;padding-top:40px;
     border-top:1px solid var(--line)}
 
+  /* ---- showcase (screenshots) ---- */
+  .shots{display:flex;flex-direction:column;gap:36px;margin-top:54px}
+  .shots-row{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .shot{margin:0;background:var(--bg-elev);border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;
+    box-shadow:0 18px 48px -28px rgba(0,0,0,.55)}
+  .shot img{display:block;width:100%;height:auto}
+  .shot figcaption{padding:14px 20px 18px;color:var(--ink-soft);
+    font-size:13.5px;line-height:1.65}
+  .shot-wide{max-width:1100px;margin-left:auto;margin-right:auto}
+  @media (max-width:760px){
+    .shots-row{grid-template-columns:1fr}
+  }
+
   /* ---- features ---- */
   .features-grid{display:grid;grid-template-columns:repeat(3,1fr);
     gap:18px;margin-top:54px}
@@ -318,6 +332,36 @@
     </div>
   </section>
 
+  <!-- ===== SCREENSHOTS ===== -->
+  <section class="section showcase" id="showcase">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow" data-i18n="showcaseEyebrow">看起來像這樣</p>
+        <h2 class="section-title" data-i18n="showcaseTitle">原譜在上，改編譜在下，<br>聲部分配與評語一目了然。</h2>
+      </div>
+      <div class="shots">
+        <figure class="shot reveal shot-wide">
+          <img src="screenshots/01-hero.jpg" alt="Score Arranger 主介面 — Mozart K155 → 小提琴+鋼琴" loading="lazy">
+          <figcaption data-i18n="shot1Caption">同時看見原譜與改編譜 — 旋律保留在小提琴，內聲部與低音整合到鋼琴雙手。右側顯示每聲部的去向與整體品質分數。</figcaption>
+        </figure>
+        <div class="shots-row">
+          <figure class="shot reveal">
+            <img src="screenshots/02-explanation.jpg" alt="老師評語層 — 每聲部說明保留了什麼、改動了什麼" loading="lazy">
+            <figcaption data-i18n="shot2Caption">「為什麼這樣改？」每聲部以三段式說明：保留了什麼（綠）、改動了什麼（橙）、付出的音樂代價。</figcaption>
+          </figure>
+          <figure class="shot reveal">
+            <img src="screenshots/04-practice.jpg" alt="練習模式 — 最難的小節與五因子難度拆解" loading="lazy">
+            <figcaption data-i18n="shot3Caption">練習模式抓出最難的 8 個小節 — 展開可看「為什麼難」（音域 / 密度 / 和弦 / 節奏 / 技巧）與弦樂指法。</figcaption>
+          </figure>
+        </div>
+        <figure class="shot reveal shot-wide">
+          <img src="screenshots/05-difficulty.jpg" alt="難度調節 — 加難度 / 降難度 / 目標難度三種模式" loading="lazy">
+          <figcaption data-i18n="shot4Caption">難度調節對話框 — 為學生編譜時可選「目標 2.5/5」自動抹平；想炫技則打開「八度疊置」「雙音和弦」等加難手法。</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== FEATURES ===== -->
   <section class="section features" id="features">
     <div class="container">
@@ -473,6 +517,12 @@
     storyP1:"You hear a moving orchestral piece and think: if only a few friends and I could play it together. So you sit down to arrange it — and lose a whole weekend checking whether every chord is reachable on the violin, whether every note stays in range, whether the melody quietly slipped into another voice.",
     storyP2:"Score Arranger takes that busywork off your hands. It reads the structure of the music and proposes an arrangement that respects each instrument's limits and is genuinely playable. You stay with what matters — who should carry this line, whether to keep this texture, whether the feeling is right.",
     storyQuote:"Smart assistance — not full automation.<br>The final call is always yours.",
+    showcaseEyebrow:"See it in action",
+    showcaseTitle:"Original on top, arrangement below —<br>voice assignment and commentary, at a glance.",
+    shot1Caption:"See the original and the arrangement at once — the melody stays on violin, inner voices and bass consolidate into the piano. The right panel shows where each voice went and overall quality scores.",
+    shot2Caption:"\"Why did you change it this way?\" Three lines per voice: what was preserved (green), what was changed (orange), and the musical cost.",
+    shot3Caption:"Practice mode surfaces the 8 hardest measures — expand any one to see \"why hard\" (range / density / chord / rhythm / technique) and string fingerings.",
+    shot4Caption:"Difficulty dialog — when arranging for students, pick \"target 2.5/5\" to level it; want a showpiece? Toggle octave doublings, double-stops, and other boost techniques.",
     featEyebrow:"What it does",
     featTitle:"A partner that can read a score",
     feat1Title:"Analysis that understands music",
