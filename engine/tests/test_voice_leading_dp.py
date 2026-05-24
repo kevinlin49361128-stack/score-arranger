@@ -97,3 +97,92 @@ class TestVoiceLeadingDP:
         result = optimize_inner_voices(arr)
         # 至少有跑過 (有 inner voice), 且 cost_after <= cost_before
         assert result.cost_after <= result.cost_before + 0.01
+
+
+# ============================================================================
+# 0.1.31: 候選音擴充 (Layer 2 — 當下和弦內音)
+# ============================================================================
+
+class TestCandidateExpansion:
+    """voice_leading_dp._generate_candidates — 從 ±12 octaves 擴成
+    octaves + 當下和弦 pitch classes 的近 octave."""
+
+    def test_layer1_octaves_always_included(self):
+        """無論有沒有 chord context, ±12 octaves 必含."""
+        from core.voice_leading_dp import _generate_candidates, _Slot
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=60,  # C4
+            melody_midi=None, bass_midi=None,
+            other_inner_midis=[],
+        )
+        cands = _generate_candidates(slot, prac_lo=0, prac_hi=127)
+        assert 48 in cands  # -12
+        assert 60 in cands  # original
+        assert 72 in cands  # +12
+
+    def test_layer2_chord_tones_from_melody_bass(self):
+        """melody=E4 (64), bass=C4 (60) → chord pc = {0, 4}.
+        Original=67 (G4) — 候選應含 G4 (±12) 也含 C/E 的近 octave."""
+        from core.voice_leading_dp import _generate_candidates, _Slot
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=67,  # G4
+            melody_midi=64,    # E4
+            bass_midi=60,      # C4
+            other_inner_midis=[],
+        )
+        cands = _generate_candidates(slot, prac_lo=0, prac_hi=127)
+        cand_pcs = {c % 12 for c in cands}
+        # 應該含 G (7, original pc) + E (4, melody) + C (0, bass)
+        assert 7 in cand_pcs   # G — original
+        assert 4 in cand_pcs   # E — melody pc
+        assert 0 in cand_pcs   # C — bass pc
+
+    def test_layer2_uses_optimized_inner_voices(self):
+        """已優化的 inner voice 在 (60, 64) → chord pc = {0, 4}.
+        Original=55 (G3), 候選應含 55 ±12 也含 C/E 的近 octave."""
+        from core.voice_leading_dp import _generate_candidates, _Slot
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=55,  # G3
+            melody_midi=None, bass_midi=None,
+            other_inner_midis=[60, 64],  # C4, E4 — 已優化的 inner
+        )
+        cands = _generate_candidates(slot, prac_lo=0, prac_hi=127)
+        cand_pcs = {c % 12 for c in cands}
+        assert 7 in cand_pcs   # G — original
+        assert 0 in cand_pcs   # C — from inner
+        assert 4 in cand_pcs   # E — from inner
+
+    def test_range_filter(self):
+        """超出 practical range 全濾掉, 全空時退回 original."""
+        from core.voice_leading_dp import _generate_candidates, _Slot
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=60, melody_midi=72, bass_midi=48,
+            other_inner_midis=[],
+        )
+        # 限制超緊 — 只有 60 通過
+        cands = _generate_candidates(slot, prac_lo=60, prac_hi=60)
+        assert cands == [60]
+
+    def test_state_cost_penalizes_pitch_class_change(self):
+        """改 pc 比保留 pc 成本高 (W_DIFF_PITCH_CLASS=50). 確保 DP
+        不會無端把 G 換成 C 除非真的有 W_PARALLEL 級別的好處可拿."""
+        from core.voice_leading_dp import _state_cost, _Slot, W_DIFF_PITCH_CLASS
+        slot = _Slot(
+            part_id="x", measure_number=1, voice_id=1, event_index=0,
+            original_midi=67,  # G4
+            melody_midi=None, bass_midi=None,
+            other_inner_midis=[],
+        )
+        # 同距離不同 pc: 67 (G4 原) vs 66 (F#4, 1 semitone, 不同 pc).
+        # 控制距離一致, diff 就主要來自 W_DIFF_PITCH_CLASS.
+        cost_keep_pc = _state_cost(67, slot, cmf_lo=0, cmf_hi=127)
+        cost_change_pc = _state_cost(66, slot, cmf_lo=0, cmf_hi=127)
+        # 預期 diff ≈ W_DIFF_PITCH_CLASS (50) + 1 semitone * W_DIFF_FROM_ORIG (0.5)
+        assert cost_change_pc - cost_keep_pc >= W_DIFF_PITCH_CLASS, (
+            f"改 pc 應加 W_DIFF_PITCH_CLASS penalty: "
+            f"cost_keep={cost_keep_pc}, cost_change={cost_change_pc}"
+        )

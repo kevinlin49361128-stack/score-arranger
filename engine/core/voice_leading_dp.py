@@ -45,6 +45,10 @@ W_CROSS_BASS = 100.0
 W_LEAP = 1.0
 W_OUT_OF_COMFORT = 5.0
 W_DIFF_FROM_ORIG = 0.5
+# 0.1.31 真正的 re-voicing: 候選音擴充含當下和弦內音 (不只是原音 ±12).
+# 改 pitch class 是「更激進」的編輯, 給高 penalty 避免無謂改動 — 但比
+# W_PARALLEL (1000) 低很多, 故 DP 仍會為了消解平行五/八度選擇 chord tone.
+W_DIFF_PITCH_CLASS = 50.0
 
 # 平行音程: 完全五度 (7 半音) / 完全八度 / 同音 (0 / 12, mod 12 = 0)
 _PERFECT_MODS = {0, 7}
@@ -142,14 +146,16 @@ def optimize_inner_voices(arrangement: Arrangement) -> VoiceLeadingDPResult:
         cmf_lo, cmf_hi = profile.range_comfortable
         prac_lo, prac_hi = profile.range_absolute
 
-        # 對每個 slot 生候選 (原音 ± 12, 過濾出 practical range 內的)
+        # 對每個 slot 生候選.
+        # 0.1.31 真正的 re-voicing (Gemini 樂理報告 2.1):
+        #   舊版只給原音 ±12 (純換八度), DP 卡在「沒八度可換時硬走平行」.
+        #   新版額外加「當下和弦內音」(從 melody/bass/已優化 inner 推導的
+        #   pitch class set), 在 ±12 範圍內找這些 pc 的近 octave.
+        #   改 pc 的 cost (W_DIFF_PITCH_CLASS=50) 遠低於 W_PARALLEL=1000,
+        #   故 DP 只在能消解平行時才換 pc.
         candidates_per_slot: list[list[int]] = []
         for slot in slots:
-            cands = [slot.original_midi - 12, slot.original_midi,
-                     slot.original_midi + 12]
-            cands = [c for c in cands if prac_lo <= c <= prac_hi]
-            if not cands:
-                cands = [slot.original_midi]  # 保留原音 (out-of-range 的限制不動)
+            cands = _generate_candidates(slot, prac_lo, prac_hi)
             candidates_per_slot.append(cands)
 
         # Viterbi: dp[i][cidx] = (min_cost, prev_cidx)
@@ -339,7 +345,56 @@ def _state_cost(midi: int, slot: _Slot, cmf_lo: int, cmf_hi: int) -> float:
     if midi < cmf_lo or midi > cmf_hi:
         cost += W_OUT_OF_COMFORT
     cost += W_DIFF_FROM_ORIG * abs(midi - slot.original_midi)
+    # 0.1.31: 改 pitch class 是「真正改和聲」, 給高 penalty 避免無謂變動.
+    # 只有當 DP 為了消解平行五/八度 (W_PARALLEL=1000) 才會選 pc 不同的候選.
+    if (midi % 12) != (slot.original_midi % 12):
+        cost += W_DIFF_PITCH_CLASS
     return cost
+
+
+def _generate_candidates(
+    slot: _Slot, prac_lo: int, prac_hi: int,
+) -> list[int]:
+    """產生 voice_leading DP 該 slot 的候選音.
+
+    Layer 1: 原音 ±12 (純換八度) — 永遠包含, 保持向後兼容.
+    Layer 2 (0.1.31): 當下和弦的合法內音 — 從外聲部 (melody / bass) +
+        已優化內聲部的 pitch class set 推導. 對每個 pc 在 ±12 視窗內找近
+        octave. DP 自然透過 W_DIFF_PITCH_CLASS 決定要不要採用.
+
+    超出 instrument practical range 的全部濾掉. 全空時退回原音 (固定不動).
+    """
+    cands: set[int] = set()
+    # Layer 1: 純換八度 (保留舊行為)
+    for octave_offset in (-12, 0, 12):
+        cands.add(slot.original_midi + octave_offset)
+    # Layer 2: 當下和弦內音 — pitch class set 來自外聲部 + 已優化 inner
+    chord_pcs: set[int] = set()
+    if slot.melody_midi is not None:
+        chord_pcs.add(slot.melody_midi % 12)
+    if slot.bass_midi is not None:
+        chord_pcs.add(slot.bass_midi % 12)
+    for inner_midi in slot.other_inner_midis:
+        if inner_midi is not None:
+            chord_pcs.add(inner_midi % 12)
+    # 對每個 chord pc, 在 [original-12, original+12] 視窗內找近 octave
+    if chord_pcs:
+        win_lo = slot.original_midi - 12
+        win_hi = slot.original_midi + 12
+        for pc in chord_pcs:
+            # 找 pc 在視窗內的所有 octave instance
+            # midi 12n + pc 的最小值 >= win_lo
+            base = win_lo - (win_lo % 12) + pc
+            while base < win_lo:
+                base += 12
+            while base <= win_hi:
+                cands.add(base)
+                base += 12
+    # Filter by instrument practical range
+    filtered = [c for c in cands if prac_lo <= c <= prac_hi]
+    if not filtered:
+        return [slot.original_midi]  # 保留原音 (out-of-range 的限制不動)
+    return sorted(filtered)
 
 
 def _transition_cost(

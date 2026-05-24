@@ -699,8 +699,12 @@ class TestApplyEditOps:
     """apply_edit_ops: LLM 產生 / 使用者確認後的批次改譜。"""
 
     @staticmethod
-    def _setup() -> object:
-        """建立含 violin_1 (3 小節, 各一個 C4 音符) 的合成 arrangement。"""
+    def _setup(start_midi: int = 72, start_spelling: str = "C5") -> object:
+        """建立含 violin_1 (3 小節, 各一個音符) 的合成 arrangement.
+
+        0.1.30+ 之後 transpose 加了音域保護, 預設 C5 (72) 確保 -12 後
+        仍在 violin range (C4=60 合法). 個別 test 可覆寫 start_midi.
+        """
         import core.server as srv
         from fractions import Fraction
         from core.arrangement_model import Arrangement, violin_piano_ensemble
@@ -713,7 +717,7 @@ class TestApplyEditOps:
                 number=num, time_signature=(4, 4),
                 voices={1: Voice(voice_id=1, events=[
                     NoteEvent(
-                        pitch=Pitch(60, "C4"),
+                        pitch=Pitch(start_midi, start_spelling),
                         duration=Fraction(4), onset=Fraction(0),
                     ),
                 ])},
@@ -741,6 +745,7 @@ class TestApplyEditOps:
         return score
 
     def test_transpose_shifts_pitches(self):
+        # C5 (72) -12 = C4 (60), 仍在 violin 音域 (55-105)
         score = self._setup()
         resp = handle_request({
             "id": "e1", "method": "apply_edit_ops",
@@ -752,10 +757,29 @@ class TestApplyEditOps:
         assert resp["ok"], resp.get("error")
         assert resp["data"]["applied"]
         # m.1, m.2 降八度; m.3 不動
-        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 48
-        assert score.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 48
-        assert score.parts[0].measures[2].voices[1].events[0].pitch.midi_number == 60
+        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
+        assert score.parts[0].measures[1].voices[1].events[0].pitch.midi_number == 60
+        assert score.parts[0].measures[2].voices[1].events[0].pitch.midi_number == 72
         assert resp["data"]["results"][0]["changed"] == 2
+
+    def test_transpose_skips_out_of_range(self):
+        """0.1.30 transpose 音域保護 — C4 (60) -12 = C3 (48) 低於
+        violin 最低音 (G3=55), 該事件應 skip 並回報 skipped_out_of_range."""
+        score = self._setup(start_midi=60, start_spelling="C4")
+        resp = handle_request({
+            "id": "e2", "method": "apply_edit_ops",
+            "params": {"ops": [{
+                "op": "transpose", "part_id": "violin_1",
+                "measure_start": 1, "measure_end": 3, "semitones": -12,
+            }]},
+        })
+        assert resp["ok"]
+        # 全部 3 個事件都會超出音域 → 全 skip
+        for m in score.parts[0].measures:
+            assert m.voices[1].events[0].pitch.midi_number == 60  # 沒動
+        result = resp["data"]["results"][0]
+        assert result["changed"] == 0
+        assert result["skipped_out_of_range"] == 3
 
     def test_invalid_part_id_rejects_whole_batch(self):
         """任一 op 無效 → 整批拒絕, 不留半套狀態。"""
@@ -771,7 +795,7 @@ class TestApplyEditOps:
         })
         assert not resp["ok"]
         # 第一個 op 也不該被套用 (all-or-nothing)
-        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 60
+        assert score.parts[0].measures[0].voices[1].events[0].pitch.midi_number == 72
 
     def test_articulation_and_dynamic(self):
         score = self._setup()
@@ -792,7 +816,9 @@ class TestApplyEditOps:
         assert score.parts[0].measures[2].voices[1].events[0].dynamic is None
 
     def test_locked_event_skipped(self):
-        score = self._setup()
+        # 用 C4 (60) 才有 +12 空間 (C5=72 在 violin 範圍內);
+        # 若 default C5 +12 = C6 (84) 也可以, 但 m.3 也會超出範圍 → 改用 C4
+        score = self._setup(start_midi=60, start_spelling="C4")
         score.parts[0].measures[0].voices[1].events[0].is_locked = True
         resp = handle_request({
             "id": "e4", "method": "apply_edit_ops",
@@ -809,7 +835,8 @@ class TestApplyEditOps:
 
     def test_batch_shares_one_undo(self):
         """整批 ops 共用一次 history → 一次 undo 全部還原。"""
-        score = self._setup()
+        # 用 C4 (60); +12 = C5 (72) 仍在 violin 範圍, 不會被 0.1.30 range 保護吃掉
+        score = self._setup(start_midi=60, start_spelling="C4")
         handle_request({
             "id": "e5", "method": "apply_edit_ops",
             "params": {"ops": [
