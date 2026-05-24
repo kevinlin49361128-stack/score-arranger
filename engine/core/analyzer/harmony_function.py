@@ -355,6 +355,127 @@ def analyze_harmony(score: object) -> list[HarmonicRegion]:
     return regions
 
 
+def detect_unresolved_tendency_tones(score: object):
+    """偵測未解決的導音 / 七和弦七度.
+
+    傳統聲部書寫:
+    - 大調 V (含 V7) 中的「導音」(key tonic + 11, mod 12) 必須上行解決
+      到主音 (tonic). 內聲部下行三度也常接受 (退而求其次).
+    - V7 的「七度」(key tonic + 5, mod 12 — 即 fa) 必須下行解決到主和弦
+      的三度 (mi).
+
+    本函式針對「V → I」相鄰區段做檢查; 在 V 區段裡找到 leading tone 或
+    chord 7th 的聲部, 看下一個 I 區段同一聲部的音是否做出正確解決.
+    回傳 LocatedIssue (W_UNRESOLVED_LEADING_TONE / W_UNRESOLVED_CHORD7TH).
+    """
+    try:
+        from ..ir import ChordEvent, NoteEvent, Score
+        from ..repair import LocatedIssue
+        from ..instruments.base import CheckResult
+    except ImportError:
+        return []
+    if not hasattr(score, "parts"):
+        return []
+    assert isinstance(score, Score)
+
+    regions = analyze_harmony(score)
+    if not regions:
+        return []
+
+    cumulative_starts = _per_part_cumulative_starts(score)
+    issues: list = []
+
+    for part_idx, part in enumerate(score.parts):
+        measure_starts = cumulative_starts[part_idx]
+        # 收這個 part 所有有音高的事件 (global_onset, midi, ref)
+        events: list[tuple[Fraction, int, int, int, int]] = []
+        # (global_onset, midi, measure_number, voice_id, event_index)
+        for measure in part.measures:
+            m_start = measure_starts.get(measure.number, Fraction(0))
+            for voice in measure.voices.values():
+                for idx, ev in enumerate(voice.events):
+                    midi: Optional[int] = None
+                    if isinstance(ev, NoteEvent):
+                        midi = ev.pitch.midi_number
+                    elif isinstance(ev, ChordEvent):
+                        # 取最高音當聲部線
+                        midi = max(p.midi_number for p in ev.pitches)
+                    if midi is None:
+                        continue
+                    g_onset = m_start + ev.onset
+                    events.append((
+                        g_onset, midi,
+                        measure.number, voice.voice_id, idx,
+                    ))
+        events.sort(key=lambda e: e[0])
+
+        # 跨事件: 若 events[k] 在 V (含 V7) 區段, events[k+1] 在 I 區段,
+        # 檢查解決
+        for k in range(len(events) - 1):
+            g1, m1, meas1, vid1, idx1 = events[k]
+            g2, m2, _, _, _ = events[k + 1]
+            r1 = find_region_at(regions, g1)
+            r2 = find_region_at(regions, g2)
+            if r1 is None or r2 is None:
+                continue
+            # 只在 V → I 看 (大調; 小調 V 通常為了導音也是大三和弦, 一併)
+            if r1.roman.degree != 5 or r2.roman.degree != 1:
+                continue
+            key = r1.key
+            leading_tone_pc = (key.tonic_pc + 11) % 12
+            chord7th_pc = (key.tonic_pc + 5) % 12
+            tonic_pc = key.tonic_pc
+            third_of_tonic = (
+                (key.tonic_pc + 4) % 12 if key.mode == "major"
+                else (key.tonic_pc + 3) % 12
+            )
+            pc1 = m1 % 12
+            pc2 = m2 % 12
+            # 導音 → 主音 (上行小二度 / 下行大三度都接受)
+            if pc1 == leading_tone_pc and pc2 != tonic_pc:
+                # 真正未解決
+                semitone_dist = m2 - m1
+                if not (semitone_dist == 1):  # 上行半音才是正解
+                    issues.append(LocatedIssue(
+                        part_id=part.part_id,
+                        measure_number=meas1,
+                        voice_id=vid1,
+                        event_index=idx1,
+                        result=CheckResult(
+                            severity="warning",
+                            code="W_UNRESOLVED_LEADING_TONE",
+                            params={
+                                "key": key.name,
+                                "from_pc": pc1,
+                                "to_pc": pc2,
+                            },
+                            difficulty_score=0.0,
+                        ),
+                    ))
+            # V7 的七度 → 主和弦三度 (下行半音 / 全音)
+            if r1.roman.quality == "dominant7" and pc1 == chord7th_pc \
+                    and pc2 != third_of_tonic:
+                semitone_dist = m2 - m1
+                if not (semitone_dist == -1 or semitone_dist == -2):
+                    issues.append(LocatedIssue(
+                        part_id=part.part_id,
+                        measure_number=meas1,
+                        voice_id=vid1,
+                        event_index=idx1,
+                        result=CheckResult(
+                            severity="warning",
+                            code="W_UNRESOLVED_CHORD7TH",
+                            params={
+                                "key": key.name,
+                                "from_pc": pc1,
+                                "to_pc": pc2,
+                            },
+                            difficulty_score=0.0,
+                        ),
+                    ))
+    return issues
+
+
 def find_region_at(
     regions: list[HarmonicRegion], quarter_offset: Fraction,
 ) -> Optional[HarmonicRegion]:

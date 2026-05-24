@@ -199,3 +199,136 @@ class TestAnalyzeHarmony:
 
     def test_find_region_at_empty(self):
         assert find_region_at([], Fraction(0)) is None
+
+
+# ============================================================================
+# 0.1.31 樂理深化 #5: 導音 / V7 七度 強制解決
+# ============================================================================
+
+class TestTendencyToneResolution:
+    """V → I 中導音不解決 / V7 七度不解決 → warning."""
+
+    def _v_to_i_score(
+        self, leading_tone_resolves_to: int,
+        v_chord_seventh: bool = False,
+    ) -> Score:
+        """C major: I → V → I.
+        m.1 I (1拍): 建立調性 - C major
+        m.2 V (4拍): leading tone B in alto
+        m.3 I (4拍): alto resolves to leading_tone_resolves_to
+        """
+        # Soprano: C5 (I) → G4 (V) → C5 (I)
+        soprano = Part(
+            part_id="s", name_display="S", instrument_id="violin",
+            measures=[
+                Measure(number=1, time_signature=(4, 4), voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(72, dur=Fraction(4)),  # C5
+                    ])}),
+                Measure(number=2, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(67, dur=Fraction(4)),  # G4
+                    ])}),
+                Measure(number=3, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(72, dur=Fraction(4)),  # C5
+                    ])}),
+            ],
+        )
+        # Alto: E (I) → B (V leading tone) → leading_tone_resolves_to
+        alto = Part(
+            part_id="a", name_display="A", instrument_id="violin",
+            measures=[
+                Measure(number=1, time_signature=(4, 4), voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(64, dur=Fraction(4)),  # E4
+                    ])}),
+                Measure(number=2, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(71, dur=Fraction(4)),  # B4 (導音)
+                    ])}),
+                Measure(number=3, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(leading_tone_resolves_to, dur=Fraction(4)),
+                    ])}),
+            ],
+        )
+        # Tenor: G (I) → D (V) → E (I)
+        tenor_v = 65 if v_chord_seventh else 62  # F4 (V7 七度) or D4 (V 五)
+        tenor = Part(
+            part_id="t", name_display="T", instrument_id="viola",
+            measures=[
+                Measure(number=1, time_signature=(4, 4), voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(60, dur=Fraction(4)),  # C4 (tenor 重複 root)
+                    ])}),
+                Measure(number=2, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(tenor_v, dur=Fraction(4)),
+                    ])}),
+                Measure(number=3, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(64, dur=Fraction(4)),  # E4 (3rd of I)
+                    ])}),
+            ],
+        )
+        # Bass: C3 → G3 → C3
+        bass = Part(
+            part_id="b", name_display="B", instrument_id="cello",
+            measures=[
+                Measure(number=1, time_signature=(4, 4), voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(48, dur=Fraction(4)),  # C3
+                    ])}),
+                Measure(number=2, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(55, dur=Fraction(4)),  # G3
+                    ])}),
+                Measure(number=3, time_signature=None, voices={
+                    1: Voice(voice_id=1, events=[
+                        _n(48, dur=Fraction(4)),  # C3
+                    ])}),
+            ],
+        )
+        return Score(metadata={}, movements=[], parts=[soprano, alto, tenor, bass])
+
+    def test_leading_tone_resolves_up_clean(self):
+        """B4 → C5 (上行半音) = 完美解決 → 無 W_UNRESOLVED_LEADING_TONE."""
+        from core.analyzer.harmony_function import (
+            detect_unresolved_tendency_tones,
+        )
+        score = self._v_to_i_score(leading_tone_resolves_to=72)  # B → C
+        issues = detect_unresolved_tendency_tones(score)
+        codes = [i.result.code for i in issues]
+        assert "W_UNRESOLVED_LEADING_TONE" not in codes
+
+    def test_leading_tone_jumps_down_flagged(self):
+        """B4 → G4 (下行純四度, 非解決) → 應觸發警告."""
+        from core.analyzer.harmony_function import (
+            detect_unresolved_tendency_tones,
+        )
+        score = self._v_to_i_score(leading_tone_resolves_to=67)  # B → G
+        issues = detect_unresolved_tendency_tones(score)
+        codes = [i.result.code for i in issues]
+        assert "W_UNRESOLVED_LEADING_TONE" in codes
+
+    def test_chord7th_resolves_down_clean(self):
+        """V7 七度 F4 → E4 (下行半音) = 正解 → 無 W_UNRESOLVED_CHORD7TH."""
+        from core.analyzer.harmony_function import (
+            detect_unresolved_tendency_tones,
+        )
+        score = self._v_to_i_score(
+            leading_tone_resolves_to=72, v_chord_seventh=True,
+        )
+        issues = detect_unresolved_tendency_tones(score)
+        codes = [i.result.code for i in issues]
+        # F → E 解決, 不該抓 W_UNRESOLVED_CHORD7TH (但 leading tone 可能有)
+        assert "W_UNRESOLVED_CHORD7TH" not in codes
+
+    def test_collect_issues_includes_tendency_warnings(self):
+        """collect_issues 應接到 tendency tone 檢查."""
+        from core.repair import collect_issues
+        score = self._v_to_i_score(leading_tone_resolves_to=67)
+        codes = {i.result.code for i in collect_issues(score)}
+        # leading tone 不解決應被抓
+        assert "W_UNRESOLVED_LEADING_TONE" in codes

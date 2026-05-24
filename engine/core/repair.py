@@ -155,6 +155,13 @@ def collect_issues(score: Score) -> list[LocatedIssue]:
         issues.extend(detect_hidden_parallels(score))
     except Exception:
         pass
+    # 0.1.31 樂理深化 #5: 導音 / V7 chord 7th 未解決偵測
+    # 依賴 A1b 的 RomanNumeral 分析; 空 region (無法 KK 偵測調) 自動跳過
+    try:
+        from .analyzer.harmony_function import detect_unresolved_tendency_tones
+        issues.extend(detect_unresolved_tendency_tones(score))
+    except Exception:
+        pass
     # 管樂連續吹奏 (換氣) 檢查 — sustain_type=breath 且超過 max_sustained_beats
     # 連續無 rest / breath_mark, 提示需要換氣
     issues.extend(_detect_wind_breathing(score))
