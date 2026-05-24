@@ -400,7 +400,10 @@ def strategy_octave_shift(score: Score, issue: LocatedIssue) -> bool:
     return True
 
 
-def _harmonic_omit_choice(pitches: list) -> int:
+def _harmonic_omit_choice(
+    pitches: list,
+    essential_pcs: Optional[list[int]] = None,
+) -> int:
     """挑出和弦中最該省略的音 — 回傳該音在 pitches 內的 index。
 
     原則 (和聲感知):
@@ -409,6 +412,9 @@ def _harmonic_omit_choice(pitches: list) -> int:
         * 與其他音同 pitch-class 的疊音 → 最該省
         * 完全五度 / 八度 → 可省 (和聲上可被隱含)
         * 三度 (定大小調) / 七度 (定和弦屬性) → 應保留
+    - 0.1.31 樂理深化 #6: essential_pcs 來自 A1b harmony_function —
+      若提供, 屬於 essential pc 的音額外大幅加分 (= 強制保留,
+      包含掛留音解決後該留的根音 / 三音 / V7 七度).
     """
     order = sorted(range(len(pitches)), key=lambda i: pitches[i].midi_number)
     if len(order) < 3:
@@ -416,17 +422,25 @@ def _harmonic_omit_choice(pitches: list) -> int:
 
     root_midi = pitches[order[0]].midi_number
     pcs = [pitches[i].midi_number % 12 for i in range(len(pitches))]
+    essential_set = set(essential_pcs or [])
 
     def essential(gi: int) -> int:
         """分數越低越該省。"""
         iv = (pitches[gi].midi_number - root_midi) % 12
-        if pcs.count(pitches[gi].midi_number % 12) > 1:
-            return 0  # 疊音
-        if iv in (3, 4, 10, 11):
-            return 3  # 三度 / 七度 — 定義和弦, 最該留
-        if iv in (1, 2, 5, 6, 8, 9):
-            return 2  # 其他和聲音
-        return 1      # 完全五度 / 八度 — 可省
+        pc = pitches[gi].midi_number % 12
+        base: int
+        if pcs.count(pc) > 1:
+            base = 0  # 疊音
+        elif iv in (3, 4, 10, 11):
+            base = 3  # 三度 / 七度 — 定義和弦, 最該留
+        elif iv in (1, 2, 5, 6, 8, 9):
+            base = 2  # 其他和聲音
+        else:
+            base = 1  # 完全五度 / 八度 — 可省
+        # A1b essential PC 加分 (但不蓋過「疊音」, 疊音仍最該省)
+        if pc in essential_set and base > 0:
+            base += 5
+        return base
 
     inner = order[1:-1]  # 只在內聲部中挑
     return min(inner, key=essential)

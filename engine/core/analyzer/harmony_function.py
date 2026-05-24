@@ -476,6 +476,56 @@ def detect_unresolved_tendency_tones(score: object):
     return issues
 
 
+def classify_note_function(
+    midi: int,
+    region: HarmonicRegion,
+    prev_midi: Optional[int] = None,
+    prev_region: Optional[HarmonicRegion] = None,
+    next_midi: Optional[int] = None,
+) -> Literal["chord_tone", "suspension", "passing", "neighbor", "other"]:
+    """根據 RomanNumeral 區段, 分類一個音的功能.
+
+    - chord_tone: pc 屬於 region.ideal_pitch_classes
+    - suspension (掛留音): 前一個音是上一個 region 的和弦音, 且
+      跟當前音同 midi (持平 / 同音延伸); 當前音 NOT 在當前 region 和弦內;
+      下行解決 (next_midi 比現在低 1-2 半音 → 解決到和弦音)
+    - passing (經過音): 前後音都是和弦音, 三音級進連續上行 / 下行
+    - neighbor (鄰音): 前後音是同一個和弦音, 當前音是相鄰半 / 全音
+    - other: 都不是 — 自由的 NCT 或裝飾音
+    """
+    pc = midi % 12
+    if pc in region.ideal_pitch_classes:
+        return "chord_tone"
+    # Suspension 條件
+    if prev_midi is not None and prev_region is not None:
+        prev_pc = prev_midi % 12
+        if prev_pc in prev_region.ideal_pitch_classes \
+                and prev_midi == midi:
+            # 下行解決才算真 suspension
+            if next_midi is not None:
+                dist = next_midi - midi
+                if -2 <= dist <= -1 and next_midi % 12 \
+                        in region.ideal_pitch_classes:
+                    return "suspension"
+            else:
+                # 沒下一音時保守標 suspension
+                return "suspension"
+    # Passing tone: prev + next 都和弦音, 級進向同一方向
+    if prev_midi is not None and next_midi is not None:
+        prev_pc = prev_midi % 12
+        next_pc = next_midi % 12
+        if prev_pc in region.ideal_pitch_classes \
+                and next_pc in region.ideal_pitch_classes:
+            d1 = midi - prev_midi
+            d2 = next_midi - midi
+            if 1 <= abs(d1) <= 2 and 1 <= abs(d2) <= 2 \
+                    and ((d1 > 0) == (d2 > 0)):
+                return "passing"
+            if prev_midi == next_midi and 1 <= abs(d1) <= 2:
+                return "neighbor"
+    return "other"
+
+
 def find_region_at(
     regions: list[HarmonicRegion], quarter_offset: Fraction,
 ) -> Optional[HarmonicRegion]:

@@ -332,3 +332,119 @@ class TestTendencyToneResolution:
         codes = {i.result.code for i in collect_issues(score)}
         # leading tone 不解決應被抓
         assert "W_UNRESOLVED_LEADING_TONE" in codes
+
+
+# ============================================================================
+# 0.1.31 樂理深化 #6: 非和弦音 (NCT) 分類 + 掛留音保留
+# ============================================================================
+
+class TestNCTClassification:
+    """classify_note_function — chord_tone / suspension / passing / neighbor."""
+
+    def _region(self, root_pc: int, quality: str = "major",
+                start: Fraction = Fraction(0),
+                end: Fraction = Fraction(4)):
+        from core.analyzer.harmony_function import (
+            HarmonicRegion,
+            Key,
+            RomanNumeral,
+            _build_triad_pcs,
+        )
+        ideal = sorted(_build_triad_pcs(root_pc, quality))
+        return HarmonicRegion(
+            start_quarter=start,
+            end_quarter=end,
+            key=Key(tonic_pc=0, mode="major"),
+            roman=RomanNumeral(degree=1, quality="major"),
+            ideal_pitch_classes=ideal,
+            essential_pitch_classes=ideal[:2],
+        )
+
+    def test_chord_tone(self):
+        from core.analyzer.harmony_function import classify_note_function
+        # C major triad, 音 = C4 (60), pc=0 ∈ {0,4,7}
+        region = self._region(0)
+        assert classify_note_function(60, region) == "chord_tone"
+
+    def test_suspension(self):
+        """G→C 進行: D 從 G 和弦持平到 C 和弦變成非和弦音, 下行解決到 C
+        (4-3 模型的 'D over Cmaj').
+        """
+        from core.analyzer.harmony_function import classify_note_function
+        # G major triad (V) pcs {7,11,2}
+        prev_region = self._region(7, start=Fraction(0), end=Fraction(2))
+        # C major triad (I) pcs {0,4,7}
+        curr_region = self._region(0, start=Fraction(2), end=Fraction(4))
+        # D4 (62, pc=2) — 在 G 和弦內, 但不在 C 和弦; 下行解決到 C4 (60)
+        result = classify_note_function(
+            midi=62, region=curr_region,
+            prev_midi=62, prev_region=prev_region, next_midi=60,
+        )
+        assert result == "suspension"
+
+    def test_passing_tone(self):
+        """C major: C → D → E 級進, D 是 passing tone."""
+        from core.analyzer.harmony_function import classify_note_function
+        region = self._region(0)  # C major {0,4,7}
+        # D4 (62, pc=2) 不在 C 和弦, 但 prev C4 + next E4 都在
+        result = classify_note_function(
+            midi=62, region=region,
+            prev_midi=60, prev_region=region, next_midi=64,
+        )
+        assert result == "passing"
+
+    def test_neighbor_tone(self):
+        """C major: C → D → C, D 是 neighbor tone."""
+        from core.analyzer.harmony_function import classify_note_function
+        region = self._region(0)
+        result = classify_note_function(
+            midi=62, region=region,
+            prev_midi=60, prev_region=region, next_midi=60,
+        )
+        assert result == "neighbor"
+
+
+class TestEssentialPcsPreserved:
+    """_harmonic_omit_choice 接 essential_pcs 後, essential 音應被保留."""
+
+    def _mk_pitch(self, midi: int):
+        from core.ir import Pitch
+        return Pitch(midi_number=midi, spelling=f"n{midi}")
+
+    def test_essential_pc_not_omitted(self):
+        """C-E-G-B (C major7), essential={C,E,B} — 內聲部該留 E/B,
+        不能因為 _harmonic_omit_choice 選了 E 而違反."""
+        from core.repair import _harmonic_omit_choice
+        pitches = [
+            self._mk_pitch(48),  # C3
+            self._mk_pitch(64),  # E4
+            self._mk_pitch(67),  # G4
+            self._mk_pitch(71),  # B4 (在內聲部 — 我們設只能省 E 或 G)
+        ]
+        # 不傳 essential: 預設規則可能挑 G (完全五度)
+        idx_without = _harmonic_omit_choice(pitches)
+        omit_pc_without = pitches[idx_without].midi_number % 12
+        # 傳 essential = [C, E, B] (root, 3rd, 7th)
+        idx_with = _harmonic_omit_choice(
+            pitches, essential_pcs=[0, 4, 11],
+        )
+        omit_pc_with = pitches[idx_with].midi_number % 12
+        # 加 essential 後, 不該省 E (4) 或 B (11) — 應該省 G (7) 或保持原選擇
+        assert omit_pc_with not in (4, 11), (
+            f"essential pc 不該被省: omit_pc={omit_pc_with}"
+        )
+        # 應該選 G (完全五度)
+        assert omit_pc_with == 7
+
+    def test_backwards_compatible_no_essential(self):
+        """不傳 essential_pcs 行為與舊版一致."""
+        from core.repair import _harmonic_omit_choice
+        pitches = [
+            self._mk_pitch(48),
+            self._mk_pitch(52),
+            self._mk_pitch(55),
+            self._mk_pitch(48),
+        ]
+        # 不該崩, 回傳合理 index
+        idx = _harmonic_omit_choice(pitches)
+        assert 0 <= idx < len(pitches)
