@@ -4,10 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "score-arranger-engine"
-version = "0.1.0"
+version = "0.1.33"
 description = "Score Arranger Python core engine — IR, parser, analyzer, arranger, validator"
 requires-python = ">=3.11"
-authors = [{ name = "Score Arranger" }]
+authors = [{ name = "Kevin Lin" }]
+license = { text = "GPL-3.0-only" }
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+]
 dependencies = [
     # Score parsing / round-trip writing — 整個 engine 仰賴的核心庫
     # music21 9.x/10.x API 對我們用到的 part / measure / note / chord 結構相容

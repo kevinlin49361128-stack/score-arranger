@@ -80,7 +80,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             Score Arranger
           </strong>
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            v0.1.32
+            v0.1.33
           </span>
           <button
             onClick={onClose}
@@ -240,8 +240,18 @@ function Overview() {
           openSource: (
             <strong>{t("about.overview.licenseOpenSource")}</strong>
           ),
-          gpl: <strong>GNU General Public License v3.0</strong>,
+          gpl: <strong>GNU General Public License v3.0 (GPL-3.0-only)</strong>,
         })}
+      </p>
+      <p style={{
+        marginTop: 8, fontSize: 12, color: "var(--fg-tertiary)",
+      }}>
+        {t("about.overview.legalDocsHint")}
+        {" "}
+        <Code>LICENSE</Code>, <Code>NOTICE.md</Code>,
+        {" "}<Code>THIRD_PARTY_LICENSES.md</Code>, <Code>PRIVACY.md</Code>,
+        {" "}<Code>DISCLAIMER.md</Code>, <Code>SOURCE.md</Code>,
+        {" "}<Code>CONTRIBUTING.md</Code>, <Code>SECURITY.md</Code>
       </p>
       <H2>{t("about.overview.creditsHeading")}</H2>
       <p>

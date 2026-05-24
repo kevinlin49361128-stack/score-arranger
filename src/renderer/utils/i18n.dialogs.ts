@@ -84,6 +84,11 @@ export const DIALOG_STRINGS: BiDict = {
       + "同一のライセンスでオープンソース化する必要があります。無料で提供"
       + "され、広告もテレメトリもありません。",
   },
+  "about.overview.legalDocsHint": {
+    "zh-TW": "完整法律文件 (隨原始碼一同散布):",
+    en: "Full legal documents (distributed alongside the source code):",
+    ja: "完全な法的文書 (ソースコードと共に配布):",
+  },
   "about.overview.creditsHeading": {
     "zh-TW": "授權與致謝摘要", en: "License & acknowledgements summary",
     ja: "ライセンスと謝辞の概要",

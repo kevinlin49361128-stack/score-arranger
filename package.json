@@ -1,7 +1,8 @@
 {
   "name": "score-arranger",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Score Arranger — 智慧輔助管弦樂譜改編工具",
   "main": "dist/main/main/index.js",
   "scripts": {

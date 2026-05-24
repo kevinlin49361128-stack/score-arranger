@@ -21,9 +21,29 @@ files:
 # 凍結的 Python engine (PyInstaller onedir) → Contents/Resources/engine/
 # python-bridge.ts 在 packaged 模式會 spawn
 #   resources/engine/score-arranger-engine/score-arranger-engine
+#
+# 0.1.33: 法律文件一併放進 Contents/Resources/legal/ — GPL/LGPL §6(a)
+# 「accompanying notice」要求在 packaged binary 內就能查到 (不必去找 source
+# repo). About Dialog 已連結這些檔案; Finder 也可從「顯示套件內容」進去.
 extraResources:
   - from: "engine/build-pyi/dist/score-arranger-engine"
     to: "engine/score-arranger-engine"
+  - from: "LICENSE"
+    to: "legal/LICENSE"
+  - from: "NOTICE.md"
+    to: "legal/NOTICE.md"
+  - from: "THIRD_PARTY_LICENSES.md"
+    to: "legal/THIRD_PARTY_LICENSES.md"
+  - from: "PRIVACY.md"
+    to: "legal/PRIVACY.md"
+  - from: "DISCLAIMER.md"
+    to: "legal/DISCLAIMER.md"
+  - from: "SOURCE.md"
+    to: "legal/SOURCE.md"
+  - from: "CONTRIBUTING.md"
+    to: "legal/CONTRIBUTING.md"
+  - from: "SECURITY.md"
+    to: "legal/SECURITY.md"
 
 # 簽章前清 xattr
 afterPack: build/after-pack.js
