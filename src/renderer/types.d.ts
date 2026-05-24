@@ -292,6 +292,8 @@ declare global {
       measure_start: number;
       measure_end: number;
       changed: number;
+      /** transpose op only — 跳過超出樂器音域的事件數 (0.1.30+) */
+      skipped_out_of_range?: number;
     }[];
     target_musicxml: string | null;
     issues: ArrangementIssue[];

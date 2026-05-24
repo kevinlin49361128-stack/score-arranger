@@ -253,10 +253,18 @@ export function DifficultyBoostDialog({ onClose }: Props) {
           Math.max(...rs.map((r) => r.measure_end)),
         );
       }
+      // 0.1.30: transpose 音域保護 — 若有跳過事件, 加 note 提示使用者
+      // (避免疑惑「為何按了升高把位但某些段落沒升上去」)
+      const skippedOOR = rs.reduce(
+        (s, r) => s + (r.skipped_out_of_range ?? 0), 0,
+      );
+      const baseMsg = touched > 0
+        ? t("boost.applied", { count: ops.length, touched })
+        : t("boost.appliedNoChange");
       setAppliedMsg(
-        touched > 0
-          ? t("boost.applied", { count: ops.length, touched })
-          : t("boost.appliedNoChange"),
+        skippedOOR > 0
+          ? `${baseMsg} · ${t("boost.skippedOutOfRange", { n: skippedOOR })}`
+          : baseMsg,
       );
       // D1 編輯版本樹 — 每次成功編輯自動存 variant, 方便事後比較 / 還原
       const noteRange = `m${lo}-${hi}`;

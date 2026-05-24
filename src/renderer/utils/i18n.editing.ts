@@ -339,12 +339,21 @@ export const EDITING_STRINGS: BiDict = {
     ja: "原曲の和声から隣接弦の和声音を補う",
   },
   "boost.tech.higherPosition": {
-    "zh-TW": "移高把位", en: "Higher position", ja: "高ポジション",
+    "zh-TW": "整段升高八度",
+    en: "Shift up an octave",
+    ja: "1オクターブ上げる",
   },
   "boost.tech.higherPositionDesc": {
-    "zh-TW": "整段升高八度,左手把位隨之提高",
-    en: "Shifts the passage up an octave, raising the playing position",
-    ja: "区間を1オクターブ上げ、運指ポジションを高くする",
+    "zh-TW":
+      "整段嘗試升高八度 (弦樂提高把位 / 鋼琴跳到高音域). "
+      + "超出樂器音域的音會自動跳過, 不會破壞改編.",
+    en:
+      "Tries to shift the passage up an octave (higher position on strings / "
+      + "upper register on piano). Notes that would exceed the instrument's "
+      + "range are skipped automatically.",
+    ja:
+      "区間を1オクターブ上げます (弦楽器: 高ポジション / "
+      + "ピアノ: 高音域). 楽器の音域を超える音は自動的にスキップされます.",
   },
   "boost.tech.bowing": {
     "zh-TW": "困難弓法", en: "Demanding bowing", ja: "難しい弓法",
@@ -484,6 +493,12 @@ export const EDITING_STRINGS: BiDict = {
       + "(already chords / too low / locked).",
     ja: "適用しましたが、この範囲に難度を上げられる音符がありません"
       + "（既にコード / 低すぎ / ロック済み）。",
+  },
+  // 0.1.30: transpose 音域保護 — 顯示跳過事件數, 避免使用者疑惑
+  "boost.skippedOutOfRange": {
+    "zh-TW": "升高八度時跳過 {n} 個超出樂器音域的音",
+    en: "{n} note(s) skipped — would exceed instrument range",
+    ja: "{n} 音をスキップ (楽器の音域を超えるため)",
   },
   "boost.noTech": {
     "zh-TW": "請至少勾選一種手法。",

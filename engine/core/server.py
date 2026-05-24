@@ -1611,6 +1611,17 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                 "changed": changed,
             })
             continue
+        # 0.1.30: transpose 加樂器音域保護 — 用戶按「移高把位」(+12) 時若會
+        # 推到 lute/violin/flute 等樂器的音域上限以外, 該事件跳過. 避免生出
+        # E_FRETTED_CHORD_INFEASIBLE / E_PITCH_ABOVE_RANGE 一堆無解錯誤.
+        # repro 場景: Schumann Op48no2 → 魯特琴獨奏 + 「移高把位」.
+        transpose_skipped = 0
+        transpose_range: tuple[int, int] | None = None
+        if kind == "transpose":
+            from core.instruments import get_profile as _gp
+            _profile = _gp(part.instrument_id)
+            if _profile is not None:
+                transpose_range = _profile.range_absolute
         for measure in part.measures:
             if not m_start <= measure.number <= m_end:
                 continue
@@ -1624,6 +1635,18 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                         continue
                     if kind == "transpose":
                         delta = int(op["semitones"])
+                        # 音域檢查 — 任一音超出 absolute_range → 跳過整個事件
+                        if transpose_range is not None:
+                            lo, hi = transpose_range
+                            pitches_old = (
+                                [ev.pitch.midi_number]
+                                if isinstance(ev, NoteEvent)
+                                else [p.midi_number for p in ev.pitches]
+                            )
+                            pitches_new = [m + delta for m in pitches_old]
+                            if any(m < lo or m > hi for m in pitches_new):
+                                transpose_skipped += 1
+                                continue
                         if isinstance(ev, NoteEvent):
                             ev.pitch = shift_pitch(ev.pitch, delta)
                         else:
@@ -1655,13 +1678,17 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                             duration=ev.duration, onset=ev.onset,
                         )
                         changed += 1
-        results.append({
+        result_entry = {
             "op": kind,
             "part_id": op["part_id"],
             "measure_start": m_start,
             "measure_end": m_end,
             "changed": changed,
-        })
+        }
+        if kind == "transpose" and transpose_skipped > 0:
+            # UI 可顯示「跳過 X 個超出音域的事件」
+            result_entry["skipped_out_of_range"] = transpose_skipped
+        results.append(result_entry)
 
     try:
         new_xml = write_musicxml_string(target)

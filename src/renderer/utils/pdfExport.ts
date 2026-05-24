@@ -14,7 +14,7 @@ import { t } from "./i18n";
 
 /** 匯出 PDF 每頁頁尾的版本 / 版權宣告。 */
 const EXPORT_FOOTER =
-  "Arranged with Score Arranger 0.1.29  ·  © 2026 Kevin Lin  ·  GPL-3.0";
+  "Arranged with Score Arranger 0.1.30  ·  © 2026 Kevin Lin  ·  GPL-3.0";
 
 interface VerovioToolkitLike {
   loadData: (xml: string) => boolean;
