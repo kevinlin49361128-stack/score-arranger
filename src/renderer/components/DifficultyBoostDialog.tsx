@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
 import { QualityDeltaBadge, type QualityDelta } from "./QualityDeltaBadge";
+import { findStudent, useStudents } from "../stores/studentStore";
 
 interface Props {
   onClose: () => void;
@@ -138,6 +139,9 @@ export function DifficultyBoostDialog({ onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [appliedMsg, setAppliedMsg] = useState<string | null>(null);
   const [qualityDelta, setQualityDelta] = useState<QualityDelta | null>(null);
+  // 0.1.39: 「為 X 學生」整合 — 選後自動帶程度 + 樂器配對
+  const students = useStudents();
+  const [studentId, setStudentId] = useState<string | null>(null);
 
   // 預設選第一個聲部
   useEffect(() => {
@@ -472,6 +476,64 @@ export function DifficultyBoostDialog({ onClose }: Props) {
                 >
                   {t("boost.intro")}
                 </div>
+
+                {/* 0.1.39: 「為 X 學生」picker — 選後自動帶程度 + 配對樂器
+                    student.notes 之後會在 LLM 改編建議裡塞 prompt (v2). */}
+                {students.length > 0 && (
+                  <div style={{
+                    marginBottom: 14, padding: 10,
+                    background: "var(--bg-secondary)",
+                    border: "1px solid var(--border-light)",
+                    borderRadius: 6,
+                  }}>
+                    <label style={{ fontSize: 12 }}>
+                      <div style={{
+                        color: "var(--fg-muted)", marginBottom: 4,
+                      }}>
+                        👥 {t("boost.forStudent")}
+                      </div>
+                      <select
+                        value={studentId ?? ""}
+                        onChange={(e) => {
+                          const id = e.target.value || null;
+                          setStudentId(id);
+                          const s = findStudent(id);
+                          if (s) {
+                            // 套用學生程度 → target difficulty
+                            setTargetDiff(s.skill_level);
+                            // 找配對的 part (依 instrument_id 對齊)
+                            const matchPart = parts.find((p) =>
+                              p.instrument_id.toLowerCase()
+                                === s.instrument.toLowerCase()
+                            );
+                            if (matchPart) setPartId(matchPart.part_id);
+                            setAppliedMsg(t("boost.forStudent.applied",
+                              { name: s.name }));
+                            window.setTimeout(() => setAppliedMsg(null), 2500);
+                          }
+                        }}
+                        style={{
+                          width: "100%", padding: "6px 8px",
+                          border: "1px solid var(--border)",
+                          background: "var(--bg-panel)",
+                          color: "var(--fg-primary)",
+                          borderRadius: 4, fontSize: 13,
+                        }}
+                      >
+                        <option value="">
+                          {t("boost.forStudent.none")}
+                        </option>
+                        {students.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} · {s.instrument} · {t(
+                              "students.gradeLabel", { grade: s.skill_level },
+                            )}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
 
                 {/* 方向: 加難度 / 降難度 */}
                 <div

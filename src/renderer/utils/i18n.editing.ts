@@ -481,6 +481,77 @@ export const EDITING_STRINGS: BiDict = {
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },
+  // 0.1.39: 「我的學生」CRUD
+  "students.title": {
+    "zh-TW": "我的學生", en: "My students", ja: "わたしの生徒",
+  },
+  "students.count": {
+    "zh-TW": "{n} 位", en: "{n} students", ja: "{n} 人",
+  },
+  "students.close": { "zh-TW": "關閉", en: "Close", ja: "閉じる" },
+  "students.intro": {
+    "zh-TW": "建立你的學生卡片 — 之後在「難度調節」/「改編建議」"
+      + "對話框可以「為 X 學生」一鍵選用. 純本地, 不上傳.",
+    en: "Build your student roster — then pick \"for X\" from the difficulty / "
+      + "arrangement dialogs to auto-fit their level. All local.",
+    ja: "生徒カードを作成 — 「難易度調整」「編曲提案」ダイアログで「○○のため」"
+      + "を選ぶと自動でレベル設定. すべてローカル保存.",
+  },
+  "students.empty": {
+    "zh-TW": "還沒有學生 — 點下方按鈕加第一位",
+    en: "No students yet — click below to add your first",
+    ja: "まだ生徒がいません — 下のボタンで追加",
+  },
+  "students.add": {
+    "zh-TW": "加學生", en: "Add student", ja: "生徒を追加",
+  },
+  "students.save": { "zh-TW": "儲存", en: "Save", ja: "保存" },
+  "students.cancel": { "zh-TW": "取消", en: "Cancel", ja: "キャンセル" },
+  "students.delete": { "zh-TW": "刪除", en: "Delete", ja: "削除" },
+  "students.confirmDelete": {
+    "zh-TW": "確定刪除 {name} 的學生卡片?",
+    en: "Delete {name}'s student card?",
+    ja: "{name} の生徒カードを削除しますか?",
+  },
+  "students.clickToEdit": {
+    "zh-TW": "點此編輯", en: "Click to edit", ja: "クリックして編集",
+  },
+  "students.namePlaceholder": {
+    "zh-TW": "學生名字", en: "Student name", ja: "生徒の名前",
+  },
+  "students.notesPlaceholder": {
+    "zh-TW": "練琴筆記 (e.g. 移把位只到第3, 跳弓還不熟) — AI 改編時會參考",
+    en: "Practice notes (e.g. only up to 3rd position, spiccato not yet) — "
+      + "AI uses this when arranging",
+    ja: "練習メモ (例: ポジション 3 まで, スピッカートはまだ) — AI が編曲時に参照",
+  },
+  "students.gradeLabel": {
+    "zh-TW": "程度 {grade}", en: "Grade {grade}", ja: "レベル {grade}",
+  },
+  "students.gradeTip": {
+    "zh-TW": "1=初級 / 2=入門 / 3=中級 / 4=進階 / 5=職業",
+    en: "1=beginner / 2=novice / 3=intermediate / 4=advanced / 5=pro",
+    ja: "1=初級 / 2=入門 / 3=中級 / 4=上級 / 5=プロ",
+  },
+  "toolbar.students.title": {
+    "zh-TW": "管理我的學生 — 為個別學生調整改編",
+    en: "Manage my students — tailor arrangements per student",
+    ja: "生徒を管理 — 個別に編曲を調整",
+  },
+  // 0.1.39: 改編對話框「為 X 學生」整合
+  "boost.forStudent": {
+    "zh-TW": "為學生", en: "For student", ja: "生徒のため",
+  },
+  "boost.forStudent.none": {
+    "zh-TW": "(不選 — 用通用難度設定)",
+    en: "(none — use generic settings)",
+    ja: "(なし — 一般設定を使用)",
+  },
+  "boost.forStudent.applied": {
+    "zh-TW": "已套用 {name} 的設定 (樂器 / 程度 / 練琴筆記)",
+    en: "Applied {name}'s settings (instrument / level / notes)",
+    ja: "{name} の設定を適用 (楽器 / レベル / メモ)",
+  },
   // 0.1.36: auto-update banner
   "update.available": {
     "zh-TW": "🔔 新版 v{version} 下載中…",

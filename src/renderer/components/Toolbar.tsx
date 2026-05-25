@@ -38,6 +38,7 @@ import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
 import { NLEditDialog } from "./NLEditDialog";
 import { PracticePanel } from "./PracticePanel";
 import { MicPracticePanel } from "./MicPracticePanel";
+import { StudentsDialog } from "./StudentsDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
@@ -171,6 +172,7 @@ export function Toolbar() {
   const [boostOpen, setBoostOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [micPracticeOpen, setMicPracticeOpen] = useState(false);
+  const [studentsOpen, setStudentsOpen] = useState(false);
   // LLM 入門精靈: 點需要 AI 的功能且 LLM 未設定時, 自動跳出
   // 設完後 pendingLLMAction 決定要打開哪個對話框
   const [setupWizardOpen, setSetupWizardOpen] = useState(false);
@@ -984,6 +986,15 @@ export function Toolbar() {
       >
         🎤
       </button>
+      {/* 0.1.39: 我的學生 — 教師工作流入口 */}
+      <button
+        onClick={() => setStudentsOpen(true)}
+        style={btnBase}
+        disabled={isLoading}
+        title={tr("toolbar.students.title")}
+      >
+        👥
+      </button>
 
       <Sep />
 
@@ -1283,6 +1294,9 @@ export function Toolbar() {
       )}
       {micPracticeOpen && (
         <MicPracticePanel onClose={() => setMicPracticeOpen(false)} />
+      )}
+      {studentsOpen && (
+        <StudentsDialog onClose={() => setStudentsOpen(false)} />
       )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog
