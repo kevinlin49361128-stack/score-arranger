@@ -132,7 +132,15 @@ export function AssignmentsPanel() {
           gap: 8,
         }}
       >
-        <span>
+        <span
+          style={{
+            // 0.1.37: en/ja 標題比較長, flex parent 空間不足時不要垂直拆字
+            // (預設 break-all 行為下日文/中文會一個字一行). flexShrink:0 確保
+            // 標題自己保完整, 沒空間則讓 QualityBadge 或右側 difficulty 自己縮.
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
           {t("assign.title", { n: arrangement.assignments.length })}
         </span>
         <QualityBadge />

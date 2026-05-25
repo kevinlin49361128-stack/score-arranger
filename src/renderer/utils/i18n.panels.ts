@@ -282,7 +282,7 @@ export const PANEL_STRINGS: BiDict = {
   },
   // 0.1.32 老師評語層
   "explanation.title": {
-    "zh-TW": "改編說明 (老師評語)",
+    "zh-TW": "改編說明",
     en: "Arrangement Explanation",
     ja: "編曲解説",
   },
@@ -458,13 +458,15 @@ export const PANEL_STRINGS: BiDict = {
   },
 
   // ── QualityBadge ────────────────────────────────────────────────────────
+  // 標籤掛在 24px ring 下方, 必須短 (≤ 4 字元 / 半形 ≤ 6) 才不會壓垮 ring
+  // 容器寬度. 完整文字走 tooltip (quality.tip*).
   "quality.label": { "zh-TW": "品質", en: "Quality", ja: "品質" },
-  "quality.melody": { "zh-TW": "旋律", en: "Melody", ja: "旋律" },
-  "quality.harmony": { "zh-TW": "和聲", en: "Harmony", ja: "和声" },
+  "quality.melody": { "zh-TW": "旋律", en: "Mel", ja: "旋律" },
+  "quality.harmony": { "zh-TW": "和聲", en: "Harm", ja: "和声" },
   "quality.playability": {
-    "zh-TW": "演奏性",
-    en: "Playability",
-    ja: "演奏可能性",
+    "zh-TW": "演奏",
+    en: "Play",
+    ja: "演奏",
   },
   "quality.tipOverall": {
     "zh-TW": "整體 {score} / 100",

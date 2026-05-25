@@ -80,7 +80,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             Score Arranger
           </strong>
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            v0.1.36
+            v0.1.37
           </span>
           <button
             onClick={onClose}

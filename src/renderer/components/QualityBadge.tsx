@@ -120,7 +120,9 @@ function Ring({ label, score }: { label: string; score: number }) {
           {pct}
         </span>
       </span>
-      <span style={{ color: "var(--fg-muted)", marginTop: 1 }}>
+      <span style={{
+        color: "var(--fg-muted)", marginTop: 1, whiteSpace: "nowrap",
+      }}>
         {label}
       </span>
     </div>

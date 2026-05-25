@@ -951,7 +951,12 @@ export function PlaybackControls(
       <div
         onClick={handleSeek}
         style={{
-          width: 140,
+          // 0.1.37: 改成 flex 伸縮 — en/ja 工具列文字較寬時, progress bar
+          // 自動吃掉空間, 不讓 ... / gear 按鈕被擠出視窗.
+          // min/max 範圍 60-160px, 視窗夠寬時不會誇張變長.
+          flex: "1 1 140px",
+          minWidth: 60,
+          maxWidth: 160,
           height: 6,
           background: "var(--bg-tertiary)",
           borderRadius: 3,
