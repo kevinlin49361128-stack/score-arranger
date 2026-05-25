@@ -99,10 +99,20 @@ attribution in the About dialog satisfies this requirement.
 
 ## 3. Musical works (bundled in `engine/core/sample_scores/`)
 
-Score Arranger ships 45 sample MusicXML files in the frozen engine binary
-(under `core/sample_scores/`). The musical works themselves are all in the
-**public domain** (composers from Bach to Verdi, all died ≥ 70 years ago).
-The MusicXML **encodings** carry varying provenance:
+Score Arranger ships 58 sample MusicXML files in the frozen engine binary
+(under `core/sample_scores/`) — 45 long-standing samples plus 13
+**OpenScore Lieder** (added 0.1.40, files prefixed `openscore_*.mxl`).
+The musical works themselves are all in the **public domain** (composers
+from Bach to Verdi, all died ≥ 70 years ago). The MusicXML **encodings**
+carry varying provenance:
+
+**OpenScore Lieder (13 files)** — sourced from
+<https://github.com/OpenScore/Lieder>, released under
+[**CC0 1.0 Universal**](https://creativecommons.org/publicdomain/zero/1.0/)
+("No Rights Reserved"). Commercial redistribution unrestricted. Files
+prefixed `openscore_*.mxl` are these — Beethoven Op.48/52 Lieder,
+Schubert Schöne Müllerin selections, Schumann Dichterliebe / Liederkreis /
+Frauenliebe selections, Brahms Op.43.
 
 **Most files** (~41 of 45) have no `<rights>` tag and were obtained from
 publicly available encoding archives. They are treated as

@@ -349,6 +349,101 @@ const PRESETS: Preset[] = [
     ensemble_key: "preset.ensemble.voiceAccomp",
     measures: 35,
   },
+
+  // ─── 0.1.40: OpenScore Lieder corpus (CC0) — 人聲+鋼琴, 多教學用 ──
+  // 從 https://github.com/OpenScore/Lieder 抓取, 全 CC0 公領域貢獻.
+  // 教學上: 人聲 + 鋼琴 雙部, 改編成弦四 / 小提琴+鋼琴 / 鋼琴獨奏 都自然.
+  {
+    corpus_path: "openscore/beethoven_op48_1_bitten",
+    name_key: "preset.piece.beethovenOp48_1Bitten",
+    era: "Classical",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 46,
+  },
+  {
+    corpus_path: "openscore/beethoven_op48_2_liebe",
+    name_key: "preset.piece.beethovenOp48_2Liebe",
+    era: "Classical",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 30,
+  },
+  {
+    corpus_path: "openscore/beethoven_op48_3_tode",
+    name_key: "preset.piece.beethovenOp48_3Tode",
+    era: "Classical",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 49,
+  },
+  {
+    corpus_path: "openscore/beethoven_op48_4_ehre",
+    name_key: "preset.piece.beethovenOp48_4Ehre",
+    era: "Classical",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 43,
+  },
+  {
+    corpus_path: "openscore/beethoven_op52_3_ruhe",
+    name_key: "preset.piece.beethovenOp52_3Ruhe",
+    era: "Classical",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 44,
+  },
+  {
+    corpus_path: "openscore/schubert_d795_1_wandern",
+    name_key: "preset.piece.schubertD795_1Wandern",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 20,
+  },
+  {
+    corpus_path: "openscore/schubert_d795_2_wohin",
+    name_key: "preset.piece.schubertD795_2Wohin",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 81,
+  },
+  {
+    corpus_path: "openscore/schubert_d795_20_wiegenlied",
+    name_key: "preset.piece.schubertD795_20Wiegenlied",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 26,
+  },
+  {
+    corpus_path: "openscore/schumann_op39_5_mondnacht",
+    name_key: "preset.piece.schumannOp39_5Mondnacht",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 68,
+  },
+  {
+    corpus_path: "openscore/schumann_op48_1_mai",
+    name_key: "preset.piece.schumannOp48_1Mai",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 27,
+  },
+  {
+    corpus_path: "openscore/schumann_op48_7_grolle",
+    name_key: "preset.piece.schumannOp48_7Grolle",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 36,
+  },
+  {
+    corpus_path: "openscore/schumann_op42_1_seitich",
+    name_key: "preset.piece.schumannOp42_1SeitIch",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 36,
+  },
+  {
+    corpus_path: "openscore/brahms_op43_1_ewigeliebe",
+    name_key: "preset.piece.brahmsOp43_1EwigeLiebe",
+    era: "Romantic",
+    ensemble_key: "preset.ensemble.voiceAccomp",
+    measures: 121,
+  },
 ];
 
 const ERA_LABEL_KEYS: Record<string, string> = {
@@ -420,6 +515,46 @@ const _PRESET_TAGS: Record<
     grade: 3, tags: ["expression", "legato"],
   },
   "verdi/laDonnaEMobile": { grade: 3, tags: ["expression", "rhythm"] },
+  // 0.1.40 OpenScore Lieder — 全部 voice+piano, 適合教 legato + expression
+  "openscore/beethoven_op48_1_bitten": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/beethoven_op48_2_liebe": {
+    grade: 2, tags: ["legato", "expression"],
+  },
+  "openscore/beethoven_op48_3_tode": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/beethoven_op48_4_ehre": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/beethoven_op52_3_ruhe": {
+    grade: 2, tags: ["legato", "expression"],
+  },
+  "openscore/schubert_d795_1_wandern": {
+    grade: 3, tags: ["rhythm", "expression"],
+  },
+  "openscore/schubert_d795_2_wohin": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/schubert_d795_20_wiegenlied": {
+    grade: 2, tags: ["legato", "expression"],
+  },
+  "openscore/schumann_op39_5_mondnacht": {
+    grade: 4, tags: ["legato", "expression"],
+  },
+  "openscore/schumann_op48_1_mai": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/schumann_op48_7_grolle": {
+    grade: 4, tags: ["expression", "rhythm"],
+  },
+  "openscore/schumann_op42_1_seitich": {
+    grade: 3, tags: ["legato", "expression"],
+  },
+  "openscore/brahms_op43_1_ewigeliebe": {
+    grade: 4, tags: ["legato", "expression"],
+  },
 };
 
 interface PresetLibraryProps {

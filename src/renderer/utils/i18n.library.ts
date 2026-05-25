@@ -349,6 +349,72 @@ export const LIBRARY_STRINGS: BiDict = {
     en: "Verdi opera Rigoletto — La donna è mobile",
     ja: "Verdi 歌劇《リゴレット》— La donna è mobile",
   },
+  // ── 0.1.40: OpenScore Lieder corpus ─────────────────────────
+  "preset.piece.beethovenOp48_1Bitten": {
+    "zh-TW": "Beethoven Op.48-1 〈祈禱〉",
+    en: "Beethoven Op.48 No.1 — Bitten (Plea)",
+    ja: "Beethoven Op.48-1 〈祈り〉",
+  },
+  "preset.piece.beethovenOp48_2Liebe": {
+    "zh-TW": "Beethoven Op.48-2 〈愛鄰人〉",
+    en: "Beethoven Op.48 No.2 — Die Liebe des Nächsten",
+    ja: "Beethoven Op.48-2 〈隣人愛〉",
+  },
+  "preset.piece.beethovenOp48_3Tode": {
+    "zh-TW": "Beethoven Op.48-3 〈論死亡〉",
+    en: "Beethoven Op.48 No.3 — Vom Tode",
+    ja: "Beethoven Op.48-3 〈死について〉",
+  },
+  "preset.piece.beethovenOp48_4Ehre": {
+    "zh-TW": "Beethoven Op.48-4 〈大自然頌神〉",
+    en: "Beethoven Op.48 No.4 — Die Ehre Gottes aus der Natur",
+    ja: "Beethoven Op.48-4 〈自然の中の神の栄光〉",
+  },
+  "preset.piece.beethovenOp52_3Ruhe": {
+    "zh-TW": "Beethoven Op.52-3 〈安息之歌〉",
+    en: "Beethoven Op.52 No.3 — Das Liedchen von der Ruhe",
+    ja: "Beethoven Op.52-3 〈安らぎの歌〉",
+  },
+  "preset.piece.schubertD795_1Wandern": {
+    "zh-TW": "Schubert《美麗的磨坊女》— 流浪",
+    en: "Schubert Schöne Müllerin — Das Wandern",
+    ja: "Schubert《美しき水車小屋の娘》— 流浪",
+  },
+  "preset.piece.schubertD795_2Wohin": {
+    "zh-TW": "Schubert《美麗的磨坊女》— 何處去",
+    en: "Schubert Schöne Müllerin — Wohin?",
+    ja: "Schubert《美しき水車小屋の娘》— どこへ?",
+  },
+  "preset.piece.schubertD795_20Wiegenlied": {
+    "zh-TW": "Schubert《美麗的磨坊女》— 小溪的搖籃曲",
+    en: "Schubert Schöne Müllerin — Des Baches Wiegenlied",
+    ja: "Schubert《美しき水車小屋の娘》— 小川の子守歌",
+  },
+  "preset.piece.schumannOp39_5Mondnacht": {
+    "zh-TW": "Schumann《Liederkreis》— 月夜",
+    en: "Schumann Liederkreis Op.39 — Mondnacht",
+    ja: "Schumann《リーダークライス》— 月夜",
+  },
+  "preset.piece.schumannOp48_1Mai": {
+    "zh-TW": "Schumann《詩人之戀》— 美麗的五月",
+    en: "Schumann Dichterliebe — Im wunderschönen Monat Mai",
+    ja: "Schumann《詩人の恋》— 美しき五月に",
+  },
+  "preset.piece.schumannOp48_7Grolle": {
+    "zh-TW": "Schumann《詩人之戀》— 我不悲嘆",
+    en: "Schumann Dichterliebe — Ich grolle nicht",
+    ja: "Schumann《詩人の恋》— 僕は恨まない",
+  },
+  "preset.piece.schumannOp42_1SeitIch": {
+    "zh-TW": "Schumann《女人的愛與生命》— 自從初見",
+    en: "Schumann Frauenliebe — Seit ich ihn gesehen",
+    ja: "Schumann《女の愛と生涯》— 初めて会った時から",
+  },
+  "preset.piece.brahmsOp43_1EwigeLiebe": {
+    "zh-TW": "Brahms Op.43-1 〈永恆之愛〉",
+    en: "Brahms Op.43 No.1 — Von ewiger Liebe",
+    ja: "Brahms Op.43-1 〈永遠の愛〉",
+  },
 
   // ── TranscribePanel ───────────────────────────────────────
   "transcribe.hint": {

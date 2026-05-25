@@ -67,6 +67,20 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "schumann_robert/dichterliebe_no2",
     "schumann_robert/opus48no2",
     "verdi/laDonnaEMobile",
+    # 0.1.40: OpenScore Lieder (CC0, MusicXML native)
+    "openscore/beethoven_op48_1_bitten",
+    "openscore/beethoven_op48_2_liebe",
+    "openscore/beethoven_op48_3_tode",
+    "openscore/beethoven_op48_4_ehre",
+    "openscore/beethoven_op52_3_ruhe",
+    "openscore/schubert_d795_1_wandern",
+    "openscore/schubert_d795_2_wohin",
+    "openscore/schubert_d795_20_wiegenlied",
+    "openscore/schumann_op39_5_mondnacht",
+    "openscore/schumann_op48_1_mai",
+    "openscore/schumann_op48_7_grolle",
+    "openscore/schumann_op42_1_seitich",
+    "openscore/brahms_op43_1_ewigeliebe",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)
@@ -88,6 +102,10 @@ _COMPOSER = {
 
 
 def _slug(corpus_id: str) -> str:
+    # 0.1.40: openscore/<slug> → openscore_<slug>.mxl
+    # (OpenScore corpus 用 '.mxl' 壓縮格式而非 .musicxml, 故 . 不替換)
+    if corpus_id.startswith("openscore/"):
+        return "openscore_" + corpus_id[len("openscore/"):]
     return corpus_id.replace("/", "_").replace(".", "-")
 
 
@@ -101,11 +119,18 @@ def _sample_dir() -> Path:
 
 
 def resolve(corpus_id: str) -> Optional[Path]:
-    """corpus_id → 隨附 .musicxml 路徑; 不在清單或檔案不存在 → None。"""
+    """corpus_id → 隨附 .musicxml / .mxl 路徑; 不在清單或檔不存在 → None.
+
+    0.1.40: 也試 .mxl (壓縮 MusicXML, OpenScore 用此格式).
+    """
     if corpus_id not in _SET:
         return None
-    path = _sample_dir() / f"{_slug(corpus_id)}.musicxml"
-    return path if path.exists() else None
+    base = _sample_dir() / _slug(corpus_id)
+    for ext in (".musicxml", ".mxl"):
+        p = base.with_suffix(ext)
+        if p.exists():
+            return p
+    return None
 
 
 def list_samples() -> list[dict[str, str]]:
