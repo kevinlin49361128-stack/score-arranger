@@ -554,7 +554,8 @@ app.whenReady().then(async () => {
     },
   );
   registerIpcHandlers();
-  await createWindow();
+  const win = await createWindow();
+  setupAutoUpdater(win);
 
   app.on("activate", async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -562,6 +563,45 @@ app.whenReady().then(async () => {
     }
   });
 });
+
+/**
+ * 0.1.36 auto-update — 啟動後 5 秒去 GitHub Releases 看 latest-mac.yml,
+ * 有新版自動背景下載. 下載完成 IPC 通知 renderer 顯示「v0.1.x 可用」banner.
+ * 純 GET 一份 yaml + 一個 zip — 沒送任何使用者資料, 不算 telemetry.
+ *
+ * dev mode (npm run dev) 跳過 — 沒打包不會有正確 channel.
+ */
+function setupAutoUpdater(win: BrowserWindow): void {
+  if (isDev) return;
+  // 延後 import 避免 dev mode 也載入 (electron-updater 會抓 app.isPackaged)
+  // biome-ignore lint/suspicious/noExplicitAny: dynamic import for prod-only dep
+  let autoUpdater: any;
+  try {
+    autoUpdater = require("electron-updater").autoUpdater;
+  } catch {
+    return;
+  }
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.on("update-available", (info: { version: string }) => {
+    win.webContents.send("update:available", { version: info.version });
+  });
+  autoUpdater.on("update-downloaded", (info: { version: string }) => {
+    win.webContents.send("update:downloaded", { version: info.version });
+  });
+  autoUpdater.on("error", (err: Error) => {
+    // 不要打擾 user — 網路問題 / GitHub 503 都是預期可能, 安靜失敗
+    console.warn("[auto-update] error:", err.message);
+  });
+  // IPC: renderer 點「重啟安裝」
+  ipcMain.handle("update:install", () => {
+    autoUpdater.quitAndInstall();
+  });
+  // 啟動 5 秒後查更新 (避免影響 cold start)
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch(() => {});
+  }, 5000);
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

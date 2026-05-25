@@ -233,6 +233,24 @@ const api = {
     toSourceMidi: (path?: string) =>
       ipcRenderer.invoke("engine:toSourceMidi", path),
   },
+
+  /**
+   * 0.1.36: auto-update — renderer 訂閱 main process 的 update 事件,
+   * 顯示「新版可下載」/「下載完成, 點重啟安裝」banner.
+   */
+  update: {
+    onAvailable: (cb: (info: { version: string }) => void) => {
+      const handler = (_e: unknown, info: { version: string }) => cb(info);
+      ipcRenderer.on("update:available", handler);
+      return () => ipcRenderer.removeListener("update:available", handler);
+    },
+    onDownloaded: (cb: (info: { version: string }) => void) => {
+      const handler = (_e: unknown, info: { version: string }) => cb(info);
+      ipcRenderer.on("update:downloaded", handler);
+      return () => ipcRenderer.removeListener("update:downloaded", handler);
+    },
+    install: () => ipcRenderer.invoke("update:install"),
+  },
 };
 
 contextBridge.exposeInMainWorld("scoreArranger", api);

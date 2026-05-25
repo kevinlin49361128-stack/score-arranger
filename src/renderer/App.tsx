@@ -38,6 +38,7 @@ import { SourcePanel } from "./components/SourcePanel";
 import { TabStrip } from "./components/TabStrip";
 import { TargetPanel } from "./components/TargetPanel";
 import { Toolbar } from "./components/Toolbar";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { TranscribePanel } from "./components/TranscribePanel";
 import { VariantBar } from "./components/VariantBar";
 import { usePersistentSize } from "./hooks/usePersistentSize";
@@ -308,6 +309,7 @@ export default function App() {
       }}
     >
       <Toolbar />
+      <UpdateBanner />
       <TabStrip />
       {showWizard && !sourcePath && (
         <OnboardingWizard

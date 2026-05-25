@@ -1,6 +1,6 @@
 {
   "name": "score-arranger",
-  "version": "0.1.35",
+  "version": "0.1.36",
   "private": true,
   "license": "GPL-3.0-only",
   "description": "Score Arranger — 智慧輔助管弦樂譜改編工具",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@tonejs/midi": "^2.0.28",
+    "electron-updater": "^6.8.3",
     "jspdf": "^4.2.1",
     "opensheetmusicdisplay": "^1.8.7",
     "pitchy": "^4.1.0",

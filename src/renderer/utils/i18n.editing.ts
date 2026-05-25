@@ -481,6 +481,23 @@ export const EDITING_STRINGS: BiDict = {
   "boost.applying": {
     "zh-TW": "套用中…", en: "Applying…", ja: "適用中…",
   },
+  // 0.1.36: auto-update banner
+  "update.available": {
+    "zh-TW": "🔔 新版 v{version} 下載中…",
+    en: "🔔 Downloading update v{version}…",
+    ja: "🔔 新バージョン v{version} をダウンロード中…",
+  },
+  "update.downloaded": {
+    "zh-TW": "✨ v{version} 已下載完成 — 點重啟安裝",
+    en: "✨ v{version} ready — click to restart and install",
+    ja: "✨ v{version} のダウンロード完了 — 再起動してインストール",
+  },
+  "update.restartToInstall": {
+    "zh-TW": "重啟安裝", en: "Restart & install", ja: "再起動してインストール",
+  },
+  "update.dismiss": {
+    "zh-TW": "暫時隱藏", en: "Dismiss", ja: "閉じる",
+  },
   // 0.1.35: Performance-Following 麥克風練習評估
   "micPractice.title": {
     "zh-TW": "麥克風練習",

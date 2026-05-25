@@ -82,6 +82,16 @@ mac:
   # 噴 Error 65 → 改在 release 腳本手動 `xcrun notarytool submit`。
   notarize: false
 
+# 0.1.36: auto-update via electron-updater. Build 時自動把 latest-mac.yml +
+# blockmap 一起送上 GitHub Release, client 端 autoUpdater 會去 latest-mac.yml
+# 看 version. 不會送任何 user data — 純 GET 一個 yaml.
+publish:
+  provider: github
+  owner: kevinlin49361128-stack
+  repo: score-arranger
+  # 預設 channel=latest. 不想 publish (本機 smoke build) 用 PUBLISH=never npm run dist:mac
+  releaseType: release
+
 dmg:
   artifactName: "${productName}-${version}-mac.${ext}"
   contents:
