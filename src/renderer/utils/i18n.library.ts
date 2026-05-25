@@ -119,6 +119,9 @@ export const LIBRARY_STRINGS: BiDict = {
   "repertoire.form.galant": {
     "zh-TW": "華麗風格", en: "Galant", ja: "ギャラント様式",
   },
+  "repertoire.form.madrigal": {
+    "zh-TW": "牧歌", en: "Madrigal", ja: "マドリガル",
+  },
 
   // ── PresetLibrary — chrome (legacy, 0.1.41 後改 RepertoireDialog) ──
   "preset.button": { "zh-TW": "範例 ▾", en: "Samples ▾", ja: "サンプル ▾" },

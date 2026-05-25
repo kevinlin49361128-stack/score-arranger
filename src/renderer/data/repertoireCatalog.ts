@@ -37,7 +37,7 @@ export type Era = "Renaissance" | "Baroque" | "Classical" | "Romantic" | "Modern
 export type Form =
   | "Chorale" | "Lied" | "Quartet" | "Sonata" | "Trio Sonata"
   | "Aria" | "Mazurka" | "Rag" | "Opera" | "Character Piece"
-  | "Mass" | "Motet" | "Hymn" | "12-Tone" | "Galant";
+  | "Mass" | "Motet" | "Hymn" | "12-Tone" | "Galant" | "Madrigal";
 export type EnsembleType =
   | "SATB" | "String Quartet" | "Trio Sonata"
   | "Voice + Piano" | "Piano Solo" | "Other";
@@ -807,6 +807,244 @@ export const REPERTOIRE: RepertoireEntry[] = [
     grade: 8, henle_level: 8,
     tags: ["counterpoint", "expression"],
   },
+
+  // ─── 0.1.43 加碼: OpenScore Lieder 24 首 + Trecento 1 首 ──────────────
+  // Brahms — Wiegenlied (搖籃曲, 全世界最有名) + Die Mainacht + 嚴肅之歌
+  {
+    corpus_path: "openscore/brahms_op49_4_wiegenlied",
+    title: "Wiegenlied Op.49 No.4 (Lullaby)",
+    composer: "Johannes Brahms", composer_dates: "1833-1897",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1868,
+    grade: 5, henle_level: 3,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/brahms_op43_2_mainacht",
+    title: "Die Mainacht Op.43 No.2",
+    composer: "Johannes Brahms", composer_dates: "1833-1897",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1864,
+    grade: 7, henle_level: 5,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/brahms_op121_3_otod",
+    title: "4 Serious Songs Op.121 No.3 — O Tod, wie bitter bist du",
+    composer: "Johannes Brahms", composer_dates: "1833-1897",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1896,
+    grade: 8, henle_level: 6,
+    tags: ["expression", "legato"],
+  },
+  // Schubert — Heidenröslein, Ave Maria (D.839), Du bist die Ruh
+  {
+    corpus_path: "openscore/schubert_op3_3_heidenroeslein",
+    title: "Heidenröslein D.257",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1815,
+    grade: 3, henle_level: 2,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d839_ave_maria",
+    title: "Ave Maria D.839 (Ellens Gesang III)",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1825,
+    grade: 4, henle_level: 3,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_op59_3_dubist",
+    title: "Du bist die Ruh D.776",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1823,
+    grade: 6, henle_level: 4,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_op59_4_lachen",
+    title: "Lachen und Weinen D.777",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1823,
+    grade: 6, henle_level: 4,
+    tags: ["rhythm", "expression"],
+  },
+  // Schumann R — Op.39 / Op.48 / Op.42 補完
+  {
+    corpus_path: "openscore/schumann_op39_3_waldes",
+    title: "Liederkreis Op.39 No.3 — Waldesgespräch",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840,
+    grade: 6, henle_level: 5,
+    tags: ["expression", "rhythm"],
+  },
+  {
+    corpus_path: "openscore/schumann_op39_12_fruhling",
+    title: "Liederkreis Op.39 No.12 — Frühlingsnacht",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840,
+    grade: 7, henle_level: 6,
+    tags: ["rhythm", "expression"],
+  },
+  {
+    corpus_path: "openscore/schumann_op48_13_traum",
+    title: "Dichterliebe No.13 — Ich hab' im Traum geweinet",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840,
+    grade: 5, henle_level: 4,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schumann_op42_2_herrlichste",
+    title: "Frauenliebe No.2 — Er, der Herrlichste von allen",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840,
+    grade: 7, henle_level: 5,
+    tags: ["expression", "legato"],
+  },
+  // Mahler — Kindertotenlieder + Lieder eines fahrenden Gesellen
+  {
+    corpus_path: "openscore/mahler_kinder_1_sonn",
+    title: "Kindertotenlieder No.1 — Nun will die Sonn' so hell aufgeh'n",
+    composer: "Gustav Mahler", composer_dates: "1860-1911",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1904,
+    grade: 8, henle_level: 7,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/mahler_kinder_4_oft",
+    title: "Kindertotenlieder No.4 — Oft denk' ich, sie sind nur ausgegangen",
+    composer: "Gustav Mahler", composer_dates: "1860-1911",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1904,
+    grade: 8, henle_level: 7,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "openscore/mahler_gesellen_2_gieng",
+    title: "Lieder eines fahrenden Gesellen No.2 — Gieng heut morgen",
+    composer: "Gustav Mahler", composer_dates: "1860-1911",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1885,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "rhythm"],
+  },
+  {
+    corpus_path: "openscore/mahler_gesellen_4_augen",
+    title: "Lieder eines fahrenden Gesellen No.4 — Die zwei blauen Augen",
+    composer: "Gustav Mahler", composer_dates: "1860-1911",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1885,
+    grade: 8, henle_level: 7,
+    tags: ["legato", "expression"],
+  },
+  // Wolf Mörike-Lieder — Verborgenheit + Nimmersatte Liebe
+  {
+    corpus_path: "openscore/wolf_morike_12_verbor",
+    title: "Mörike-Lieder No.12 — Verborgenheit",
+    composer: "Hugo Wolf", composer_dates: "1860-1903",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888,
+    grade: 6, henle_level: 5,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/wolf_morike_9_nimmer",
+    title: "Mörike-Lieder No.9 — Nimmersatte Liebe",
+    composer: "Hugo Wolf", composer_dates: "1860-1903",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "rhythm"],
+  },
+  // Strauss R — Op.27 (新婚禮物給太太, Morgen! 必教)
+  {
+    corpus_path: "openscore/strauss_op27_2_caecilie",
+    title: "4 Lieder Op.27 No.2 — Cäcilie",
+    composer: "Richard Strauss", composer_dates: "1864-1949",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1894,
+    grade: 8, henle_level: 7,
+    tags: ["expression", "rhythm"],
+  },
+  {
+    corpus_path: "openscore/strauss_op27_3_heimliche",
+    title: "4 Lieder Op.27 No.3 — Heimliche Aufforderung",
+    composer: "Richard Strauss", composer_dates: "1864-1949",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1894,
+    grade: 8, henle_level: 7,
+    tags: ["expression", "rhythm"],
+  },
+  {
+    corpus_path: "openscore/strauss_op27_4_morgen",
+    title: "4 Lieder Op.27 No.4 — Morgen!",
+    composer: "Richard Strauss", composer_dates: "1864-1949",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1894,
+    grade: 7, henle_level: 6,
+    tags: ["legato", "expression"],
+  },
+  // Fauré — 法國藝術歌曲
+  {
+    corpus_path: "openscore/faure_op27_1_chanson",
+    title: "Chanson d'amour Op.27 No.1",
+    composer: "Gabriel Fauré", composer_dates: "1845-1924",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1882,
+    grade: 5, henle_level: 4,
+    tags: ["legato", "expression"],
+  },
+  // Debussy — 印象主義
+  {
+    corpus_path: "openscore/debussy_ariettes_2_ilpleure",
+    title: "Ariettes Oubliées No.2 — Il pleure dans mon coeur",
+    composer: "Claude Debussy", composer_dates: "1862-1918",
+    era: "Modern", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/debussy_bilitis_1_flute",
+    title: "Trois Chansons de Bilitis No.1 — La flûte de Pan",
+    composer: "Claude Debussy", composer_dates: "1862-1918",
+    era: "Modern", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1897,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "legato"],
+  },
+  // Berlioz — Les nuits d'été (法國歌曲套曲)
+  {
+    corpus_path: "openscore/berlioz_nuits_1_villanelle",
+    title: "Les nuits d'été Op.7 No.1 — Villanelle",
+    composer: "Hector Berlioz", composer_dates: "1803-1869",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1841,
+    grade: 7, henle_level: 5,
+    tags: ["rhythm", "expression"],
+  },
+
+  // ─── 0.1.43 Medieval — Trecento Italian ars nova ────────────────────
+  {
+    corpus_path: "trecento/PMFC_04-Cara mi donna",
+    title: "Cara mi donna (Trecento Italian Madrigal)",
+    composer: "Anonymous (Trecento)", composer_dates: "c.1350",
+    era: "Renaissance", form: "Madrigal", ensemble: "Other",
+    instruments: ["voice"], year: 1350, measures: 55,
+    henle_level: 5,
+    tags: ["counterpoint", "rhythm"],
+  },
 ];
 
 // ============================================================================
@@ -832,7 +1070,7 @@ export const ALL_ERAS: Era[] = [
 export const ALL_FORMS: Form[] = [
   "Chorale", "Lied", "Quartet", "Sonata", "Trio Sonata",
   "Aria", "Mazurka", "Rag", "Opera", "Character Piece",
-  "Mass", "Motet", "Hymn", "12-Tone", "Galant",
+  "Mass", "Motet", "Hymn", "12-Tone", "Galant", "Madrigal",
 ];
 export const ALL_ENSEMBLES: EnsembleType[] = [
   "SATB", "String Quartet", "Trio Sonata",

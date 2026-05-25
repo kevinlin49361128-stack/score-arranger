@@ -92,6 +92,79 @@ PIECES = [
     # ─── Lili Boulanger ──
     ("Boulanger,_Lili", "Clairières_dans_le_ciel", "1_Elle_était_descendue",
      "lc5135901", "boulanger_clairieres_1", "Romantic"),
+
+    # ─── 0.1.43 加碼 — 大師名曲補完 ────────────────────────────────
+    # Brahms 名曲: Wiegenlied (搖籃曲 必教), Die Mainacht, Op.121 嚴肅之歌
+    ("Brahms,_Johannes", "5_Lieder,_Op.49", "4_Wiegenlied",
+     "", "brahms_op49_4_wiegenlied", "Romantic"),
+    ("Brahms,_Johannes", "4_Songs,_Op.43", "2_Die_Mainacht",
+     "", "brahms_op43_2_mainacht", "Romantic"),
+    ("Brahms,_Johannes", "4_Serious_Songs,_Op.121",
+     "3_O_Tod,_wie_bitter_bist_du!",
+     "", "brahms_op121_3_otod", "Romantic"),
+    # Schubert 名曲: Heidenröslein, Ave Maria, Du bist die Ruh
+    ("Schubert,_Franz", "Op.3", "3_Heidenröslein,_D.257",
+     "", "schubert_op3_3_heidenroeslein", "Romantic"),
+    ("Schubert,_Franz", "Op.52", "6_Ellens_Gesang_III,_D.839_(Ave_Maria)",
+     "", "schubert_d839_ave_maria", "Romantic"),
+    ("Schubert,_Franz", "Op.59", "3_Du_bist_die_Ruh",
+     "", "schubert_op59_3_dubist", "Romantic"),
+    ("Schubert,_Franz", "Op.59", "4_Lachen_und_Weinen",
+     "", "schubert_op59_4_lachen", "Romantic"),
+    # Schumann R 補幾首
+    ("Schumann,_Robert", "Liederkreis,_Op.39", "3_Waldesgespräch",
+     "", "schumann_op39_3_waldes", "Romantic"),
+    ("Schumann,_Robert", "Liederkreis,_Op.39", "12_Frühlingsnacht",
+     "", "schumann_op39_12_fruhling", "Romantic"),
+    ("Schumann,_Robert", "Dichterliebe,_Op.48",
+     "13_Ich_hab’_im_Traum_geweinet",
+     "", "schumann_op48_13_traum", "Romantic"),
+    ("Schumann,_Robert", "Frauenliebe_und_Leben,_Op.42",
+     "2_Er,_der_Herrlichste_von_allen",
+     "", "schumann_op42_2_herrlichste", "Romantic"),
+    # Mahler — Kindertotenlieder + Lieder eines fahrenden Gesellen
+    ("Mahler,_Gustav", "Kindertotenlieder",
+     "1_Nun_will_die_Sonn’_so_hell_aufgeh’n",
+     "", "mahler_kinder_1_sonn", "Romantic"),
+    ("Mahler,_Gustav", "Kindertotenlieder",
+     "4_Oft_denk’_ich,_sie_sind_nur_ausgegangen",
+     "", "mahler_kinder_4_oft", "Romantic"),
+    ("Mahler,_Gustav", "Lieder_eines_fahrenden_Gesellen",
+     "2_Gieng_heut_morgen_übers_Feld",
+     "", "mahler_gesellen_2_gieng", "Romantic"),
+    ("Mahler,_Gustav", "Lieder_eines_fahrenden_Gesellen",
+     "4_Die_zwei_blauen_Augen_von_meinem_Schatz",
+     "", "mahler_gesellen_4_augen", "Romantic"),
+    # Wolf Mörike-Lieder 名曲
+    ("Wolf,_Hugo", "Mörike-Lieder", "12_Verborgenheit",
+     "", "wolf_morike_12_verbor", "Romantic"),
+    ("Wolf,_Hugo", "Mörike-Lieder", "5_Der_Tambour",
+     "", "wolf_morike_5_tambour", "Romantic"),
+    ("Wolf,_Hugo", "Mörike-Lieder", "9_Nimmersatte_Liebe",
+     "", "wolf_morike_9_nimmer", "Romantic"),
+    # Strauss R — Op.27 名歌 (Morgen! 必教)
+    ("Strauss,_Richard", "4_Lieder,_Op.27", "2_Cäcilie",
+     "", "strauss_op27_2_caecilie", "Romantic"),
+    ("Strauss,_Richard", "4_Lieder,_Op.27", "3_Heimliche_Aufforderung",
+     "", "strauss_op27_3_heimliche", "Romantic"),
+    ("Strauss,_Richard", "4_Lieder,_Op.27", "4_Morgen!",
+     "", "strauss_op27_4_morgen", "Romantic"),
+    # Fauré — Chanson d'amour
+    ("Fauré,_Gabriel", "Op.27", "1_Chanson_d’amour",
+     "", "faure_op27_1_chanson", "Romantic"),
+    # Debussy — Ariettes Oubliées, Bilitis (Modern 印象主義)
+    ("Debussy,_Claude", "Ariettes_Oubliées",
+     "2_Il_pleure_dans_mon_coeur",
+     "", "debussy_ariettes_2_ilpleure", "Modern"),
+    ("Debussy,_Claude", "Trois_Chansons_de_Bilitis",
+     "1_La_flûte_de_Pan",
+     "", "debussy_bilitis_1_flute", "Modern"),
+    # Berlioz — Les nuits d'été (法國名套曲)
+    ("Berlioz,_Hector", "Les_nuits_d’été,_Op.7", "1_Villanelle",
+     "", "berlioz_nuits_1_villanelle", "Romantic"),
+    # Berg — Op.2 (極早期, 將進入無調性)
+    ("Berg,_Alban", "4_Gesänge,_Op.2", "1_Schlafen,_schlafen,_nichts_als_schlafen!",
+     "", "berg_op2_1_schlafen", "Modern"),
 ]
 
 

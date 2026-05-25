@@ -106,6 +106,34 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "schoenberg/opus19/movement2",
     "schoenberg/opus19/movement6",
     "webern/webern_dormi_jesu_op_16_no_2",
+    # 0.1.43: 加碼 — OpenScore Lieder 25 首 + 美 / Medieval 3 首
+    # OpenScore Lieder 大師名曲
+    "openscore/brahms_op49_4_wiegenlied",
+    "openscore/brahms_op43_2_mainacht",
+    "openscore/brahms_op121_3_otod",
+    "openscore/schubert_op3_3_heidenroeslein",
+    "openscore/schubert_d839_ave_maria",
+    "openscore/schubert_op59_3_dubist",
+    "openscore/schubert_op59_4_lachen",
+    "openscore/schumann_op39_3_waldes",
+    "openscore/schumann_op39_12_fruhling",
+    "openscore/schumann_op48_13_traum",
+    "openscore/schumann_op42_2_herrlichste",
+    "openscore/mahler_kinder_1_sonn",
+    "openscore/mahler_kinder_4_oft",
+    "openscore/mahler_gesellen_2_gieng",
+    "openscore/mahler_gesellen_4_augen",
+    "openscore/wolf_morike_12_verbor",
+    "openscore/wolf_morike_9_nimmer",
+    "openscore/strauss_op27_2_caecilie",
+    "openscore/strauss_op27_3_heimliche",
+    "openscore/strauss_op27_4_morgen",
+    "openscore/faure_op27_1_chanson",
+    "openscore/debussy_ariettes_2_ilpleure",
+    "openscore/debussy_bilitis_1_flute",
+    "openscore/berlioz_nuits_1_villanelle",
+    # trecento (Medieval 義大利 ars nova, 14C)
+    "trecento/PMFC_04-Cara mi donna",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)

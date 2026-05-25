@@ -63,6 +63,13 @@ PIECES: list[tuple[str, str]] = [
     ("schoenberg/opus19/movement6", "schoenberg_op19_movement6"),
     # Webern Op.16 No.2 (1924) — 序列主義
     ("webern/webern_dormi_jesu_op_16_no_2", "webern_op16_no2"),
+
+    # ─── 0.1.43 加碼 — 美國 + Medieval ──────────────────────────────
+    # leadSheet (美國 Tin Pan Alley + Foster 民謠)
+    ("leadSheet/berlinAlexandersRagtime", "berlin_alexanders_ragtime"),
+    ("leadSheet/fosterBrownHair", "foster_brown_hair"),
+    # Trecento (14 世紀義大利 ars nova — 文藝復興前 medieval)
+    ("trecento/PMFC_04-Cara mi donna", "trecento_cara_mi_donna"),
 ]
 
 
