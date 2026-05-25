@@ -1044,7 +1044,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
               {t("scoreViewer.empty")}
             </div>
             {/* 功能按鈕 — 直接走捷徑, 不必先找 toolbar.
-                CustomEvent 解耦: Toolbar / PresetLibrary 自己 useEffect listen,
+                CustomEvent 解耦: Toolbar 自己 useEffect listen,
                 避免 ScoreViewer 跟它們耦合。 */}
             <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
               <button

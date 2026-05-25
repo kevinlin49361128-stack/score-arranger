@@ -43,7 +43,7 @@ import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
-import { PresetLibrary } from "./PresetLibrary";
+import { RepertoireDialog } from "./RepertoireDialog";
 import { ZoomControls } from "./ZoomControls";
 import { useSessionStore } from "../stores/sessionStore";
 import {
@@ -173,6 +173,17 @@ export function Toolbar() {
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [micPracticeOpen, setMicPracticeOpen] = useState(false);
   const [studentsOpen, setStudentsOpen] = useState(false);
+  const [repertoireOpen, setRepertoireOpen] = useState(false);
+  // 0.1.41: 空狀態畫面的「試用範例」按鈕 / 老 CustomEvent 都打開新 Dialog
+  useEffect(() => {
+    const handler = () => setRepertoireOpen(true);
+    window.addEventListener("sa:request-open-preset-library", handler);
+    window.addEventListener("sa:request-open-repertoire", handler);
+    return () => {
+      window.removeEventListener("sa:request-open-preset-library", handler);
+      window.removeEventListener("sa:request-open-repertoire", handler);
+    };
+  }, []);
   // LLM 入門精靈: 點需要 AI 的功能且 LLM 未設定時, 自動跳出
   // 設完後 pendingLLMAction 決定要打開哪個對話框
   const [setupWizardOpen, setSetupWizardOpen] = useState(false);
@@ -707,7 +718,14 @@ export function Toolbar() {
       <button onClick={handleImport} style={btnBase} disabled={isLoading}>
         {tr("toolbar.import")}
       </button>
-      <PresetLibrary buttonStyle={btnBase} disabled={isLoading} />
+      <button
+        onClick={() => setRepertoireOpen(true)}
+        style={btnBase}
+        disabled={isLoading}
+        title={tr("repertoire.title")}
+      >
+        {tr("repertoire.button")}
+      </button>
       <button
         onClick={handleOpenProject}
         style={btnIcon}
@@ -1297,6 +1315,9 @@ export function Toolbar() {
       )}
       {studentsOpen && (
         <StudentsDialog onClose={() => setStudentsOpen(false)} />
+      )}
+      {repertoireOpen && (
+        <RepertoireDialog onClose={() => setRepertoireOpen(false)} />
       )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog

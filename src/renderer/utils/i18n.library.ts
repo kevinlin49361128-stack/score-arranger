@@ -4,7 +4,111 @@ import type { BiDict } from "./i18n";
  * 範例曲庫 / 移植介面字串 — PresetLibrary / TranscribePanel / SetupHint。
  */
 export const LIBRARY_STRINGS: BiDict = {
-  // ── PresetLibrary — chrome ────────────────────────────────
+  // ── 0.1.41 RepertoireDialog (取代 PresetLibrary dropdown) ──
+  "repertoire.button": {
+    "zh-TW": "📚 曲目庫",
+    en: "📚 Repertoire",
+    ja: "📚 曲目データベース",
+  },
+  "repertoire.title": {
+    "zh-TW": "曲目資料庫",
+    en: "Repertoire database",
+    ja: "曲目データベース",
+  },
+  "repertoire.searchPlaceholder": {
+    "zh-TW": "搜尋曲名 / 作曲家...",
+    en: "Search title / composer...",
+    ja: "タイトル / 作曲家を検索...",
+  },
+  "repertoire.results": {
+    "zh-TW": "{filtered} / {total} 首",
+    en: "{filtered} / {total} pieces",
+    ja: "{filtered} / {total} 曲",
+  },
+  "repertoire.clearAll": {
+    "zh-TW": "清除篩選 ({n})",
+    en: "Clear filters ({n})",
+    ja: "フィルター解除 ({n})",
+  },
+  "repertoire.close": { "zh-TW": "關閉", en: "Close", ja: "閉じる" },
+  "repertoire.empty": {
+    "zh-TW": "沒有符合的曲目, 試試清掉部分篩選器",
+    en: "No matching pieces — try clearing some filters",
+    ja: "該当する曲目がありません。フィルターを解除してみてください",
+  },
+  "repertoire.filter.era": { "zh-TW": "時代", en: "Era", ja: "時代" },
+  "repertoire.filter.ensemble": {
+    "zh-TW": "編制", en: "Ensemble", ja: "編成",
+  },
+  "repertoire.filter.form": { "zh-TW": "形式", en: "Form", ja: "形式" },
+  "repertoire.filter.composer": {
+    "zh-TW": "作曲家", en: "Composer", ja: "作曲家",
+  },
+  "repertoire.filter.grade": {
+    "zh-TW": "難度 (ABRSM / Henle)",
+    en: "Grade (ABRSM / Henle)",
+    ja: "難易度 (ABRSM / Henle)",
+  },
+  "repertoire.filter.tags": {
+    "zh-TW": "教學主旨", en: "Teaching tags", ja: "教育主旨",
+  },
+  "repertoire.gradeRange": {
+    "zh-TW": "等級 {min} – {max}",
+    en: "Grades {min} – {max}",
+    ja: "等級 {min} – {max}",
+  },
+  "repertoire.gradeMinTip": {
+    "zh-TW": "最低難度",
+    en: "Minimum grade",
+    ja: "最低難易度",
+  },
+  "repertoire.gradeMaxTip": {
+    "zh-TW": "最高難度",
+    en: "Maximum grade",
+    ja: "最高難易度",
+  },
+  "repertoire.gradeNote": {
+    "zh-TW": "1-2 入門 · 3-5 中階 · 6-8 進階 · 9 Diploma",
+    en: "1-2 Beginner · 3-5 Intermediate · 6-8 Advanced · 9 Diploma",
+    ja: "1-2 入門 · 3-5 中級 · 6-8 上級 · 9 Diploma",
+  },
+  // Era keys (lowercase) — 也供 EntryRow 用
+  "repertoire.era.baroque": { "zh-TW": "巴洛克", en: "Baroque", ja: "バロック" },
+  "repertoire.era.classical": { "zh-TW": "古典", en: "Classical", ja: "古典派" },
+  "repertoire.era.romantic": { "zh-TW": "浪漫派", en: "Romantic", ja: "ロマン派" },
+  "repertoire.era.modern": { "zh-TW": "現代", en: "Modern", ja: "現代" },
+  // Ensemble keys (camelCase, 從 EnsembleType 推出)
+  "repertoire.ensemble.sATB": { "zh-TW": "SATB 合唱", en: "SATB", ja: "SATB 合唱" },
+  "repertoire.ensemble.stringQuartet": {
+    "zh-TW": "弦樂四重奏", en: "String quartet", ja: "弦楽四重奏",
+  },
+  "repertoire.ensemble.trioSonata": {
+    "zh-TW": "三重奏鳴曲", en: "Trio sonata", ja: "トリオ・ソナタ",
+  },
+  "repertoire.ensemble.voicePiano": {
+    "zh-TW": "聲樂 + 鋼琴", en: "Voice + piano", ja: "声楽 + ピアノ",
+  },
+  "repertoire.ensemble.pianoSolo": {
+    "zh-TW": "鋼琴獨奏", en: "Piano solo", ja: "ピアノ独奏",
+  },
+  "repertoire.ensemble.other": { "zh-TW": "其他", en: "Other", ja: "その他" },
+  // Form keys (lowercase, 從 Form 推出)
+  "repertoire.form.chorale": { "zh-TW": "聖詠", en: "Chorale", ja: "コラール" },
+  "repertoire.form.lied": { "zh-TW": "藝術歌曲", en: "Lied", ja: "リート" },
+  "repertoire.form.quartet": { "zh-TW": "四重奏", en: "Quartet", ja: "四重奏" },
+  "repertoire.form.sonata": { "zh-TW": "奏鳴曲", en: "Sonata", ja: "ソナタ" },
+  "repertoire.form.trioSonata": {
+    "zh-TW": "三重奏鳴曲", en: "Trio sonata", ja: "トリオ・ソナタ",
+  },
+  "repertoire.form.aria": { "zh-TW": "詠嘆調", en: "Aria", ja: "アリア" },
+  "repertoire.form.mazurka": { "zh-TW": "馬厝卡", en: "Mazurka", ja: "マズルカ" },
+  "repertoire.form.rag": { "zh-TW": "繁音曲", en: "Rag", ja: "ラグ" },
+  "repertoire.form.opera": { "zh-TW": "歌劇", en: "Opera", ja: "オペラ" },
+  "repertoire.form.characterPiece": {
+    "zh-TW": "性格小品", en: "Character piece", ja: "性格的小品",
+  },
+
+  // ── PresetLibrary — chrome (legacy, 0.1.41 後改 RepertoireDialog) ──
   "preset.button": { "zh-TW": "範例 ▾", en: "Samples ▾", ja: "サンプル ▾" },
   "preset.badge.xl": { "zh-TW": "XL", en: "XL", ja: "XL" },
   "preset.badge.xl.title": {
@@ -567,16 +671,18 @@ export const LIBRARY_STRINGS: BiDict = {
   },
   "setupHint.intro": {
     "zh-TW":
-      "從上方工具列點「匯入總譜」匯入 MusicXML 檔, 或點「範例 ▾」直接載入 "
-      + "28 首巴洛克 / 古典 / 浪漫派作品其中之一。",
+      "從上方工具列點「匯入總譜」匯入 MusicXML 檔, 或點「📚 曲目庫」開啟"
+      + "資料庫, 從 58 首巴洛克 / 古典 / 浪漫派曲目中以時代 / 作曲家 / 編制 / "
+      + "難度多重篩選找到合適的範例。",
     en:
       "Click \"Import score\" on the toolbar to import a MusicXML file, or "
-      + "click \"Samples ▾\" to load one of 28 Baroque / Classical / Romantic "
-      + "works directly.",
+      + "click \"📚 Repertoire\" to open the database and filter 58 Baroque / "
+      + "Classical / Romantic pieces by era, composer, ensemble, or grade.",
     ja:
       "上部のツールバーで「総譜を取り込む」をクリックして MusicXML "
-      + "ファイルを取り込むか、「サンプル ▾」をクリックして 28 曲の"
-      + "バロック / 古典派 / ロマン派の作品から 1 つを直接読み込めます。",
+      + "ファイルを取り込むか、「📚 曲目データベース」をクリックして 58 曲の"
+      + "バロック / 古典派 / ロマン派の作品を時代 / 作曲家 / 編成 / 難易度で"
+      + "絞り込んで選べます。",
   },
   "setupHint.workflowHeader": {
     "zh-TW": "┌─ 工作流階段 ─┐",
