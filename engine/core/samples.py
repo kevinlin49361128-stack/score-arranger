@@ -81,6 +81,31 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "openscore/schumann_op48_7_grolle",
     "openscore/schumann_op42_1_seitich",
     "openscore/brahms_op43_1_ewigeliebe",
+    # 0.1.42: music21 corpus export — 補時代 / 地理多樣性
+    # Bach 聖詠 (10 首加碼)
+    "bach/bwv269",
+    "bach/bwv347",
+    "bach/bwv267",
+    "bach/bwv17.7",
+    "bach/bwv40.8",
+    "bach/bwv38.6",
+    "bach/bwv33.6",
+    "bach/bwv277",
+    "bach/bwv178.7",
+    "bach/bwv32.6",
+    # 文藝復興
+    "ciconia/quod_jactatur",
+    "palestrina/Kyrie",
+    "palestrina/Agnus",
+    # 巴洛克補充
+    "cpebach/h186",
+    # 浪漫補充 (美 / 夏威夷)
+    "beach/prayer_of_a_tired_child",
+    "liliuokalani/aloha_oe",
+    # 現代 (20 世紀)
+    "schoenberg/opus19/movement2",
+    "schoenberg/opus19/movement6",
+    "webern/webern_dormi_jesu_op_16_no_2",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)

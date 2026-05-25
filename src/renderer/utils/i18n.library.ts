@@ -77,6 +77,9 @@ export const LIBRARY_STRINGS: BiDict = {
   "repertoire.era.classical": { "zh-TW": "古典", en: "Classical", ja: "古典派" },
   "repertoire.era.romantic": { "zh-TW": "浪漫派", en: "Romantic", ja: "ロマン派" },
   "repertoire.era.modern": { "zh-TW": "現代", en: "Modern", ja: "現代" },
+  "repertoire.era.renaissance": {
+    "zh-TW": "文藝復興", en: "Renaissance", ja: "ルネサンス",
+  },
   // Ensemble keys (camelCase, 從 EnsembleType 推出)
   "repertoire.ensemble.sATB": { "zh-TW": "SATB 合唱", en: "SATB", ja: "SATB 合唱" },
   "repertoire.ensemble.stringQuartet": {
@@ -106,6 +109,15 @@ export const LIBRARY_STRINGS: BiDict = {
   "repertoire.form.opera": { "zh-TW": "歌劇", en: "Opera", ja: "オペラ" },
   "repertoire.form.characterPiece": {
     "zh-TW": "性格小品", en: "Character piece", ja: "性格的小品",
+  },
+  "repertoire.form.mass": { "zh-TW": "彌撒", en: "Mass", ja: "ミサ曲" },
+  "repertoire.form.motet": { "zh-TW": "經文歌", en: "Motet", ja: "モテット" },
+  "repertoire.form.hymn": { "zh-TW": "聖歌", en: "Hymn", ja: "賛美歌" },
+  "repertoire.form.12-tone": {
+    "zh-TW": "十二音技法", en: "12-tone", ja: "12 音技法",
+  },
+  "repertoire.form.galant": {
+    "zh-TW": "華麗風格", en: "Galant", ja: "ギャラント様式",
   },
 
   // ── PresetLibrary — chrome (legacy, 0.1.41 後改 RepertoireDialog) ──

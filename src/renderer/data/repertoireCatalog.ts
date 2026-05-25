@@ -33,10 +33,11 @@
  *   expression / rhythm / ensemble / staccato). 留空也 OK.
  */
 
-export type Era = "Baroque" | "Classical" | "Romantic" | "Modern";
+export type Era = "Renaissance" | "Baroque" | "Classical" | "Romantic" | "Modern";
 export type Form =
   | "Chorale" | "Lied" | "Quartet" | "Sonata" | "Trio Sonata"
-  | "Aria" | "Mazurka" | "Rag" | "Opera" | "Character Piece";
+  | "Aria" | "Mazurka" | "Rag" | "Opera" | "Character Piece"
+  | "Mass" | "Motet" | "Hymn" | "12-Tone" | "Galant";
 export type EnsembleType =
   | "SATB" | "String Quartet" | "Trio Sonata"
   | "Voice + Piano" | "Piano Solo" | "Other";
@@ -618,6 +619,194 @@ export const REPERTOIRE: RepertoireEntry[] = [
     grade: 7, henle_level: 6,
     tags: ["legato", "expression"],
   },
+
+  // ─── 0.1.42 加碼: music21 corpus export (時代多樣性) ─────────────────────
+  // Bach 聖詠 10 首加碼 — 4 部 SATB 對位教學經典, Henle 2 / ABRSM 4
+  {
+    corpus_path: "bach/bwv269",
+    title: "Aus meines Herzens Grunde (BWV 269)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1725, measures: 24,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "bach/bwv347",
+    title: "Ich dank' dir, lieber Herre (BWV 347)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1735, measures: 16,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "bach/bwv267",
+    title: "Ein Lämmlein geht und trägt die Schuld (BWV 267)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1735, measures: 20,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "expression"],
+  },
+  {
+    corpus_path: "bach/bwv17.7",
+    title: "Nun lob', mein' Seel', den Herren (BWV 17.7)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1726, measures: 42,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "expression"],
+  },
+  {
+    corpus_path: "bach/bwv40.8",
+    title: "Freuet euch, ihr Christen alle (BWV 40.8)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1723, measures: 20,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "bach/bwv38.6",
+    title: "Aus tiefer Not schrei' ich zu dir (BWV 38.6)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1724, measures: 13,
+    grade: 3, henle_level: 2,
+    tags: ["counterpoint", "expression"],
+  },
+  {
+    corpus_path: "bach/bwv33.6",
+    title: "Allein zu dir, Herr Jesu Christ (BWV 33.6)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1724, measures: 20,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "bach/bwv277",
+    title: "Christ lag in Todesbanden (BWV 277, alt.)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1735, measures: 14,
+    grade: 3, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "bach/bwv178.7",
+    title: "Was Gott tut, das ist wohlgetan (BWV 178.7)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1724, measures: 15,
+    grade: 4, henle_level: 2,
+    tags: ["counterpoint", "expression"],
+  },
+  {
+    corpus_path: "bach/bwv32.6",
+    title: "Mein Gott, öffne mir die Pforten (BWV 32.6)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1726, measures: 13,
+    grade: 3, henle_level: 2,
+    tags: ["counterpoint", "legato"],
+  },
+
+  // ─── Renaissance (1400-1600) — 新增時代 ────────────────────────────────
+  // Ciconia (1370-1412) — 早期文藝復興過渡, 單聲部 ars subtilior
+  {
+    corpus_path: "ciconia/quod_jactatur",
+    title: "Quod Jactatur (Ciconia)",
+    composer: "Johannes Ciconia", composer_dates: "1370-1412",
+    era: "Renaissance", form: "Motet", ensemble: "Other",
+    instruments: ["voice"], year: 1410, measures: 35,
+    henle_level: 4,
+    tags: ["rhythm", "expression"],
+  },
+  // Palestrina Missa Papae Marcelli (~1562) — Stile antico 對位範本
+  {
+    corpus_path: "palestrina/Kyrie",
+    title: "Kyrie (from Missa Papae Marcelli)",
+    composer: "Giovanni Pierluigi da Palestrina",
+    composer_dates: "1525-1594",
+    era: "Renaissance", form: "Mass", ensemble: "Other",
+    instruments: ["voice"], year: 1562, measures: 21,
+    henle_level: 5,
+    tags: ["counterpoint", "legato"],
+  },
+  {
+    corpus_path: "palestrina/Agnus",
+    title: "Agnus Dei (Palestrina, 5 voices)",
+    composer: "Giovanni Pierluigi da Palestrina",
+    composer_dates: "1525-1594",
+    era: "Renaissance", form: "Mass", ensemble: "Other",
+    instruments: ["voice"], year: 1565, measures: 45,
+    henle_level: 5,
+    tags: ["counterpoint", "legato"],
+  },
+
+  // ─── Baroque 補充 (CPE Bach 過渡至 Galant) ──────────────────────────────
+  {
+    corpus_path: "cpebach/h186",
+    title: "Solfeggietto-style Piece (H.186)",
+    composer: "Carl Philipp Emanuel Bach", composer_dates: "1714-1788",
+    era: "Baroque", form: "Galant", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1770, measures: 32,
+    grade: 5, henle_level: 5,
+    tags: ["scales", "expression"],
+  },
+
+  // ─── Romantic 補充 (美 / 夏威夷, 地理多樣) ──────────────────────────────
+  {
+    corpus_path: "beach/prayer_of_a_tired_child",
+    title: "Prayer of a Tired Child",
+    composer: "Amy Beach", composer_dates: "1867-1944",
+    era: "Romantic", form: "Hymn", ensemble: "Other",
+    instruments: ["voice", "piano"], year: 1922, measures: 31,
+    grade: 4, henle_level: 5,
+    tags: ["legato", "expression"],
+  },
+  {
+    corpus_path: "liliuokalani/aloha_oe",
+    title: "Aloha 'Oe",
+    composer: "Lili'uokalani", composer_dates: "1838-1917",
+    era: "Romantic", form: "Hymn", ensemble: "Other",
+    instruments: ["voice"], year: 1878, measures: 23,
+    grade: 3, henle_level: 2,
+    tags: ["legato", "expression"],
+  },
+
+  // ─── Modern (20 世紀) — 新增時代 ────────────────────────────────────────
+  // Schoenberg Op.19 6 Little Piano Pieces (1911) — 自由無調性入門
+  {
+    corpus_path: "schoenberg/opus19/movement2",
+    title: "6 Little Piano Pieces Op.19 No.2",
+    composer: "Arnold Schoenberg", composer_dates: "1874-1951",
+    era: "Modern", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1911, measures: 9,
+    grade: 8, henle_level: 7,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "schoenberg/opus19/movement6",
+    title: "6 Little Piano Pieces Op.19 No.6 (in memoriam Mahler)",
+    composer: "Arnold Schoenberg", composer_dates: "1874-1951",
+    era: "Modern", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1911, measures: 10,
+    grade: 8, henle_level: 7,
+    tags: ["expression"],
+  },
+  // Webern Op.16 No.2 (1924) — 12-tone canon
+  {
+    corpus_path: "webern/webern_dormi_jesu_op_16_no_2",
+    title: "Dormi Jesu, Op.16 No.2",
+    composer: "Anton Webern", composer_dates: "1883-1945",
+    era: "Modern", form: "12-Tone", ensemble: "Other",
+    instruments: ["voice"], year: 1924, measures: 13,
+    grade: 8, henle_level: 8,
+    tags: ["counterpoint", "expression"],
+  },
 ];
 
 // ============================================================================
@@ -637,10 +826,13 @@ export function listComposers(): string[] {
   });
 }
 
-export const ALL_ERAS: Era[] = ["Baroque", "Classical", "Romantic", "Modern"];
+export const ALL_ERAS: Era[] = [
+  "Renaissance", "Baroque", "Classical", "Romantic", "Modern",
+];
 export const ALL_FORMS: Form[] = [
   "Chorale", "Lied", "Quartet", "Sonata", "Trio Sonata",
   "Aria", "Mazurka", "Rag", "Opera", "Character Piece",
+  "Mass", "Motet", "Hymn", "12-Tone", "Galant",
 ];
 export const ALL_ENSEMBLES: EnsembleType[] = [
   "SATB", "String Quartet", "Trio Sonata",
