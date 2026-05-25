@@ -299,6 +299,22 @@ def arrange(
     except Exception:
         pass
 
+    # 0.1.38 教學就緒: 改編譜自動加 rehearsal marks [A][B][C]...
+    # 音樂老師上課指「從 B 段第 3 小節再來」, 學生看得到. 失敗不阻塞改編.
+    try:
+        from .analyzer.rehearsal_marks import (
+            detect_phrase_starts,
+            insert_rehearsal_marks,
+        )
+        if arrangement.target_score is not None:
+            phrase_starts = detect_phrase_starts(arrangement.target_score)
+            insert_rehearsal_marks(
+                arrangement.target_score,
+                phrase_starts=phrase_starts or None,
+            )
+    except Exception:
+        pass
+
     return arrangement
 
 

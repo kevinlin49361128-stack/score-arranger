@@ -64,6 +64,25 @@ export const LIBRARY_STRINGS: BiDict = {
   "preset.era.classical": { "zh-TW": "古典", en: "Classical", ja: "古典派" },
   "preset.era.romantic": { "zh-TW": "浪漫派", en: "Romantic", ja: "ロマン派" },
 
+  // ── PresetLibrary — 0.1.38 教學標籤 ──────────────────────────
+  "preset.grade.tip": {
+    "zh-TW": "難度 {grade} / 5 (1=初級 / 5=職業)",
+    en: "Grade {grade} / 5 (1=beginner / 5=professional)",
+    ja: "難易度 {grade} / 5 (1=初級 / 5=プロ)",
+  },
+  "preset.tag.legato": { "zh-TW": "連音", en: "legato", ja: "レガート" },
+  "preset.tag.staccato": { "zh-TW": "跳音", en: "staccato", ja: "スタッカート" },
+  "preset.tag.counterpoint": {
+    "zh-TW": "對位", en: "counterpoint", ja: "対位法",
+  },
+  "preset.tag.scales": { "zh-TW": "音階", en: "scales", ja: "音階" },
+  "preset.tag.shifts": { "zh-TW": "移把位", en: "shifts", ja: "ポジション移動" },
+  "preset.tag.expression": {
+    "zh-TW": "表情", en: "expression", ja: "表現",
+  },
+  "preset.tag.rhythm": { "zh-TW": "節奏", en: "rhythm", ja: "リズム" },
+  "preset.tag.ensemble": { "zh-TW": "合奏", en: "ensemble", ja: "アンサンブル" },
+
   // ── PresetLibrary — ensemble labels ───────────────────────
   "preset.ensemble.satb": { "zh-TW": "SATB", en: "SATB", ja: "SATB" },
   "preset.ensemble.5parts": { "zh-TW": "5 parts", en: "5 parts", ja: "5 声部" },

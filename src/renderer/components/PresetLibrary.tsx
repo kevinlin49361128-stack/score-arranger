@@ -8,12 +8,28 @@ import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
 
+/** 0.1.38: 教學標籤 — 主旨類別 (focus). 一首曲可有多個 tag, 用於老師快速找
+ *  「教 legato 的 Grade 2 小品」. 完整標籤集留給 v2 filter UI 用. */
+type TeachingTag =
+  | "legato"          // 連音 / 圓滑奏
+  | "staccato"        // 跳音
+  | "counterpoint"    // 對位 (合適教 voice independence)
+  | "scales"          // 音階為主
+  | "shifts"          // 移把位
+  | "expression"      // 表情 / dynamics
+  | "rhythm"          // 節奏複雜
+  | "ensemble";       // 合奏聆聽
+
 interface Preset {
   corpus_path: string;
   name_key: string;           // i18n key — 曲目顯示名
   era: string;
   ensemble_key?: string;      // i18n key — 編制簡述
   measures?: number;          // 約略小節數,方便估算
+  /** 0.1.38: 約略難度 (1=初級 / 5=職業). 老師依此挑學生程度. */
+  grade?: 1 | 2 | 3 | 4 | 5;
+  /** 0.1.38: 教學主旨 — 老師找「教 X 的曲子」時用 */
+  tags?: TeachingTag[];
 }
 
 const PRESETS: Preset[] = [
@@ -341,6 +357,71 @@ const ERA_LABEL_KEYS: Record<string, string> = {
   Romantic: "preset.era.romantic",
 };
 
+/**
+ * 0.1.38: 教學標籤旁邊存 — 不改 PRESETS 結構 (太大), 用 corpus_path 為 key
+ * 的 sidecar map, render 時 merge. 還沒打標籤的曲目顯示時就沒 chip,
+ * 老師依然可選用, 純加分.
+ *
+ * 標 grade 的原則:
+ * - Bach 聖詠 (4 部對位): G2-3, 教 part-writing 經典
+ * - Mozart 早期 K80/K155/K156: G3, 入門古典室內樂
+ * - Mozart K458 "獵": G4, 古典成熟期
+ * - Haydn Op.1 No.1: G3 (早期); Op.74 No.1 "騎士" G4 (成熟)
+ * - Beethoven Op.18: G4 (早期); Op.59/132: G5 (晚期, 接近職業)
+ * - Joplin: G3 (節奏特殊但旋律明朗)
+ * - Chopin Mazurka: G4 (rubato + ornaments)
+ * - 藝術歌曲 Schubert/Schumann: G3 (旋律美但伴奏需配合)
+ */
+const _PRESET_TAGS: Record<
+  string,
+  { grade: Preset["grade"]; tags: TeachingTag[] }
+> = {
+  // Bach 聖詠 — 全部 G2-3 對位 + legato
+  "bach/bwv66.6": { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv7.7":  { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv57.8": { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv4.8":  { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv227.7":{ grade: 3, tags: ["counterpoint", "expression"] },
+  "bach/bwv281":  { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv344":  { grade: 2, tags: ["counterpoint", "legato"] },
+  "bach/bwv1.6":  { grade: 3, tags: ["counterpoint", "expression"] },
+  // 巴洛克器樂
+  "corelli/opus3no1/1grave": {
+    grade: 2, tags: ["legato", "ensemble"],
+  },
+  "handel/rinaldo/Lascia_chio_pianga": {
+    grade: 2, tags: ["legato", "expression"],
+  },
+  // Mozart 早期 → 成熟
+  "mozart/k155/movement1": { grade: 3, tags: ["scales", "ensemble"] },
+  "mozart/k156/movement1": { grade: 3, tags: ["scales", "ensemble"] },
+  "mozart/k458/movement1": { grade: 4, tags: ["rhythm", "ensemble"] },
+  "mozart/k545/movement1_exposition": {
+    grade: 3, tags: ["scales", "legato"],
+  },
+  // Haydn
+  "haydn/opus1no1/movement1": { grade: 3, tags: ["ensemble", "legato"] },
+  "haydn/opus74no1/movement1": {
+    grade: 4, tags: ["rhythm", "ensemble"],
+  },
+  // Beethoven
+  "beethoven/opus18no1/movement1": {
+    grade: 4, tags: ["expression", "ensemble"],
+  },
+  "beethoven/opus59no1/movement1": {
+    grade: 5, tags: ["expression", "rhythm"],
+  },
+  "beethoven/opus132": { grade: 5, tags: ["expression", "ensemble"] },
+  // 浪漫 / 其他
+  "chopin/mazurka06-2": { grade: 4, tags: ["expression", "rhythm"] },
+  "joplin/maple_leaf_rag": { grade: 3, tags: ["rhythm", "staccato"] },
+  "schubert/Lindenbaum": { grade: 3, tags: ["legato", "expression"] },
+  "schumann_robert/dichterliebe_no2": {
+    grade: 3, tags: ["expression", "legato"],
+  },
+  "verdi/laDonnaEMobile": { grade: 3, tags: ["expression", "rhythm"] },
+};
+
 interface PresetLibraryProps {
   buttonStyle: React.CSSProperties;
   disabled?: boolean;
@@ -558,11 +639,15 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
                       marginTop: 2,
                       display: "flex",
                       gap: 8,
+                      alignItems: "center",
+                      flexWrap: "wrap",
                     }}
                   >
                     <span>{p.corpus_path}</span>
                     {p.ensemble_key && <span>· {t(p.ensemble_key)}</span>}
                     {p.measures && <span>· {p.measures}m</span>}
+                    {/* 0.1.38 教學標籤 chip — merge from _PRESET_TAGS sidecar */}
+                    <TeachingChips corpus_path={p.corpus_path} />
                   </div>
                 </button>
               ))}
@@ -571,5 +656,52 @@ export function PresetLibrary({ buttonStyle, disabled }: PresetLibraryProps) {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * TeachingChips — 0.1.38 顯示 preset 的 grade 圓圈 + tag chip.
+ * 沒打過標籤的 preset (sidecar 沒記錄) 不顯示任何 chip — 純加分.
+ */
+function TeachingChips({ corpus_path }: { corpus_path: string }) {
+  useLocale();
+  const meta = _PRESET_TAGS[corpus_path];
+  if (!meta) return null;
+  return (
+    <>
+      {meta.grade && (
+        <span
+          title={t("preset.grade.tip", { grade: meta.grade })}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 18, height: 18,
+            borderRadius: "50%",
+            border: "1px solid var(--accent)",
+            color: "var(--accent)",
+            fontSize: 10, fontWeight: 700,
+            background: "var(--bg-panel)",
+          }}
+        >
+          {meta.grade}
+        </span>
+      )}
+      {meta.tags.map((tag) => (
+        <span
+          key={tag}
+          style={{
+            padding: "1px 6px",
+            fontSize: 10,
+            borderRadius: 8,
+            background: "var(--bg-secondary)",
+            color: "var(--fg-muted)",
+            border: "1px solid var(--border-light)",
+          }}
+        >
+          {t(`preset.tag.${tag}`)}
+        </span>
+      ))}
+    </>
   );
 }

@@ -30,6 +30,41 @@ export const PANEL_STRINGS: BiDict = {
     ja: "分析レポート — 🔴 {error} 件のエラー · 🟡 {warning} 件の警告 · "
       + "🟢 {info} 件の通知 (提案は編曲後に適用できます)",
   },
+  // 0.1.38 改編結果頁可演奏問題 dashboard — 醒目大號 chip 取代灰底小字
+  "issue.dashboard.headingArranged": {
+    "zh-TW": "改編品質檢查",
+    en: "Arrangement quality check",
+    ja: "編曲品質チェック",
+  },
+  "issue.dashboard.headingAnalysis": {
+    "zh-TW": "原譜分析報告",
+    en: "Source analysis report",
+    ja: "原譜分析レポート",
+  },
+  "issue.dashboard.errors": {
+    "zh-TW": "錯誤", en: "Errors", ja: "エラー",
+  },
+  "issue.dashboard.warnings": {
+    "zh-TW": "警告", en: "Warnings", ja: "警告",
+  },
+  "issue.dashboard.infos": {
+    "zh-TW": "提示", en: "Notices", ja: "通知",
+  },
+  "issue.dashboard.errorCallout": {
+    "zh-TW": "點上方紅框查看 — 可能影響演奏者讀譜或無法演奏",
+    en: "Click red box above — may affect playability or be unperformable",
+    ja: "上の赤枠をクリック — 演奏可能性に影響する可能性があります",
+  },
+  "issue.dashboard.allCleanArranged": {
+    "zh-TW": "改編品質良好 — 可演奏性檢查全部通過",
+    en: "Arrangement is clean — all playability checks passed",
+    ja: "編曲は良好 — 演奏可能性チェックすべて合格",
+  },
+  "issue.dashboard.allCleanAnalysis": {
+    "zh-TW": "原譜分析無問題",
+    en: "Source has no issues",
+    ja: "原譜に問題はありません",
+  },
   "issue.noneOfType": {
     "zh-TW": "無此類問題",
     en: "No issues of this kind",

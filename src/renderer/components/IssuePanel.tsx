@@ -392,27 +392,19 @@ export function IssuePanel() {
           }}
         />
       )}
-      <div
-        style={{
-          padding: "6px 12px",
-          fontSize: 11,
-          color: "var(--fg-tertiary)",
-          background: "var(--bg-tertiary)",
-          borderBottom: "1px solid var(--border-light)",
+      {/* 0.1.38 改編就緒 dashboard — 老師需求: 「我不知道哪裡有問題」.
+          把 error/warning/info 用大型彩色 chip 顯示, 有錯誤時整列染紅, 醒目. */}
+      <DashboardSummary
+        errors={groups.error.length}
+        warnings={groups.warning.length}
+        infos={groups.info.length}
+        canApply={canApply}
+        onClickSeverity={(sev) => {
+          if (groups[sev].length === 0) return;
+          // 確保該分類展開
+          if (!expanded.has(sev)) toggle(sev);
         }}
-      >
-        {canApply
-          ? t("issue.summaryArranged", {
-            error: groups.error.length,
-            warning: groups.warning.length,
-            info: groups.info.length,
-          })
-          : t("issue.summaryAnalysis", {
-            error: groups.error.length,
-            warning: groups.warning.length,
-            info: groups.info.length,
-          })}
-      </div>
+      />
       {(Object.keys(SEVERITY_META) as Array<keyof typeof SEVERITY_META>).map(
         (sev) => {
           const meta = SEVERITY_META[sev];
@@ -744,6 +736,124 @@ export function IssuePanel() {
             </section>
           );
         },
+      )}
+    </div>
+  );
+}
+
+/**
+ * DashboardSummary — 0.1.38 改編結果頁的可演奏問題醒目區塊
+ *
+ * 設計: 三個大型 chip 並排 (error/warning/info), 各帶 emoji + 數字.
+ * 有 error 時整列染紅底, 老師一眼看到「⚠️ 有 3 個音超出音域」.
+ * 點 chip 自動展開該分類, 不必再去翻面板.
+ */
+function DashboardSummary({
+  errors, warnings, infos, canApply, onClickSeverity,
+}: {
+  errors: number;
+  warnings: number;
+  infos: number;
+  canApply: boolean;
+  onClickSeverity: (sev: "error" | "warning" | "info") => void;
+}) {
+  useLocale();
+  const hasError = errors > 0;
+  const allClean = errors === 0 && warnings === 0 && infos === 0;
+
+  if (allClean) {
+    return (
+      <div style={{
+        padding: "10px 14px", background: "var(--success-bg)",
+        color: "var(--success-fg)", fontSize: 13, fontWeight: 600,
+        display: "flex", alignItems: "center", gap: 8,
+        borderBottom: "1px solid var(--border-light)",
+      }}>
+        ✓ {canApply
+          ? t("issue.dashboard.allCleanArranged")
+          : t("issue.dashboard.allCleanAnalysis")}
+      </div>
+    );
+  }
+
+  const chipStyle = (count: number, color: string, bg: string) => ({
+    flex: 1,
+    padding: "10px 12px",
+    background: count > 0 ? bg : "var(--bg-tertiary)",
+    color: count > 0 ? color : "var(--fg-muted)",
+    border: `1px solid ${count > 0 ? color : "var(--border-light)"}`,
+    borderRadius: 6,
+    fontSize: 12,
+    fontWeight: 600,
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    gap: 2,
+    cursor: count > 0 ? "pointer" : "default",
+    opacity: count > 0 ? 1 : 0.5,
+    transition: "transform 80ms ease",
+  });
+
+  return (
+    <div
+      style={{
+        padding: "10px 12px",
+        background: hasError
+          ? "rgba(239, 68, 68, 0.08)"
+          : "var(--bg-tertiary)",
+        borderBottom: hasError
+          ? "2px solid var(--error-fg)"
+          : "1px solid var(--border-light)",
+      }}
+    >
+      <div style={{
+        fontSize: 11, color: "var(--fg-muted)", marginBottom: 6,
+        textTransform: "uppercase", letterSpacing: 0.5,
+      }}>
+        {canApply
+          ? t("issue.dashboard.headingArranged")
+          : t("issue.dashboard.headingAnalysis")}
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        <button
+          type="button"
+          onClick={() => onClickSeverity("error")}
+          disabled={errors === 0}
+          style={chipStyle(errors, "var(--error-fg)", "rgba(239,68,68,0.15)")}
+        >
+          <span style={{ fontSize: 20, lineHeight: 1 }}>{errors}</span>
+          <span style={{ fontSize: 10 }}>🔴 {t("issue.dashboard.errors")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onClickSeverity("warning")}
+          disabled={warnings === 0}
+          style={chipStyle(
+            warnings, "var(--warning-fg)", "rgba(245,158,11,0.15)",
+          )}
+        >
+          <span style={{ fontSize: 20, lineHeight: 1 }}>{warnings}</span>
+          <span style={{ fontSize: 10 }}>
+            🟡 {t("issue.dashboard.warnings")}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onClickSeverity("info")}
+          disabled={infos === 0}
+          style={chipStyle(infos, "var(--success-fg)", "rgba(34,197,94,0.15)")}
+        >
+          <span style={{ fontSize: 20, lineHeight: 1 }}>{infos}</span>
+          <span style={{ fontSize: 10 }}>🟢 {t("issue.dashboard.infos")}</span>
+        </button>
+      </div>
+      {hasError && (
+        <div style={{
+          marginTop: 8, fontSize: 11, color: "var(--error-fg)",
+          fontWeight: 500,
+        }}>
+          ⚠️ {t("issue.dashboard.errorCallout")}
+        </div>
       )}
     </div>
   );
