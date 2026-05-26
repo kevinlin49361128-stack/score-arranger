@@ -475,10 +475,10 @@
           <a class="btn btn-primary" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
             <span data-i18n="dlCta">下載 Score Arranger</span>
-            <span class="dl-version">v0.1.23</span>
+            <span class="dl-version" id="dlVersionBadge">v0.1.43</span>
           </a>
         </div>
-        <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證) · <a href="https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.23" target="_blank" rel="noopener" data-i18n="dlChangelog">看本版更新內容</a></p>
+        <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證) · <a id="dlReleaseLink" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener" data-i18n="dlChangelog">看本版更新內容</a></p>
       </div>
     </div>
   </section>
@@ -560,7 +560,7 @@
     dlTitle:"Let that piece be played.",
     dlSub:"Free download. No account required.",
     dlCta:"Download Score Arranger",
-    dlNote:"For macOS (Apple Silicon, signed + notarized) · <a href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.23\" target=\"_blank\" rel=\"noopener\">See what's new</a>",
+    dlNote:"For macOS (Apple Silicon, signed + notarized) · <a id=\"dlReleaseLink\" href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/latest\" target=\"_blank\" rel=\"noopener\">See what's new</a>",
     dlChangelog:"See what's new",
     footTagline:"Intelligent score arranging",
     footMade:"Built in spare time by a developer who loves music.",
@@ -623,7 +623,7 @@
     dlTitle:"その曲を演奏可能にしましょう。",
     dlSub:"無料ダウンロード。アカウント不要。",
     dlCta:"Score Arranger をダウンロード",
-    dlNote:"macOS 向け (Apple Silicon、署名 + 公証済み) · <a href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.23\" target=\"_blank\" rel=\"noopener\">更新内容を見る</a>",
+    dlNote:"macOS 向け (Apple Silicon、署名 + 公証済み) · <a id=\"dlReleaseLink\" href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/latest\" target=\"_blank\" rel=\"noopener\">更新内容を見る</a>",
     dlChangelog:"更新内容を見る",
     footTagline:"音楽理論を理解する編曲支援ツール",
     footMade:"音楽を愛する開発者が余暇に作りました。",
@@ -699,6 +699,38 @@
       applyLang(cfg.next);
     });
   }
+
+  /* ---------- 動態抓 GitHub latest release (0.1.44) ----------
+     HTML 寫死的 v0.1.43 是 fallback (rate-limit / 離線時用).
+     GitHub Releases API anonymous 60 req/hr/IP, 對 landing 流量綽綽有餘.
+     注意: applyLang() 會用 i18n 字串重渲染 dlNote, 蓋掉 link.href.
+     所以記住最新 tag 在 module-scope 變數, 每次 applyLang 後重套用. */
+  var _latestTag = null;
+  var REPO = "kevinlin49361128-stack/score-arranger";
+  function applyLatestTag(){
+    if (!_latestTag) return;
+    var badge = document.getElementById("dlVersionBadge");
+    var link = document.getElementById("dlReleaseLink");
+    if (badge) badge.textContent = _latestTag;
+    if (link) link.href = "https://github.com/" + REPO
+      + "/releases/tag/" + _latestTag;
+  }
+  // monkey-patch applyLang: 套完語言後再套版本
+  var _origApplyLang = applyLang;
+  applyLang = function(lang){
+    _origApplyLang(lang);
+    applyLatestTag();
+  };
+  // 初次套用 (此時 _latestTag 還沒 fetch, applyLatestTag 為 no-op)
+  fetch("https://api.github.com/repos/" + REPO + "/releases/latest",
+        { headers: { "Accept": "application/vnd.github+json" } })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if (!data || !data.tag_name) return;
+      _latestTag = data.tag_name;
+      applyLatestTag();
+    })
+    .catch(function(){ /* offline / rate-limited → keep hardcoded */ });
 
   /* ---------- 介面預覽：音符 ---------- */
   var MOCK = {
