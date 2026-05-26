@@ -352,6 +352,17 @@ class _Parser:
     def _parse_measure(self, m21_measure: m21_stream.Measure) -> Measure:
         measure = Measure(number=m21_measure.number)
 
+        # 0.1.45: 偵測 pickup measure (anacrusis).
+        # MusicXML 用 <measure implicit="yes">; music21 把它讀成
+        # m21_measure.paddingLeft > 0 (隱含小節開頭沒填滿的拍數).
+        # 沒這個 flag 的話, arranger 不知道要保留 pickup, 上下對照會錯位.
+        try:
+            padding_left = float(getattr(m21_measure, "paddingLeft", 0) or 0)
+            if padding_left > 0:
+                measure.is_pickup = True
+        except (TypeError, ValueError):
+            pass
+
         if m21_measure.timeSignature is not None:
             ts = m21_measure.timeSignature
             measure.time_signature = (ts.numerator, ts.denominator)

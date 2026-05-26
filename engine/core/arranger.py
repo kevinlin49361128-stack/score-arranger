@@ -322,10 +322,17 @@ def _ensure_default_section(score: Score) -> Section:
     for movement in score.movements:
         if movement.sections:
             return movement.sections[0]
-    measure_count = max(
-        (len(p.measures) for p in score.parts), default=0
-    )
-    return Section(section_id=0, start_measure=1, end_measure=measure_count)
+    # 0.1.45: start_measure 不能硬編 1 — 若 source 有 pickup, m1.number=0.
+    # 取所有 part 第一小節 number 的最小值, 末小節同理.
+    first_numbers = [
+        p.measures[0].number for p in score.parts if p.measures
+    ]
+    last_numbers = [
+        p.measures[-1].number for p in score.parts if p.measures
+    ]
+    start = min(first_numbers) if first_numbers else 1
+    end = max(last_numbers) if last_numbers else 0
+    return Section(section_id=0, start_measure=start, end_measure=end)
 
 
 # ============================================================================
@@ -781,7 +788,14 @@ def build_target_score(
             )
 
     # 2. 為每個 target part 預建 measure 骨架
+    # 0.1.45: 同步保留 is_pickup — 不完全小節開頭的曲子, target 也要從 pickup
+    # 開始, 否則 source ↔ target 上下對照會錯位一格.
     n_measures = section.end_measure - section.start_measure + 1
+    src_pickup_numbers: set[int] = set()
+    for src_part in source.parts:
+        for m in src_part.measures:
+            if m.is_pickup:
+                src_pickup_numbers.add(m.number)
     for tp in target_parts.values():
         for i in range(n_measures):
             number = section.start_measure + i
@@ -798,6 +812,7 @@ def build_target_score(
                 number=number,
                 time_signature=ts if i == 0 else None,
                 voices={1: Voice(voice_id=1, events=[])},
+                is_pickup=number in src_pickup_numbers,
             ))
 
     # 3. 處理每個 assignment

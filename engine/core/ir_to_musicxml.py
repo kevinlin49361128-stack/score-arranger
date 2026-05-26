@@ -319,7 +319,12 @@ def _build_measure(
     is_first: bool,
     wedges: list[tuple[Fraction, str]],
 ) -> None:
-    m_el = ET.SubElement(part_el, "measure", number=str(measure.number))
+    # 0.1.45: 不完全小節 (pickup / anacrusis) 必須標 implicit="yes",
+    # 否則 OSMD 視為完整小節, 後續 measure 編號全部對不上 source.
+    attrs: dict[str, str] = {"number": str(measure.number)}
+    if measure.is_pickup:
+        attrs["implicit"] = "yes"
+    m_el = ET.SubElement(part_el, "measure", attrs)
 
     # <attributes> — 第一小節, 或拍號/調號變更時
     need_attr = is_first or (
@@ -418,7 +423,11 @@ def _build_grand_staff_measure(
     upper_wedges: dict, lower_wedges: dict,
 ) -> None:
     ref = um if um is not None else lm
-    m_el = ET.SubElement(part_el, "measure", number=str(ref.number))
+    # 0.1.45: grand-staff 也要傳 implicit (鋼琴譜常有 pickup)
+    gs_attrs: dict[str, str] = {"number": str(ref.number)}
+    if getattr(ref, "is_pickup", False):
+        gs_attrs["implicit"] = "yes"
+    m_el = ET.SubElement(part_el, "measure", gs_attrs)
     measure_ql = Fraction(time_sig[0] * 4, time_sig[1])
 
     need_attr = is_first or (
