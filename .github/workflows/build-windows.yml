@@ -32,7 +32,11 @@ jobs:
           python-version: "3.11"
 
       - name: Install npm deps
-        run: npm ci
+        # 用 npm install 而不是 npm ci, 因為 Vite 5 的 optional peer dep
+        # @vitejs/devtools 對 esbuild 範圍跟 lock 不一致, 嚴格 ci 會 fail.
+        # CI 安全性 trade-off: 我們的 main 是 trusted 來源, install 仍從同
+        # 一個 package-lock 開始解析, 差異僅在 optional peer 容錯.
+        run: npm install --no-audit --no-fund --ignore-scripts
 
       - name: Install engine deps
         run: |
