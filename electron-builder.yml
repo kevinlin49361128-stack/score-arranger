@@ -103,8 +103,22 @@ dmg:
       path: /Applications
 
 win:
+  # 0.1.45: 加 nsis installer (.exe) — 比 zip 對一般 Windows user 友善.
+  # 未 code sign → SmartScreen 首次警告 "Unknown publisher", 點 More info →
+  # Run anyway 即可. Authenticode 簽章成本 $200-500/yr, 等 user pipeline
+  # 穩定再投入.
   target:
+    - target: nsis
+      arch:
+        - x64
     - target: zip
       arch:
         - x64
   artifactName: "${productName}-${version}-win-${arch}.${ext}"
+  icon: build/icon.png
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: "${productName}-${version}-win-${arch}-setup.${ext}"
