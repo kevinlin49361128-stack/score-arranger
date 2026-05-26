@@ -26,6 +26,29 @@ export type BiDict = Record<string, BiString>;
 
 const STORAGE_KEY = "score-arranger.locale";
 
+/**
+ * 第一次開 app 時 — 偵測 OS / 瀏覽器語言, 沒對到回 zh-TW.
+ * Why: 預設 zh-TW 對日 / 英母語者第一次開很奇怪. 一旦使用者手動切過,
+ * localStorage 會記住, detect 就不再走 — 不會覆蓋使用者偏好.
+ * How to apply: 只在 localStorage 沒值時觸發.
+ */
+function detectSystemLocale(): Locale {
+  if (typeof navigator === "undefined") return "zh-TW";
+  const langs = navigator.languages?.length
+    ? Array.from(navigator.languages)
+    : [navigator.language];
+  for (const raw of langs) {
+    if (!raw) continue;
+    const lang = raw.toLowerCase();
+    if (lang.startsWith("ja")) return "ja";
+    // 所有 zh-* (簡 / 繁 / CN / TW / HK / SG) 一律映到 zh-TW —
+    // 我們只支援繁體, 且依台灣框架原則不分簡繁來源.
+    if (lang.startsWith("zh")) return "zh-TW";
+    if (lang.startsWith("en")) return "en";
+  }
+  return "zh-TW";
+}
+
 let currentLocale: Locale = (() => {
   if (typeof window === "undefined") return "zh-TW";
   try {
@@ -34,7 +57,7 @@ let currentLocale: Locale = (() => {
   } catch {
     /* ignore */
   }
-  return "zh-TW";
+  return detectSystemLocale();
 })();
 
 const listeners = new Set<(l: Locale) => void>();

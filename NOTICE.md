@@ -99,9 +99,14 @@ attribution in the About dialog satisfies this requirement.
 
 ## 3. Musical works (bundled in `engine/core/sample_scores/`)
 
-Score Arranger ships 58 sample MusicXML files in the frozen engine binary
-(under `core/sample_scores/`) — 45 long-standing samples plus 13
-**OpenScore Lieder** (added 0.1.40, files prefixed `openscore_*.mxl`).
+Score Arranger ships 200+ sample MusicXML files in the frozen engine binary
+(under `core/sample_scores/`): 45 long-standing samples, 38 **OpenScore Lieder**
+(CC0; 0.1.40 / 0.1.43), 19 **music21 corpus exports** (0.1.42 / 0.1.43; covers
+Renaissance Ciconia / Palestrina, Modern Schoenberg / Webern, Bach 聖詠加碼,
+American Beach / Liliuokalani), 1 **Trecento** madrigal (0.1.43), and 110
+**Humdrum/KernScores exports** (0.1.44; covers Bach Two-Part Inventions BWV
+772-786 全 15, Beethoven 32 鋼琴奏鳴曲 + 16 弦樂四重奏 mvt.1 全套, Mozart 鋼琴
+奏鳴曲, Chopin Op.28 Preludes + Mazurkas, Haydn + Joplin selections).
 The musical works themselves are all in the **public domain** (composers
 from Bach to Verdi, all died ≥ 70 years ago). The MusicXML **encodings**
 carry varying provenance:
@@ -114,8 +119,18 @@ prefixed `openscore_*.mxl` are these — Beethoven Op.48/52 Lieder,
 Schubert Schöne Müllerin selections, Schumann Dichterliebe / Liederkreis /
 Frauenliebe selections, Brahms Op.43.
 
-**Most files** (~41 of 45) have no `<rights>` tag and were obtained from
-publicly available encoding archives. They are treated as
+**Humdrum / KernScores files (110, added 0.1.44, files without prefix —
+`bach_invention_*.musicxml`, `beethoven_sonata_*.musicxml`, etc.)** — sourced
+from <https://github.com/humdrum-tools/inventions> and
+<https://github.com/craigsapp/{beethoven-piano-sonatas,beethoven-string-quartets,mozart-piano-sonatas,chopin-preludes,chopin-mazurkas,haydn-piano-sonatas,joplin}>.
+These are Stanford CCARH / David Huron / Craig Sapp encodings of public-domain
+compositions, distributed by the Humdrum Project. The encoding license is the
+same grey-zone as music21 corpus (see below): freely redistributable for
+non-commercial use; commercial users should verify with the original encoder.
+
+**Most files** (~41 of 45 long-standing + 110 humdrum) have no `<rights>` tag
+and were obtained from publicly available encoding archives. They are treated
+as
 [music21 corpus](https://github.com/cuthbertLab/music21/blob/master/music21/corpus/license.txt) –
 type redistributions, which the music21 license describes as:
 
