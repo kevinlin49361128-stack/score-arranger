@@ -206,6 +206,18 @@
   .download-note a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)}
   .download-note a:hover{color:var(--gold-bright);border-color:var(--gold-bright)}
 
+  /* ---- 0.1.45: Donate 建置中 / Windows beta 視覺 ---- */
+  .btn-soon{opacity:.55;cursor:not-allowed;pointer-events:none;
+    background:var(--bg-elev2);border:1px solid var(--line)}
+  .btn-soon:hover{background:var(--bg-elev2)}
+  .dl-secondary{margin-top:14px}
+  .btn-secondary{background:var(--bg-elev);border:1px solid var(--line-strong);
+    color:var(--ink);font-size:14px;padding:9px 18px}
+  .btn-secondary:hover{background:var(--bg-elev2);border-color:var(--ink-faint)}
+  .beta-tag{margin-left:8px;padding:2px 7px;font-size:10.5px;font-weight:600;
+    letter-spacing:.06em;background:rgba(217,170,99,.18);color:var(--gold-bright);
+    border-radius:3px;text-transform:uppercase}
+
   /* ---- footer ---- */
   .site-footer{border-top:1px solid var(--line);padding:48px 0 56px}
   .footer-inner{display:flex;flex-wrap:wrap;gap:24px;
@@ -454,11 +466,14 @@
         <h2 class="section-title" data-i18n="supTitle">免費提供。<br>如果它幫上了忙……</h2>
         <p class="support-body" data-i18n="supBody">Score Arranger 免費、開源，提供給每一位想編曲的人，未來也會持續如此。它由一個人在工作之餘打造 —— 如果它替你省下了一個週末，歡迎請我喝杯咖啡。完全不勉強；你願意使用它，本身就是最好的鼓勵。</p>
         <div class="kofi-wrap">
-          <!-- TODO: 換成你的 Ko-fi 連結，例如 https://ko-fi.com/kevinlin -->
-          <a class="btn btn-primary" href="https://ko-fi.com/yourhandle" target="_blank" rel="noopener">
+          <!-- 0.1.45: Donate 後端 (Ko-fi / LMS) 建置中, 暫標 soon
+               不可點. 等真正開通後改回 <a href=...> 真實連結. -->
+          <button class="btn btn-primary btn-soon" type="button" disabled
+                  aria-disabled="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2.3a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8 2.6v2.7M11.5 2.6v2.7"/></svg>
             <span data-i18n="supCta">請我喝杯咖啡</span>
-          </a>
+            <span class="beta-tag" data-i18n="supSoon">建置中</span>
+          </button>
         </div>
       </div>
     </div>
@@ -479,6 +494,16 @@
           </a>
         </div>
         <p class="download-note" data-i18n="dlNote">適用於 macOS (Apple Silicon, 已簽章 + 公證) · <a id="dlReleaseLink" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener" data-i18n="dlChangelog">看本版更新內容</a></p>
+        <!-- 0.1.45: Windows beta — 同 release 頁挑 *-win-x64-setup.exe.
+             無 code sign, 首次 SmartScreen 警告 More info → Run anyway. -->
+        <div class="download-cta dl-secondary">
+          <a class="btn btn-secondary" href="https://github.com/kevinlin49361128-stack/score-arranger/releases/latest" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg>
+            <span data-i18n="dlWinCta">下載 Windows 版</span>
+            <span class="beta-tag" data-i18n="dlWinBeta">測試中</span>
+          </a>
+        </div>
+        <p class="download-note" data-i18n="dlWinNote">適用於 Windows 10/11 (x64) · 未簽章, 首次開啟 SmartScreen 警告請點 More info → Run anyway</p>
       </div>
     </div>
   </section>
@@ -556,12 +581,16 @@
     supTitle:"Free to use.<br>And if it helped…",
     supBody:"Score Arranger is free and open source, for everyone who arranges music, and it will stay that way. It is built by one person in their spare time — if it saved you a weekend, you're welcome to buy me a coffee. There is no pressure at all; your using it is encouragement enough.",
     supCta:"Buy me a coffee",
+    supSoon:"Coming soon",
     dlEyebrow:"Get started",
     dlTitle:"Let that piece be played.",
     dlSub:"Free download. No account required.",
     dlCta:"Download Score Arranger",
     dlNote:"For macOS (Apple Silicon, signed + notarized) · <a id=\"dlReleaseLink\" href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/latest\" target=\"_blank\" rel=\"noopener\">See what's new</a>",
     dlChangelog:"See what's new",
+    dlWinCta:"Download for Windows",
+    dlWinBeta:"Beta",
+    dlWinNote:"For Windows 10/11 (x64) · Unsigned — first launch shows SmartScreen warning; click More info → Run anyway",
     footTagline:"Intelligent score arranging",
     footMade:"Built in spare time by a developer who loves music.",
     footSupport:"Support this project",
@@ -619,12 +648,16 @@
     supTitle:"無料で使えます。<br>もし役に立ったなら…",
     supBody:"Score Arranger は無料でオープンソース、音楽を編曲するすべての人のために、これからもそうあり続けます。一人の開発者が余暇に作っています — もし週末が一つ救われたなら、コーヒーをご馳走いただけると嬉しいです。プレッシャーは一切ありません; 使っていただくだけで十分な励みです。",
     supCta:"コーヒーをご馳走する",
+    supSoon:"準備中",
     dlEyebrow:"始めましょう",
     dlTitle:"その曲を演奏可能にしましょう。",
     dlSub:"無料ダウンロード。アカウント不要。",
     dlCta:"Score Arranger をダウンロード",
     dlNote:"macOS 向け (Apple Silicon、署名 + 公証済み) · <a id=\"dlReleaseLink\" href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/latest\" target=\"_blank\" rel=\"noopener\">更新内容を見る</a>",
     dlChangelog:"更新内容を見る",
+    dlWinCta:"Windows 版をダウンロード",
+    dlWinBeta:"ベータ",
+    dlWinNote:"Windows 10/11 (x64) 向け · 未署名 — 初回起動時 SmartScreen の警告が表示されますので、「詳細情報」→「実行」を選択してください",
     footTagline:"音楽理論を理解する編曲支援ツール",
     footMade:"音楽を愛する開発者が余暇に作りました。",
     footSupport:"このプロジェクトを応援する",
