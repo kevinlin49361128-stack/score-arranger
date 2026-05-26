@@ -4,11 +4,13 @@
 
 Score Arranger is a single-author hobby project. Only the **latest
 released version** receives security fixes. There is no LTS branch.
+The auto-update system (0.1.36+) makes upgrading trivial — open the
+app, click the update banner.
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.33+ | ✅ |
-| < 0.1.33 | ❌ — please upgrade |
+| latest (currently 0.1.44) | ✅ |
+| any other | ❌ — please upgrade |
 
 ---
 

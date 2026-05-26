@@ -10,7 +10,7 @@ This file enumerates **every package whose code is bundled into the
 distributed binaries** (npm transitive prod deps + Python frozen deps).
 Curated top-level notices and conditions remain in [`NOTICE.md`](NOTICE.md).
 
-Last generated: 2026-05-24T13:25:24Z
+Last generated: 2026-05-26T12:34:25Z
 
 ## npm — production dependencies (transitive)
 
@@ -22,36 +22,54 @@ Extracted from `package-lock.json`.
 | @tonejs/midi | 2.0.28 | MIT |
 | @types/pako | 2.0.4 | MIT |
 | @types/vexflow | 1.2.42 | MIT |
+| argparse | 2.0.1 | Python-2.0 |
 | array-flatten | 3.0.0 | MIT |
 | automation-events | 7.1.19 | MIT |
+| builder-util-runtime | 9.5.1 | MIT |
 | core-util-is | 1.0.3 | MIT |
+| debug | 4.4.3 | MIT |
+| electron-updater | 6.8.3 | MIT |
 | fast-png | 6.4.0 | MIT |
 | fflate | 0.8.3 | MIT |
+| fft.js | 4.0.4 | MIT |
+| fs-extra | 10.1.0 | MIT |
+| graceful-fs | 4.2.11 | ISC |
 | immediate | 3.0.6 | MIT |
 | inherits | 2.0.4 | ISC |
 | iobuffer | 5.4.0 | MIT |
 | isarray | 1.0.0 | MIT |
 | js-tokens | 4.0.0 | MIT |
+| js-yaml | 4.1.1 | MIT |
+| jsonfile | 4.0.0 | MIT |
 | jspdf | 4.2.1 | MIT |
 | jszip | 3.10.1 | (MIT OR GPL-3.0-or-later) |
+| lazy-val | 1.0.5 | MIT |
 | lie | 3.3.0 | MIT |
+| lodash.escaperegexp | 4.1.2 | MIT |
+| lodash.isequal | 4.5.0 | MIT |
 | loglevel | 1.9.2 | MIT |
 | loose-envify | 1.4.0 | MIT |
 | midi-file | 1.2.4 | MIT |
+| ms | 2.1.3 | MIT |
 | opensheetmusicdisplay | 1.9.9 | BSD-3-Clause |
 | pako | 1.0.11 | (MIT AND Zlib) |
+| pitchy | 4.1.0 | MIT |
 | process-nextick-args | 2.0.1 | MIT |
 | react | 18.3.1 | MIT |
 | react-dom | 18.3.1 | MIT |
 | readable-stream | 2.3.8 | MIT |
 | safe-buffer | 5.1.2 | MIT |
+| sax | 1.6.0 | BlueOak-1.0.0 |
 | scheduler | 0.23.2 | MIT |
+| semver | 6.3.1 | ISC |
 | setimmediate | 1.0.5 | MIT |
 | standardized-audio-context | 25.3.77 | MIT |
 | string_decoder | 1.1.1 | MIT |
+| tiny-typed-emitter | 2.1.0 | MIT |
 | tone | 15.1.22 | MIT |
 | tslib | 2.8.1 | 0BSD |
 | typescript-collections | 1.3.3 | MIT |
+| universalify | 0.1.2 | MIT |
 | use-sync-external-store | 1.6.0 | MIT |
 | util-deprecate | 1.0.2 | MIT |
 | verovio | 6.1.0 | LGPL-3.0-or-later |
@@ -102,6 +120,9 @@ Extracted from `engine/.venv` (the venv used by `engine/freeze.sh`).
 | pydantic_core | 2.46.4 | MIT |
 | Pygments | 2.20.0 | BSD-2-Clause |
 | PyJWT | 2.12.1 | MIT |
+| pyobjc-core | 12.1 | MIT |
+| pyobjc-framework-Cocoa | 12.1 | MIT |
+| pyobjc-framework-Quartz | 12.1 | MIT |
 | pyparsing | 3.3.2 | MIT |
 | python-dateutil | 2.9.0.post0 | Dual License |
 | python-dotenv | 1.2.2 | BSD-3-Clause |
