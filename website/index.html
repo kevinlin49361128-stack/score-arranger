@@ -502,7 +502,8 @@
 (function(){
   "use strict";
 
-  /* ---------- 中英雙語 ---------- */
+  /* ---------- 三語: 台 / EN / 日 (0.1.44) ----------
+     首次造訪用 navigator.language 偵測; 設過後 localStorage 記住. */
   var EN = {
     skip:"Skip to main content",
     navFeatures:"Features", navHow:"How it works", navSupport:"Support", navCta:"Download",
@@ -566,36 +567,136 @@
     footSupport:"Support this project",
     footSource:"Source on GitHub"
   };
-  var TITLE = { zh:"Score Arranger — 智慧樂譜改編工具", en:"Score Arranger — Intelligent score arranging" };
+  var JA = {
+    skip:"メインコンテンツへスキップ",
+    navFeatures:"機能", navHow:"使い方", navSupport:"サポート", navCta:"ダウンロード",
+    heroEyebrow:"音楽理論を理解する編曲支援ツール",
+    heroTitle:"オーケストラのために書かれた曲を、<br>あなたの編成で演奏できる形に。",
+    heroSub:"Score Arranger は音楽理論を理解する編曲パートナーです。煩雑な声部分配と演奏可能性チェックを引き受け、音楽的な判断と趣味はあなたに残します。",
+    heroCta1:"無料ダウンロード", heroCta2:"動作の仕組みを見る",
+    heroNote:"macOS · 無料・オープンソース · 登録不要",
+    mockSource:"原曲の総譜", mockTarget:"編曲後",
+    storyEyebrow:"なぜ",
+    storyTitle:"編曲は技芸です。<br>雑務に埋もれてはいけません。",
+    storyP1:"心を打つオーケストラ曲を聴いて、「友達数人とこれを一緒に演奏できたら」と思う。そして編曲を始めるが、和音が全てヴァイオリンで届くか、各音が音域内に収まるか、旋律が静かに別の声部に紛れていないか、ひと週末をチェックに費やしてしまう。",
+    storyP2:"Score Arranger はその雑務を肩代わりします。音楽の構造を読み取り、各楽器の限界を尊重した、実際に演奏可能な編曲を提案。あなたは大事なことに集中できます — 誰がこの旋律を担うべきか、この織体を保つか、雰囲気は合っているか。",
+    storyQuote:"スマートな支援 — 完全な自動化ではありません。<br>最終判断は常にあなたが下します。",
+    showcaseEyebrow:"実際の動作",
+    showcaseTitle:"上が原曲、下が編曲 —<br>声部の割り当てと解説を一目で。",
+    shot1Caption:"原曲と編曲を同時表示 — 旋律はヴァイオリンに留まり、内声と低音はピアノにまとめられます。右パネルで各声部の行先と総合品質スコアを確認できます。",
+    shot2Caption:"「なぜこう変えた?」声部ごとに 3 行: 何が保たれた (緑)、何が変わった (橙)、そして音楽的なコスト。",
+    shot3Caption:"練習モードは最も難しい 8 小節を浮かび上がらせます — 各小節を展開すると「なぜ難しいか」(音域/密度/和音/リズム/技法) と弦楽器の指使いが見られます。",
+    shot4Caption:"難易度ダイアログ — 生徒向けに編曲するなら「目標 2.5/5」で揃え、見せ場が欲しければオクターブ重複や二重音などのブースト技法を切り替えます。",
+    featEyebrow:"できること",
+    featTitle:"楽譜を読めるパートナー",
+    feat1Title:"音楽を理解する解析",
+    feat1Body:"曲をまず読み — 旋律を検出し、和声を分析し、各声部の役割を タグ付け。すべての編曲判断は理解に基づきます。",
+    feat2Title:"実際の制約に基づく編曲",
+    feat2Body:"ヴァイオリンの和音は隣接弦上の最大 4 音以内; 各楽器は音域と技法の範囲内に。制約は後付けではなく、編曲時に尊重されます。",
+    feat3Title:"演奏可能でなければ意味がない",
+    feat3Body:"終える前に演奏可能性を細かくチェックし、方向性のある修復で問題を解消 — 無作為な試行ではなく、毎回問題を確実に減らすステップで。",
+    feat4Title:"難易度はあなた次第",
+    feat4Body:"目標レベル (1–5) を設定すれば、小節ごとに整えます: 易しすぎは厚みを増し、難しすぎは簡略化。生徒向け編曲の試行錯誤は不要に。",
+    feat5Title:"弦の指使いをオンデマンドで",
+    feat5Body:"難所の小節をクリックすると、各弦パートの最適な指使いを表示 — どの弦、どのポジション。Viterbi DP が小節をまたぐポジション移動を考慮します(逐音の貪欲法ではなく)。",
+    feat6Title:"言葉で編集",
+    feat6Body:"「第二ヴァイオリンが薄いので和音を加えて」「終わりを柔らかく」自然言語で要望を述べると、AI が構造化された操作に変換し、各操作の品質変化を表示します。",
+    feat7Title:"原曲と編曲を並べて",
+    feat7Body:"デュアルパネルで原曲と編曲を同時表示。個別パートをミュート、半速再生 — 聴きながら一点ずつ調整。",
+    feat8Title:"PDF や録音から直接取り込み",
+    feat8Body:"スキャン PDF しかない? 内蔵 OMR で読み込みます。ピアノの録音は? basic-pitch AMT が MusicXML に変換 — 編曲準備完了。",
+    feat9Title:"最終判断はあなた",
+    feat9Body:"すべての提案は調整・拒否・書き換え可能。バージョンツリーが全試行を記録、A/B 比較も。最終的な音楽はあなたが定義します。",
+    howEyebrow:"3 ステップ",
+    howTitle:"総譜からあなたの演奏まで",
+    how1Title:"音楽を取り込む",
+    how1Body:"MusicXML、MIDI、またはスキャン PDF — 原曲を Score Arranger に渡します。",
+    how2Title:"編成を選び、編曲を得る",
+    how2Body:"弦楽四重奏、ヴァイオリンとピアノ、ピアノ独奏…目標編成を選ぶと編曲を提案します。",
+    how3Title:"確認、試聴、書き出し",
+    how3Body:"並べて比較、通して聴き、細部を調整 — そして総譜とパート譜を書き出します。",
+    supEyebrow:"サポート",
+    supTitle:"無料で使えます。<br>もし役に立ったなら…",
+    supBody:"Score Arranger は無料でオープンソース、音楽を編曲するすべての人のために、これからもそうあり続けます。一人の開発者が余暇に作っています — もし週末が一つ救われたなら、コーヒーをご馳走いただけると嬉しいです。プレッシャーは一切ありません; 使っていただくだけで十分な励みです。",
+    supCta:"コーヒーをご馳走する",
+    dlEyebrow:"始めましょう",
+    dlTitle:"その曲を演奏可能にしましょう。",
+    dlSub:"無料ダウンロード。アカウント不要。",
+    dlCta:"Score Arranger をダウンロード",
+    dlNote:"macOS 向け (Apple Silicon、署名 + 公証済み) · <a href=\"https://github.com/kevinlin49361128-stack/score-arranger/releases/tag/v0.1.23\" target=\"_blank\" rel=\"noopener\">更新内容を見る</a>",
+    dlChangelog:"更新内容を見る",
+    footTagline:"音楽理論を理解する編曲支援ツール",
+    footMade:"音楽を愛する開発者が余暇に作りました。",
+    footSupport:"このプロジェクトを応援する",
+    footSource:"GitHub でソースを見る"
+  };
+  var TITLE = {
+    zh:"Score Arranger — 智慧樂譜改編工具",
+    en:"Score Arranger — Intelligent score arranging",
+    ja:"Score Arranger — 音楽理論を理解する編曲支援ツール"
+  };
 
   var nodes = document.querySelectorAll("[data-i18n]");
   var ZH = {};
   nodes.forEach(function(el){ ZH[el.getAttribute("data-i18n")] = el.innerHTML; });
   var toggle = document.getElementById("langToggle");
 
+  /* 字典 + 顯示參數 (lang code → {dict, htmlLang, title, label, next}).
+     ZH 字典是 DOM 初值, EN / JA 是寫死的物件. */
+  var LANGS = {
+    zh:{ dict:ZH, htmlLang:"zh-Hant", title:TITLE.zh, label:"台", next:"en" },
+    en:{ dict:EN, htmlLang:"en",      title:TITLE.en, label:"EN", next:"ja" },
+    ja:{ dict:JA, htmlLang:"ja",      title:TITLE.ja, label:"日", next:"zh" }
+  };
+
   function applyLang(lang){
-    var en = (lang === "en");
+    var cfg = LANGS[lang] || LANGS.zh;
     nodes.forEach(function(el){
       var key = el.getAttribute("data-i18n");
-      var val = en ? (EN[key] != null ? EN[key] : ZH[key]) : ZH[key];
+      // missing key fallback: ja → en → zh
+      var val = cfg.dict[key];
+      if (val == null && lang === "ja") val = EN[key];
+      if (val == null) val = ZH[key];
       if (val != null) el.innerHTML = val;
     });
-    document.documentElement.lang = en ? "en" : "zh-Hant";
-    document.title = en ? TITLE.en : TITLE.zh;
+    document.documentElement.lang = cfg.htmlLang;
+    document.title = cfg.title;
     if (toggle){
-      toggle.textContent = en ? "TW" : "EN";
-      toggle.setAttribute("aria-label", en ? "切換為中文" : "Switch to English");
+      // toggle 顯示「下一個語言」, click 進入該語言
+      var nextCfg = LANGS[cfg.next];
+      toggle.textContent = nextCfg.label;
+      toggle.setAttribute("aria-label",
+        "Switch to " + nextCfg.htmlLang + " — " + nextCfg.title);
+      toggle.setAttribute("data-current-lang", lang);
     }
     try { localStorage.setItem("sa-lang", lang); } catch(e){}
   }
 
+  /* 第一次造訪用 navigator.language 偵測; 設過後 localStorage 記住. */
+  function detectSystemLang(){
+    var langs = navigator.languages && navigator.languages.length
+      ? navigator.languages : [navigator.language || ""];
+    for (var i = 0; i < langs.length; i++){
+      var l = (langs[i] || "").toLowerCase();
+      if (l.indexOf("ja") === 0) return "ja";
+      if (l.indexOf("zh") === 0) return "zh";  // 簡繁皆映 zh-TW (Taiwan-framing)
+      if (l.indexOf("en") === 0) return "en";
+    }
+    return "zh";
+  }
+
   var saved = null;
   try { saved = localStorage.getItem("sa-lang"); } catch(e){}
-  applyLang(saved === "en" ? "en" : "zh");
+  var initial = (saved === "en" || saved === "ja" || saved === "zh")
+    ? saved
+    : detectSystemLang();
+  applyLang(initial);
 
   if (toggle){
     toggle.addEventListener("click", function(){
-      applyLang(document.documentElement.lang === "en" ? "zh" : "en");
+      var current = toggle.getAttribute("data-current-lang") || "zh";
+      var cfg = LANGS[current] || LANGS.zh;
+      applyLang(cfg.next);
     });
   }
 
