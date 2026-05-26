@@ -185,6 +185,24 @@ For broader privacy practices, see [`PRIVACY.md`](PRIVACY.md).
 
 ---
 
+## 4b. Website hosting & analytics (landing page only, 0.1.45+)
+
+The marketing site <https://score-arranger.vercel.app/> is hosted on
+**Vercel** (free tier; static deploy from the `website/` folder of this
+repo). The desktop application **does not** depend on Vercel.
+
+The landing page loads
+[**Cloudflare Web Analytics**](https://www.cloudflare.com/web-analytics/)
+to count aggregate page views and referrers. Per Cloudflare's stated
+practice this collects **no cookies, no fingerprints, no PII**, and the
+data is not linked to any user account. See [`PRIVACY.md`](PRIVACY.md)
+§3.7 for the full disclosure.
+
+Neither service is part of Score Arranger itself — they are infrastructure
+for the marketing site only.
+
+---
+
 ## 5. Trademarks
 
 - **MuseScore** is a trademark of MuseScore BVBA

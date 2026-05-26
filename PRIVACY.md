@@ -125,6 +125,30 @@ whether to install**; nothing downloads or installs automatically.
 To disable, set environment variable `ELECTRON_UPDATER_DISABLED=1` or
 build from source with `electron-updater` removed.
 
+### 3.7 Website analytics (landing page only, 0.1.45+)
+
+The marketing site **<https://score-arranger.vercel.app/>** (and the
+GitHub Pages mirror) loads
+[**Cloudflare Web Analytics**](https://www.cloudflare.com/web-analytics/).
+
+What this does:
+
+- Counts page views, referrers, country (coarse), device class (desktop /
+  mobile / tablet) — **aggregated**
+- **No cookies**, **no `localStorage`**, **no fingerprinting**, **no
+  cross-site tracking**
+- Cloudflare does not link these signals to any user account or build
+  a profile
+
+This **only affects the marketing site**, not the desktop application.
+Score Arranger.app itself sends **zero telemetry** (see §1).
+
+If you want to block the analytics beacon, any standard content blocker
+(uBlock Origin, Brave Shields, Firefox ETP) will catch it; the site
+still works without it. See
+[Cloudflare's Web Analytics privacy notice](https://www.cloudflare.com/web-analytics/privacy/)
+for their side.
+
 ---
 
 ## 4. Your scores and arrangements
