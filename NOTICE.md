@@ -37,6 +37,9 @@ For privacy practices, see [`PRIVACY.md`](PRIVACY.md).
 | [fast-png](https://github.com/image-js/fast-png) | MIT | PNG encoding |
 | [fflate](https://github.com/101arrowz/fflate) | MIT | Compression |
 | [Vite](https://vitejs.dev/) | MIT | Build tooling (devDependency, output bundled) |
+| [electron-updater](https://github.com/electron-userland/electron-builder/tree/master/packages/electron-updater) | MIT | Auto-update check against GitHub Releases (0.1.36+) |
+| [pitchy](https://github.com/ianprime0509/pitchy) | ISC | Real-time pitch detection (McLeod / YIN) for Mic Practice (0.1.35+) |
+| [NSIS](https://nsis.sourceforge.io/) (Windows installer wrapper, 0.1.44+) | **zlib / libpng** | Bundled by `electron-builder` into `*-win-x64-setup.exe`. Source: https://sourceforge.net/projects/nsis/ |
 
 ### 1.2 Python (frozen via PyInstaller into `score-arranger-engine` binary)
 
@@ -99,14 +102,18 @@ attribution in the About dialog satisfies this requirement.
 
 ## 3. Musical works (bundled in `engine/core/sample_scores/`)
 
-Score Arranger ships 200+ sample MusicXML files in the frozen engine binary
-(under `core/sample_scores/`): 45 long-standing samples, 38 **OpenScore Lieder**
-(CC0; 0.1.40 / 0.1.43), 19 **music21 corpus exports** (0.1.42 / 0.1.43; covers
-Renaissance Ciconia / Palestrina, Modern Schoenberg / Webern, Bach 聖詠加碼,
-American Beach / Liliuokalani), 1 **Trecento** madrigal (0.1.43), and 110
-**Humdrum/KernScores exports** (0.1.44; covers Bach Two-Part Inventions BWV
-772-786 全 15, Beethoven 32 鋼琴奏鳴曲 + 16 弦樂四重奏 mvt.1 全套, Mozart 鋼琴
-奏鳴曲, Chopin Op.28 Preludes + Mazurkas, Haydn + Joplin selections).
+Score Arranger ships **212 sample scores** in the frozen engine binary
+(under `core/sample_scores/`):
+
+- **45** long-standing samples (music21 corpus passthrough, CCARH grey zone)
+- **38** **OpenScore Lieder** `.mxl` (CC0; 0.1.40 / 0.1.43)
+- **19** **music21 corpus exports** (0.1.42 / 0.1.43; covers Renaissance
+  Ciconia / Palestrina, Modern Schoenberg / Webern, Bach 聖詠加碼,
+  American Beach / Liliuokalani)
+- **1** **Trecento** madrigal (0.1.43)
+- **110** **Humdrum / KernScores exports** (0.1.44; Bach Two-Part Inventions
+  BWV 772-786 全 15, Beethoven 32 鋼琴奏鳴曲 + 16 弦樂四重奏 mvt.1 全套,
+  Mozart 鋼琴奏鳴曲, Chopin Op.28 Preludes + Mazurkas, Haydn + Joplin)
 The musical works themselves are all in the **public domain** (composers
 from Bach to Verdi, all died ≥ 70 years ago). The MusicXML **encodings**
 carry varying provenance:

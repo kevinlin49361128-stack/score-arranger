@@ -1,6 +1,6 @@
 # Privacy Policy — Score Arranger
 
-_Last updated: 2026-05-24 (v0.1.33)_
+_Last updated: 2026-05-26 (v0.1.44)_
 
 Score Arranger is a desktop application that runs entirely on your machine.
 This document explains what data it processes, where that data goes, and
@@ -31,7 +31,8 @@ Score Arranger writes the following to your local filesystem:
 
 | Path | Contents | Why |
 |------|----------|-----|
-| `<userData>/score-arranger/` | `localStorage` for UI: theme, panel layout, zoom, tab list, AI-suggestion preference counts | Persist UI state across launches |
+| `<userData>/score-arranger/` | `localStorage` for UI: theme, panel layout, zoom, tab list, AI-suggestion preference counts, UI language (`sa-locale`), guidance-mode flags | Persist UI state across launches |
+| `<userData>/score-arranger/` | `localStorage` for teacher workflow (0.1.39+): student cards (name, instrument, grade, free-text notes), ensemble templates | Per-student arrangement targeting; never leaves your machine |
 | `~/.score-arranger/sessions/*.json` | Per-tab arrangement state | Survive app restarts so your work isn't lost |
 | `<tmp>/score-arranger/*.musicxml` | Temporary files for "Open in external editor" | Inter-process handoff to MuseScore/Dorico; OS cleans these up |
 | `<userData>/score-arranger/llm-settings.json` | LLM provider, endpoint, model selection (NOT the API key) | Remember which AI provider you chose |
@@ -92,9 +93,37 @@ on your machine. No PDF data leaves your computer.
 The optional audio import feature uses **basic-pitch**, which runs
 **locally** on your machine. No audio data leaves your computer.
 
-### 3.5 No automatic update checks
+### 3.5 Microphone (Performance Following, 0.1.35+) — local-only
 
-Score Arranger does not check for updates. You decide when to upgrade.
+The optional Mic Practice / Performance Following feature uses your
+microphone to estimate the pitch of what you sing/play in real time
+(via the [pitchy](https://github.com/ianprime0509/pitchy) McLeod / YIN
+algorithm). The audio:
+
+- Is processed **frame-by-frame in renderer memory** (Web Audio API)
+- Is **never recorded to disk**, never uploaded, never persisted
+- Stops as soon as you close the Mic Practice panel
+
+macOS will prompt for microphone permission on first use; the prompt
+text (`NSMicrophoneUsageDescription`) reflects this practice.
+
+### 3.6 Auto-update check (0.1.36+) — GitHub Releases manifest only
+
+On each launch, Score Arranger checks for a newer version by fetching
+**one** static YAML manifest from GitHub Releases:
+
+```
+https://github.com/kevinlin49361128-stack/score-arranger/releases/latest/download/latest-mac.yml
+```
+
+This is a `GET` against a public CDN. **No user data is sent** beyond
+standard HTTP headers (User-Agent identifying Electron / electron-updater,
+your IP visible to GitHub the same as for any web fetch). If a newer
+version is available, the app shows an update banner — **you decide
+whether to install**; nothing downloads or installs automatically.
+
+To disable, set environment variable `ELECTRON_UPDATER_DISABLED=1` or
+build from source with `electron-updater` removed.
 
 ---
 

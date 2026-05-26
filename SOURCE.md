@@ -16,7 +16,7 @@ Each release published at the project's GitHub releases page links to:
 You can fetch the exact source for any release with:
 
 ```sh
-git clone https://github.com/kevinlinxyz/score-arranger.git
+git clone https://github.com/kevinlin49361128-stack/score-arranger.git
 cd score-arranger
 git checkout v0.1.33   # match your binary version
 ```
@@ -49,9 +49,32 @@ The unsigned build differs from the signed release only in code-signing
 metadata; bit-for-bit equivalence of the underlying JavaScript and
 Python is preserved.
 
-For Linux / Windows builds, the same process applies with
-`electron-builder` targets for those platforms (not officially supported
-yet, but the build script is portable in principle).
+For **Windows builds** (officially supported since 0.1.44):
+
+```sh
+# Prereqs: Windows 10/11, Node 20+, Python 3.11+, PowerShell
+npm ci
+cd engine
+python -m pip install -e ".[dev]"
+python -m pip install pyinstaller
+python scripts/freeze.py   # cross-platform freeze (replaces freeze.sh)
+cd ..
+npm run build              # renderer + main
+npx electron-builder --win # produces .exe (NSIS) + .zip
+```
+
+The exact same workflow runs in CI: see
+`.github/workflows/build-windows.yml` (windows-latest runner). Output:
+- `*-win-x64-setup.exe` (NSIS installer)
+- `*-win-x64.zip` (portable)
+
+Windows binaries are **not currently code-signed** (Microsoft
+Authenticode certificate not yet purchased); SmartScreen will warn
+"Unknown publisher" on first launch. Users dismiss via "More info →
+Run anyway".
+
+For **Linux**, no official build is shipped yet; `electron-builder --linux`
+with the same `freeze.py` flow should work in principle but is untested.
 
 ---
 
@@ -60,7 +83,9 @@ yet, but the build script is portable in principle).
 The macOS `.dmg` bundles a PyInstaller-frozen Python binary at
 `Score Arranger.app/Contents/Resources/engine/score-arranger-engine`.
 
-This binary is produced by `engine/freeze.sh`, which:
+This binary is produced by `engine/freeze.sh` (macOS) or
+`engine/scripts/freeze.py` (cross-platform, used by Windows CI; equivalent
+output on macOS too), which:
 
 1. Reads `engine/core/*.py` (the application source — all in this repo)
 2. Resolves `engine/pyproject.toml` dependencies into `engine/.venv`
