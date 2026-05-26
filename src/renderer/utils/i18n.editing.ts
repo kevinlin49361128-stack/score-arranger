@@ -538,6 +538,97 @@ export const EDITING_STRINGS: BiDict = {
     en: "Manage my students — tailor arrangements per student",
     ja: "生徒を管理 — 個別に編曲を調整",
   },
+
+  // ── 0.1.44: TeacherHub — 教師中心 (歸 1 hub) ──
+  "toolbar.teacherHub": {
+    "zh-TW": "🎓 教師中心", en: "🎓 Teacher Hub", ja: "🎓 教師ハブ",
+  },
+  "toolbar.teacherHub.title": {
+    "zh-TW": "學生 / 難度 / 練習 / 麥克風 全部從這裡進入",
+    en: "Students / difficulty / practice / mic — all here",
+    ja: "生徒 / 難易度 / 練習 / マイク をここから",
+  },
+  "teacherHub.title": {
+    "zh-TW": "教師中心", en: "Teacher Hub", ja: "教師ハブ",
+  },
+  "teacherHub.close": { "zh-TW": "關閉", en: "Close", ja: "閉じる" },
+  "teacherHub.needsArrangement": {
+    "zh-TW": "需要先有改編結果", en: "Needs an arrangement first",
+    ja: "編曲結果が必要です",
+  },
+  "teacherHub.tab.students": {
+    "zh-TW": "學生", en: "Students", ja: "生徒",
+  },
+  "teacherHub.tab.difficulty": {
+    "zh-TW": "難度調節", en: "Difficulty", ja: "難易度",
+  },
+  "teacherHub.tab.practice": {
+    "zh-TW": "慢速練習", en: "Practice", ja: "練習",
+  },
+  "teacherHub.tab.mic": {
+    "zh-TW": "麥克風練習", en: "Mic", ja: "マイク",
+  },
+  "teacherHub.difficulty.title": {
+    "zh-TW": "難度調節 — 加 / 減難度",
+    en: "Difficulty — boost or simplify",
+    ja: "難易度 — 上げる / 下げる",
+  },
+  "teacherHub.difficulty.desc": {
+    "zh-TW":
+      "依學生程度調整改編難度: 加和聲、技巧、織體, 或反向簡化。LLM 也"
+      + "會根據選定學生的筆記給建議。",
+    en:
+      "Adjust arrangement difficulty per student level — add harmony, "
+      + "technique, texture, or simplify. The LLM uses the selected "
+      + "student's notes as hints.",
+    ja:
+      "生徒のレベルに合わせて編曲の難易度を調整 — 和声 / 技法 / 織"
+      + "体を追加、または簡略化。LLM は選択した生徒のノートを参考にします。",
+  },
+  "teacherHub.difficulty.open": {
+    "zh-TW": "開啟難度面板", en: "Open difficulty panel",
+    ja: "難易度パネルを開く",
+  },
+  "teacherHub.practice.title": {
+    "zh-TW": "慢速練習 — Loop + 速度調整",
+    en: "Slow practice — loop + tempo",
+    ja: "スロー練習 — ループ + テンポ",
+  },
+  "teacherHub.practice.desc": {
+    "zh-TW":
+      "段落 loop 播放 + 慢速 (0.5x ~ 1.0x), 給學生分段練。也支援聲部"
+      + " mute/solo, 練單一聲部用。",
+    en:
+      "Loop a passage at slower tempo (0.5x – 1.0x) for the student to "
+      + "drill. Also supports per-voice mute/solo for isolated practice.",
+    ja:
+      "区間ループ + スロー再生 (0.5x ~ 1.0x) で生徒の練習用。声部の"
+      + "ミュート / ソロにも対応。",
+  },
+  "teacherHub.practice.open": {
+    "zh-TW": "開啟練習面板", en: "Open practice panel",
+    ja: "練習パネルを開く",
+  },
+  "teacherHub.mic.title": {
+    "zh-TW": "麥克風練習 — 即時音準評估",
+    en: "Mic practice — live intonation feedback",
+    ja: "マイク練習 — リアルタイム音程評価",
+  },
+  "teacherHub.mic.desc": {
+    "zh-TW":
+      "對著麥克風唱 / 演奏, 即時看到音準偏差。不需要載入樂譜也能用,"
+      + " 純做音準訓練。",
+    en:
+      "Sing/play into the mic and see live pitch deviation. Works "
+      + "without loading a score — for pure intonation training too.",
+    ja:
+      "マイクに向かって歌 / 演奏すると、音程のずれをリアルタイム表"
+      + "示。楽譜を読み込まなくても音程練習に使えます。",
+  },
+  "teacherHub.mic.open": {
+    "zh-TW": "開啟麥克風練習", en: "Open mic practice",
+    ja: "マイク練習を開く",
+  },
   // 0.1.39: 改編對話框「為 X 學生」整合
   "boost.forStudent": {
     "zh-TW": "為學生", en: "For student", ja: "生徒のため",

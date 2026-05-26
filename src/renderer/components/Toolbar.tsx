@@ -34,11 +34,8 @@ import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog"
 import { ExportMenu } from "./ExportMenu";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
 import { LLMSetupWizard } from "./LLMSetupWizard";
-import { DifficultyBoostDialog } from "./DifficultyBoostDialog";
+import { TeacherHub } from "./TeacherHub";
 import { NLEditDialog } from "./NLEditDialog";
-import { PracticePanel } from "./PracticePanel";
-import { MicPracticePanel } from "./MicPracticePanel";
-import { StudentsDialog } from "./StudentsDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
@@ -169,10 +166,8 @@ export function Toolbar() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
   const [nlEditOpen, setNlEditOpen] = useState(false);
-  const [boostOpen, setBoostOpen] = useState(false);
-  const [practiceOpen, setPracticeOpen] = useState(false);
-  const [micPracticeOpen, setMicPracticeOpen] = useState(false);
-  const [studentsOpen, setStudentsOpen] = useState(false);
+  // 0.1.44: 教師中心 (TeacherHub) 統一 4 個散落入口
+  const [teacherHubOpen, setTeacherHubOpen] = useState(false);
   const [repertoireOpen, setRepertoireOpen] = useState(false);
   // 0.1.41: 空狀態畫面的「試用範例」按鈕 / 老 CustomEvent 都打開新 Dialog
   useEffect(() => {
@@ -977,41 +972,17 @@ export function Toolbar() {
       >
         {tr("toolbar.nlEdit")}
       </button>
+      {/* 0.1.44: 教師中心 — 取代散落的「學生 / 加難度 / 練習 / 麥克風」4 按鈕,
+          歸 1 hub. boostBtnRef / practiceBtnRef 暫保留指向此鈕, 引導模式
+          的 coachmark 仍能對到位置 (使用者點開 hub 找到對應 tab). */}
       <button
         ref={boostBtnRef}
-        onClick={() => setBoostOpen(true)}
-        style={btnBase}
-        disabled={!arrangement || isLoading}
-        title={tr("toolbar.boost.title")}
-      >
-        {tr("toolbar.boost")}
-      </button>
-      <button
-        ref={practiceBtnRef}
-        onClick={() => setPracticeOpen(true)}
-        style={btnBase}
-        disabled={!arrangement || isLoading}
-        title={tr("toolbar.practice.title")}
-      >
-        {tr("toolbar.practice")}
-      </button>
-      {/* 0.1.35: 麥克風練習 — 不需 arrangement 就能用 (純調音 / 練音準) */}
-      <button
-        onClick={() => setMicPracticeOpen(true)}
+        onClick={() => setTeacherHubOpen(true)}
         style={btnBase}
         disabled={isLoading}
-        title={tr("toolbar.micPractice.title")}
+        title={tr("toolbar.teacherHub.title")}
       >
-        🎤
-      </button>
-      {/* 0.1.39: 我的學生 — 教師工作流入口 */}
-      <button
-        onClick={() => setStudentsOpen(true)}
-        style={btnBase}
-        disabled={isLoading}
-        title={tr("toolbar.students.title")}
-      >
-        👥
+        {tr("toolbar.teacherHub")}
       </button>
 
       <Sep />
@@ -1304,17 +1275,8 @@ export function Toolbar() {
         />
       )}
       {nlEditOpen && <NLEditDialog onClose={() => setNlEditOpen(false)} />}
-      {boostOpen && (
-        <DifficultyBoostDialog onClose={() => setBoostOpen(false)} />
-      )}
-      {practiceOpen && (
-        <PracticePanel onClose={() => setPracticeOpen(false)} />
-      )}
-      {micPracticeOpen && (
-        <MicPracticePanel onClose={() => setMicPracticeOpen(false)} />
-      )}
-      {studentsOpen && (
-        <StudentsDialog onClose={() => setStudentsOpen(false)} />
+      {teacherHubOpen && (
+        <TeacherHub onClose={() => setTeacherHubOpen(false)} />
       )}
       {repertoireOpen && (
         <RepertoireDialog onClose={() => setRepertoireOpen(false)} />

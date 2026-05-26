@@ -38,9 +38,6 @@ const INSTRUMENTS = [
 export function StudentsDialog({ onClose }: Props) {
   useLocale();
   const students = useStudents();
-  const [editing, setEditing] = useState<Student | null>(null);
-  const [adding, setAdding] = useState(false);
-
   return (
     <div
       style={{
@@ -82,78 +79,93 @@ export function StudentsDialog({ onClose }: Props) {
             {t("students.close")}
           </button>
         </header>
-        <div style={{
-          padding: 14, overflow: "auto", flex: 1,
-          display: "flex", flexDirection: "column", gap: 10,
-        }}>
-          <p style={{
-            fontSize: 12, color: "var(--fg-muted)", lineHeight: 1.6,
-            margin: 0,
-          }}>
-            {t("students.intro")}
-          </p>
-
-          {students.length === 0 && !adding && (
-            <div style={{
-              padding: 24, textAlign: "center",
-              color: "var(--fg-tertiary)", fontSize: 13,
-            }}>
-              {t("students.empty")}
-            </div>
-          )}
-
-          {students.map((s) => (
-            editing?.id === s.id ? (
-              <StudentEditor
-                key={s.id}
-                initial={s}
-                onSave={(patch) => {
-                  updateStudent(s.id, patch);
-                  setEditing(null);
-                }}
-                onCancel={() => setEditing(null)}
-                onDelete={() => {
-                  if (window.confirm(t("students.confirmDelete", { name: s.name }))) {
-                    deleteStudent(s.id);
-                    setEditing(null);
-                  }
-                }}
-              />
-            ) : (
-              <StudentRow
-                key={s.id}
-                student={s}
-                onEdit={() => setEditing(s)}
-              />
-            )
-          ))}
-
-          {adding && (
-            <StudentEditor
-              initial={null}
-              onSave={(input) => {
-                addStudent(input);
-                setAdding(false);
-              }}
-              onCancel={() => setAdding(false)}
-            />
-          )}
-
-          {!adding && (
-            <button
-              onClick={() => setAdding(true)}
-              style={{
-                padding: "10px 16px", marginTop: 6,
-                background: "var(--accent)", color: "var(--bg-panel)",
-                border: "none", borderRadius: 6, cursor: "pointer",
-                fontSize: 13, fontWeight: 600,
-              }}
-            >
-              + {t("students.add")}
-            </button>
-          )}
-        </div>
+        <StudentsPanel />
       </div>
+    </div>
+  );
+}
+
+/**
+ * StudentsPanel — 學生 CRUD 內容 (0.1.44 抽出成可重用 panel).
+ * TeacherHub 直接嵌, StudentsDialog 包成獨立 modal.
+ */
+export function StudentsPanel() {
+  useLocale();
+  const students = useStudents();
+  const [editing, setEditing] = useState<Student | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  return (
+    <div style={{
+      padding: 14, overflow: "auto", flex: 1,
+      display: "flex", flexDirection: "column", gap: 10,
+    }}>
+      <p style={{
+        fontSize: 12, color: "var(--fg-muted)", lineHeight: 1.6,
+        margin: 0,
+      }}>
+        {t("students.intro")}
+      </p>
+
+      {students.length === 0 && !adding && (
+        <div style={{
+          padding: 24, textAlign: "center",
+          color: "var(--fg-tertiary)", fontSize: 13,
+        }}>
+          {t("students.empty")}
+        </div>
+      )}
+
+      {students.map((s) => (
+        editing?.id === s.id ? (
+          <StudentEditor
+            key={s.id}
+            initial={s}
+            onSave={(patch) => {
+              updateStudent(s.id, patch);
+              setEditing(null);
+            }}
+            onCancel={() => setEditing(null)}
+            onDelete={() => {
+              if (window.confirm(t("students.confirmDelete", { name: s.name }))) {
+                deleteStudent(s.id);
+                setEditing(null);
+              }
+            }}
+          />
+        ) : (
+          <StudentRow
+            key={s.id}
+            student={s}
+            onEdit={() => setEditing(s)}
+          />
+        )
+      ))}
+
+      {adding && (
+        <StudentEditor
+          initial={null}
+          onSave={(input) => {
+            addStudent(input);
+            setAdding(false);
+          }}
+          onCancel={() => setAdding(false)}
+        />
+      )}
+
+      {!adding && (
+        <button
+          onClick={() => setAdding(true)}
+          style={{
+            padding: "10px 16px", marginTop: 6,
+            background: "var(--accent)", color: "var(--bg-panel)",
+            border: "none", borderRadius: 6, cursor: "pointer",
+            fontSize: 13, fontWeight: 600,
+          }}
+        >
+          + {t("students.add")}
+        </button>
+      )}
     </div>
   );
 }
