@@ -62,4 +62,4 @@ scala = M21 / "scale/scala/scl"
 if scala.exists():
     shutil.rmtree(scala)
 
-print("✓ 凍結完成 (已瘦身): build-pyi/dist/score-arranger-engine/")
+print("[OK] Frozen + slimmed: build-pyi/dist/score-arranger-engine/")
