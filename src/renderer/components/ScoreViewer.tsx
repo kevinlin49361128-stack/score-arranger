@@ -18,6 +18,7 @@ import {
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
+import { TodaysPicks } from "./TodaysPicks";
 
 interface ScoreViewerProps {
   musicXmlContent: string | null;
@@ -108,6 +109,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const [editFlashBoxes, setEditFlashBoxes] = useState<FlashBox[]>([]);
     /** 改編完成揭示 — 譜面由無→有時播一次淡入上滑 */
     const [revealing, setRevealing] = useState(false);
+    const [crossfading, setCrossfading] = useState(false);
     const prevContentRef = useRef<string | null>(null);
     /** 播放游標 — 自繪 measure 級 overlay (取代被深色背景蓋掉的 OSMD <img> cursor) */
     const [playbackBox, setPlaybackBox] = useState<FlashBox | null>(null);
@@ -720,14 +722,24 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     }, [editFlash?.tick]);
 
     // 改編完成揭示 — musicXmlContent 由無→有時, 播一次淡入 + 微上滑。
+    // 0.1.45 B3: 內容由 A→B 變動時 (不是由無→有), 播 crossfade.
+    // 兩種揭示互斥, 用同一個 ref / state 但帶模式判別.
     useEffect(() => {
-      const had = !!prevContentRef.current;
+      const prev = prevContentRef.current;
+      const had = !!prev;
       const has = !!musicXmlContent;
+      const changed = had && has && prev !== musicXmlContent;
       prevContentRef.current = musicXmlContent;
-      if (had || !has) return;
-      setRevealing(true);
-      const id = window.setTimeout(() => setRevealing(false), 420);
-      return () => window.clearTimeout(id);
+      if (changed) {
+        setCrossfading(true);
+        const id = window.setTimeout(() => setCrossfading(false), 320);
+        return () => window.clearTimeout(id);
+      }
+      if (!had && has) {
+        setRevealing(true);
+        const id = window.setTimeout(() => setRevealing(false), 420);
+        return () => window.clearTimeout(id);
+      }
     }, [musicXmlContent]);
 
     // 持久「選取小節」高亮 — 點 issue / 點小節後留著, 直到下次點別處。
@@ -1087,6 +1099,9 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                 {t("scoreViewer.empty.trySample")}
               </button>
             </div>
+            {/* 0.1.47 C3: 今日推薦 — 只在 source panel 顯示 (label 判別),
+                避免兩個 panel 同時出現 redundant 推薦. */}
+            {label === "Source" && <TodaysPicks />}
           </div>
         )}
         {error && (
@@ -1099,7 +1114,11 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
             共用同一 DOM 容器, OSMD 的 DOM 變動會害 React 在 commit 期
             insertBefore 失敗 ('node is not a child') → 整個 app 崩潰。 */}
         <div
-          className={revealing ? "fx-reveal" : undefined}
+          className={
+            revealing ? "fx-reveal"
+              : crossfading ? "fx-crossfade"
+                : undefined
+          }
           style={{ position: "relative" }}
         >
           <div
@@ -1176,18 +1195,32 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
           )}
           {/* 播放游標 — 自繪 measure 級 overlay (見上方 playbackMeasure effect) */}
           {playbackBox && (
-            <div
-              className="score-playback-cursor"
-              style={{
-                position: "absolute",
-                left: playbackBox.left,
-                top: playbackBox.top,
-                width: playbackBox.width,
-                height: playbackBox.height,
-                pointerEvents: "none",
-                zIndex: 4,
-              }}
-            />
+            <>
+              <div
+                className="score-playback-cursor"
+                style={{
+                  position: "absolute",
+                  left: playbackBox.left,
+                  top: playbackBox.top,
+                  width: playbackBox.width,
+                  height: playbackBox.height,
+                  pointerEvents: "none",
+                  zIndex: 4,
+                }}
+              />
+              {/* 0.1.46 B2: ripple — key 帶 playbackMeasure, 每換小節重播 */}
+              <div
+                key={`ripple-${playbackMeasure ?? 0}`}
+                className="score-playback-ripple"
+                style={{
+                  left: playbackBox.left,
+                  top: playbackBox.top,
+                  width: playbackBox.width,
+                  height: playbackBox.height,
+                  zIndex: 5,
+                }}
+              />
+            </>
           )}
           {overlayBoxes.map((b) => {
             const diffHit = diffMeasures?.has(b.measure) ?? false;

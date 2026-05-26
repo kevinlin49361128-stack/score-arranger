@@ -4,6 +4,8 @@
  * 取代舊版 PresetLibrary.tsx 的 PRESETS array + _PRESET_TAGS sidecar.
  * 每首曲目富 metadata 供多重篩選 (作曲家 / 時代 / 編制 / 形式 / 程度 / 主題).
  *
+ * 0.1.45: 299 首 — Scarlatti 修正 + Bach 370 Chorales 50 + Lieder 大套曲完整化
+ *
  * 0.1.41 重要變更:
  * - grade 從自製 1-5 改成 ABRSM 1-9 (8 = Grade 8, 9 = Diploma/Advanced)
  * - 加 optional henle_level 1-9 (出版社中立分級, 適合室內樂 / 鋼琴)
@@ -2039,6 +2041,790 @@ export const REPERTOIRE: RepertoireEntry[] = [
     grade: 6, henle_level: 5,
     tags: ["scales", "legato"],
   },
+  {
+    corpus_path: "scarlatti_K001",
+    title: "Keyboard Sonata K.1 (d minor)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K055",
+    title: "Keyboard Sonata K.55 (G major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K084",
+    title: "Keyboard Sonata K.84 (c minor)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K113",
+    title: "Keyboard Sonata K.113 (A major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K139",
+    title: "Keyboard Sonata K.139 (c minor)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K165",
+    title: "Keyboard Sonata K.165 (C major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K238",
+    title: "Keyboard Sonata K.238 (f minor)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K330",
+    title: "Keyboard Sonata K.330 (C major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K384",
+    title: "Keyboard Sonata K.384 (C major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K406",
+    title: "Keyboard Sonata K.406 (C major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K491",
+    title: "Keyboard Sonata K.491 (D major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K502",
+    title: "Keyboard Sonata K.502 (C major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "scarlatti_K534",
+    title: "Keyboard Sonata K.534 (D major)",
+    composer: "Domenico Scarlatti", composer_dates: "1685-1757",
+    era: "Baroque", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1738, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["staccato", "scales"],
+  },
+  {
+    corpus_path: "bach_chorale_001",
+    title: "4-Part Chorale BWV chor001",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_008",
+    title: "4-Part Chorale BWV chor008",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_016",
+    title: "4-Part Chorale BWV chor016",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_024",
+    title: "4-Part Chorale BWV chor024",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_032",
+    title: "4-Part Chorale BWV chor032",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_040",
+    title: "4-Part Chorale BWV chor040",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_048",
+    title: "4-Part Chorale BWV chor048",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_056",
+    title: "4-Part Chorale BWV chor056",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_064",
+    title: "4-Part Chorale BWV chor064",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_072",
+    title: "4-Part Chorale BWV chor072",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_080",
+    title: "4-Part Chorale BWV chor080",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_088",
+    title: "4-Part Chorale BWV chor088",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_096",
+    title: "4-Part Chorale BWV chor096",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_104",
+    title: "4-Part Chorale BWV chor104",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_112",
+    title: "4-Part Chorale BWV chor112",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_120",
+    title: "4-Part Chorale BWV chor120",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_128",
+    title: "4-Part Chorale BWV chor128",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_136",
+    title: "4-Part Chorale BWV chor136",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_144",
+    title: "4-Part Chorale BWV chor144",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_152",
+    title: "4-Part Chorale BWV chor152",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_160",
+    title: "4-Part Chorale BWV chor160",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_168",
+    title: "4-Part Chorale BWV chor168",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_176",
+    title: "4-Part Chorale BWV chor176",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_184",
+    title: "4-Part Chorale BWV chor184",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_192",
+    title: "4-Part Chorale BWV chor192",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_200",
+    title: "4-Part Chorale BWV chor200",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_208",
+    title: "4-Part Chorale BWV chor208",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_216",
+    title: "4-Part Chorale BWV chor216",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_224",
+    title: "4-Part Chorale BWV chor224",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_232",
+    title: "4-Part Chorale BWV chor232",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_240",
+    title: "4-Part Chorale BWV chor240",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_248",
+    title: "4-Part Chorale BWV chor248",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_256",
+    title: "4-Part Chorale BWV chor256",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_264",
+    title: "4-Part Chorale BWV chor264",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_272",
+    title: "4-Part Chorale BWV chor272",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_280",
+    title: "4-Part Chorale BWV chor280",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_288",
+    title: "4-Part Chorale BWV chor288",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_296",
+    title: "4-Part Chorale BWV chor296",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_304",
+    title: "4-Part Chorale BWV chor304",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_312",
+    title: "4-Part Chorale BWV chor312",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_320",
+    title: "4-Part Chorale BWV chor320",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_328",
+    title: "4-Part Chorale BWV chor328",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_336",
+    title: "4-Part Chorale BWV chor336",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_344",
+    title: "4-Part Chorale BWV chor344",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_352",
+    title: "4-Part Chorale BWV chor352",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_360",
+    title: "4-Part Chorale BWV chor360",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_365",
+    title: "4-Part Chorale BWV chor365",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_367",
+    title: "4-Part Chorale BWV chor367",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_369",
+    title: "4-Part Chorale BWV chor369",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "bach_chorale_371",
+    title: "4-Part Chorale BWV chor371",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Chorale", ensemble: "SATB",
+    instruments: ["voice"], year: 1740, measures: 0,
+    grade: 4, henle_level: 3,
+    tags: ["counterpoint", "ensemble"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_01_liebesbotschaft",
+    title: "Schwanengesang D.957 No.1 Liebesbotschaft",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_04_staendchen",
+    title: "Schwanengesang D.957 No.4 Ständchen",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_05_aufenthalt",
+    title: "Schwanengesang D.957 No.5 Aufenthalt",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_07_abschied",
+    title: "Schwanengesang D.957 No.7 Abschied",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_09_ihrbild",
+    title: "Schwanengesang D.957 No.9 Ihr Bild",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_11_diestadt",
+    title: "Schwanengesang D.957 No.11 Die Stadt",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_13_doppelganger",
+    title: "Schwanengesang D.957 No.13 Der Doppelgänger",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d957_14_taubenpost",
+    title: "Schwanengesang D.957 No.14 Die Taubenpost",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1828, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_01_gutenacht",
+    title: "Winterreise D.911 No.1 Gute Nacht",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_05_lindenbaum",
+    title: "Winterreise D.911 No.5 Der Lindenbaum",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_11_fruhlingstraum",
+    title: "Winterreise D.911 No.11 Frühlingstraum",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_13_diepost",
+    title: "Winterreise D.911 No.13 Die Post",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression", "rhythm"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_15_diekraehe",
+    title: "Winterreise D.911 No.15 Die Krähe",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schubert_d911_24_leiermann",
+    title: "Winterreise D.911 No.24 Der Leiermann",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1827, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schumann_op42_3_fassen",
+    title: "Frauenliebe und Leben Op.42 No.3 Ich kann's nicht fassen",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schumann_op42_4_ring",
+    title: "Frauenliebe und Leben Op.42 No.4 Du Ring an meinem Finger",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840, measures: 0,
+    grade: 5, henle_level: 4,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/schumann_op42_5_helft",
+    title: "Frauenliebe und Leben Op.42 No.5 Helft mir, ihr Schwestern",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/schumann_op42_8_schmerz",
+    title: "Frauenliebe und Leben Op.42 No.8 Nun hast du mir den ersten Schmerz",
+    composer: "Robert Schumann", composer_dates: "1810-1856",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1840, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/berlioz_nuits_2_spectre",
+    title: "Les nuits d'été Op.7 No.2 Le spectre de la rose",
+    composer: "Hector Berlioz", composer_dates: "1803-1869",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1841, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/berlioz_nuits_4_absence",
+    title: "Les nuits d'été Op.7 No.4 Absence",
+    composer: "Hector Berlioz", composer_dates: "1803-1869",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1841, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/mahler_wunderhorn_7_rhein",
+    title: "Des Knaben Wunderhorn No.7 Rheinlegendchen",
+    composer: "Gustav Mahler", composer_dates: "1860-1911",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1893, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/wolf_eichendorff_3_verschwiegene",
+    title: "Eichendorff-Lieder No.3 Verschwiegene Liebe",
+    composer: "Hugo Wolf", composer_dates: "1860-1903",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression", "legato"],
+  },
+  {
+    corpus_path: "openscore/wolf_eichendorff_12_heimweh",
+    title: "Eichendorff-Lieder No.12 Heimweh",
+    composer: "Hugo Wolf", composer_dates: "1860-1903",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888, measures: 0,
+    grade: 7, henle_level: 6,
+    tags: ["expression"],
+  },
+  {
+    corpus_path: "openscore/wolf_eichendorff_18_erwartung",
+    title: "Eichendorff-Lieder No.18 Erwartung",
+    composer: "Hugo Wolf", composer_dates: "1860-1903",
+    era: "Romantic", form: "Lied", ensemble: "Voice + Piano",
+    instruments: ["voice", "piano"], year: 1888, measures: 0,
+    grade: 6, henle_level: 5,
+    tags: ["expression"],
+  },
+
 ];
 
 // ============================================================================
@@ -2088,4 +2874,133 @@ export function henleDescription(h: HenleLevel): string {
   if (h <= 3) return "leicht / easy";
   if (h <= 6) return "mittelschwer / medium";
   return "schwer / difficult";
+}
+
+/**
+ * 0.1.45 視覺升級 A1 — 時代色帶配色.
+ *
+ * 設計考量: 飽和度刻意壓低, 配 paper / 暗金底色, 不喧鬰.
+ * 古典樂客群偏好 sober 色調, 不用 vivid primary.
+ */
+export const ERA_BAND: Record<Era, string> = {
+  Renaissance: "#6b8e5a",  // 苔綠 — 羊皮紙時代
+  Baroque: "#b08a45",      // 暗金 — 巴洛克金漆
+  Classical: "#b8a373",    // 象牙金 — 啟蒙時期大理石
+  Romantic: "#c4778a",     // 玫紅 — 沙龍絲絨
+  Modern: "#5a7a9e",       // 鋼藍 — 工業時代
+};
+
+/**
+ * 0.1.47 視覺升級 B4 — 時代別標題字型.
+ *
+ * 對應各時代主流印刷字型, 細微但有質感. 只用在標題不全面替換.
+ * Fallback chain 保證跨平台都能渲染.
+ */
+export function eraFontFamily(era: Era): string {
+  switch (era) {
+    case "Renaissance":
+      // 文藝復興手抄本感, calligraphic
+      return "Palatino, 'Palatino Linotype', 'Songti TC', 'Times New Roman', serif";
+    case "Baroque":
+      // 巴洛克印刷古典 serif (Garamond family)
+      return "Garamond, 'EB Garamond', 'Times New Roman', serif";
+    case "Classical":
+      // 古典時期過渡 serif
+      return "Baskerville, Georgia, 'Times New Roman', serif";
+    case "Romantic":
+      // 浪漫時期 didone (Bodoni/Didot)
+      return "'Bodoni 72', Bodoni, Didot, 'Didot LT STD', Georgia, serif";
+    case "Modern":
+      // 現代主義 — sans-serif
+      return "'Helvetica Neue', Helvetica, Arial, sans-serif";
+    default:
+      return "inherit";
+  }
+}
+
+/**
+ * 0.1.46 視覺升級 A2 — 作曲家 monogram 字章.
+ *
+ * 取首字 + 姓氏首字 (大寫). 著名作曲家用通用縮寫 (Bach=JSB, Mozart=WAM).
+ * 不用真實肖像 (版權問題), 純字章設計感更貼近 18-19 世紀印刷風格.
+ */
+export function composerMonogram(composer: string): string {
+  const SPECIAL: Record<string, string> = {
+    "Johann Sebastian Bach": "JSB",
+    "Wolfgang Amadeus Mozart": "WAM",
+    "Ludwig van Beethoven": "LvB",
+    "Carl Philipp Emanuel Bach": "CPE",
+    "Felix Mendelssohn": "FM",
+    "Franz Schubert": "FS",
+    "Frédéric Chopin": "FC",
+    "Robert Schumann": "RS",
+    "Clara Schumann": "CS",
+    "Johannes Brahms": "JB",
+    "Hugo Wolf": "HW",
+    "Gustav Mahler": "GM",
+    "Richard Strauss": "RS·",
+    "Hector Berlioz": "HB",
+    "Claude Debussy": "CD",
+    "Gabriel Fauré": "GF",
+    "Joseph Haydn": "JH",
+    "Domenico Scarlatti": "DS",
+    "George Frideric Handel": "GFH",
+    "Arcangelo Corelli": "AC",
+    "Giuseppe Verdi": "GV",
+    "Scott Joplin": "SJ",
+    "Arnold Schoenberg": "AS",
+    "Anton Webern": "AW",
+    "Alban Berg": "AB",
+    "Amy Beach": "AB·",
+    "Liliʻuokalani": "Lk",
+    "Lili Boulanger": "LB",
+    "Giovanni Pierluigi da Palestrina": "GP",
+  };
+  if (SPECIAL[composer]) return SPECIAL[composer];
+  // 通用 fallback: 取每個 word 首字, 最多 3 字
+  const parts = composer.split(/\s+/).filter(p => p.length > 0);
+  return parts.map(p => p[0]).join("").toUpperCase().slice(0, 3);
+}
+
+/**
+ * 0.1.46 視覺升級 A4 — 編制 icon (SVG path, 不用 emoji).
+ *
+ * 用統一線條風格的 SVG, 16x16 viewBox.
+ * - SATB: 4 個圓 (TTBA)
+ * - String Quartet: 4 個小提琴標記
+ * - Voice + Piano: 麥克風 + 鋼琴鍵盤
+ * - Piano Solo: 鋼琴鍵盤
+ * - Trio Sonata: 3 條弦
+ * - Other: 點點
+ */
+export function ensembleIcon(e: EnsembleType): string {
+  switch (e) {
+    case "SATB":
+      return "M2,8 A2,2 0 1,1 6,8 A2,2 0 1,1 2,8 "
+        + "M6,8 A2,2 0 1,1 10,8 A2,2 0 1,1 6,8 "
+        + "M4,12 A2,2 0 1,1 8,12 A2,2 0 1,1 4,12 "
+        + "M8,12 A2,2 0 1,1 12,12 A2,2 0 1,1 8,12";
+    case "String Quartet":
+      // 4 把小提琴 = 4 個 elongated 橢圓
+      return "M2,3 L2,8 M5,3 L5,8 M8,3 L8,8 M11,3 L11,8 "
+        + "M1,10 L4,10 M4,10 L7,10 M7,10 L10,10 M10,10 L13,10";
+    case "Voice + Piano":
+      // mic 圓 + 鋼琴鍵 條
+      return "M5,2 A2,2 0 1,1 5,7 A2,2 0 1,1 5,2 M5,7 L5,9 "
+        + "M2,11 L12,11 L12,14 L2,14 Z "
+        + "M5,11 L5,14 M8,11 L8,14";
+    case "Piano Solo":
+      // 鋼琴鍵盤
+      return "M1,5 L14,5 L14,12 L1,12 Z "
+        + "M4,5 L4,12 M7,5 L7,12 M10,5 L10,12 "
+        + "M2.5,5 L2.5,9 M5.5,5 L5.5,9 M8.5,5 L8.5,9 M11.5,5 L11.5,9 M12.5,5 L12.5,9";
+    case "Trio Sonata":
+      // 3 條弦樂線
+      return "M3,2 L3,14 M7,2 L7,14 M11,2 L11,14";
+    case "Other":
+    default:
+      return "M3,8 A1,1 0 1,1 5,8 A1,1 0 1,1 3,8 "
+        + "M7,8 A1,1 0 1,1 9,8 A1,1 0 1,1 7,8 "
+        + "M11,8 A1,1 0 1,1 13,8 A1,1 0 1,1 11,8";
+  }
 }

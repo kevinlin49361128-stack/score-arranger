@@ -16,8 +16,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   abrsmDescription, ALL_ENSEMBLES, ALL_ERAS, ALL_FORMS, ALL_TAGS,
-  type EnsembleType, type Era, type Form, henleDescription,
-  listComposers, REPERTOIRE, type RepertoireEntry, type TeachingTag,
+  composerMonogram, ensembleIcon, type EnsembleType, type Era, ERA_BAND,
+  eraFontFamily, type Form, henleDescription, listComposers, REPERTOIRE,
+  type RepertoireEntry, type TeachingTag,
 } from "../data/repertoireCatalog";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
@@ -29,6 +30,7 @@ interface Props {
 /** 大樂譜載入確認門檻 (跟舊版同步) */
 const LARGE_THRESHOLD = 200;
 const HUGE_THRESHOLD = 600;
+
 
 export function RepertoireDialog({ onClose }: Props) {
   useLocale();
@@ -384,15 +386,54 @@ function EntryRow(
       style={{
         display: "block", width: "100%", textAlign: "left",
         padding: "10px 12px", marginBottom: 4,
-        border: "1px solid var(--border-light)", borderRadius: 6,
+        border: "1px solid var(--border-light)",
+        borderLeft: `4px solid ${ERA_BAND[entry.era]}`,
+        borderRadius: 6,
         background: "var(--bg-panel)", color: "var(--fg-primary)",
         cursor: "pointer", fontSize: 13,
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
       onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-panel)")}
     >
-      <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-        <strong style={{ flex: 1 }}>{entry.title}</strong>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        {/* A2 作曲家 monogram 字章 — 24px 圓形 */}
+        <span
+          title={`${entry.composer} (${entry.composer_dates})`}
+          style={{
+            display: "inline-flex", alignItems: "center",
+            justifyContent: "center",
+            width: 26, height: 26, borderRadius: "50%",
+            background: ERA_BAND[entry.era],
+            color: "#fdf6e3",
+            fontSize: 10, fontWeight: 700,
+            letterSpacing: 0.2,
+            flexShrink: 0,
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            border: "1px solid rgba(0,0,0,0.15)",
+          }}
+        >
+          {composerMonogram(entry.composer)}
+        </span>
+        <strong
+          style={{
+            flex: 1, lineHeight: 1.3,
+            // B4 視覺升級 — 標題依時代套用對應字型
+            fontFamily: eraFontFamily(entry.era),
+          }}
+        >
+          {entry.title}
+        </strong>
+        {/* A4 編制 icon — 16px SVG */}
+        <svg
+          width="18" height="18" viewBox="0 0 16 16"
+          fill="none"
+          stroke="var(--fg-secondary)" strokeWidth="1.2"
+          strokeLinecap="round"
+          style={{ flexShrink: 0, opacity: 0.75 }}
+          aria-label={entry.ensemble}
+        >
+          <path d={ensembleIcon(entry.ensemble)} />
+        </svg>
         {entry.measures && entry.measures > HUGE_THRESHOLD && (
           <span style={badgeStyle("rgba(239,68,68,0.18)", "rgb(239,68,68)")}
                 title={t("preset.badge.xl.title")}>XL</span>

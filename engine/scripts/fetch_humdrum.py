@@ -103,26 +103,56 @@ PIECES: list[tuple[str, str, str, str]] = [
     ("craigsapp/joplin", "pineapple-rag.krn",
      "joplin_pineapple_rag", "Romantic"),
 
-    # ─── Scarlatti Keyboard Sonatas — 挑 8 首名作 ──────────────
+    # ─── Scarlatti Keyboard Sonatas — 0.1.45 修檔名 + 加碼到 15 首 ───
     # 巴洛克晚期, 義大利 / 西班牙風味, 大鍵琴鋼琴皆可演.
-    # K. = Kirkpatrick 編號. 挑 K.1, K.27, K.30, K.141, K.380, K.466,
-    # K.491, K.531 等代表.
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk001.krn",
-     "scarlatti_kk001", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk027.krn",
-     "scarlatti_kk027", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk030.krn",
-     "scarlatti_kk030", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk141.krn",
-     "scarlatti_kk141", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk380.krn",
-     "scarlatti_kk380", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk466.krn",
-     "scarlatti_kk466", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk491.krn",
-     "scarlatti_kk491", "Baroque"),
-    ("craigsapp/scarlatti-keyboard-sonatas", "kk531.krn",
-     "scarlatti_kk531", "Baroque"),
+    # 0.1.44 用 kk###.krn 是錯的, repo 實際格式: L<longo>K<kirkpatrick>.krn
+    # repo 只有 65 首 (非全 555), 從中挑 15 首教學常用代表.
+    ("craigsapp/scarlatti-keyboard-sonatas", "L366K001.krn",
+     "scarlatti_K001", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L335K055.krn",
+     "scarlatti_K055", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L010K084.krn",
+     "scarlatti_K084", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L345K113.krn",
+     "scarlatti_K113", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L006K139.krn",
+     "scarlatti_K139", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L349K146.krn",
+     "scarlatti_K146", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L052K165.krn",
+     "scarlatti_K165", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L054K200.krn",
+     "scarlatti_K200", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L027K238.krn",
+     "scarlatti_K238", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L055K330.krn",
+     "scarlatti_K330", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L002K384.krn",
+     "scarlatti_K384", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L005K406.krn",
+     "scarlatti_K406", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L164K491.krn",
+     "scarlatti_K491", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L003K502.krn",
+     "scarlatti_K502", "Baroque"),
+    ("craigsapp/scarlatti-keyboard-sonatas", "L011K534.krn",
+     "scarlatti_K534", "Baroque"),
+
+    # ─── Bach 370 Chorales — 0.1.45 新增 50 首代表 ────────────────
+    # craigsapp/bach-370-chorales (370 首 SATB 聖詠合輯, BWV chor001-371).
+    # 聲部進行教材經典, 內聲部運動範例庫. 全 PD, encoding 同 grey-zone.
+    # 50 首均勻取樣 (每 7-8 首取 1), 涵蓋 BWV 全曲目範圍.
+    *[
+        ("craigsapp/bach-370-chorales", f"chor{i:03d}.krn",
+         f"bach_chorale_{i:03d}", "Baroque")
+        for i in (
+            1, 8, 16, 24, 32, 40, 48, 56, 64, 72,
+            80, 88, 96, 104, 112, 120, 128, 136, 144, 152,
+            160, 168, 176, 184, 192, 200, 208, 216, 224, 232,
+            240, 248, 256, 264, 272, 280, 288, 296, 304, 312,
+            320, 328, 336, 344, 352, 360, 365, 367, 369, 371,
+        )
+    ],
 
     # ─── Haydn Piano Sonatas — 挑 8 首 ─────────────────────────
     # Hob.XVI 編號 1-62. 名作含 Hob.XVI/35 (C major), 50 (C major),

@@ -195,6 +195,28 @@
         }
       }
 
+      /* 0.1.46 視覺升級 B2 — 播放音符 ripple 漸散光暈.
+         每次進入新小節, 從小節中心向外擴散 0.6s, 強化「呼吸感」.
+         取代純脈動的視覺等待感, 給古典樂客群更貼近演奏的感受. */
+      @keyframes score-ripple {
+        0% {
+          opacity: 0.45;
+          transform: scale(0.85);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(1.35);
+        }
+      }
+      .score-playback-ripple {
+        position: absolute;
+        pointer-events: none;
+        border-radius: 6px;
+        border: 2px solid rgba(52, 199, 89, 0.62);
+        transform-origin: center;
+        animation: score-ripple 0.6s ease-out forwards;
+      }
+
       /* 持久「選取小節」高亮: 點 issue / 點小節後留著的琥珀色外框 */
       .score-selected-measure {
         background: rgba(255, 179, 0, 0.12);
@@ -243,6 +265,17 @@
       }
       .fx-reveal {
         animation: fx-reveal 0.34s ease-out;
+      }
+
+      /* 0.1.45 視覺升級 B3 — source↔target 切換 crossfade.
+         譜面換新內容時 (不是由無變有, 而是由 A 變 B), 整個容器先半透
+         明再淡回, 取代瞬間切換, 給古典樂客群更 ceremonious 的感覺. */
+      @keyframes fx-crossfade {
+        from { opacity: 0.35; }
+        to { opacity: 1; }
+      }
+      .fx-crossfade {
+        animation: fx-crossfade 0.3s ease-out;
       }
 
       /* 套用成功微回饋: 按鈕一個輕脈動 */

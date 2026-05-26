@@ -536,6 +536,11 @@ export const IO_STRINGS: BiDict = {
     en: "Try a Sample",
     ja: "サンプルを試す",
   },
+  "todaysPicks.title": {
+    "zh-TW": "今日推薦",
+    en: "Today's Picks",
+    ja: "本日のおすすめ",
+  },
   "scoreViewer.overlay.difficulty": {
     "zh-TW": "m.{measure} — 難度 {score}/5",
     en: "m.{measure} — difficulty {score}/5",

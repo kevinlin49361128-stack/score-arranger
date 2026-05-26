@@ -57,12 +57,17 @@ export function QualityBadge() {
       <span style={{ color: "var(--fg-muted)", fontWeight: 500 }}>
         {t("quality.label")}
       </span>
-      <Ring label={t("quality.melody")} score={quality.melody_preservation} />
-      <Ring
-        label={t("quality.harmony")}
-        score={quality.harmony_completeness}
+      {/* 0.1.46 C2: radar triangle 取代三個圓環 */}
+      <RadarTriangle
+        melody={quality.melody_preservation}
+        harmony={quality.harmony_completeness}
+        playability={quality.playability}
+        labels={{
+          melody: t("quality.melody"),
+          harmony: t("quality.harmony"),
+          playability: t("quality.playability"),
+        }}
       />
-      <Ring label={t("quality.playability")} score={quality.playability} />
       <span
         style={{
           marginLeft: 4,
@@ -78,56 +83,93 @@ export function QualityBadge() {
   );
 }
 
-function Ring({ label, score }: { label: string; score: number }) {
-  const pct = Math.round(score * 100);
-  const color = scoreColor(score);
+/**
+ * 0.1.46 C2 — 改編品質 radar triangle.
+ * 三項分數 (melody/harmony/playability) 畫成等邊三角形 radar,
+ * 整體形狀和顏色一眼看出弱點.
+ * 三角形面積越大表示三項分數越平衡;
+ * 顏色採平均分數的綠/黃/紅.
+ */
+function RadarTriangle({
+  melody, harmony, playability, labels,
+}: {
+  melody: number;
+  harmony: number;
+  playability: number;
+  labels: { melody: string; harmony: string; playability: string };
+}) {
+  const size = 64;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - 8;
+  // 三個頂點: top, bottom-right, bottom-left (120° 間距)
+  const angles = [-Math.PI / 2, Math.PI / 6, 5 * Math.PI / 6];
+  const scores = [melody, harmony, playability];
+  const labelTexts = [labels.melody, labels.harmony, labels.playability];
+
+  const outerPts = angles.map(a => [cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  const innerPts = angles.map((a, i) => {
+    const s = Math.max(0.05, scores[i]);
+    return [cx + r * s * Math.cos(a), cy + r * s * Math.sin(a)];
+  });
+  const avg = (melody + harmony + playability) / 3;
+  const fill = scoreColor(avg);
+  const polyOuter = outerPts.map(p => p.join(",")).join(" ");
+  const polyInner = innerPts.map(p => p.join(",")).join(" ");
+  const tooltip =
+    `${labels.melody}: ${Math.round(melody * 100)} · ` +
+    `${labels.harmony}: ${Math.round(harmony * 100)} · ` +
+    `${labels.playability}: ${Math.round(playability * 100)}`;
+
   return (
-    <div
-      style={{
-        display: "inline-flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 0,
-        minWidth: 38,
-      }}
+    <span
+      title={tooltip}
+      style={{ display: "inline-flex", alignItems: "center" }}
     >
-      <span
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          background:
-            `conic-gradient(${color} ${pct * 3.6}deg, var(--bg-tertiary) 0)`,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 9,
-          color: "var(--fg-primary)",
-          fontWeight: 600,
-        }}
-      >
-        <span
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "var(--bg-panel)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {pct}
-        </span>
-      </span>
-      <span style={{
-        color: "var(--fg-muted)", marginTop: 1, whiteSpace: "nowrap",
-      }}>
-        {label}
-      </span>
-    </div>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* 外框 (滿分輪廓) */}
+        <polygon
+          points={polyOuter}
+          fill="var(--bg-tertiary)"
+          stroke="var(--border-light)"
+          strokeWidth="1"
+        />
+        {/* 實際分數 */}
+        <polygon
+          points={polyInner}
+          fill={fill}
+          fillOpacity="0.35"
+          stroke={fill}
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        {/* 頂點小圓 */}
+        {innerPts.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={1.8} fill={fill} />
+        ))}
+        {/* 標籤 (極簡, 只用首字, 完整文字交給 tooltip) */}
+        {outerPts.map((_pt, i) => {
+          const a = angles[i];
+          const lx = cx + (r + 5) * Math.cos(a);
+          const ly = cy + (r + 5) * Math.sin(a);
+          return (
+            <text
+              key={`l${i}`}
+              x={lx} y={ly + 3}
+              fontSize="8"
+              fill="var(--fg-muted)"
+              textAnchor="middle"
+            >
+              {labelTexts[i].slice(0, 2)}
+            </text>
+          );
+        })}
+      </svg>
+    </span>
   );
 }
+
+// 舊版 Ring (conic-gradient) 0.1.46 改用 RadarTriangle 取代; 元件移除.
 
 function scoreColor(score: number): string {
   if (score >= 0.85) return "#22c55e";   // green

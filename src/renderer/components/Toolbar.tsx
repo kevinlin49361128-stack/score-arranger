@@ -574,6 +574,43 @@ export function Toolbar() {
     };
   }, [handleImport]);
 
+  // 0.1.47 C3: 「今日推薦」卡片點擊 → 直接載入 corpus, 不開 RepertoireDialog
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ corpus_path: string }>).detail;
+      if (!detail?.corpus_path) return;
+      void (async () => {
+        const virtualPath = `corpus:${detail.corpus_path}`;
+        if (!activeTabId && tabs.length === 0) newTab();
+        setLoading(true, tr("preset.loading", { name: detail.corpus_path }));
+        setError(null);
+        setAnalysis(null);
+        setArrangement(null);
+        setTargetMusicXML(null);
+        try {
+          const res = await window.scoreArranger.engine.toMusicXML(virtualPath);
+          if (res.ok && res.data) {
+            setSourcePath(virtualPath);
+            setSourceMusicXML(res.data);
+            setMode("setup");
+            snapshotToTab();
+          } else {
+            setError(res.error ?? tr("preset.error.loadFailed"));
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
+        } finally {
+          setLoading(false);
+        }
+      })();
+    };
+    window.addEventListener("sa:request-load-corpus", handler);
+    return () => {
+      window.removeEventListener("sa:request-load-corpus", handler);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId, tabs.length]);
+
   const handleAnalyze = async () => {
     if (!sourcePath) return;
     setLoading(true, tr("toolbar.loading.analyzing"));

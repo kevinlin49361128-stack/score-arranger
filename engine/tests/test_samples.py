@@ -19,8 +19,8 @@ from core.parser import parse_musicxml
 
 def test_sample_count():
     """PresetLibrary 精選 58 首 — 數量不可漂移 (0.1.40)."""
-    assert len(samples.SAMPLE_CORPUS_IDS) == 212
-    assert len(set(samples.SAMPLE_CORPUS_IDS)) == 212  # 無重複
+    assert len(samples.SAMPLE_CORPUS_IDS) == 299
+    assert len(set(samples.SAMPLE_CORPUS_IDS)) == 299  # 無重複
 
 
 def test_all_samples_resolve():
@@ -33,7 +33,7 @@ def test_all_samples_resolve():
 def test_list_samples_returns_all():
     """list_samples() (給 list_corpus RPC 用) 應列出全部 58 首。"""
     listed = samples.list_samples()
-    assert len(listed) == 212
+    assert len(listed) == 299
     for entry in listed:
         assert entry["corpus_path"] in set(samples.SAMPLE_CORPUS_IDS)
         assert entry["composer"]
