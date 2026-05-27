@@ -329,9 +329,9 @@ export const IO_STRINGS: BiDict = {
     ja: "書き出し ▾",
   },
   "exportMenu.button.title": {
-    "zh-TW": "匯出改編結果",
-    en: "Export the arrangement",
-    ja: "編曲結果を書き出す",
+    "zh-TW": "匯出改編結果 (⌘E)",
+    en: "Export the arrangement (⌘E)",
+    ja: "編曲結果を書き出す (⌘E)",
   },
   "exportMenu.group.fullScore": {
     "zh-TW": "總譜",

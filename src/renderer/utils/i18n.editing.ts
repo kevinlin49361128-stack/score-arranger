@@ -700,6 +700,32 @@ export const EDITING_STRINGS: BiDict = {
   "micPractice.errorPrefix": {
     "zh-TW": "麥克風錯誤", en: "Microphone error", ja: "マイクエラー",
   },
+  "micPractice.error.permission": {
+    "zh-TW": "權限被拒. 請到「系統設定 → 隱私權與安全性 → 麥克風」"
+      + "勾選 Score Arranger, 然後重試.",
+    en: "Permission denied. Enable Score Arranger in "
+      + "System Settings → Privacy & Security → Microphone, then retry.",
+    ja: "権限が拒否されました。システム設定 → "
+      + "プライバシーとセキュリティ → マイク で Score Arranger を許可し、"
+      + "再試行してください。",
+  },
+  "micPractice.error.noDevice": {
+    "zh-TW": "找不到麥克風裝置. 請確認麥克風已接上.",
+    en: "No microphone device found. Check that a mic is connected.",
+    ja: "マイクデバイスが見つかりません。接続を確認してください。",
+  },
+  "micPractice.error.inUse": {
+    "zh-TW": "麥克風被其他程式佔用. 關閉佔用程式後重試.",
+    en: "Microphone is in use by another application. "
+      + "Close the other app and retry.",
+    ja: "マイクは他のアプリで使用中です。"
+      + "そのアプリを終了して再試行してください。",
+  },
+  "micPractice.error.notSupported": {
+    "zh-TW": "瀏覽器或 OS 不支援麥克風 API.",
+    en: "Microphone API not supported by browser or OS.",
+    ja: "ブラウザまたは OS がマイク API に対応していません。",
+  },
   "micPractice.legendHint": {
     "zh-TW":
       "綠 = 準 (±10¢ 內) / 橘 = 偏一點 / 紅 = 偏太多. 橫向是時間 (5 秒), "

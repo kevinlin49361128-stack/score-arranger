@@ -471,6 +471,27 @@ function Step3(
       }}>
         {t("onboard.step3.footnote")}
       </div>
+
+      {/* 0.1.46 D5: LLM 改譜功能 onboarding 提示.
+          改編完之後立刻告訴使用者「⌘/ 用自然語言修改」這個 power feature,
+          避免新功能被埋沒在 toolbar 角落. */}
+      <div style={{
+        marginTop: 12,
+        padding: "10px 12px",
+        background: "linear-gradient(135deg, "
+          + "rgba(176, 138, 69, 0.12), rgba(196, 119, 138, 0.08))",
+        border: "1px solid rgba(176, 138, 69, 0.25)",
+        borderRadius: 6,
+        fontSize: 12,
+        lineHeight: 1.5,
+        color: "var(--fg-secondary)",
+      }}>
+        <strong style={{ color: "var(--fg-primary)" }}>
+          {t("onboard.step3.llmTip.title")}
+        </strong>
+        <br />
+        {t("onboard.step3.llmTip.body")}
+      </div>
     </>
   );
 }

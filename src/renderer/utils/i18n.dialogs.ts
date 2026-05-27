@@ -991,6 +991,24 @@ export const DIALOG_STRINGS: BiDict = {
       "完了後は、ツールバーで編成 / スタイルプリセットを切り替え、"
       + "いつでも微調整できます。",
   },
+  "onboard.step3.llmTip.title": {
+    "zh-TW": "💡 試試 AI 改譜 (⌘/)",
+    en: "💡 Try AI editing (⌘/)",
+    ja: "💡 AI 編曲を試す (⌘/)",
+  },
+  "onboard.step3.llmTip.body": {
+    "zh-TW": "改編好之後, 按 ⌘/ 開啟 AI 改譜面板, "
+      + "用自然語言告訴它「把第 8 小節改成 pizzicato」、"
+      + "「降難度」等. 你也可以從工具列點「🤖 改譜」按鈕.",
+    en: "After arranging, press ⌘/ to open the AI editing panel and "
+      + "describe changes in natural language — "
+      + "\"make m.8 pizzicato\", \"reduce difficulty\", etc. "
+      + "Or click the 🤖 button in the toolbar.",
+    ja: "編曲後、⌘/ で AI 編集パネルを開き、"
+      + "「8 小節目をピチカートに」「難易度を下げる」等、"
+      + "自然言語で変更を指示できます。"
+      + "ツールバーの 🤖 ボタンからもアクセス可能。",
+  },
 
   // ==========================================================================
   // OMRInstallDialog

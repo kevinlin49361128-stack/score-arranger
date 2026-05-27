@@ -185,6 +185,18 @@ export function Toolbar() {
   const [pendingLLMAction, setPendingLLMAction] = useState<
     "nlEdit" | "boost" | null
   >(null);
+
+  // 0.1.46 D1: ⌘/ 快捷鍵打開 NL 面板. (⌘E 由 ExportMenu 自己接.)
+  useEffect(() => {
+    const openNl = () => {
+      if (!sourcePath) return;
+      setNlEditOpen(true);
+    };
+    window.addEventListener("sa:request-open-nl-edit", openNl);
+    return () => {
+      window.removeEventListener("sa:request-open-nl-edit", openNl);
+    };
+  }, [sourcePath]);
   // 引導模式 — 4 個主要動作按鈕的 anchor ref, 給 Coachmark 用
   const arrangeBtnRef = useRef<HTMLButtonElement>(null);
   const nlEditBtnRef = useRef<HTMLButtonElement>(null);
@@ -289,11 +301,17 @@ export function Toolbar() {
     evaluateOverflow();
   }, [collapseLevel, locale, evaluateOverflow]);
 
-  // 鍵盤快捷鍵: Cmd+Z / Cmd+Shift+Z / Cmd+S / Cmd+\
+  // 鍵盤快捷鍵 — 0.1.46 D1 補完:
+  //   ⌘Z undo / ⌘⇧Z redo / ⌘S save / ⌘\ 切版面方向
+  //   ⌘O 開譜 / ⌘E 匯出 / ⌘L 曲庫 / ⌘/ NL 改譜面板
+  //   除錯/輸入欄位內的鍵盤事件不攔截.
   useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
       const isMod = e.metaKey || e.ctrlKey;
       if (!isMod) return;
+      // 別跟輸入框搶 ⌘Z (例如 LLM 對話框打字)
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
       if (e.key === "z" && !e.shiftKey && canUndo) {
         e.preventDefault();
         await doUndo();
@@ -308,6 +326,18 @@ export function Toolbar() {
       } else if (e.key === "\\") {
         e.preventDefault();
         togglePanelLayout();
+      } else if (e.key === "o" && !e.shiftKey) {
+        e.preventDefault();
+        await handleImport();
+      } else if (e.key === "e" && !e.shiftKey) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sa:request-open-export-menu"));
+      } else if (e.key === "l" && !e.shiftKey) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sa:request-open-repertoire"));
+      } else if (e.key === "/") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("sa:request-open-nl-edit"));
       }
     };
     window.addEventListener("keydown", onKey);

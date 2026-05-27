@@ -21,6 +21,17 @@ export function ExportMenu({ buttonStyle, disabled }: ExportMenuProps) {
   useLocale();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 0.1.46 D1: 接 ⌘E 快捷鍵打開選單
+  useEffect(() => {
+    const onRequest = () => {
+      if (!disabled) setOpen(true);
+    };
+    window.addEventListener("sa:request-open-export-menu", onRequest);
+    return () => {
+      window.removeEventListener("sa:request-open-export-menu", onRequest);
+    };
+  }, [disabled]);
   const {
     setLoading,
     setError,

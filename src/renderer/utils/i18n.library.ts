@@ -11,9 +11,9 @@ export const LIBRARY_STRINGS: BiDict = {
     ja: "📚 曲目データベース",
   },
   "repertoire.title": {
-    "zh-TW": "曲目資料庫",
-    en: "Repertoire database",
-    ja: "曲目データベース",
+    "zh-TW": "曲目資料庫 (⌘L)",
+    en: "Repertoire database (⌘L)",
+    ja: "曲目データベース (⌘L)",
   },
   "repertoire.searchPlaceholder": {
     "zh-TW": "搜尋曲名 / 作曲家...",

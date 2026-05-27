@@ -93,7 +93,10 @@ export const SHELL_STRINGS: BiDict = {
   },
 
   // === Toolbar: 檔案群組 ===
-  "toolbar.import": { "zh-TW": "匯入", en: "Import", ja: "インポート" },
+  "toolbar.import": {
+    "zh-TW": "匯入樂譜 (⌘O)", en: "Import score (⌘O)",
+    ja: "楽譜をインポート (⌘O)",
+  },
   "toolbar.openProject": {
     "zh-TW": "開啟 .sarr 專案", en: "Open .sarr project",
     ja: ".sarr プロジェクトを開く",
@@ -123,11 +126,11 @@ export const SHELL_STRINGS: BiDict = {
     "zh-TW": "🤖 改譜", en: "🤖 Edit", ja: "🤖 編集",
   },
   "toolbar.nlEdit.title": {
-    "zh-TW": "用自然語言請 AI 修改改編譜 (移調 / 演奏法 / 力度)",
-    en: "Ask AI to edit the arrangement in natural language "
-      + "(transpose / articulation / dynamics)",
-    ja: "自然言語で AI にアレンジ譜を編集してもらう "
-      + "(移調 / 奏法 / 強弱)",
+    "zh-TW": "用自然語言請 AI 修改改編譜 (⌘/) — 移調 / 演奏法 / 力度",
+    en: "Ask AI to edit the arrangement in natural language (⌘/) "
+      + "— transpose / articulation / dynamics",
+    ja: "自然言語で AI にアレンジ譜を編集してもらう (⌘/) — "
+      + "移調 / 奏法 / 強弱",
   },
   "toolbar.boost": {
     "zh-TW": "💪 難度調節", en: "💪 Difficulty", ja: "💪 難度調整",

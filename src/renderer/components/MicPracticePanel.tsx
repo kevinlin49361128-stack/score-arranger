@@ -75,7 +75,20 @@ export function MicPracticePanel({ onClose }: Props) {
       draw();
     } catch (e) {
       setState("error");
-      setError(e instanceof Error ? e.message : String(e));
+      // 0.1.46 D2: 區分錯誤類型, 給可操作建議
+      const raw = e instanceof Error ? e.message : String(e);
+      const name = e instanceof Error ? e.name : "";
+      let hint = raw;
+      if (name === "NotAllowedError" || /permission|denied/i.test(raw)) {
+        hint = t("micPractice.error.permission");
+      } else if (name === "NotFoundError" || /no.*device|device.*not.*found/i.test(raw)) {
+        hint = t("micPractice.error.noDevice");
+      } else if (name === "NotReadableError" || /in use|busy/i.test(raw)) {
+        hint = t("micPractice.error.inUse");
+      } else if (/not.*support|secure/i.test(raw)) {
+        hint = t("micPractice.error.notSupported");
+      }
+      setError(hint);
     }
   };
 
