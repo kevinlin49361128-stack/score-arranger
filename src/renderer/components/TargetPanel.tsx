@@ -11,6 +11,7 @@
  * 0.1.28: 從 App.tsx 抽出. 純呈現; click / drag 邏輯保留在 App.
  */
 
+import { useEffect, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { t as tr, useLocale } from "../utils/i18n";
 import { PlaybackControls } from "./PlaybackControls";
@@ -40,6 +41,25 @@ export function TargetPanel({
     editFlash,
   } = useSessionStore();
 
+  // 0.1.48 B3: 偵測巴洛克 continuo 自動實現狀態
+  const [continuoChords, setContinuoChords] = useState<number>(0);
+  useEffect(() => {
+    if (!arrangement || !targetMusicXML) {
+      setContinuoChords(0);
+      return;
+    }
+    let cancelled = false;
+    void window.scoreArranger.engine.getContinuoStatus().then((res) => {
+      if (cancelled) return;
+      if (res.ok && res.data?.has_continuo) {
+        setContinuoChords(res.data.realized_chord_count);
+      } else {
+        setContinuoChords(0);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [arrangement, targetMusicXML]);
+
   return (
     <div
       style={{
@@ -65,6 +85,27 @@ export function TargetPanel({
         <span style={{ fontWeight: 600 }}>
           {tr("app.panel.targetTitle")}
         </span>
+        {/* 0.1.48 B3: 巴洛克 continuo 自動實現徽章 */}
+        {continuoChords > 0 && (
+          <span
+            title={tr("target.continuo.tooltip", {
+              count: String(continuoChords),
+            })}
+            style={{
+              fontSize: 10, fontWeight: 600,
+              padding: "1px 7px", borderRadius: 8,
+              background: "rgba(176, 138, 69, 0.18)",
+              color: "rgb(146, 88, 4)",
+              border: "1px solid rgba(176, 138, 69, 0.35)",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            🎹 {tr("target.continuo.label", {
+              count: String(continuoChords),
+            })}
+          </span>
+        )}
         <PlaybackControls side="target" compact />
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>

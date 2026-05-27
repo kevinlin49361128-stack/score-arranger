@@ -214,6 +214,9 @@ declare global {
           measureEnd: number,
           targetDifficulty: number,
         ) => Promise<IpcResponse<ApplyEditOpsResult>>;
+        // 0.1.48 B3: 巴洛克 continuo 狀態
+        getContinuoStatus: () =>
+          Promise<IpcResponse<ContinuoStatus>>;
         undo: () => Promise<IpcResponse<UndoRedoResult>>;
         redo: () => Promise<IpcResponse<UndoRedoResult>>;
         historyStatus: () => Promise<IpcResponse<HistoryStatus>>;
@@ -391,6 +394,13 @@ declare global {
   interface MeasureFingeringResult {
     measure: number;
     parts: MeasureFingeringPart[];
+  }
+
+  /** 0.1.48 B3: 巴洛克 continuo 自動實現狀態 */
+  interface ContinuoStatus {
+    has_continuo: boolean;
+    realized_chord_count: number;
+    target_part_id?: string | null;
   }
 
   /** 0.1.32: 單一和弦指法 — get_chord_fingering RPC 回傳 */

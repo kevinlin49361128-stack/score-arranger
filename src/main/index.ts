@@ -32,6 +32,7 @@ import {
   previewSuggestion,
   reassignPart,
   redoEdit,
+  getContinuoStatus,
   saveProject,
   simplifyRange,
   setActiveSession,
@@ -397,6 +398,11 @@ function registerIpcHandlers(): void {
       targetDifficulty: number,
     ) =>
       safeCall(() => levelRange(partId, mStart, mEnd, targetDifficulty)),
+  );
+  // 0.1.48 B3: 巴洛克 continuo 狀態
+  ipcMain.handle(
+    "engine:getContinuoStatus",
+    async () => safeCall(() => getContinuoStatus()),
   );
 
   // 在系統預設 App 開啟 MusicXML (e.g. MuseScore / Dorico)

@@ -223,6 +223,9 @@ const api = {
       ipcRenderer.invoke(
         "engine:level", partId, measureStart, measureEnd, targetDifficulty,
       ),
+    // 0.1.48 B3: 巴洛克 continuo 狀態
+    getContinuoStatus: () =>
+      ipcRenderer.invoke("engine:getContinuoStatus"),
     undo: () => ipcRenderer.invoke("engine:undo"),
     redo: () => ipcRenderer.invoke("engine:redo"),
     historyStatus: () => ipcRenderer.invoke("engine:historyStatus"),

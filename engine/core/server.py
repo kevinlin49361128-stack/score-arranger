@@ -2682,6 +2682,39 @@ def _method_get_chord_fingering(params: dict[str, Any]) -> dict:
 # ============================================================================
 
 
+def _method_get_continuo_status(params: dict[str, Any]) -> dict:
+    """0.1.48 B3 — 巴洛克 continuo 自動實現狀態.
+
+    回傳 {realized_chord_count, has_continuo, target_part_id}.
+    UI 用來顯示「✓ continuo 已生成 N 和弦」徽章. 沒 harpsichord 或沒和弦
+    時 has_continuo=False.
+    """
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        return {"has_continuo": False, "realized_chord_count": 0}
+    target = sess.current_arrangement.target_score
+    # 找 harpsichord_1_upper part (continuo 預設目標)
+    from core.ir import ChordEvent
+    chord_count = 0
+    target_part_id: Optional[str] = None
+    for part in target.parts:
+        if part.part_id != "harpsichord_1_upper":
+            continue
+        target_part_id = part.part_id
+        for measure in part.measures:
+            for voice in measure.voices.values():
+                for ev in voice.events:
+                    if isinstance(ev, ChordEvent):
+                        chord_count += 1
+        break
+    return {
+        "has_continuo": chord_count > 0,
+        "realized_chord_count": chord_count,
+        "target_part_id": target_part_id,
+    }
+
+
 def _method_enrich(params: dict[str, Any]) -> dict:
     """諧波豐富化單一 part 區間 — 從 source 拉回伴奏內聲部.
 
@@ -2768,6 +2801,8 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "enrich": _method_enrich,
     "simplify": _method_simplify,
     "level": _method_level,
+    # 0.1.48 B3: 巴洛克 continuo 狀態查詢
+    "get_continuo_status": _method_get_continuo_status,
     "set_measure_articulation": _method_set_measure_articulation,
     "undo": _method_undo,
     "redo": _method_redo,

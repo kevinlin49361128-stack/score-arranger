@@ -541,6 +541,21 @@ export const IO_STRINGS: BiDict = {
     en: "Today's Picks",
     ja: "本日のおすすめ",
   },
+  "target.continuo.label": {
+    "zh-TW": "continuo {count}",
+    en: "continuo {count}",
+    ja: "通奏低音 {count}",
+  },
+  "target.continuo.tooltip": {
+    "zh-TW": "巴洛克通奏低音自動實現 — 大鍵琴右手已從低音線生成 "
+      + "{count} 個和弦. 改變 source 或編制會重算.",
+    en: "Baroque continuo auto-realized — harpsichord right hand has "
+      + "{count} chords generated from the bass line. "
+      + "Changes when source or ensemble changes.",
+    ja: "バロック通奏低音の自動実現 — チェンバロ右手にベースライン"
+      + "から {count} 個の和音が生成されました。"
+      + "原譜または編成を変更すると再計算されます。",
+  },
   "scoreViewer.overlay.difficulty": {
     "zh-TW": "m.{measure} — 難度 {score}/5",
     en: "m.{measure} — difficulty {score}/5",

@@ -600,6 +600,11 @@ export async function levelRange(
   });
 }
 
+// 0.1.48 B3: continuo 狀態
+export async function getContinuoStatus(): Promise<unknown> {
+  return client.call("get_continuo_status", {});
+}
+
 export async function undoEdit(): Promise<unknown> {
   return client.call("undo", {});
 }
