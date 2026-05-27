@@ -137,25 +137,27 @@ def _post_broken_chord(arrangement) -> None:
 
 def _post_baroque_imitation(arrangement) -> None:
     """0.1.52 E1.B — 巴洛克對位 imitation 後處理.
+    0.1.53 升級為「多輪」模仿: 不再只 m3-m4 一次, 整曲掃描 sparse 區段
+    補入主題, 接近 Bach two-part invention 真實對位密度.
 
-    最常見的 canon-at-the-fifth: 主題出現後 2 小節, 另一聲部以低五度
-    (-7 半音) 重述. Bach inventions / fugue exposition / Corelli trio
-    sonata 都有此語法.
+    Canon-at-the-fifth 語法: 主題在 leader 出現後, 由 follower 以低五度
+    (-7 半音) 重述; 每隔 theme_len 小節若 follower 仍處於 sparse
+    狀態 → 視為「該補主題」就再進入一次.
 
-    保守實作 (避免毀掉既有 voice 結構):
-      - 抓「主旋律聲部」 = 第一個能找到 voice 1 events 的 part
-      - 抓「跟隨聲部」 = 第二個 part 的 voice 1 (常是 violin_2 / viola)
-      - 取主旋律 m1-m2 events 當主題 (≥ 4 個音符才認)
-      - 跟隨聲部 m3-m4 區間, 若主要是 RestEvent 或事件 < 3 個 → 套上
-        主題 (deep-copy, midi 全部 -7); 否則跳過 (尊重既有旋律線)
-      - 只執行一次 (不做整曲 canon)
+    演算法 (v2):
+      1. 從 leader[0..2) voice 1 抓主題 (theme_events, 需 ≥ 4 音)
+      2. 從 follower index 2 開始, 以 theme_len (=2) 為步, 不重疊掃窗
+      3. 每個 window 若所有 measure 都 sparse (<3 個實質音) → 嘗試填入
+         theme -7. 若整段任一音超出 follower 樂器絕對音域 → 略過該段
+         (不破壞已有 voice).
+      4. 上限 MAX_IMITATIONS = 6 次, 避免無限堆疊掩蓋既有素材.
 
-    這版假設改編是巴洛克兩聲部 (e.g. baroque_imitation preset) — 給
-    Bach invention 風的 source 適用.
+    保留 0.1.52 m3-m4 第一輪行為 — 新版只是把「再多幾次」加上去, 風險
+    可控.
     """
     import copy as _copy
     from .instruments import get_profile
-    from .ir import ChordEvent, NoteEvent, Pitch, RestEvent
+    from .ir import ChordEvent, NoteEvent, Pitch, RestEvent, Voice
 
     if arrangement.target_score is None:
         return
@@ -168,58 +170,26 @@ def _post_baroque_imitation(arrangement) -> None:
     if not leader.measures or not follower.measures:
         return
 
-    # 主題: leader voice 1 measures 1-2 的 NoteEvent/ChordEvent
+    THEME_LEN = 2  # 小節
+    MAX_IMITATIONS = 6
+
+    # 主題: leader voice 1 measures[:THEME_LEN] 的 NoteEvent/ChordEvent
     theme_events: list = []
-    leader_voice_id: Optional[int] = None
-    for m in leader.measures[:2]:
+    for offset, m in enumerate(leader.measures[:THEME_LEN]):
         if not m.voices:
             continue
         vid = 1 if 1 in m.voices else next(iter(m.voices))
-        if leader_voice_id is None:
-            leader_voice_id = vid
         voice = m.voices.get(vid)
         if voice is None:
             continue
         for ev in voice.events:
             if isinstance(ev, (NoteEvent, ChordEvent, RestEvent)):
-                # 帶上原 measure 編號偏移
-                theme_events.append(
-                    (m.number - leader.measures[0].number, _copy.deepcopy(ev))
-                )
+                theme_events.append((offset, _copy.deepcopy(ev)))
     note_count = sum(
         1 for _, ev in theme_events if isinstance(ev, (NoteEvent, ChordEvent))
     )
     if note_count < 4:
         return  # 主題太短不模仿
-
-    # 跟隨位置: follower measures index 2, 3 (對應第 3-4 小節)
-    if len(follower.measures) < 4:
-        return
-    follower_m3 = follower.measures[2]
-    follower_m4 = follower.measures[3] if len(follower.measures) > 3 else None
-
-    # 判斷該區間是否「夠空」可以填: 主要 RestEvent 或事件少
-    def is_sparse(measure) -> bool:
-        if not measure.voices:
-            return True
-        total = 0
-        sub = 0
-        for v in measure.voices.values():
-            for ev in v.events:
-                total += 1
-                if isinstance(ev, (NoteEvent, ChordEvent)):
-                    sub += 1
-        return sub < 3  # 少於 3 個實質音
-
-    if not is_sparse(follower_m3):
-        return
-    if follower_m4 is not None and not is_sparse(follower_m4):
-        return
-
-    # 套主題 — 全部 midi -7 (低五度), 寫入 voice 1
-    target_measures = [follower_m3]
-    if follower_m4 is not None:
-        target_measures.append(follower_m4)
 
     profile = get_profile(follower.instrument_id)
     if profile is None:
@@ -230,7 +200,6 @@ def _post_baroque_imitation(arrangement) -> None:
         new_midi = p.midi_number + semitones
         if not (abs_low <= new_midi <= abs_high):
             return None
-        # 簡化拼字 — 直接用半音名稱
         names = ["C", "C#", "D", "Eb", "E", "F",
                  "F#", "G", "Ab", "A", "Bb", "B"]
         oct_num = new_midi // 12 - 1
@@ -239,34 +208,56 @@ def _post_baroque_imitation(arrangement) -> None:
             spelling=f"{names[new_midi % 12]}{oct_num}",
         )
 
-    SEMI = -7  # 低五度
-    # 依 theme_events 的 (measure_offset → 0/1) 對應寫入 target_measures
-    grouped: dict[int, list] = {0: [], 1: []}
-    for offset, ev in theme_events:
-        if offset not in grouped:
-            continue
-        new_ev = _copy.deepcopy(ev)
-        if isinstance(new_ev, NoteEvent):
-            shifted = shift_pitch(new_ev.pitch, SEMI)
-            if shifted is None:
-                return  # 整體超範圍 → 放棄, 不部份模仿
-            new_ev.pitch = shifted
-        elif isinstance(new_ev, ChordEvent):
-            new_pitches = []
-            for p in new_ev.pitches:
-                s = shift_pitch(p, SEMI)
-                if s is None:
-                    return
-                new_pitches.append(s)
-            new_ev.pitches = new_pitches
-        # RestEvent: 不動
-        grouped[offset].append(new_ev)
+    def is_sparse(measure) -> bool:
+        """少於 3 個實質音 = sparse, 可以填."""
+        if not measure.voices:
+            return True
+        sub = 0
+        for v in measure.voices.values():
+            for ev in v.events:
+                if isinstance(ev, (NoteEvent, ChordEvent)):
+                    sub += 1
+        return sub < 3
 
-    # 寫入 (取代 voice 1)
-    from .ir import Voice
-    for i, m in enumerate(target_measures):
-        if i in grouped and grouped[i]:
-            m.voices[1] = Voice(voice_id=1, events=grouped[i])
+    def try_fill(window_measures, semitones: int) -> bool:
+        """嘗試把主題 (位移 semitones 半音) 填入 window_measures.
+        全部位移成功才寫入, 任何 pitch 超範圍就放棄整段 (不部份覆寫)."""
+        grouped: dict[int, list] = {i: [] for i in range(len(window_measures))}
+        for offset, ev in theme_events:
+            if offset >= len(window_measures):
+                continue
+            new_ev = _copy.deepcopy(ev)
+            if isinstance(new_ev, NoteEvent):
+                shifted = shift_pitch(new_ev.pitch, semitones)
+                if shifted is None:
+                    return False
+                new_ev.pitch = shifted
+            elif isinstance(new_ev, ChordEvent):
+                new_pitches = []
+                for p in new_ev.pitches:
+                    s = shift_pitch(p, semitones)
+                    if s is None:
+                        return False
+                    new_pitches.append(s)
+                new_ev.pitches = new_pitches
+            grouped[offset].append(new_ev)
+        # 全部 shift 成功 → 寫入
+        for i, m in enumerate(window_measures):
+            if grouped.get(i):
+                m.voices[1] = Voice(voice_id=1, events=grouped[i])
+        return True
+
+    # 不重疊掃 follower 從 index 2 (m3) 起
+    SEMI = -7
+    imitations_done = 0
+    i = THEME_LEN  # 略過 leader 主題對應的前 THEME_LEN 小節
+    while (i + THEME_LEN <= len(follower.measures)
+           and imitations_done < MAX_IMITATIONS):
+        window = follower.measures[i:i + THEME_LEN]
+        if all(is_sparse(m) for m in window):
+            if try_fill(window, SEMI):
+                imitations_done += 1
+        i += THEME_LEN
 
 
 def _post_romantic_tremolo(arrangement) -> None:
@@ -395,8 +386,9 @@ PRESETS: dict[str, StylePreset] = {
         preset_id="baroque_imitation",
         display_name="巴洛克對位 imitation (Bach invention)",
         description=(
-            "主題在第 1-2 小節出現後, 第 3-4 小節由第二聲部以低五度模仿. "
-            "Bach two-part inventions / fugue exposition 慣例."
+            "主題在第 1-2 小節出現後, 第二聲部以低五度多輪重述. "
+            "Bach two-part inventions / fugue exposition 慣例. "
+            "(0.1.53 升級為多窗掃描, 不再只 m3-m4 一次)"
         ),
         post_hooks=[_post_baroque_imitation],
         llm_addendum=(
