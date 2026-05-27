@@ -962,12 +962,163 @@ def strategy_split_chord_to_parts(score: Score, issue: LocatedIssue) -> bool:
     return True
 
 
+def strategy_reassign_note(score: Score, issue: LocatedIssue) -> bool:
+    """0.1.48 A4 — 單音聲部重分配 (Phase 2 加深層重編).
+
+    當 NoteEvent (非和弦) 的音超出本聲部音域, octave_shift 試過後仍無解,
+    把整個音搬到能演奏的另一個聲部 (同樂器族群優先, 違例極限再跨族群).
+    比 omit_note (丟音) 樂理上保留度高.
+
+    觸發: E_PITCH_BELOW_RANGE / E_PITCH_ABOVE_RANGE 在 NoteEvent
+    (CLAUDE.md 修復優先序「移八度 > 省略次要音 > 重分配聲部 > ...」之第三層).
+
+    策略要求:
+      1. 接收聲部該位置必須空 (RestEvent 或無事件) — 不蓋掉現有音
+      2. 接收聲部 instrument 必須能演奏該 pitch (range_absolute)
+      3. 原聲部該事件改成 RestEvent 保留 duration
+
+    家族優先序 (跟 split_chord_to_parts 一致):
+      string_bowed → string_plucked → woodwind → brass → voice → keyboard
+    """
+    if issue.result.code not in (
+        "E_PITCH_BELOW_RANGE", "E_PITCH_ABOVE_RANGE",
+    ):
+        return False
+
+    event = _get_event(score, issue)
+    if not isinstance(event, NoteEvent):
+        return False
+
+    src_part = _get_part(score, issue.part_id)
+    if src_part is None:
+        return False
+
+    note_midi = event.pitch.midi_number
+    src_profile = get_profile(src_part.instrument_id)
+    if src_profile is None:
+        return False
+    src_family = src_profile.family
+
+    # 候選接收聲部 — 同 family 優先
+    def family_rank(family: str) -> int:
+        order = [
+            "string_bowed", "string_plucked", "woodwind", "brass",
+            "voice", "keyboard",
+        ]
+        try:
+            return order.index(family)
+        except ValueError:
+            return 999
+
+    receivers: list[tuple[int, Part]] = []
+    for rp in score.parts:
+        if rp.part_id == src_part.part_id:
+            continue
+        rprof = get_profile(rp.instrument_id)
+        if rprof is None:
+            continue
+        # 必須能彈這個音 (range_absolute, 不要求 comfortable)
+        abs_low, abs_high = rprof.range_absolute
+        if not (abs_low <= note_midi <= abs_high):
+            continue
+        same_family = (rprof.family == src_family)
+        # 同家族 (1) 排前面, 不同家族用 family_rank 排
+        priority = 0 if same_family else family_rank(rprof.family) + 1
+        receivers.append((priority, rp))
+    if not receivers:
+        return False
+    receivers.sort(key=lambda x: x[0])
+
+    # 找空槽: 接收聲部該 measure 該 onset 必須無事件 (或 RestEvent)
+    chosen: Optional[tuple[Part, int]] = None
+    for _, rp in receivers:
+        measure = next(
+            (m for m in rp.measures if m.number == issue.measure_number),
+            None,
+        )
+        if measure is None:
+            continue
+        # 取主 voice (voice_id=1) 或第一個 voice
+        target_vid = 1 if 1 in measure.voices else (
+            next(iter(measure.voices), None) if measure.voices else None
+        )
+        if target_vid is None:
+            continue
+        # 檢查該 onset 是否空 — 容許 RestEvent (蓋過去 OK)
+        slot_idx: Optional[int] = None
+        is_compatible = True
+        for ei, ev in enumerate(measure.voices[target_vid].events):
+            if abs(float(ev.onset) - float(event.onset)) < 1e-6:
+                slot_idx = ei
+                if isinstance(ev, (NoteEvent, ChordEvent)):
+                    # 已有實質音, 不蓋
+                    is_compatible = False
+                break
+        if not is_compatible:
+            continue
+        # 找到合適 receiver
+        chosen = (rp, target_vid)
+        break
+
+    if chosen is None:
+        return False
+
+    receiver_part, receiver_vid = chosen
+    # 執行: 原聲部 → RestEvent (保留 duration / onset)
+    src_measure = next(
+        (m for m in src_part.measures if m.number == issue.measure_number),
+        None,
+    )
+    if src_measure is None:
+        return False
+    src_voice = src_measure.voices.get(issue.voice_id)
+    if src_voice is None or issue.event_index >= len(src_voice.events):
+        return False
+
+    rest = RestEvent(onset=event.onset, duration=event.duration)
+    src_voice.events[issue.event_index] = rest
+
+    # 接收聲部: 新增 NoteEvent (移除舊 RestEvent 如果有)
+    new_note = NoteEvent(
+        onset=event.onset, duration=event.duration,
+        pitch=event.pitch,
+        dynamic=event.dynamic,
+        articulations=list(event.articulations or []),
+    )
+    receiver_measure = next(
+        (m for m in receiver_part.measures if m.number == issue.measure_number),
+        None,
+    )
+    if receiver_measure is None:
+        # 應該不會發生 — 上面已確認 measure 存在
+        return True  # 還是回 True, 因為 src 已改, repair loop 會驗證
+    voice = receiver_measure.voices.get(receiver_vid)
+    if voice is None:
+        receiver_measure.voices[receiver_vid] = Voice(
+            voice_id=receiver_vid, events=[new_note],
+        )
+    else:
+        # 移除舊 RestEvent at same onset
+        voice.events = [
+            ev for ev in voice.events
+            if not (abs(float(ev.onset) - float(event.onset)) < 1e-6
+                    and not isinstance(ev, (NoteEvent, ChordEvent)))
+        ]
+        voice.events.append(new_note)
+        voice.events.sort(key=lambda e: float(e.onset))
+
+    return True
+
+
 # Phase 1 註冊的策略 (按優先序: 影響從小到大)
+# 0.1.48: reassign_note 排在 omit_note 之後 — 兩個都保留旋律連續性
+# 但 reassign 跨聲部成本更高, 優先試 omit 內聲部.
 PHASE_1_STRATEGIES: list[tuple[str, RepairStrategy]] = [
     ("octave_shift", strategy_octave_shift),
     ("omit_note", strategy_omit_note),
     ("split_to_other_hand", strategy_split_to_other_hand),
     ("split_to_parts", strategy_split_chord_to_parts),
+    ("reassign_note", strategy_reassign_note),
 ]
 
 

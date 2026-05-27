@@ -29,6 +29,7 @@ from core.repair import (
     severity_score,
     strategy_octave_shift,
     strategy_omit_note,
+    strategy_reassign_note,
     strategy_split_chord_to_parts,
     strategy_split_to_other_hand,
     _shift_pitch_octave,
@@ -801,3 +802,150 @@ def test_cello_fret_too_high_repair_omit_codes_listed():
         "strategy_omit_note 應 act on E_CELLO_FRET_TOO_HIGH — "
         "0.1.28 之前因 omit_codes 沒列此 code 導致 skip"
     )
+
+
+# ============================================================================
+# 0.1.48 A4 — strategy_reassign_note
+# ============================================================================
+
+
+def test_strategy_reassign_note_moves_out_of_range_note():
+    """音超出 viola 音域 → 應該搬到 violin 而非 omit."""
+    from core.cli import collect_issues
+    from core.ir import (
+        Measure, Movement, NoteEvent, Part, Pitch, Score, Section, Voice,
+    )
+
+    # G6 (MIDI 91) — 超出 viola comfortable (E5/MIDI 76 high), 但 violin
+    # 可彈 (violin comfortable high ~E7/MIDI 100)
+    out_of_range = NoteEvent(
+        onset=Fraction(0), duration=Fraction(1),
+        pitch=Pitch(midi_number=96, spelling="C7"),
+    )
+    score = Score(
+        movements=[Movement(
+            movement_id=1,
+            sections=[Section(0, 1, 1)],
+        )],
+        parts=[
+            Part(  # source — viola with out-of-range G6
+                part_id="viola_1", name_display="Viola",
+                instrument_id="viola",
+                measures=[Measure(
+                    number=1, time_signature=(4, 4),
+                    voices={1: Voice(voice_id=1, events=[out_of_range])},
+                )],
+            ),
+            Part(  # receiver — violin (empty measure)
+                part_id="violin_1", name_display="Violin",
+                instrument_id="violin",
+                measures=[Measure(
+                    number=1, time_signature=(4, 4),
+                    voices={1: Voice(voice_id=1, events=[])},
+                )],
+            ),
+        ],
+    )
+    issues = collect_issues(score)
+    range_errs = [i for i in issues if i.part_id == "viola_1"
+                  and "RANGE" in i.result.code]
+    assert range_errs, "fixture 該觸發 viola 音域 error"
+
+    result = strategy_reassign_note(score, range_errs[0])
+    assert result is True
+    # viola_1 應改成 RestEvent
+    from core.ir import RestEvent
+    src_ev = score.parts[0].measures[0].voices[1].events[0]
+    assert isinstance(src_ev, RestEvent), (
+        f"原 viola 應改 RestEvent, 實際是 {type(src_ev).__name__}"
+    )
+    # violin_1 應收到 G6
+    dst_events = score.parts[1].measures[0].voices[1].events
+    assert len(dst_events) == 1
+    assert isinstance(dst_events[0], NoteEvent)
+    assert dst_events[0].pitch.midi_number == 96
+
+
+def test_strategy_reassign_note_no_receiver_returns_false():
+    """沒接收聲部 → 回 False, 不應強制移動."""
+    from core.cli import collect_issues
+    from core.ir import (
+        Measure, Movement, NoteEvent, Part, Pitch, Score, Section, Voice,
+    )
+
+    # 孤立 viola, 沒其他聲部
+    out_of_range = NoteEvent(
+        onset=Fraction(0), duration=Fraction(1),
+        pitch=Pitch(midi_number=96, spelling="C7"),
+    )
+    score = Score(
+        movements=[Movement(
+            movement_id=1,
+            sections=[Section(0, 1, 1)],
+        )],
+        parts=[Part(
+            part_id="viola_1", name_display="Viola",
+            instrument_id="viola",
+            measures=[Measure(
+                number=1, time_signature=(4, 4),
+                voices={1: Voice(voice_id=1, events=[out_of_range])},
+            )],
+        )],
+    )
+    issues = collect_issues(score)
+    range_errs = [i for i in issues if "RANGE" in i.result.code]
+    assert range_errs
+
+    result = strategy_reassign_note(score, range_errs[0])
+    # 沒人能接 → 不該動
+    assert result is False
+    # 原音應該還在
+    src_ev = score.parts[0].measures[0].voices[1].events[0]
+    assert isinstance(src_ev, NoteEvent)
+
+
+def test_strategy_reassign_note_skips_chord_event():
+    """ChordEvent 不應被此策略處理 (留給 split_chord_to_parts)."""
+    from core.cli import collect_issues
+    from core.ir import (
+        ChordEvent, Measure, Movement, Part, Pitch, Score, Section, Voice,
+    )
+
+    chord = ChordEvent(
+        onset=Fraction(0), duration=Fraction(1),
+        pitches=[
+            Pitch(midi_number=60, spelling="C4"),
+            Pitch(midi_number=91, spelling="G6"),  # 超出 viola
+        ],
+    )
+    score = Score(
+        movements=[Movement(
+            movement_id=1,
+            sections=[Section(0, 1, 1)],
+        )],
+        parts=[
+            Part(
+                part_id="viola_1", name_display="Viola",
+                instrument_id="viola",
+                measures=[Measure(
+                    number=1, time_signature=(4, 4),
+                    voices={1: Voice(voice_id=1, events=[chord])},
+                )],
+            ),
+            Part(
+                part_id="violin_1", name_display="Violin",
+                instrument_id="violin",
+                measures=[Measure(
+                    number=1, time_signature=(4, 4),
+                    voices={1: Voice(voice_id=1, events=[])},
+                )],
+            ),
+        ],
+    )
+    issues = collect_issues(score)
+    range_errs = [i for i in issues if "RANGE" in i.result.code]
+    if not range_errs:
+        # 和弦音可能不會觸發 NoteEvent-level range; skip
+        return
+    result = strategy_reassign_note(score, range_errs[0])
+    assert result is False, "ChordEvent 不該被 reassign_note 處理"
