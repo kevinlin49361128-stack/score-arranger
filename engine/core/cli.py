@@ -204,7 +204,10 @@ def _build_playability_report(score: Score) -> dict[str, dict]:
                     continue
                 for event in voice.events:
                     issues.extend(
-                        _check_event(event, measure.number, part.instrument_id)
+                        _check_event(
+                            event, measure.number, part.instrument_id,
+                            part_id=part.part_id,
+                        )
                     )
 
         out[part.part_id] = {
@@ -217,8 +220,19 @@ def _build_playability_report(score: Score) -> dict[str, dict]:
     return out
 
 
-def _check_event(event, measure_number: int, instrument_id: str) -> list[dict]:
-    """對單一事件做可演奏性檢查, 回傳 issue dict 列表。"""
+def _check_event(
+    event, measure_number: int, instrument_id: str,
+    part_id: str = "",
+) -> list[dict]:
+    """對單一事件做可演奏性檢查, 回傳 issue dict 列表。
+
+    0.1.46 A1: piano 和弦的 hand 推斷
+    - part_id 以 _upper 結尾 → 右手 (高音譜表)
+    - part_id 以 _lower 結尾 → 左手 (低音譜表)
+    - 否則 (single-staff piano / 老資料): 用 Middle C (MIDI 60) 切分,
+      ≥ 60 算右手, < 60 算左手, 各自驗 span. 避免把跨譜表大跨度的和弦
+      誤判成單手不可彈.
+    """
     issues: list[dict] = []
     profile = get_profile(instrument_id)
     if profile is None:
@@ -246,10 +260,7 @@ def _check_event(event, measure_number: int, instrument_id: str) -> list[dict]:
             if not result.is_ok:
                 issues.append(_check_result_to_dict(result, measure_number))
         elif instrument_id == "piano":
-            # 鋼琴: 假設整個 chord 用右手 (簡化, Phase 2 需推斷分手)
-            result = check_piano_hand_span(event.pitches, hand="right")
-            if not result.is_ok:
-                issues.append(_check_result_to_dict(result, measure_number))
+            _check_piano_chord(event.pitches, part_id, measure_number, issues)
         else:
             # 其他樂器: 僅檢查各音音域
             for pitch in event.pitches:
@@ -258,6 +269,37 @@ def _check_event(event, measure_number: int, instrument_id: str) -> list[dict]:
                     issues.append(_check_result_to_dict(result, measure_number))
 
     return issues
+
+
+def _check_piano_chord(
+    pitches, part_id: str, measure_number: int, issues: list[dict],
+) -> None:
+    """鋼琴和弦手部分配 + span 檢驗.
+
+    優先用 part_id suffix (_upper/_lower) 對映右/左手;
+    若是 single-staff (沒有 suffix), 用 Middle C 切分各手.
+    """
+    if part_id.endswith("_upper"):
+        _validate_hand(pitches, "right", measure_number, issues)
+        return
+    if part_id.endswith("_lower"):
+        _validate_hand(pitches, "left", measure_number, issues)
+        return
+    # Single-staff piano — 用 Middle C 切分
+    right = [p for p in pitches if p.midi_number >= 60]
+    left = [p for p in pitches if p.midi_number < 60]
+    if right:
+        _validate_hand(right, "right", measure_number, issues)
+    if left:
+        _validate_hand(left, "left", measure_number, issues)
+
+
+def _validate_hand(
+    pitches, hand: str, measure_number: int, issues: list[dict],
+) -> None:
+    result = check_piano_hand_span(pitches, hand=hand)
+    if not result.is_ok:
+        issues.append(_check_result_to_dict(result, measure_number))
 
 
 def _check_result_to_dict(result, measure_number: int) -> dict:

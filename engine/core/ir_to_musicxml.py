@@ -91,12 +91,15 @@ _ARTICULATION_XML: dict[str, str] = {
 }
 
 # IR Ornament.kind → MusicXML <ornaments> 子元素
+# 0.1.46 A2: 補 tremolo (IR 支援但 mapping 缺漏, XML 端就沒輸出 = 嚴格說
+# 算記譜瑕疵). 其他四種 ornament 已經完整 parse → propagate → emit 串通.
 _ORNAMENT_XML: dict[str, str] = {
     "trill": "trill-mark",
     "mordent": "mordent",
     "inverted_mordent": "inverted-mordent",
     "turn": "turn",
     "inverted_turn": "inverted-turn",
+    "tremolo": "tremolo",
     "tremolo": "tremolo",
 }
 

@@ -110,26 +110,37 @@ export function TeacherHub({ onClose }: Props) {
             {(Object.keys(TAB_META) as Tab[]).map((k) => {
               const meta = TAB_META[k];
               const needsArrangement = k === "difficulty" || k === "practice";
-              const disabled = needsArrangement && !arrangement;
+              const isLocked = needsArrangement && !arrangement;
+              // 0.1.46 D3: 允許 click 鎖定 tab — 切到該 tab 後顯示
+              // 「需先改編」說明卡, 而不是 disabled 完全擋掉.
               return (
                 <button
                   key={k}
                   onClick={() => setTab(k)}
-                  disabled={disabled}
-                  title={disabled ? t("teacherHub.needsArrangement") : ""}
+                  title={isLocked ? t("teacherHub.needsArrangement") : ""}
                   style={{
-                    display: "block", width: "100%",
+                    display: "flex", alignItems: "center", gap: 6,
+                    width: "100%",
                     padding: "12px 14px", border: "none",
                     background: tab === k ? "var(--accent)" : "transparent",
                     color: tab === k ? "var(--accent-fg)"
-                      : (disabled ? "var(--fg-disabled)" : "var(--fg-primary)"),
-                    cursor: disabled ? "not-allowed" : "pointer",
+                      : "var(--fg-primary)",
+                    cursor: "pointer",
                     fontSize: 13, textAlign: "left",
                     borderBottom: "1px solid var(--border-light)",
-                    opacity: disabled ? 0.5 : 1,
                   }}
                 >
-                  {meta.icon} {t(meta.key)}
+                  <span>{meta.icon} {t(meta.key)}</span>
+                  {isLocked && (
+                    <span
+                      title={t("teacherHub.needsArrangement")}
+                      style={{
+                        marginLeft: "auto", fontSize: 11,
+                        color: tab === k ? "var(--accent-fg)"
+                          : "var(--fg-tertiary)",
+                      }}
+                    >🔒</span>
+                  )}
                 </button>
               );
             })}
@@ -142,20 +153,28 @@ export function TeacherHub({ onClose }: Props) {
           }}>
             {tab === "students" && <StudentsPanel />}
             {tab === "difficulty" && (
-              <LaunchPanel
-                titleKey="teacherHub.difficulty.title"
-                descKey="teacherHub.difficulty.desc"
-                buttonKey="teacherHub.difficulty.open"
-                onLaunch={() => setLaunched("difficulty")}
-              />
+              arrangement
+                ? (
+                  <LaunchPanel
+                    titleKey="teacherHub.difficulty.title"
+                    descKey="teacherHub.difficulty.desc"
+                    buttonKey="teacherHub.difficulty.open"
+                    onLaunch={() => setLaunched("difficulty")}
+                  />
+                )
+                : <NeedsArrangementCard onClose={onClose} />
             )}
             {tab === "practice" && (
-              <LaunchPanel
-                titleKey="teacherHub.practice.title"
-                descKey="teacherHub.practice.desc"
-                buttonKey="teacherHub.practice.open"
-                onLaunch={() => setLaunched("practice")}
-              />
+              arrangement
+                ? (
+                  <LaunchPanel
+                    titleKey="teacherHub.practice.title"
+                    descKey="teacherHub.practice.desc"
+                    buttonKey="teacherHub.practice.open"
+                    onLaunch={() => setLaunched("practice")}
+                  />
+                )
+                : <NeedsArrangementCard onClose={onClose} />
             )}
             {tab === "mic" && (
               <LaunchPanel
@@ -211,6 +230,60 @@ function LaunchPanel({
         }}
       >
         {t(buttonKey)} →
+      </button>
+    </div>
+  );
+}
+
+/**
+ * 0.1.46 D3 — 沒改編譜時 difficulty / practice tab 顯示這張卡片.
+ * 替使用者交代為何鎖住, 給可操作路徑 (關 Hub → 工具列開譜 → 改編).
+ */
+function NeedsArrangementCard({ onClose }: { onClose: () => void }) {
+  useLocale();
+  const goToToolbar = () => {
+    onClose();
+    // 沒源檔: 開「試用範例」(RepertoireDialog). 有源檔: 不能直接觸發 arrange
+    // (需 ensemble pick), 故引導使用者注意工具列.
+    window.dispatchEvent(new CustomEvent("sa:request-open-repertoire"));
+  };
+  return (
+    <div style={{
+      padding: 32, display: "flex", flexDirection: "column",
+      gap: 16, alignItems: "center", textAlign: "center",
+      maxWidth: 480, margin: "40px auto",
+    }}>
+      <div style={{ fontSize: 48, opacity: 0.6 }}>🎼</div>
+      <h2 style={{
+        fontSize: 16, fontWeight: 600, margin: 0,
+        color: "var(--fg-primary)",
+      }}>
+        {t("teacherHub.locked.title")}
+      </h2>
+      <p style={{
+        fontSize: 13, color: "var(--fg-muted)", lineHeight: 1.7,
+        margin: 0,
+      }}>
+        {t("teacherHub.locked.body")}
+      </p>
+      <ol style={{
+        textAlign: "left", fontSize: 12, color: "var(--fg-secondary)",
+        lineHeight: 1.8, paddingLeft: 18, margin: 0,
+      }}>
+        <li>{t("teacherHub.locked.step1")}</li>
+        <li>{t("teacherHub.locked.step2")}</li>
+        <li>{t("teacherHub.locked.step3")}</li>
+      </ol>
+      <button
+        onClick={goToToolbar}
+        style={{
+          marginTop: 8,
+          padding: "9px 22px", fontSize: 13, fontWeight: 600,
+          background: "var(--accent)", color: "var(--accent-fg)",
+          border: "none", borderRadius: 6, cursor: "pointer",
+        }}
+      >
+        {t("teacherHub.locked.cta")}
       </button>
     </div>
   );

@@ -556,6 +556,42 @@ export const EDITING_STRINGS: BiDict = {
     "zh-TW": "需要先有改編結果", en: "Needs an arrangement first",
     ja: "編曲結果が必要です",
   },
+  "teacherHub.locked.title": {
+    "zh-TW": "此功能需要改編結果",
+    en: "This feature needs an arrangement",
+    ja: "この機能には編曲結果が必要です",
+  },
+  "teacherHub.locked.body": {
+    "zh-TW": "難度調節與慢速練習都是針對某個改編結果做的工具. "
+      + "請先在工具列開譜並改編, 再回來使用.",
+    en: "Difficulty adjustment and slow practice both work on a "
+      + "specific arrangement. Open a score and arrange it first, "
+      + "then return here.",
+    ja: "難易度調整とスロー練習はどちらも特定の編曲結果に対する"
+      + "ツールです。先にツールバーで楽譜を開いて編曲してから、"
+      + "ここに戻ってきてください。",
+  },
+  "teacherHub.locked.step1": {
+    "zh-TW": "點工具列「匯入樂譜」(⌘O) 或「曲庫」(⌘L) 開譜",
+    en: "Open a score via Import (⌘O) or Repertoire (⌘L) in the toolbar",
+    ja: "ツールバーの「インポート」(⌘O) または「曲目」(⌘L) で楽譜を開く",
+  },
+  "teacherHub.locked.step2": {
+    "zh-TW": "選擇目標編制 (e.g. 弦樂四重奏 / 鋼琴獨奏), 點「改編」",
+    en: "Pick a target ensemble (e.g. String Quartet / Piano Solo) "
+      + "and click Arrange",
+    ja: "ターゲット編成 (例: 弦楽四重奏 / ピアノ独奏) を選び、編曲をクリック",
+  },
+  "teacherHub.locked.step3": {
+    "zh-TW": "改編完成後回到教師中心 — 鎖頭就會消失",
+    en: "After arranging, return to TeacherHub — the lock will be gone",
+    ja: "編曲が完了したら教師ハブに戻ると、鍵が外れます",
+  },
+  "teacherHub.locked.cta": {
+    "zh-TW": "前往工具列 / 開曲庫",
+    en: "Go to toolbar / Open repertoire",
+    ja: "ツールバーへ / 曲目を開く",
+  },
   "teacherHub.tab.students": {
     "zh-TW": "學生", en: "Students", ja: "生徒",
   },
