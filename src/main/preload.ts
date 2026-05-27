@@ -200,6 +200,29 @@ const api = {
       ),
     applyEditOps: (ops: Record<string, unknown>[]) =>
       ipcRenderer.invoke("engine:applyEditOps", ops),
+    // 0.1.47 B1: enrich/simplify/level first-class RPC
+    enrich: (
+      partId: string, measureStart: number, measureEnd: number,
+      density: "light" | "medium" | "full",
+      texture: "block" | "arpeggio" | "strum" | "octave",
+    ) =>
+      ipcRenderer.invoke(
+        "engine:enrich", partId, measureStart, measureEnd, density, texture,
+      ),
+    simplify: (
+      partId: string, measureStart: number, measureEnd: number,
+      level: "light" | "medium" | "full",
+    ) =>
+      ipcRenderer.invoke(
+        "engine:simplify", partId, measureStart, measureEnd, level,
+      ),
+    level: (
+      partId: string, measureStart: number, measureEnd: number,
+      targetDifficulty: number,
+    ) =>
+      ipcRenderer.invoke(
+        "engine:level", partId, measureStart, measureEnd, targetDifficulty,
+      ),
     undo: () => ipcRenderer.invoke("engine:undo"),
     redo: () => ipcRenderer.invoke("engine:redo"),
     historyStatus: () => ipcRenderer.invoke("engine:historyStatus"),

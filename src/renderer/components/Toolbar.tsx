@@ -1146,6 +1146,8 @@ export function Toolbar() {
       )}
 
       {/* === 溢出選單: 視窗過窄時自動收合的群組 === */}
+      {/* 0.1.47 B4: collapseLevel 數字 badge 顯示有幾組被收起 — 強化
+          響應式溢出的視覺性, 之前只 ⋯ 看不出是 3 群或 1 群被藏. */}
       {collapseLevel > 0 && (
         <>
           <Sep />
@@ -1157,10 +1159,32 @@ export function Toolbar() {
                 background: overflowOpen
                   ? "var(--bg-hover)"
                   : btnIcon.background,
+                position: "relative",
               }}
               title={tr("toolbar.overflow.title")}
             >
               ⋯
+              <span
+                style={{
+                  position: "absolute",
+                  top: 1, right: 1,
+                  minWidth: 13, height: 13,
+                  padding: "0 3px",
+                  borderRadius: 7,
+                  background: "var(--accent)",
+                  color: "var(--accent-fg)",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  lineHeight: 1,
+                  boxShadow: "0 0 0 1.5px var(--bg-panel)",
+                }}
+                aria-hidden
+              >
+                {collapseLevel}
+              </span>
             </button>
             {/* 內容常駐 (display 切換) — 收合的 ZoomControls 鍵盤快捷鍵不中斷 */}
             <div

@@ -194,6 +194,26 @@ declare global {
         applyEditOps: (
           ops: LLMEditOp[],
         ) => Promise<IpcResponse<ApplyEditOpsResult>>;
+        // 0.1.47 B1: enrich / simplify / level first-class
+        enrich: (
+          partId: string,
+          measureStart: number,
+          measureEnd: number,
+          density: "light" | "medium" | "full",
+          texture: "block" | "arpeggio" | "strum" | "octave",
+        ) => Promise<IpcResponse<ApplyEditOpsResult>>;
+        simplify: (
+          partId: string,
+          measureStart: number,
+          measureEnd: number,
+          level: "light" | "medium" | "full",
+        ) => Promise<IpcResponse<ApplyEditOpsResult>>;
+        level: (
+          partId: string,
+          measureStart: number,
+          measureEnd: number,
+          targetDifficulty: number,
+        ) => Promise<IpcResponse<ApplyEditOpsResult>>;
         undo: () => Promise<IpcResponse<UndoRedoResult>>;
         redo: () => Promise<IpcResponse<UndoRedoResult>>;
         historyStatus: () => Promise<IpcResponse<HistoryStatus>>;

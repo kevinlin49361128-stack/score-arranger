@@ -2668,6 +2668,70 @@ def _method_get_chord_fingering(params: dict[str, Any]) -> dict:
     }
 
 
+# ============================================================================
+# 0.1.47 B1 — enrich / simplify / level 升 first-class RPC
+#
+# 為什麼: enrich/simplify/level 之前塞在 apply_edit_ops generic dispatcher,
+# caller 要組 op dict + 包 list. MCP 想 expose 也很彆扭. 改成 named-param
+# 獨立方法後:
+#   - preload signature 清晰
+#   - MCP tool 可一對一 expose
+#   - LLM tool calling 不用學 op format
+# 內部仍 reuse apply_edit_ops 的驗證 + snapshot + 結果收集邏輯
+# (避免重複 ~50 行驗證碼). 等於是一層 named-param → ops list 的轉接.
+# ============================================================================
+
+
+def _method_enrich(params: dict[str, Any]) -> dict:
+    """諧波豐富化單一 part 區間 — 從 source 拉回伴奏內聲部.
+
+    params: session_id, part_id, measure_start, measure_end,
+            density ("light"|"medium"|"full"), texture ("block"|"arpeggio"|
+            "strum"|"octave")
+    """
+    op = {
+        "op": "enrich",
+        "part_id": params.get("part_id"),
+        "measure_start": params.get("measure_start"),
+        "measure_end": params.get("measure_end"),
+        "density": params.get("density", "medium"),
+        "texture": params.get("texture", "block"),
+    }
+    return _method_apply_edit_ops({**params, "ops": [op]})
+
+
+def _method_simplify(params: dict[str, Any]) -> dict:
+    """簡化某個聲部 — 刪音 / 拉長時值 / 移除 ornament.
+
+    params: session_id, part_id, measure_start, measure_end,
+            level ("light"|"medium"|"full")
+    """
+    op = {
+        "op": "simplify",
+        "part_id": params.get("part_id"),
+        "measure_start": params.get("measure_start"),
+        "measure_end": params.get("measure_end"),
+        "level": params.get("level", "medium"),
+    }
+    return _method_apply_edit_ops({**params, "ops": [op]})
+
+
+def _method_level(params: dict[str, Any]) -> dict:
+    """目標難度自動調節 — 1-5 級, 自動選 enrich / simplify 達標.
+
+    params: session_id, part_id, measure_start, measure_end,
+            target_difficulty (1-5)
+    """
+    op = {
+        "op": "level",
+        "part_id": params.get("part_id"),
+        "measure_start": params.get("measure_start"),
+        "measure_end": params.get("measure_end"),
+        "target_difficulty": params.get("target_difficulty"),
+    }
+    return _method_apply_edit_ops({**params, "ops": [op]})
+
+
 METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "ping": _method_ping,
     "close_session": _method_close_session,
@@ -2697,6 +2761,13 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "list_measure_events": _method_list_measure_events,
     "edit_event": _method_edit_event,
     "apply_edit_ops": _method_apply_edit_ops,
+    # 0.1.47 B1: enrich / simplify / level first-class RPC.
+    # 內部仍走 apply_edit_ops 的 all-or-nothing + history snapshot 機制,
+    # 但 caller 不用組裝 op dict, 可直接 named-param 呼叫. MCP / preload
+    # 對齊更容易.
+    "enrich": _method_enrich,
+    "simplify": _method_simplify,
+    "level": _method_level,
     "set_measure_articulation": _method_set_measure_articulation,
     "undo": _method_undo,
     "redo": _method_redo,

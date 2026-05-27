@@ -14,9 +14,11 @@ import {
   closeSession,
   detectPhrases,
   editEvent,
+  enrichRange,
   computeDifficulty,
   computeQuality,
   exportTargetMidi,
+  levelRange,
   listNavigation,
   getMeasureFingering,
   getChordFingering,
@@ -31,6 +33,7 @@ import {
   reassignPart,
   redoEdit,
   saveProject,
+  simplifyRange,
   setActiveSession,
   suggestTransposition,
   tagFunctions,
@@ -367,6 +370,33 @@ function registerIpcHandlers(): void {
     "engine:applyEditOps",
     async (_evt, ops: Record<string, unknown>[]) =>
       safeCall(() => applyEditOps(ops)),
+  );
+  // 0.1.47 B1: enrich / simplify / level first-class
+  ipcMain.handle(
+    "engine:enrich",
+    async (
+      _evt, partId: string, mStart: number, mEnd: number,
+      density: "light" | "medium" | "full",
+      texture: "block" | "arpeggio" | "strum" | "octave",
+    ) =>
+      safeCall(() =>
+        enrichRange(partId, mStart, mEnd, density, texture)
+      ),
+  );
+  ipcMain.handle(
+    "engine:simplify",
+    async (
+      _evt, partId: string, mStart: number, mEnd: number,
+      level: "light" | "medium" | "full",
+    ) => safeCall(() => simplifyRange(partId, mStart, mEnd, level)),
+  );
+  ipcMain.handle(
+    "engine:level",
+    async (
+      _evt, partId: string, mStart: number, mEnd: number,
+      targetDifficulty: number,
+    ) =>
+      safeCall(() => levelRange(partId, mStart, mEnd, targetDifficulty)),
   );
 
   // 在系統預設 App 開啟 MusicXML (e.g. MuseScore / Dorico)

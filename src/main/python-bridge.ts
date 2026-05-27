@@ -567,6 +567,39 @@ export async function applyEditOps(
   return client.call("apply_edit_ops", { ops });
 }
 
+// 0.1.47 B1: enrich / simplify / level first-class.
+// 內部仍走 apply_edit_ops 機制 — 共享 all-or-nothing + history snapshot.
+export async function enrichRange(
+  partId: string, measureStart: number, measureEnd: number,
+  density: "light" | "medium" | "full",
+  texture: "block" | "arpeggio" | "strum" | "octave",
+): Promise<unknown> {
+  return client.call("enrich", {
+    part_id: partId, measure_start: measureStart, measure_end: measureEnd,
+    density, texture,
+  });
+}
+
+export async function simplifyRange(
+  partId: string, measureStart: number, measureEnd: number,
+  level: "light" | "medium" | "full",
+): Promise<unknown> {
+  return client.call("simplify", {
+    part_id: partId, measure_start: measureStart, measure_end: measureEnd,
+    level,
+  });
+}
+
+export async function levelRange(
+  partId: string, measureStart: number, measureEnd: number,
+  targetDifficulty: number,
+): Promise<unknown> {
+  return client.call("level", {
+    part_id: partId, measure_start: measureStart, measure_end: measureEnd,
+    target_difficulty: targetDifficulty,
+  });
+}
+
 export async function undoEdit(): Promise<unknown> {
   return client.call("undo", {});
 }
