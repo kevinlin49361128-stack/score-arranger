@@ -234,6 +234,10 @@ class Measure:
     rehearsal_mark: Optional[str] = None
     barline_left: Literal["normal", "double", "final", "repeat_start"] = "normal"
     barline_right: Literal["normal", "double", "final", "repeat_end"] = "normal"
+    # 0.1.50 E2.MVP: figured-bass 數字 (小節內 onset 四分音符 → "5/3" / "6" / "6/4")
+    # 來自 MusicXML <figured-bass><figure><figure-number>. 用於 continuo
+    # realization 取代 diatonic 預設.
+    figured_bass: dict[Fraction, str] = field(default_factory=dict)
 
 
 # ============================================================================

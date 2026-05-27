@@ -135,6 +135,78 @@ def _post_broken_chord(arrangement) -> None:
     apply_pianistic_texture(arrangement, "broken")
 
 
+def _post_classical_unison_spread(arrangement) -> None:
+    """0.1.50 E1.C — Mozart / Haydn 弦樂四重奏 unison 自動八度散開.
+
+    Source 兩把小提琴 unison (同音 + 同時值) 時, target 自動把 violin I
+    上推 8va. Mozart/Haydn 的弦樂四重奏實際慣例 — 同度 doubling 太鋼琴感,
+    八度 doubling 才合古典室內樂審美.
+
+    觸發: violin_1 + violin_2 part 都存在, 且 violin_1 的 NoteEvent
+    與 violin_2 同 onset 同 midi_number → violin_1 提升 8va (檢查不超
+    violin 高音範圍).
+
+    參考 architecture.md §4.3.3 弦樂分配 + idiomatic 規則.
+    """
+    from .instruments import get_profile
+    from .ir import NoteEvent, Pitch
+
+    if arrangement.target_score is None:
+        return
+
+    score = arrangement.target_score
+    # 找 violin_1 / violin_2 part — 之前的 arranger 改成用 part_id suffix
+    # match: violin_1 / violin_2 / violin_1_main / violin_2_main
+    def find_violin_part(prefix: str):
+        return next(
+            (p for p in score.parts if p.part_id.startswith(prefix)
+             and "violin" in p.instrument_id.lower()),
+            None,
+        )
+
+    v1_part = find_violin_part("violin_1")
+    v2_part = find_violin_part("violin_2")
+    if v1_part is None or v2_part is None:
+        return
+
+    profile = get_profile(v1_part.instrument_id)
+    if profile is None:
+        return
+    range_hi = profile.range_absolute[1]
+
+    # 對齊 measure: 用 measure.number 字典化
+    v2_by_number = {m.number: m for m in v2_part.measures}
+
+    for m1 in v1_part.measures:
+        m2 = v2_by_number.get(m1.number)
+        if m2 is None:
+            continue
+        for voice_id, voice in m1.voices.items():
+            v2_voice = m2.voices.get(voice_id)
+            if v2_voice is None:
+                continue
+            # 對齊事件: onset → event lookup
+            v2_events_by_onset: dict[float, object] = {}
+            for e in v2_voice.events:
+                v2_events_by_onset[float(e.onset)] = e
+            for ev in voice.events:
+                if not isinstance(ev, NoteEvent):
+                    continue
+                other = v2_events_by_onset.get(float(ev.onset))
+                if not isinstance(other, NoteEvent):
+                    continue
+                if other.pitch.midi_number != ev.pitch.midi_number:
+                    continue
+                # unison detected — 把 violin I 推 8va
+                new_midi = ev.pitch.midi_number + 12
+                if new_midi > range_hi:
+                    continue
+                ev.pitch = Pitch(
+                    midi_number=new_midi,
+                    spelling=_midi_name(new_midi),
+                )
+
+
 # === Preset 註冊表 ===
 
 PRESETS: dict[str, StylePreset] = {
@@ -147,12 +219,14 @@ PRESETS: dict[str, StylePreset] = {
         preset_id="classical_string_quartet",
         display_name="古典弦四 (Mozart/Haydn)",
         description=(
-            "對話式分配 — 內聲部 (vln II / viola) 主動模仿主題, 強調對位."
+            "對話式分配 — 內聲部 (vln II / viola) 主動模仿主題, 強調對位. "
+            "0.1.50: violin I/II unison 自動八度散開 (Mozart 慣例)."
         ),
+        post_hooks=[_post_classical_unison_spread],
         llm_addendum=(
             "風格目標: Mozart / Haydn 古典弦樂四重奏. 內聲部 (violin II / viola)"
             " 不只是和聲填充, 偶爾模仿 violin I 的旋律動機, 形成對話. 避免 "
-            "持續和弦塊, 多用對位線條."
+            "持續和弦塊, 多用對位線條. Violin I/II 同度盡量改成八度 doubling."
         ),
     ),
     "baroque_continuo": StylePreset(

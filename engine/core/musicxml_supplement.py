@@ -105,6 +105,10 @@ def _enrich_part(score: Score, ir_part, part_xml: ET.Element) -> None:
     # wedge 開合配對: 收集所有 (measure, onset, type)
     wedge_marks: list[tuple[int, Fraction, str]] = []
 
+    # 0.1.50 E2.MVP: 收集 figured-bass 元素, 之後寫回 ir_part.measures
+    # measure_num → onset (Fraction) → "5/3" / "6" / "6/4" / "7"
+    figured_collected: dict[int, dict[Fraction, str]] = {}
+
     for measure_xml in part_xml.findall("measure"):
         try:
             measure_num = int(measure_xml.get("number", "0"))
@@ -148,8 +152,51 @@ def _enrich_part(score: Score, ir_part, part_xml: ET.Element) -> None:
                             Fraction(cursor + off, divisions),
                             wtype,
                         ))
+            elif tag == "figured-bass":
+                figure_str = _parse_figured_bass(child)
+                if figure_str:
+                    onset = Fraction(cursor, divisions)
+                    figured_collected.setdefault(measure_num, {})[onset] = figure_str
 
     _build_hairpins(score, ir_part.part_id, wedge_marks)
+
+    # 寫回 figured-bass — 找對應 measure 並 merge
+    if figured_collected:
+        for measure in ir_part.measures:
+            collected = figured_collected.get(measure.number)
+            if collected:
+                measure.figured_bass.update(collected)
+
+
+def _parse_figured_bass(el: ET.Element) -> Optional[str]:
+    """從 <figured-bass> XML 解析成 IR 字串. 多個 <figure> → 用 / 連接.
+
+    Examples:
+      <figured-bass><figure><figure-number>6</figure-number></figure>
+                    <figure><figure-number>4</figure-number></figure></figured-bass>
+      → "6/4"
+      <figured-bass><figure><figure-number>7</figure-number></figure></figured-bass>
+      → "7"
+    """
+    numbers: list[str] = []
+    for fig in el.findall("figure"):
+        n = fig.findtext("figure-number")
+        prefix = fig.findtext("prefix") or ""  # "sharp", "flat", "natural"
+        suffix = fig.findtext("suffix") or ""
+        if n is None:
+            continue
+        sign = ""
+        if prefix == "flat":
+            sign = "b"
+        elif prefix == "sharp":
+            sign = "#"
+        elif prefix == "natural":
+            sign = "n"
+        token = f"{sign}{n}{suffix}"
+        numbers.append(token)
+    if not numbers:
+        return None
+    return "/".join(numbers)
 
 
 def _build_note_index(ir_part) -> dict[int, list[tuple[Fraction, int, object]]]:

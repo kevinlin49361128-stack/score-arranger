@@ -150,16 +150,23 @@ def realize_continuo(
     upper_min = max(range_lo, 60)
     upper_max = min(range_hi, 79)
 
-    # MVP figured bass: 從 source MusicXML 抽 <figured-bass>, 拿來決定轉位
-    # / 七和弦. 沒讀到的 bass note 還是用預設 5-3 (回到 diatonic 行為).
+    # 0.1.50 E2.MVP: figured-bass 從 IR 拿 — musicxml_supplement.py 已
+    # 在 parse 階段把 <figured-bass> 抽到 Measure.figured_bass dict.
+    # 比舊版每次重讀 MusicXML 快, 也避免兩條 parse 路徑 drift.
+    # Fallback: 若 IR 沒有 (e.g. 老 cache 沒這欄位) 再走舊路徑.
     figures: dict[tuple[int, Fraction], str] = {}
-    src_path = source.metadata.get("source_path") if source.metadata else None
-    if src_path:
-        try:
-            from .figured_bass_parser import parse_figured_bass
-            figures = parse_figured_bass(src_path)
-        except Exception:
-            figures = {}
+    for src_part in source.parts:
+        for m in src_part.measures:
+            for onset, fig in getattr(m, "figured_bass", {}).items():
+                figures[(m.number, Fraction(onset))] = fig
+    if not figures:
+        src_path = source.metadata.get("source_path") if source.metadata else None
+        if src_path:
+            try:
+                from .figured_bass_parser import parse_figured_bass
+                figures = parse_figured_bass(src_path)
+            except Exception:
+                figures = {}
     if figures:
         result.notes.append(
             f"figured-bass: 讀到 {len(figures)} 個 <figured-bass> 標記"
