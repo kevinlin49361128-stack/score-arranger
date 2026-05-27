@@ -135,6 +135,48 @@ def _post_broken_chord(arrangement) -> None:
     apply_pianistic_texture(arrangement, "broken")
 
 
+def _post_romantic_tremolo(arrangement) -> None:
+    """0.1.51 E1.R — 浪漫管弦織體 tremolo.
+
+    弦樂長音 (≥ 全音符) + 力度 ≥ mf → 改用 tremolo 記譜.
+    Verdi / Tchaikovsky / 浪漫管弦縮室內樂時的慣例 — 長音不靜止,
+    tremolo 維持張力.
+
+    觸發條件:
+      - part 是弦樂族 (string_bowed)
+      - NoteEvent.duration ≥ 4 四分音符 (全音符)
+      - dynamic ≥ mf (mf / f / ff / fff) — 安靜段不該加 tremolo
+      - 還沒有 tremolo ornament (避免重複套)
+
+    動作: 加 Ornament(kind="tremolo") 到該 NoteEvent. MusicXML 端會
+    輸出 <tremolo type="single">3</tremolo> 在 <ornaments> 裡.
+    """
+    from .instruments import get_profile
+    from .ir import ChordEvent, NoteEvent, Ornament
+
+    if arrangement.target_score is None:
+        return
+    _LOUD_DYNAMICS = {"mf", "f", "ff", "fff"}
+    LONG_DURATION_THRESHOLD = 4  # 四分音符 = 1.0; 全音符 = 4.0
+    for part in arrangement.target_score.parts:
+        profile = get_profile(part.instrument_id)
+        if profile is None or profile.family != "string_bowed":
+            continue
+        for measure in part.measures:
+            for voice in measure.voices.values():
+                for ev in voice.events:
+                    if not isinstance(ev, (NoteEvent, ChordEvent)):
+                        continue
+                    if float(ev.duration) < LONG_DURATION_THRESHOLD:
+                        continue
+                    dyn = getattr(ev, "dynamic", None)
+                    if dyn not in _LOUD_DYNAMICS:
+                        continue
+                    if getattr(ev, "ornament", None) is not None:
+                        continue
+                    ev.ornament = Ornament(kind="tremolo")
+
+
 def _post_classical_unison_spread(arrangement) -> None:
     """0.1.50 E1.C — Mozart / Haydn 弦樂四重奏 unison 自動八度散開.
 
@@ -214,6 +256,20 @@ PRESETS: dict[str, StylePreset] = {
         preset_id="none",
         display_name="(無風格偏好)",
         description="使用預設改編邏輯, 不加風格 post-processing.",
+    ),
+    "romantic_orchestral_tremolo": StylePreset(
+        preset_id="romantic_orchestral_tremolo",
+        display_name="浪漫管弦縮室內樂 (tremolo)",
+        description=(
+            "弦樂長音 (≥ 全音符) + 響度 ≥ mf 自動套 tremolo, "
+            "保留 Verdi / Tchaikovsky 管弦張力."
+        ),
+        post_hooks=[_post_romantic_tremolo],
+        llm_addendum=(
+            "風格目標: 浪漫管弦樂 (Verdi / Tchaikovsky / Mahler) 縮編成 "
+            "室內樂. 弦樂維持管弦語彙: 長音用 tremolo 而非持續弓; bass "
+            "聲部可加 pizz/arco 對比; 內聲部和聲常見 9th / 11th 拉伸."
+        ),
     ),
     "classical_string_quartet": StylePreset(
         preset_id="classical_string_quartet",

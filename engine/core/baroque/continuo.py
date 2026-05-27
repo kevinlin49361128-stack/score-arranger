@@ -181,16 +181,25 @@ def realize_continuo(
                     continue
                 bass_midi = ev.pitch.midi_number
                 # MVP figured-bass: 此 bass 位置有標 figure → 改用對應轉位
+                # E2.Mid: 也讀 accidentals 套用 ±1 半音.
                 fig_str = figures.get((measure.number, ev.onset))
                 chord_steps: tuple[int, ...] = (3, 5)  # 預設 5-3
+                alterations: dict[int, int] = {}
                 if fig_str:
-                    from .figured_bass_parser import interpret_figure
-                    interpreted = interpret_figure(fig_str)
+                    from .figured_bass_parser import interpret_figure_with_alts
+                    interpreted, alterations = interpret_figure_with_alts(fig_str)
                     if interpreted is not None:
                         chord_steps = interpreted
                 upper = _diatonic_chord_above(
                     bass_midi, tonic_pc, is_major, chord_steps,
                 )
+                # 套 alterations: chord_steps 的第 i 個音對應 step number,
+                # 用 zip 對應 → 加 ±半音
+                if upper and alterations:
+                    upper = [
+                        m + alterations.get(step, 0)
+                        for m, step in zip(upper, chord_steps)
+                    ]
                 if not upper:
                     continue
                 # 把 upper notes 調到 upper staff comfortable

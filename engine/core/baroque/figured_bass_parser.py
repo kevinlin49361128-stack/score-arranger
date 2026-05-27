@@ -104,27 +104,96 @@ def interpret_figure(figure: str) -> Optional[tuple[int, ...]]:
     """把 figure 字串轉成相對於 bass 的半音偏移 (回傳 tuple).
 
     回 None 表示「不認識的 figure → 維持預設 5-3」。
+    0.1.51 E2.Mid: 變化音 (# / b) 改在 interpret_figure_with_alts 處理,
+    本函式保留向後相容的純 step 介面.
     """
-    # 移除空白、變化音符號 (MVP 忽略 # / b)
-    f = figure.replace(" ", "").replace("#", "").replace("b", "")
-    f = f.replace("♯", "").replace("♭", "").replace("♮", "")
-    # 常見正規化
-    if f in ("", "5", "5/3", "53"):
-        return None  # 預設 5-3 → 維持 diatonic 行為
-    if f == "6" or f == "6/3" or f == "63":
-        # 第一轉位: bass 上方 3rd + 6th. 用 diatonic 度數推 (5-3 邏輯類似)
-        return (3, 6)  # scale-step offsets
-    if f == "6/4" or f == "64":
-        return (4, 6)
-    if f == "7" or f == "7/5/3" or f == "753":
-        return (3, 5, 7)
-    if f in ("4/2", "42", "2"):
-        return (2, 4, 6)  # 第三轉位 七和弦
-    if f in ("6/5", "65"):
-        return (3, 5, 6)
-    if f in ("4/3", "43"):
-        return (3, 4, 6)
-    return None  # 不認識 → 預設
+    steps, _alts = interpret_figure_with_alts(figure)
+    return steps
+
+
+def interpret_figure_with_alts(
+    figure: str,
+) -> tuple[Optional[tuple[int, ...]], dict[int, int]]:
+    """0.1.51 E2.Mid — 解析 figure 含 # / b 變化音.
+
+    回傳 (steps, alterations):
+      steps: 同 interpret_figure (scale-step tuple) 或 None (用預設)
+      alterations: {step: semitone_adjust}, 例 {7: -1} = b7, {3: 1} = #3
+
+    處理:
+      "#7"  → ((3, 5, 7), {7: 1})
+      "b7"  → ((3, 5, 7), {7: -1})
+      "6#"  → ((3, 6),   {6: 1})  (尾綴 # 加在最後一個 figure)
+      "#"   → (None,     {3: 1})  (單獨 # 表示升 3rd, V/x 常用)
+      "#3"  → (None,     {3: 1})
+    """
+    f = figure.replace(" ", "").replace("♯", "#").replace("♭", "b")
+    f = f.replace("♮", "n")
+
+    # 拆 token 為 number + accidental 對, e.g. "#7/b3" → [("#","7"),("b","3")]
+    tokens: list[tuple[str, str]] = []
+    i = 0
+    while i < len(f):
+        ch = f[i]
+        if ch in "#bn":
+            # 累積 prefix
+            prefix = ""
+            while i < len(f) and f[i] in "#bn":
+                prefix += f[i]; i += 1
+            num = ""
+            while i < len(f) and f[i].isdigit():
+                num += f[i]; i += 1
+            if not num:
+                # 純 # 預設視為 #3
+                num = "3"
+            tokens.append((prefix, num))
+        elif ch.isdigit():
+            num = ""
+            while i < len(f) and f[i].isdigit():
+                num += f[i]; i += 1
+            # 後綴變化音 (e.g. "6#" → step 6 sharp)
+            suffix = ""
+            if i < len(f) and f[i] in "#bn" and (i + 1 == len(f) or f[i + 1] == "/"):
+                suffix = f[i]; i += 1
+            tokens.append((suffix, num))
+        elif ch == "/":
+            i += 1
+        else:
+            i += 1
+
+    alterations: dict[int, int] = {}
+    digits: list[int] = []
+    for prefix, num in tokens:
+        try:
+            n = int(num)
+        except ValueError:
+            continue
+        digits.append(n)
+        if "#" in prefix:
+            alterations[n] = 1
+        elif "b" in prefix:
+            alterations[n] = -1
+        elif "n" in prefix:
+            alterations[n] = 0
+
+    bare = "/".join(str(d) for d in digits)
+    if bare in ("", "5", "5/3", "53", "3"):
+        steps: Optional[tuple[int, ...]] = None
+    elif bare in ("6", "6/3", "63"):
+        steps = (3, 6)
+    elif bare in ("6/4", "64"):
+        steps = (4, 6)
+    elif bare in ("7", "7/5/3", "753"):
+        steps = (3, 5, 7)
+    elif bare in ("4/2", "42", "2"):
+        steps = (2, 4, 6)
+    elif bare in ("6/5", "65"):
+        steps = (3, 5, 6)
+    elif bare in ("4/3", "43"):
+        steps = (3, 4, 6)
+    else:
+        steps = None
+    return steps, alterations
 
 
 def _figure_string(elem: ET.Element) -> str:
