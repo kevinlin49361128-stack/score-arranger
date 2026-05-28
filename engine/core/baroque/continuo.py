@@ -14,9 +14,13 @@ Continuo realization — 從 bass line 自動生成大鍵琴右手和聲填充.
 - 避免太密 (每拍一個和弦, 不分拍細放)
 - 若 source 已標 figured bass, 優先用標記; 否則 fallback 為 diatonic 推測.
 
+0.1.56 L2: 加 voice-leading post-process — 在寫入 ChordEvent 前用 viterbi-like
+DP 對相鄰 chord 篩選 voicing, 懲罰平行五度/八度 (相鄰兩音上下聲部同方向走
+完全 5/8 度 = baroque counterpoint 錯誤). 用 octave 位移生成候選, 不重新拼
+和弦音高內容.
+
 未來擴充:
-- 解析 MusicXML 的 <figured-bass> 元素
-- voice leading DP (避免平行五度 / 八度)
+- 解析 MusicXML 的 <figured-bass> 元素 (已實作)
 - LLM-augmented voicing (給 baroque style examples)
 """
 
@@ -172,8 +176,13 @@ def realize_continuo(
             f"figured-bass: 讀到 {len(figures)} 個 <figured-bass> 標記"
         )
 
-    # 對 bass 每個音生成 chord
-    realized_chords: dict[tuple[int, Fraction], ChordEvent] = {}
+    # 對 bass 每個音生成 chord — 先收 candidate voicings, 再 DP 挑最佳.
+    # candidates_by_onset[(mnum, onset)] = list of dict:
+    #   {"bass_midi", "upper_midis": [int], "duration"}
+    candidates_by_onset: dict[
+        tuple[int, Fraction],
+        list[dict],
+    ] = {}
     for measure in bass_part.measures:
         for voice in measure.voices.values():
             for ev in voice.events:
@@ -213,17 +222,36 @@ def realize_continuo(
                         adjusted.append(m)
                 if not adjusted:
                     continue
-                pitches = [
-                    Pitch(midi_number=m, spelling=_midi_to_name(m))
-                    for m in sorted(set(adjusted))
-                ]
-                if len(pitches) < 2:
+                upper_midis = sorted(set(adjusted))
+                if len(upper_midis) < 2:
                     continue
-                realized_chords[(measure.number, ev.onset)] = ChordEvent(
-                    pitches=pitches,
-                    duration=ev.duration,
-                    onset=ev.onset,
+                # L2: 生成 octave 位移候選 — 對每個音 ±0/±12 試 (在 upper_min/max
+                # 範圍內), 形成 voicing alternatives. 上限 8 個避免爆炸.
+                candidates_by_onset[(measure.number, ev.onset)] = (
+                    _generate_voicing_candidates(
+                        bass_midi, upper_midis,
+                        upper_min, upper_max, ev.duration,
+                    )
                 )
+
+    # L2: DP 挑 voicing 序列, 最小化 parallel 5/8 cost
+    selected_voicings = _viterbi_select_voicings(candidates_by_onset)
+
+    # 把 selected_voicings 變回 ChordEvent dict
+    realized_chords: dict[tuple[int, Fraction], ChordEvent] = {}
+    for (mnum, onset), voicing in selected_voicings.items():
+        upper_midis = voicing["upper_midis"]
+        if len(upper_midis) < 2:
+            continue
+        pitches = [
+            Pitch(midi_number=m, spelling=_midi_to_name(m))
+            for m in sorted(upper_midis)
+        ]
+        realized_chords[(mnum, onset)] = ChordEvent(
+            pitches=pitches,
+            duration=voicing["duration"],
+            onset=onset,
+        )
 
     # 寫入 target_part — 取代既有 voice 1 events
     for measure in target_part.measures:
@@ -277,3 +305,220 @@ def _midi_to_name(midi: int) -> str:
     octave = (midi // 12) - 1
     name = _PITCH_NAMES[midi % 12]
     return f"{name}{octave}"
+
+
+# ============================================================================
+# 0.1.56 L2 — Voice-leading DP (parallel 5/8 penalty)
+# ============================================================================
+
+# Cost weights (調整這幾個就能換 voicing 風格)
+_COST_PARALLEL_FIFTH = 10.0
+_COST_PARALLEL_OCTAVE = 10.0
+_COST_LARGE_LEAP = 0.5    # 每半音 leap > 7
+_COST_PER_LEAP_SEMI = 0.1   # smooth voice leading 偏好
+
+
+def _generate_voicing_candidates(
+    bass_midi: int,
+    upper_midis: list[int],
+    upper_min: int,
+    upper_max: int,
+    duration,
+) -> list[dict]:
+    """對既定 upper_midis 生成 octave 位移 voicing 候選.
+
+    策略: 對最高音 ±12 半音, 看是否仍在 [upper_min, upper_max] 內.
+    其他音不動 (避免把和弦解構). 上限 4 個候選 — DP 規模平方, 別太多.
+
+    回傳 list of dict: {"bass_midi", "upper_midis", "duration"}.
+    保留原 voicing 為第一個 (anchor) — 確保至少有一個可選.
+    """
+    out: list[dict] = []
+    base = {
+        "bass_midi": bass_midi,
+        "upper_midis": list(upper_midis),
+        "duration": duration,
+    }
+    out.append(base)
+
+    # 候選 2: 最高音降 8度
+    if len(upper_midis) >= 1:
+        top = max(upper_midis)
+        new_top = top - 12
+        if new_top >= upper_min and new_top > bass_midi:
+            new_upper = [m for m in upper_midis if m != top] + [new_top]
+            new_upper = sorted(set(new_upper))
+            if len(new_upper) >= 2 and len(new_upper) == len(set(new_upper)):
+                out.append({
+                    "bass_midi": bass_midi,
+                    "upper_midis": new_upper,
+                    "duration": duration,
+                })
+
+    # 候選 3: 最低音升 8度
+    if len(upper_midis) >= 1:
+        bot = min(upper_midis)
+        new_bot = bot + 12
+        if new_bot <= upper_max:
+            new_upper = [m for m in upper_midis if m != bot] + [new_bot]
+            new_upper = sorted(set(new_upper))
+            if len(new_upper) >= 2 and len(new_upper) == len(set(new_upper)):
+                out.append({
+                    "bass_midi": bass_midi,
+                    "upper_midis": new_upper,
+                    "duration": duration,
+                })
+
+    # 候選 4: 中間音轉位 — 若有 ≥3 音, 試把中間音升/降 8 度
+    if len(upper_midis) >= 3:
+        mid = sorted(upper_midis)[1]
+        for delta in (12, -12):
+            new_mid = mid + delta
+            if upper_min <= new_mid <= upper_max and new_mid > bass_midi:
+                new_upper = [m for m in upper_midis if m != mid] + [new_mid]
+                new_upper = sorted(set(new_upper))
+                if len(new_upper) >= 2 and len(new_upper) == len(set(new_upper)):
+                    cand = {
+                        "bass_midi": bass_midi,
+                        "upper_midis": new_upper,
+                        "duration": duration,
+                    }
+                    if cand not in out:
+                        out.append(cand)
+                        break  # 一個就夠, 避免候選爆炸
+
+    # 去重 (依 (bass, sorted upper) tuple)
+    seen: set[tuple] = set()
+    unique: list[dict] = []
+    for c in out:
+        k = (c["bass_midi"], tuple(sorted(c["upper_midis"])))
+        if k not in seen:
+            seen.add(k)
+            unique.append(c)
+    return unique[:4]
+
+
+def _is_parallel_fifth_or_octave(
+    prev_bass: int, prev_top: int,
+    curr_bass: int, curr_top: int,
+) -> Optional[str]:
+    """檢測前後兩個 chord 的最高聲部+bass 是否形成平行 5/8.
+
+    定義 (baroque 嚴格):
+      - 前後兩個間隔都是 7 (P5) 或 12 (P8) 的倍數中的同一個
+      - 且 bass 與 top 都在「同方向」移動 (相反方向或保持不算)
+      - 移動的距離不為 0 (重複同音不算)
+
+    回傳 "5" / "8" / None.
+    """
+    prev_interval = (prev_top - prev_bass) % 12
+    curr_interval = (curr_top - curr_bass) % 12
+
+    bass_motion = curr_bass - prev_bass
+    top_motion = curr_top - prev_top
+
+    # 沒移動 = 不算平行 (oblique motion)
+    if bass_motion == 0 or top_motion == 0:
+        return None
+    # 反向移動也不算
+    if (bass_motion > 0) != (top_motion > 0):
+        return None
+
+    # 同方向 — 檢查兩端是否都是 P5 (7 semitones) 或 P8 (0 semitones)
+    if prev_interval == 7 and curr_interval == 7:
+        return "5"
+    if prev_interval == 0 and curr_interval == 0:
+        return "8"
+    return None
+
+
+def _voicing_transition_cost(prev: dict, curr: dict) -> float:
+    """計算 prev → curr 的 voice-leading cost.
+
+    包含:
+      - parallel 5/8 (最高聲部 + bass): _COST_PARALLEL_FIFTH/_OCTAVE
+      - 也檢查相鄰兩個 upper 聲部 (依 pitch 由低到高排序) 對 bass 的平行
+      - voice leading smoothness: 每個聲部位移半音數 × _COST_PER_LEAP_SEMI
+      - large leap: 任一聲部 > 7 半音額外加分
+    """
+    cost = 0.0
+
+    prev_bass = prev["bass_midi"]
+    curr_bass = curr["bass_midi"]
+    prev_upper = sorted(prev["upper_midis"])
+    curr_upper = sorted(curr["upper_midis"])
+
+    # 平行檢查: 把每個 upper 與 bass 都當「上聲部」配 bass 來檢測 —
+    # baroque 規則對所有 outer voice 都嚴格. 我們對每對 (upper_i, bass) 檢.
+    # 只 check 對應位置 (相同 voice index), 不對 cross-voice 算.
+    n_match = min(len(prev_upper), len(curr_upper))
+    for i in range(n_match):
+        kind = _is_parallel_fifth_or_octave(
+            prev_bass, prev_upper[i],
+            curr_bass, curr_upper[i],
+        )
+        if kind == "5":
+            cost += _COST_PARALLEL_FIFTH
+        elif kind == "8":
+            cost += _COST_PARALLEL_OCTAVE
+
+    # voice-leading smoothness — 每個對應位置的位移半音
+    for i in range(n_match):
+        leap = abs(curr_upper[i] - prev_upper[i])
+        cost += leap * _COST_PER_LEAP_SEMI
+        if leap > 7:
+            cost += _COST_LARGE_LEAP
+
+    return cost
+
+
+def _viterbi_select_voicings(
+    candidates_by_onset: dict[tuple[int, Fraction], list[dict]],
+) -> dict[tuple[int, Fraction], dict]:
+    """對每個 onset 從 candidates 挑一個 voicing, 用 viterbi DP 最小化
+    累積 transition cost.
+
+    若只有 1 個 onset (或沒有), 直接取每組第一個 candidate.
+    回傳 (mnum, onset) → 選定的 voicing dict.
+    """
+    if not candidates_by_onset:
+        return {}
+
+    sorted_keys = sorted(candidates_by_onset.keys())
+    if len(sorted_keys) == 1:
+        k = sorted_keys[0]
+        return {k: candidates_by_onset[k][0]}
+
+    # Viterbi: dp[i][j] = (min_cost, prev_j) 到第 i 個 onset 選第 j 個候選的最小代價
+    # 起點 dp[0][j] = 0 (沒前序, 不算 cost)
+    n = len(sorted_keys)
+    dp: list[list[tuple[float, int]]] = []
+    cands_list = [candidates_by_onset[k] for k in sorted_keys]
+
+    # 初始層
+    dp.append([(0.0, -1) for _ in cands_list[0]])
+
+    for i in range(1, n):
+        prev_cands = cands_list[i - 1]
+        curr_cands = cands_list[i]
+        layer: list[tuple[float, int]] = []
+        for j, curr in enumerate(curr_cands):
+            best = (float("inf"), -1)
+            for k, prev in enumerate(prev_cands):
+                prev_cost = dp[i - 1][k][0]
+                trans = _voicing_transition_cost(prev, curr)
+                total = prev_cost + trans
+                if total < best[0]:
+                    best = (total, k)
+            layer.append(best)
+        dp.append(layer)
+
+    # 回溯: 從最後一層挑 min cost 路徑
+    last_idx = min(range(len(dp[-1])), key=lambda j: dp[-1][j][0])
+    selected: list[int] = [last_idx]
+    for i in range(n - 1, 0, -1):
+        prev_idx = dp[i][selected[-1]][1]
+        selected.append(prev_idx)
+    selected.reverse()
+
+    return {sorted_keys[i]: cands_list[i][selected[i]] for i in range(n)}

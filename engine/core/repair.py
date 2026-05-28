@@ -114,8 +114,18 @@ class RepairReport:
 # Issue collection
 # ============================================================================
 
-def collect_issues(score: Score) -> list[LocatedIssue]:
-    """掃描整個 Score, 收集所有可演奏性問題。"""
+def collect_issues(
+    score: Score,
+    skill_level: Optional[str] = None,
+) -> list[LocatedIssue]:
+    """掃描整個 Score, 收集所有可演奏性問題。
+
+    Args:
+        score: 待檢查樂譜
+        skill_level: 若提供 ("amateur"/"intermediate"/"professional"), 額外跑
+            銅管嘴形耐力檢查 (W_BRASS_EMBOUCHURE_FATIGUE). professional 自動
+            跳過該檢查 (專業可承受 16 小節高音轟炸)。None = 跳過 (向後相容)。
+    """
     issues: list[LocatedIssue] = []
     for part in score.parts:
         profile = get_profile(part.instrument_id)
@@ -165,6 +175,14 @@ def collect_issues(score: Score) -> list[LocatedIssue]:
     # 管樂連續吹奏 (換氣) 檢查 — sustain_type=breath 且超過 max_sustained_beats
     # 連續無 rest / breath_mark, 提示需要換氣
     issues.extend(_detect_wind_breathing(score))
+    # 銅管嘴形耐力預算 — 16 小節滾動視窗看高音域累積占比
+    # 僅當 caller 明確帶入 skill_level 才跑 (向後相容: 舊測試不會多出 issue)
+    if skill_level is not None:
+        try:
+            from .brass_endurance import analyze_brass_endurance
+            issues.extend(analyze_brass_endurance(score, skill_level=skill_level))
+        except Exception:
+            pass
     return issues
 
 

@@ -881,12 +881,16 @@ def _method_arrange(params: dict[str, Any]) -> dict:
 
     repair_info = None
     if do_repair:
-        before = severity_score(collect_issues(arrangement.target_score))
+        before = severity_score(
+            collect_issues(arrangement.target_score, skill_level=skill_level)
+        )
         report = repair_loop(
             arrangement,
             strategies=_ordered_strategies(params.get("strategy_order")),
         )
-        after = severity_score(collect_issues(arrangement.target_score))
+        after = severity_score(
+            collect_issues(arrangement.target_score, skill_level=skill_level)
+        )
         repair_info = _build_repair_info(report, before, after)
 
     target_xml = None
@@ -942,7 +946,7 @@ def _method_arrange(params: dict[str, Any]) -> dict:
         "target_musicxml": target_xml,
         "repair": repair_info,
         "issues": _serialize_issues(
-            collect_issues(arrangement.target_score)
+            collect_issues(arrangement.target_score, skill_level=skill_level)
             if arrangement.target_score is not None else []
         ),
         "difficulty": difficulty_dict,

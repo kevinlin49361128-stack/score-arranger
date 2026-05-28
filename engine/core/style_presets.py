@@ -135,6 +135,16 @@ def _post_broken_chord(arrangement) -> None:
     apply_pianistic_texture(arrangement, "broken")
 
 
+def _post_auto_pedal_hook(arrangement) -> None:
+    """0.1.56 L1 — 浪漫鋼琴自動踏板 (chord-change heuristic).
+
+    對 piano part 偵測和聲變化, 在每段「同和聲」span 寫一對 down/up
+    PedalMark. 大鍵琴 (sustain_type="decay") 自動跳過.
+    """
+    from .pianistic import _post_auto_pedal
+    _post_auto_pedal(arrangement)
+
+
 def _post_baroque_imitation(arrangement) -> None:
     """0.1.52 E1.B — 巴洛克對位 imitation 後處理.
     0.1.53 升級為「多輪」模仿: 不再只 m3-m4 一次, 整曲掃描 sparse 區段
@@ -474,6 +484,20 @@ PRESETS: dict[str, StylePreset] = {
         llm_addendum=(
             "風格目標: 浪漫時期鋼琴 (Chopin / Schumann). 左手用分解和弦 "
             "鋪墊, 強調旋律的歌唱線條與踏板共鳴."
+        ),
+    ),
+    "romantic_piano_pedal": StylePreset(
+        preset_id="romantic_piano_pedal",
+        display_name="浪漫鋼琴 (自動踏板)",
+        description=(
+            "根據和聲變化點自動標踏板 — 每段「同和聲」一對 down/up. "
+            "Chopin / Schumann / Liszt 必備. 大鍵琴會自動跳過."
+        ),
+        post_hooks=[_post_auto_pedal_hook],
+        llm_addendum=(
+            "風格目標: 浪漫鋼琴 (Chopin / Liszt). 踏板隨和聲變化換, "
+            "每段同和聲一次踏 — 連續和聲保持泛音共鳴, 換和聲及時清掉避免"
+            "髒泛."
         ),
     ),
 }

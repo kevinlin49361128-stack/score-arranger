@@ -261,10 +261,21 @@ def arrange(
     # Phase 1: 保留 source 以供之後 reassign 重建
     arrangement.source_score = score
 
-    # 為管樂 part 自動插入呼吸標記
+    # 為管樂 part 自動插入呼吸標記 (skill / dynamic 感知)
     try:
         from .breath_marks import insert_breath_marks
-        insert_breath_marks(arrangement.target_score)
+        # 從 player.skill_level 推導每個 target part 的 skill — part_id 前綴
+        # 即 player_id (e.g. "trumpet_1", "piano_1_upper" → player_id "piano_1")
+        part_skills: dict[str, str] = {}
+        for player in players:
+            pid = player.player_id
+            for staff in ("main", "upper", "lower"):
+                key = pid if staff == "main" else f"{pid}_{staff}"
+                part_skills[key] = player.skill_level
+        insert_breath_marks(
+            arrangement.target_score,
+            part_skill_levels=part_skills,
+        )
     except Exception:
         pass
 
