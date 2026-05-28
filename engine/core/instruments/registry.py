@@ -40,6 +40,7 @@ def require_profile(instrument_id: str) -> InstrumentProfile:
 # === 自動註冊內建 profile ===
 def _bootstrap() -> None:
     from .cello import CELLO_PROFILE
+    from .double_bass import DOUBLE_BASS_PROFILE
     from .harpsichord import HARPSICHORD_PROFILE
     from .piano import PIANO_PROFILE
     from .viola import VIOLA_PROFILE
@@ -68,6 +69,7 @@ def _bootstrap() -> None:
     register_profile(VIOLIN_PROFILE)
     register_profile(VIOLA_PROFILE)
     register_profile(CELLO_PROFILE)
+    register_profile(DOUBLE_BASS_PROFILE)
     register_profile(PIANO_PROFILE)
     register_profile(HARPSICHORD_PROFILE)
     register_profile(FLUTE_PROFILE)

@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>8 大樂器族 Persona 分析 — 決策文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf8f4;
+    --paper: #fff;
+    --ink: #2a2a2a;
+    --muted: #6b6b6b;
+    --border: #e5e1d8;
+    --accent: #8b2c2c;
+    --pri-p0: #c44545;
+    --pri-p1: #c4892c;
+    --pri-p2: #6b8e3d;
+    --pri-bug: #8b1e1e;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font: 15px/1.65 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 24px 140px;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 6px;
+    letter-spacing: -.01em;
+  }
+  .subtitle {
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-size: 14px;
+  }
+  h2 {
+    font-weight: 600;
+    font-size: 18px;
+    margin: 36px 0 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .group-tag {
+    font-size: 11px;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 500;
+    letter-spacing: .02em;
+  }
+  .pi-bug { background: var(--pri-bug); }
+  .pi-p0 { background: var(--pri-p0); }
+  .pi-p1 { background: var(--pri-p1); }
+  .pi-p2 { background: var(--pri-p2); }
+  .persona-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+  .persona-table th, .persona-table td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .persona-table th {
+    background: #f3efe5;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .persona-table tbody tr:nth-child(even) {
+    background: #fdfcf9;
+  }
+  .pain { color: var(--pri-p0); font-weight: 500; font-size: 12px; }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: border-color .15s;
+    position: relative;
+  }
+  .card:hover { border-color: #c9c0ac; }
+  .card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(139, 44, 44, .12), var(--shadow);
+  }
+  .card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+  }
+  .priority-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #fff;
+    letter-spacing: .02em;
+  }
+  .pri-bug { background: var(--pri-bug); }
+  .pri-p0 { background: var(--pri-p0); }
+  .pri-p1 { background: var(--pri-p1); }
+  .pri-p2 { background: var(--pri-p2); }
+  .size-tag {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 15px;
+    flex: 1;
+  }
+  .recommend {
+    background: #fff8e0;
+    color: #8a5a00;
+    border: 1px solid #f0d97a;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .persona-chips {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .chip {
+    background: #f3efe5;
+    color: var(--muted);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+  .card-body {
+    color: #444;
+    font-size: 13.5px;
+  }
+  .card-body p { margin: 5px 0; }
+  .label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-top: 6px;
+  }
+  .label + p { margin-top: 2px; }
+  .check {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+  }
+  .card.selected .check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .card.selected .check::after {
+    content: "✓";
+    color: #fff;
+    font-weight: 700;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+  }
+  details {
+    margin-top: 6px;
+    font-size: 12.5px;
+  }
+  details summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 500;
+    user-select: none;
+  }
+  details summary:hover { color: var(--ink); }
+  details > div {
+    margin-top: 5px;
+    padding-left: 14px;
+    border-left: 2px solid var(--border);
+    color: #555;
+  }
+  code {
+    background: #f3efe5;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(250, 248, 244, .95);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+  .footer-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .counter {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .counter strong { color: var(--ink); }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: .9; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .toast {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 99;
+  }
+  .toast.show { opacity: 1; }
+  .summary-box {
+    background: #fff8ec;
+    border: 1px solid #f0e0c0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 13.5px;
+    color: #5a4720;
+  }
+  .summary-box strong { color: #3a2f10; }
+</style>
+</head>
+<body>
+
+<h1>8 大樂器族 Persona 分析</h1>
+<div class="subtitle">業餘小提琴 / 中提琴 / 大提琴 / 低音大提琴 / 鋼琴 / 大鍵琴 / 木管 / 銅管 / 指揮 — 0.1.54 基線</div>
+
+<div class="summary-box">
+  <strong>核心發現</strong>: 0.1.54 把<strong>小提琴</strong>族打到可用級, 其餘 7 個 persona 各有不同程度的缺口。最嚴重的是<strong>移調樂器整條鏈路斷</strong> — Clarinet/Trumpet/Horn 玩家拿到的譜記成實音, 根本不能用; <strong>低音大提琴 first-class 支援度 0%</strong> (沒 profile / 沒 clef / 沒 catalog)。中提琴有 viola 譜號但無 onboarding 入口; 大提琴 36 樂章 Bach Suite 只有 1 首; 鋼琴左右手切分純 Middle C 太粗; 指揮工具完成度其實 60-70% 但缺最後一哩。
+</div>
+
+<h2>📊 各 Persona 痛點摘要</h2>
+<table class="persona-table">
+  <thead><tr>
+    <th>Persona</th><th>覆蓋率</th><th>最大痛點</th><th>關鍵證據</th>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td>小提琴</td>
+      <td>✅ 90%</td>
+      <td>已在 0.1.54 處理</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>中提琴</td>
+      <td>~40%</td>
+      <td>Onboarding/Catalog 零入口</td>
+      <td><code>repertoireCatalog.ts</code> 0 個 amateur_violist 標籤</td>
+    </tr>
+    <tr>
+      <td>大提琴</td>
+      <td>~35%</td>
+      <td>Bach Suite 36 樂章只有 1; 沒 tenor clef 切換</td>
+      <td><code>ir_to_music21.py:99</code> cello 永遠 BassClef</td>
+    </tr>
+    <tr>
+      <td>低音大提琴</td>
+      <td class="pain">~0%</td>
+      <td>無 profile / 無 transcribe / 無 catalog</td>
+      <td><code>instruments/</code> 無 double_bass.py</td>
+    </tr>
+    <tr>
+      <td>鋼琴</td>
+      <td>~60%</td>
+      <td>Hand-split 純 Middle C; 無 pedal; PracticePanel 無 RH/LH</td>
+      <td><code>cli.py:289</code> <code>midi&gt;=60</code></td>
+    </tr>
+    <tr>
+      <td>大鍵琴</td>
+      <td>~50%</td>
+      <td>Continuo 無平行 5/8 檢查; 無 manual 區分</td>
+      <td><code>continuo.py:148-151</code> 固定 C4-G5</td>
+    </tr>
+    <tr>
+      <td>木管</td>
+      <td class="pain">~25%</td>
+      <td><strong>移調樂器整條鏈路斷</strong>; 無 range_amateur</td>
+      <td><code>parser.py</code> 沒填 <code>Pitch.written_midi</code></td>
+    </tr>
+    <tr>
+      <td>銅管</td>
+      <td class="pain">~20%</td>
+      <td>移調 broken; 嘴形耐力 0 模型; 0 sample</td>
+      <td>grep <code>embouchure</code> = 0</td>
+    </tr>
+    <tr>
+      <td>指揮</td>
+      <td>~60%</td>
+      <td>多樂章單檔; 無 conductor score; 無排練筆記</td>
+      <td><code>parser.py:288</code> 寫死單樂章</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>🔴 Critical Bugs / 阻斷性 <span class="group-tag pi-bug">P0-bug</span></h2>
+
+<div class="card" data-id="A">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-bug">P0</span>
+    <span class="size-tag">L · 12-20h</span>
+    <span class="card-title">A. 移調樂器整條鏈路修復</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>Clarinet B♭ / Trumpet B♭ / Horn F / Saxophone 玩家拿到的譜<strong>一律記實音</strong> — 譜上寫 C 實際 sounding B♭, 學的指法跟譜上完全對不上。IR 已有 <code>Pitch.written_midi / written_spelling</code> 欄位但 parser 沒填、writer 不輸出 <code>&lt;transpose&gt;</code> 元素, profile 雖標 <code>transposition</code> 完全沒讀。</p>
+    <div class="label">技術做法</div>
+    <p><code>parser.py</code> 從 music21 <code>atSoundingPitch</code> 計算寫入 <code>written_midi/written_spelling</code>; <code>ir_to_musicxml.py</code> 加 <code>&lt;transpose&gt;&lt;diatonic/&gt;&lt;chromatic/&gt;</code>; <code>TargetPanel.tsx</code> 給 toggle: 顯示記譜音 vs 實際音。</p>
+    <div class="persona-chips">
+      <span class="chip">木管</span><span class="chip">銅管</span><span class="chip">指揮</span>
+    </div>
+    <details><summary>反方</summary><div>木管/銅管 amateur 用戶數比小提琴少, 但這是「拿到譜根本不能用」的 hard block; 修一次解 4-5 種樂器, ROI 不低。</div></details>
+  </div>
+</div>
+
+<div class="card" data-id="B">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-bug">P0</span>
+    <span class="size-tag">M · 8-12h</span>
+    <span class="card-title">B. 低音大提琴 first-class 支援</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>整個 persona 在 app 內<strong>支援度 0%</strong>: 無 <code>instruments/double_bass.py</code>, 無 <code>Bass8vbClef</code> 自動套, 無 transcribe 慣例移調, ensemble template 列表 0 hit, catalog 0 首 walking bass / jazz。</p>
+    <div class="label">技術做法</div>
+    <p>新建 <code>double_bass.py</code> profile (4 弦 E1/A1/D2/G2, range_amateur 1-3 把位); <code>ir_to_music21.py</code> 加 Bass8vb 自動套; <code>transcriber.py</code> 補 cello↔double_bass 慣例; <code>arrangement_model.py</code> 加 string_quintet (含 db)。</p>
+    <div class="persona-chips">
+      <span class="chip">低音大提琴</span>
+    </div>
+    <details><summary>反方</summary><div>低音大提琴業餘人口最少 (估 &lt;5%), ROI 客觀低於其他 P0。但「0% → first-class」是一次性投入, 後續無維護成本, 收尾感強。</div></details>
+  </div>
+</div>
+
+<div class="card" data-id="C">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-bug">P0</span>
+    <span class="size-tag">L · 20-30h</span>
+    <span class="card-title">C. 多樂章單檔 IR 支援</span>
+  </div>
+  <div class="card-body">
+    <p><code>parser.py:288</code> 寫死 <code>score.movements = [Movement(...)]</code>, Mozart K458 / Haydn Op.74 必須拆 4 個檔案。指揮想 walkthrough 整曲、設置 tempo timeline、A/B 比較跨樂章, 通通不能做。</p>
+    <div class="label">技術做法</div>
+    <p>IR 加真正 movement 概念; parser 偵測 multi-rest / double-bar 切分樂章; UI 加樂章 tab navigator。風險: 影響面廣 (改編 / 修復 / 匯出 / 播放都要適配)。</p>
+    <div class="persona-chips">
+      <span class="chip">指揮</span><span class="chip">所有演奏者</span>
+    </div>
+    <details><summary>反方</summary><div>大架構改, 風險高, 已 deferred 多年。當前 workaround「一個樂章一檔」其實是業餘合奏現實 (大家從 IMSLP 下載也是分樂章)。可延後。</div></details>
+  </div>
+</div>
+
+<h2>🟠 短期高 ROI <span class="group-tag pi-p0">P0/P1</span></h2>
+
+<div class="card" data-id="D">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p0">P0</span>
+    <span class="size-tag">S · 3-5h</span>
+    <span class="card-title">D. 補 ensemble templates + Onboarding 入口</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>加 <code>viola_piano</code>, <code>cello_solo</code>, <code>cello_piano</code>, <code>string_quintet</code> ensemble; Onboarding 預設 5 首加 viola/cello 視角 sample; catalog 重打 <code>amateur_violist</code> / <code>amateur_cellist</code> 標籤 (純 metadata, 用既有曲目)。一個 sprint 解 3 個 persona 的 onboarding gap。</p>
+    <div class="persona-chips">
+      <span class="chip">中提琴</span><span class="chip">大提琴</span><span class="chip">低音大提琴</span>
+    </div>
+    <details><summary>反方</summary><div>純元資料變更, 沒實際擴充曲庫深度, 但 onboarding 0→1 對使用者感知是最大的階。</div></details>
+  </div>
+</div>
+
+<div class="card" data-id="E">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p0">P0</span>
+    <span class="size-tag">S · 2-3h</span>
+    <span class="card-title">E. PracticePanel 鋼琴 hand-isolation (RH/LH toggle)</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>鋼琴最核心練習動作「分手練」目前做不了。利用既有 <code>PlaybackControls.tsx</code> mute infrastructure, 按 part_id suffix (<code>_upper</code>/<code>_lower</code>) 分組, PracticePanel 加「只播 RH / LH」按鈕。</p>
+    <div class="persona-chips"><span class="chip">鋼琴</span><span class="chip">大鍵琴</span></div>
+  </div>
+</div>
+
+<div class="card" data-id="F">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">S · 2-3h</span>
+    <span class="card-title">F. 補 8 個管樂 profile 的 range_amateur</span>
+  </div>
+  <div class="card-body">
+    <p>仿 violin/viola/cello 模板加: Flute (C4-C6) / Clarinet (E3-C5 sounding) / Trumpet (G3-G4) / Horn (G2-G4) / Tuba (G1-D3) 等。<code>repair.py:376</code> 已有 amateur 路徑, profile 一改就生效。</p>
+    <div class="persona-chips"><span class="chip">木管</span><span class="chip">銅管</span></div>
+  </div>
+</div>
+
+<div class="card" data-id="G">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M · 6-10h</span>
+    <span class="card-title">G. 大提琴 tenor clef 自動切換</span>
+  </div>
+  <div class="card-body">
+    <p>Bach Suite 5/6 等高把位段以 BassClef 寫會出現大量 ledger lines。music21 TenorClef 類別已存在, <code>ir_to_music21.py:_default_clef_for</code> 改成 per-measure 判斷, 高音段 (平均 ≥ G3) 輸出 TenorClef。</p>
+    <div class="persona-chips"><span class="chip">大提琴</span></div>
+  </div>
+</div>
+
+<div class="card" data-id="H">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M · 6-8h</span>
+    <span class="card-title">H. 鋼琴 Hand-redistribute repair pass</span>
+  </div>
+  <div class="card-body">
+    <p>在 <code>repair.py:278</code> <code>check_piano_hand_span</code> 後加: upper staff span &gt; comfortable 但 lower staff 同 onset 空閒 → 把最低音移到 lower。Chopin Nocturne / Schumann Lieder thumb-cross 場景修。</p>
+    <div class="persona-chips"><span class="chip">鋼琴</span></div>
+    <details><summary>反方</summary><div>真實鋼琴家也常手動 redistribute; 自動可能弄錯破壞使用者本來想要的指法。應該 toggle on/off。</div></details>
+  </div>
+</div>
+
+<h2>📚 曲庫擴充 (純資料) <span class="group-tag pi-p1">P1</span></h2>
+
+<div class="card" data-id="I">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M · 6-12h</span>
+    <span class="card-title">I. 補曲庫: Bach Cello Suites + Romantic 鋼琴 + 大鍵琴 + 管樂</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>一輪 sprint 補多個 persona 的曲庫缺口:</p>
+    <ul style="margin: 4px 0; padding-left: 18px;">
+      <li><strong>大提琴</strong>: Bach Cello Suites 1-3 (含 BWV 1007 剩 5 樂章 + BWV 1008/1009 完整) → +18 樂章</li>
+      <li><strong>鋼琴</strong>: Chopin Nocturne Op.9 No.2 / Mozart K545 完整 / Liebestraum No.3</li>
+      <li><strong>大鍵琴</strong>: Bach WTC I No.1 + 1-2 Couperin / Scarlatti 補強</li>
+      <li><strong>管樂</strong>: Pachelbel Canon (flute version) / Mozart Horn Concerto K.495 主題 / Brass quintet hymn</li>
+    </ul>
+    <p>來源: IMSLP / KernScores / OpenScore / musetrainer CC0。共 ~30 首。</p>
+    <div class="persona-chips">
+      <span class="chip">大提琴</span><span class="chip">鋼琴</span><span class="chip">大鍵琴</span><span class="chip">木管</span><span class="chip">銅管</span>
+    </div>
+  </div>
+</div>
+
+<h2>🎼 指揮工具 (組合既有功能) <span class="group-tag pi-p1">P1</span></h2>
+
+<div class="card" data-id="J">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">S · 4-6h</span>
+    <span class="card-title">J. Conductor Score 匯出 + 排練筆記</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>(1) <code>ExportMenu.tsx</code> 加「總譜 (含 cue notes)」選項, 用既有 verovio render layer 加 cue 標註。(2) <code>SectionNavigator.tsx</code> 每個 rehearsal mark 加 textarea + localStorage (例: "B 段: 銅管太大聲, 大提琴 cresc.")。兩件事都是用既有 navigator / export 加最後一哩。</p>
+    <div class="persona-chips"><span class="chip">指揮</span></div>
+  </div>
+</div>
+
+<div class="card" data-id="K">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M · 8-12h</span>
+    <span class="card-title">K. Section 難度匯總 + 跨樂手負載熱圖</span>
+  </div>
+  <div class="card-body">
+    <p>(1) <code>compute_difficulty</code> per-measure 分數 aggregate 到 section: 「A 段平均難度 2.1 估 15 分排練; B 段 4.3 估 35 分」。(2) player × section 熱圖 view: 「第 2 小提琴 Alice 全曲 60% 段落最難, Bob 才 20%」。指揮做改編決策最需要的決策資訊。</p>
+    <div class="persona-chips"><span class="chip">指揮</span><span class="chip">改編家</span></div>
+    <details><summary>反方</summary><div>對指揮高 ROI, 對單一演奏者幾乎無用。如果指揮使用者數沒驗證, 可延後。</div></details>
+  </div>
+</div>
+
+<h2>🎹 進階音樂品質 <span class="group-tag pi-p2">P2</span></h2>
+
+<div class="card" data-id="L">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p2">P2</span>
+    <span class="size-tag">M · 8-14h</span>
+    <span class="card-title">L. 鋼琴自動 pedal + 大鍵琴 continuo voice-leading</span>
+  </div>
+  <div class="card-body">
+    <p>(1) 鋼琴: <code>pianistic.py</code> 對 piano 在和聲變化點自動加 PedalMark (chord-change heuristic)。(2) 大鍵琴: <code>continuo.py:222</code> 寫入前加 DP 檢查相鄰 chord 平行 5/8, 用 voicing 轉位避免。</p>
+    <div class="persona-chips"><span class="chip">鋼琴</span><span class="chip">大鍵琴</span></div>
+    <details><summary>反方</summary><div>音樂判斷主觀, 自動不準會被人嫌; 可做 toggle 預設關。</div></details>
+  </div>
+</div>
+
+<div class="card" data-id="M">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p2">P2</span>
+    <span class="size-tag">M · 10-14h</span>
+    <span class="card-title">M. 銅管嘴形耐力 + 換氣模擬升級</span>
+  </div>
+  <div class="card-body">
+    <p>(1) 新 <code>brass_endurance.py</code>: 滾動窗計算高音累積時間, 超 amateur 預算 warning。(2) <code>breath_marks.py</code> 加 skill_level + dynamic 衰減模型 (ff 砍半, amateur 再砍 30%)。</p>
+    <div class="persona-chips"><span class="chip">木管</span><span class="chip">銅管</span></div>
+    <details><summary>反方</summary><div>業餘者自己會控制疲勞 / 換氣, 自動判斷可能不準。是「nice-to-have」非 must。</div></details>
+  </div>
+</div>
+
+<h2>建議組合</h2>
+
+<div class="card" style="background: #fff8e0; border-color: #f0d97a;">
+  <div class="card-body">
+    <p><strong>速勝包 (P0, ~13-23 hr)</strong>: <code>A + B + D + E</code> — 修最大 bug (移調) + 補最大缺口 (低音大提琴) + 開放 viola/cello onboarding + 鋼琴 hand-isolation。一次處理 6 個 persona 的最尖痛點。</p>
+    <p><strong>完整包 (P0 + P1, ~40-60 hr)</strong>: 再加 <code>F + G + H + I + J</code>。曲庫、profile、指揮工具到齊。</p>
+    <p><strong>長期 (P2)</strong>: <code>C</code> (多樂章) / <code>K</code> (負載熱圖) / <code>L</code> (pedal/voice-leading) / <code>M</code> (耐力)。需求驗證後再做。</p>
+    <p><em>策略反方</em>: 0.1.54 已把小提琴打到可用級, 如果繼續發散到 8 個 persona, 可能稀釋產品定位。<strong>聚焦選 2-3 個族 (e.g. 小提琴 + 鋼琴 + 弦樂家族) 深做</strong>, 比廣度補齊更明智。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+<div class="footer">
+  <div class="footer-inner">
+    <div class="counter"><strong id="count">0</strong> / 13 項已勾選</div>
+    <div>
+      <button class="secondary" id="clear-btn">清除</button>
+      <button id="copy-btn" disabled>複製決策摘要</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = "multi-persona-decisions-v1";
+const cards = document.querySelectorAll(".card[data-id]");
+const counter = document.getElementById("count");
+const copyBtn = document.getElementById("copy-btn");
+const clearBtn = document.getElementById("clear-btn");
+const toast = document.getElementById("toast");
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "[]");
+    cards.forEach(c => {
+      if (saved.includes(c.dataset.id)) c.classList.add("selected");
+    });
+  } catch {}
+  update();
+}
+function save() {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected")).map(c => c.dataset.id);
+  localStorage.setItem(KEY, JSON.stringify(sel));
+}
+function update() {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected"));
+  counter.textContent = sel.length;
+  copyBtn.disabled = sel.length === 0;
+}
+cards.forEach(c => c.addEventListener("click", (e) => {
+  if (e.target.tagName === "SUMMARY" || e.target.closest("details")) return;
+  c.classList.toggle("selected");
+  save(); update();
+}));
+clearBtn.addEventListener("click", () => {
+  cards.forEach(c => c.classList.remove("selected"));
+  save(); update();
+});
+copyBtn.addEventListener("click", () => {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected"));
+  const lines = sel.map(c => {
+    const id = c.dataset.id;
+    const title = c.querySelector(".card-title").textContent.trim();
+    const size = c.querySelector(".size-tag").textContent.trim();
+    return `- ${id}. ${title} [${size}]`;
+  });
+  const summary = `8 大 Persona 改善 — 決定做:\n${lines.join("\n")}\n\n(共 ${sel.length} 項)`;
+  navigator.clipboard.writeText(summary).then(() => {
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1800);
+  });
+});
+load();
+</script>
+</body>
+</html>

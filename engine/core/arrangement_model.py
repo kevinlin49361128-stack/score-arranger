@@ -143,6 +143,52 @@ def string_quartet_ensemble() -> list[Player]:
     ]
 
 
+def string_quintet_ensemble() -> list[Player]:
+    """弦樂五重奏 (DB 版): 兩把小提琴 + 中提琴 + 大提琴 + 低音大提琴.
+
+    這是 Boccherini / Schubert "鱒魚" 等作品的 SQ + DB 編制 (亦稱
+    "double bass quintet"). 另一種五重奏編制 (兩把 viola) 為 Mozart
+    K.515 等所用, 此處先建模 DB 版.
+    """
+    return [
+        Player(
+            player_id="violin_1",
+            display_name="Violin I",
+            instruments=["violin"],
+            primary_instrument="violin",
+            staves=1,
+        ),
+        Player(
+            player_id="violin_2",
+            display_name="Violin II",
+            instruments=["violin"],
+            primary_instrument="violin",
+            staves=1,
+        ),
+        Player(
+            player_id="viola_1",
+            display_name="Viola",
+            instruments=["viola"],
+            primary_instrument="viola",
+            staves=1,
+        ),
+        Player(
+            player_id="cello_1",
+            display_name="Violoncello",
+            instruments=["cello"],
+            primary_instrument="cello",
+            staves=1,
+        ),
+        Player(
+            player_id="double_bass_1",
+            display_name="Double Bass",
+            instruments=["double_bass"],
+            primary_instrument="double_bass",
+            staves=1,
+        ),
+    ]
+
+
 def woodwind_quintet_ensemble() -> list[Player]:
     """傳統木管五重奏: flute / oboe / clarinet / bassoon / horn"""
     return [
@@ -337,10 +383,54 @@ def flute_guitar_ensemble() -> list[Player]:
     ]
 
 
+# 0.1.55 D: 中提琴 / 大提琴專用編制 — 服務 viola/cello amateur 入口.
+# 之前只有 violin_piano + string_quartet, 中提琴/大提琴想當主聲部沒得選.
+def viola_piano_ensemble() -> list[Player]:
+    """中提琴 + 鋼琴 — Bach Suite viola transposition / Brahms Op.120 之類."""
+    return [
+        Player(
+            player_id="viola_1", display_name="Viola",
+            instruments=["viola"], primary_instrument="viola", staves=1,
+        ),
+        Player(
+            player_id="piano_1", display_name="Piano",
+            instruments=["piano"], primary_instrument="piano", staves=2,
+        ),
+    ]
+
+
+def cello_solo_ensemble() -> list[Player]:
+    """大提琴獨奏 — Bach Cello Suites 標配 (BWV 1007-1012)."""
+    return [
+        Player(
+            player_id="cello_1", display_name="Violoncello",
+            instruments=["cello"], primary_instrument="cello", staves=1,
+        ),
+    ]
+
+
+def cello_piano_ensemble() -> list[Player]:
+    """大提琴 + 鋼琴 — Beethoven Op.5 / Brahms Op.38 / 業餘 chamber 標配."""
+    return [
+        Player(
+            player_id="cello_1", display_name="Violoncello",
+            instruments=["cello"], primary_instrument="cello", staves=1,
+        ),
+        Player(
+            player_id="piano_1", display_name="Piano",
+            instruments=["piano"], primary_instrument="piano", staves=2,
+        ),
+    ]
+
+
 # 編制 ID → 構造函式的對照表 (用於 server / CLI dispatch)
 ENSEMBLE_TEMPLATES: dict[str, "callable"] = {  # type: ignore[name-defined]
     "violin_piano": violin_piano_ensemble,
+    "viola_piano": viola_piano_ensemble,
+    "cello_solo": cello_solo_ensemble,
+    "cello_piano": cello_piano_ensemble,
     "string_quartet": string_quartet_ensemble,
+    "string_quintet": string_quintet_ensemble,
     "piano_solo": piano_solo_ensemble,
     "harpsichord_solo": harpsichord_solo_ensemble,
     "violin_harpsichord": violin_harpsichord_ensemble,

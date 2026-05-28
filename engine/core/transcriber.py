@@ -42,6 +42,18 @@ CONVENTIONAL_TRANSPOSITIONS: dict[tuple[str, str], int] = {
     ("cello", "viola"): +7,
     ("viola", "cello"): -7,
 
+    # double bass ↔ 其他弦
+    # cello ↔ double_bass: 兩者 sounding 音域差不大 (cello 高一個八度),
+    # 但 db 譜記比實音高八度. 此處 semitones 是 *sounding* 差.
+    # Bach 大提琴組曲移到 double bass 通常維持原 sounding 八度 (低音版).
+    ("cello", "double_bass"): 0,
+    ("double_bass", "cello"): 0,
+    # violin 旋律 → double_bass 走低音線, 下移兩個八度當 backbone.
+    ("violin", "double_bass"): -24,
+    ("double_bass", "violin"): +24,
+    ("viola", "double_bass"): -12,
+    ("double_bass", "viola"): +12,
+
     # 雙簧管系
     ("clarinet_bb", "clarinet_bb"): 0,  # 同樂器, 不移調
     # 移調樂器互轉 (假設兩邊都是譜記)

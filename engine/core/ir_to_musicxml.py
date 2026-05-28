@@ -114,6 +114,24 @@ _CLEF_TABLE: dict[str, tuple[str, int, int]] = {
     "viola": ("C", 3, 0),
 }
 
+# instrument_id → (diatonic, chromatic) for MusicXML <transpose>
+# chromatic = written → sounding 的半音差 (= profile.transposition);
+# diatonic  = written → sounding 的 staff-step 差 (含八度).
+# 沒在表中 = 非移調樂器, 不寫 <transpose>.
+#
+# 為什麼不直接用 profile.transposition: profile 不帶 diatonic 拼寫資訊
+# (e.g. Clarinet Bb 的 -2 半音對應大二度=diatonic -1, 而 minor third
+# 的 -3 半音對應 diatonic -2 — 同半音可能是不同 diatonic). 寫死避免歧義.
+_TRANSPOSE_TABLE: dict[str, tuple[int, int]] = {
+    "clarinet_bb": (-1, -2),   # 大二度下行
+    "trumpet_bb": (-1, -2),
+    "horn_f": (-4, -7),        # 純五度下行
+    "alto_sax": (-5, -9),      # 大六度下行
+    "tenor_sax": (-8, -14),    # 大九度下行
+    "soprano_sax": (-1, -2),
+    "baritone_sax": (-12, -21),
+}
+
 # MIDI pitch class → (step, alter) — 黑鍵一律用升記號
 _MIDI_PC: list[tuple[str, int]] = [
     ("C", 0), ("C", 1), ("D", 0), ("D", 1), ("E", 0), ("F", 0),
@@ -300,6 +318,9 @@ def _build_part(
 ) -> None:
     part_el = ET.SubElement(root, "part", id=f"P{part_index + 1}")
     clef = _CLEF_TABLE.get(part.instrument_id, ("G", 2, 0))
+    # 移調樂器: 0.1.55 — 在第一小節 <attributes> 加 <transpose>, 之後音符
+    # <pitch> 寫 written pitch (見 _append_pitch).
+    transpose = _TRANSPOSE_TABLE.get(part.instrument_id)
 
     cur_time_sig: tuple[int, int] = (4, 4)
     first = True
@@ -310,6 +331,7 @@ def _build_part(
             part_el, measure, divisions, cur_time_sig,
             clef if first else None, first,
             wedge_measures.get(measure.number, []),
+            transpose=transpose if first else None,
         )
         first = False
 
@@ -322,6 +344,7 @@ def _build_measure(
     clef: Optional[tuple[str, int, int]],
     is_first: bool,
     wedges: list[tuple[Fraction, str]],
+    transpose: Optional[tuple[int, int]] = None,
 ) -> None:
     # 0.1.45: 不完全小節 (pickup / anacrusis) 必須標 implicit="yes",
     # 否則 OSMD 視為完整小節, 後續 measure 編號全部對不上 source.
@@ -358,6 +381,8 @@ def _build_measure(
                 ET.SubElement(
                     clef_el, "clef-octave-change",
                 ).text = str(oct_change)
+        if transpose is not None:
+            _append_transpose(attr, transpose)
         if len(attr):
             m_el.append(attr)
 
@@ -933,6 +958,21 @@ def _append_pitch(note: ET.Element, pitch: Pitch) -> None:
     ET.SubElement(p_el, "octave").text = str(octave)
 
 
+def _append_transpose(
+    attr: ET.Element, transpose: tuple[int, int],
+) -> None:
+    """在 <attributes> 內加 <transpose> 元素 (移調樂器).
+
+    MusicXML 規格: <transpose> 直屬 <attributes>. <chromatic> 是
+    written → sounding 的半音差 (e.g. clarinet Bb: -2); <diatonic> 是
+    staff-step 差含八度 (clarinet Bb: -1, 大二度下行).
+    """
+    diatonic, chromatic = transpose
+    tr_el = ET.SubElement(attr, "transpose")
+    ET.SubElement(tr_el, "diatonic").text = str(diatonic)
+    ET.SubElement(tr_el, "chromatic").text = str(chromatic)
+
+
 def _append_grace(
     m_el: ET.Element, grace, voice_num: int, staff: Optional[int] = None,
 ) -> None:
@@ -1085,8 +1125,17 @@ def _note_type(
 
 
 def _pitch_parts(pitch: Pitch) -> tuple[str, int, int]:
-    """Pitch → (step, alter, octave)。優先用 spelling, 失敗用 midi。"""
-    spelling = (pitch.spelling or "").strip()
+    """Pitch → (step, alter, octave)。
+
+    0.1.55 移調樂器: 若 Pitch 有 written_spelling/written_midi, 優先用 written
+    (MusicXML <pitch> 對移調樂器存 written, 配合 <transpose> 元素玩家拿到的
+    譜上音與實音一致). 否則退回 sounding spelling/midi.
+    """
+    spelling = (
+        pitch.written_spelling
+        if pitch.written_spelling is not None
+        else (pitch.spelling or "")
+    ).strip()
     m = _SPELLING_RE.match(spelling)
     if m:
         step = m.group(1).upper()
@@ -1094,8 +1143,12 @@ def _pitch_parts(pitch: Pitch) -> tuple[str, int, int]:
         octave = int(m.group(3))
         alter = accs.count("#") - accs.count("b")
         return step, alter, octave
-    # fallback: 從 midi_number 推
-    midi = pitch.midi_number
+    # fallback: 從 midi_number 推 (移調樂器優先 written_midi)
+    midi = (
+        pitch.written_midi
+        if pitch.written_midi is not None
+        else pitch.midi_number
+    )
     step, alter = _MIDI_PC[midi % 12]
     octave = midi // 12 - 1
     return step, alter, octave

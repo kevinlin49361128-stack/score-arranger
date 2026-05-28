@@ -26,6 +26,8 @@ HORN_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato", "stopped", "muted"],
     sustain_type="breath",
     transposition=-7,
+    # 0.1.55 F: amateur sounding F2 (41) - G4 (67), 避高音 D5+
+    range_amateur=(41, 67),
 )
 
 # Trumpet in B♭: written 比 sounding 高大二度, sounding 低 2 半音
@@ -42,6 +44,8 @@ TRUMPET_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato", "muted", "flutter_tongue"],
     sustain_type="breath",
     transposition=-2,
+    # 0.1.55 F: amateur sounding G3 (55) - C5 (72), 避 high C 以上嘴形地獄
+    range_amateur=(55, 72),
 )
 
 # Tenor Trombone: 不移調
@@ -58,6 +62,8 @@ TROMBONE_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato", "glissando", "muted"],
     sustain_type="breath",
     transposition=0,
+    # 0.1.55 F: amateur E2 (40) - A4 (69), 避 tenor clef 高把位
+    range_amateur=(40, 69),
 )
 
 # Tuba: 不移調
@@ -74,6 +80,8 @@ TUBA_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato"],
     sustain_type="breath",
     transposition=0,
+    # 0.1.55 F: amateur G1 (31) - C3 (48), 業餘 tuba 低音較穩
+    range_amateur=(31, 48),
 )
 
 

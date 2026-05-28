@@ -304,6 +304,11 @@ interface SessionState {
   requestedLoop: { start: number; end: number; tick: number } | null;
   requestLoop: (start: number, end: number) => void;
 
+  /** 0.1.55 E: 鋼琴練習分手模式 — PracticePanel 設定, PlaybackControls
+   * 根據 track 名稱含 upper/lower/RH/LH 動態 mute 對應 staff. */
+  practiceHandFocus: "all" | "rh" | "lh";
+  setPracticeHandFocus: (f: "all" | "rh" | "lh") => void;
+
   // 播放中的當前小節 (即時更新, 不平滑捲動)
   playbackMeasure: number | null;
   setPlaybackMeasure: (m: number | null) => void;
@@ -347,6 +352,13 @@ interface SessionState {
   // 譜面難度熱圖 (target panel 上疊紅/黃/綠色塊)
   showHeatmap: boolean;
   toggleHeatmap: () => void;
+
+  /** 0.1.55 改編譜顯示音模式:
+   * - "written" (預設): 玩家手上的譜, 移調樂器顯示記譜音
+   * - "sounding": 總譜 / concert pitch, 實際發聲音高 (老師看實音對齊用)
+   * 對非移調樂器 part 無影響. */
+  displayPitchMode: "written" | "sounding";
+  setDisplayPitchMode: (m: "written" | "sounding") => void;
 
   /** 引導模式 — 首次使用功能時顯示 coachmark 氣泡 (給音樂老師等非工程
    * 用戶). 預設 true; 使用者可在設定中關掉. localStorage 持久化. */
@@ -466,6 +478,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         start, end, tick: (s.requestedLoop?.tick ?? 0) + 1,
       },
     })),
+
+  // 0.1.55 E: 鋼琴分手練習模式
+  practiceHandFocus: "all",
+  setPracticeHandFocus: (f) => set({ practiceHandFocus: f }),
 
   playbackMeasure: null,
   setPlaybackMeasure: (m) => set({ playbackMeasure: m }),
@@ -747,6 +763,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   showHeatmap: false,
   toggleHeatmap: () => set((s) => ({ showHeatmap: !s.showHeatmap })),
+
+  displayPitchMode: "written",
+  setDisplayPitchMode: (m) => set({ displayPitchMode: m }),
 
   guidanceMode: loadInitialGuidanceMode(),
   setGuidanceMode: (v) => {

@@ -36,6 +36,7 @@ from music21 import (
     chord as m21_chord,
     converter,
     dynamics as m21_dynamics,
+    interval as m21_interval,
     key as m21_key,
     meter,
     note as m21_note,
@@ -209,6 +210,31 @@ def parse_stream(m21_score: m21_stream.Score) -> Score:
     return _Parser().parse(m21_score)
 
 
+def _to_sounding_safe(
+    m21_score: m21_stream.Score,
+) -> m21_stream.Score:
+    """嘗試把 score 轉成 sounding pitch; 失敗就回原物件.
+
+    重點 — music21 從 MusicXML 讀進來時 atSoundingPitch='unknown',
+    `toSoundingPitch` 對 unknown 視為 no-op (避免重複轉). MusicXML 規範
+    本身儲存的是 written pitch (移調樂器譜表), 所以我們在呼叫 toSoundingPitch
+    前先把 score 與每個 part 標記為 atSoundingPitch=False (= as-written).
+
+    失敗時退回原 score — 非移調 part 不影響, 移調 part 拿到的會是 written
+    pitch (與舊行為相同的 bug, 至少不更糟).
+    """
+    try:
+        # 用 deepcopy 避免動到 caller 的 score (load_m21 cache).
+        import copy
+        sc = copy.deepcopy(m21_score)
+        sc.atSoundingPitch = False
+        for p in sc.parts:
+            p.atSoundingPitch = False
+        return sc.toSoundingPitch(inPlace=False)
+    except Exception:
+        return m21_score
+
+
 # ============================================================================
 # Parser implementation
 # ============================================================================
@@ -219,9 +245,20 @@ class _Parser:
         self._next_slur_id = 0
         self._next_tuplet_bracket_id = 0
         self._warnings: list[str] = []
+        # 0.1.55: 當前 part 的 sounding→written interval (寫入 written_midi 用).
+        # 非移調樂器為 None — _make_pitch 直接寫 written_midi=None.
+        # 在 _parse_part 進入時設定, 結束時清掉.
+        self._sounding_to_written: Optional[m21_interval.Interval] = None
 
     def parse(self, m21_score: m21_stream.Score) -> Score:
         score = Score()
+        # 0.1.55 移調樂器修復: 統一把 score 轉到 sounding pitch, 之後 _make_pitch
+        # 拿到的 m21_pitch.midi 才是實音. 對非移調樂器無影響 (toSoundingPitch
+        # 在 transposition=None 的 part 上是 no-op).
+        # 原 score 仍保留 — _parse_part 從原 part 拿 instrument.transposition,
+        # 因為 sounding score 上的 instrument transposition 可能被清掉.
+        self._original_score = m21_score
+        m21_score = _to_sounding_safe(m21_score)
 
         # Metadata
         if m21_score.metadata is not None:
@@ -267,9 +304,12 @@ class _Parser:
         # 預先建立 slur 對應表
         self._collect_slurs(m21_score)
 
-        # Parts
+        # Parts — sounding score 與原 score 的 parts 索引一一對應 (toSoundingPitch
+        # 不改 part 順序), 所以可以直接配對拿 written→sounding interval.
+        orig_parts = list(getattr(self._original_score, "parts", []))
         for i, m21_part in enumerate(m21_score.parts):
-            score.parts.append(self._parse_part(m21_part, i))
+            orig_part = orig_parts[i] if i < len(orig_parts) else None
+            score.parts.append(self._parse_part(m21_part, i, orig_part))
 
         # 從第一個 part 的第一個 measure 推導預設值
         if score.parts and score.parts[0].measures:
@@ -303,7 +343,12 @@ class _Parser:
                 self._slur_id_map[id(elem)] = slur_id
 
     # ------------------------------------------------------------------ Part
-    def _parse_part(self, m21_part: m21_stream.Part, index: int) -> Part:
+    def _parse_part(
+        self,
+        m21_part: m21_stream.Part,
+        index: int,
+        orig_part: Optional[m21_stream.Part] = None,
+    ) -> Part:
         instrument = m21_part.getInstrument(returnDefault=False)
         raw_inst_name = instrument.instrumentName if instrument else None
         part_name = m21_part.partName
@@ -337,9 +382,19 @@ class _Parser:
         )
         part_id = f"{instrument_id}_{index + 1}"
 
+        # 0.1.55: 取 written→sounding interval. 從**原** score 的 instrument
+        # 拿 (sounding score 的 instrument transposition 可能已被 music21 清掉).
+        # 若該 part 不是移調樂器, 留 None — _make_pitch 就不填 written_*.
+        self._sounding_to_written = self._resolve_sounding_to_written(
+            orig_part, m21_part,
+        )
+
         measures: list[Measure] = []
         for m21_measure in m21_part.getElementsByClass(m21_stream.Measure):
             measures.append(self._parse_measure(m21_measure))
+
+        # 結束 part 後清掉, 避免 leak 給下一 part
+        self._sounding_to_written = None
 
         return Part(
             part_id=part_id,
@@ -347,6 +402,36 @@ class _Parser:
             instrument_id=instrument_id,
             measures=measures,
         )
+
+    @staticmethod
+    def _resolve_sounding_to_written(
+        orig_part: Optional[m21_stream.Part],
+        fallback_part: m21_stream.Part,
+    ) -> Optional[m21_interval.Interval]:
+        """從原 (未 toSoundingPitch) part 抓 instrument.transposition,
+        再 reverse 成 sounding→written interval. 非移調 → None.
+        """
+        for src in (orig_part, fallback_part):
+            if src is None:
+                continue
+            try:
+                inst = src.getInstrument(returnDefault=False)
+            except Exception:
+                inst = None
+            if inst is None:
+                continue
+            iv = getattr(inst, "transposition", None)
+            # music21 把 transposition 存成 Interval (written→sounding).
+            # P1 (unison, 0 半音) 視同非移調.
+            if iv is None:
+                continue
+            try:
+                if int(iv.semitones) == 0:
+                    return None
+                return iv.reverse()
+            except Exception:
+                return None
+        return None
 
     # ----------------------------------------------------------------- Measure
     def _parse_measure(self, m21_measure: m21_stream.Measure) -> Measure:
@@ -560,10 +645,33 @@ class _Parser:
             fermata=self._has_fermata(m21_r),
         )
 
-    @staticmethod
-    def _make_pitch(m21_pitch: Any) -> Pitch:
+    def _make_pitch(self, m21_pitch: Any) -> Pitch:
         spelling = m21_pitch.nameWithOctave.replace("-", "b")
-        return Pitch(midi_number=int(m21_pitch.midi), spelling=spelling)
+        midi_number = int(m21_pitch.midi)
+        # 0.1.55 移調樂器: 若 part 有 sounding→written interval, 算 written.
+        # m21_pitch 來自 sounding score, 所以 midi_number=實音; 反推 written.
+        written_midi: Optional[int] = None
+        written_spelling: Optional[str] = None
+        iv = self._sounding_to_written
+        if iv is not None:
+            try:
+                written = m21_pitch.transpose(iv)
+                w_midi = int(written.midi)
+                if 0 <= w_midi <= 127:
+                    written_midi = w_midi
+                    written_spelling = (
+                        written.nameWithOctave.replace("-", "b")
+                    )
+            except Exception:
+                # transpose 失敗 (e.g. 超出 MIDI 範圍) → 不填 written, 至少
+                # midi_number 仍可用. 不致命.
+                pass
+        return Pitch(
+            midi_number=midi_number,
+            spelling=spelling,
+            written_midi=written_midi,
+            written_spelling=written_spelling,
+        )
 
     @staticmethod
     def _get_articulations(m21_obj: Any) -> list[str]:

@@ -47,6 +47,8 @@ FLUTE_PROFILE = InstrumentProfile(
     ],
     sustain_type="breath",
     transposition=0,                # C 調樂器, 不移調
+    # 0.1.55 F: amateur (Suzuki 3-5 程度) — C4 (60) - G6 (91), 不勉強高音
+    range_amateur=(60, 91),
 )
 
 
@@ -79,6 +81,8 @@ CLARINET_PROFILE = InstrumentProfile(
     sustain_type="breath",
     # B♭ 樂器: 譜記 C 對應實際 B♭ → 譜→實音 為 -2 半音
     transposition=-2,
+    # 0.1.55 F: amateur sounding D3 (50) - C5 (72), 避免 altissimo
+    range_amateur=(50, 72),
 )
 
 
@@ -135,6 +139,8 @@ OBOE_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato", "vibrato", "double_tonguing"],
     sustain_type="breath",
     transposition=0,
+    # 0.1.55 F: amateur C4 (60) - C6 (84), 雙簧管高音對業餘極難
+    range_amateur=(60, 84),
 )
 
 
@@ -159,6 +165,8 @@ BASSOON_PROFILE = InstrumentProfile(
     available_techniques=["legato", "staccato", "double_tonguing"],
     sustain_type="breath",
     transposition=0,
+    # 0.1.55 F: amateur C2 (36) - C4 (60), 高把位 tenor clef 段對業餘難
+    range_amateur=(36, 60),
 )
 
 

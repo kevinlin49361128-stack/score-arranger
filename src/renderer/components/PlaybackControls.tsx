@@ -256,6 +256,8 @@ export function PlaybackControls(
   const activeSide = useSessionStore((s) => s.activePlaybackSide);
   const setActiveSide = useSessionStore((s) => s.setActivePlaybackSide);
   const setPlaybackSyncBoth = useSessionStore((s) => s.setPlaybackSyncBoth);
+  // 0.1.55 E: 鋼琴練習分手模式 (all/rh/lh)
+  const handFocus = useSessionStore((s) => s.practiceHandFocus);
   const requestedLoop = useSessionStore((s) => s.requestedLoop);
 
   const [state, setState] = useState<PlayState>("idle");
@@ -822,10 +824,25 @@ export function PlaybackControls(
         return { idx: i, name: display || raw || `Track ${i + 1}` };
       }));
 
+      // 0.1.55 E: 鋼琴分手練習 — 跑前算「依名稱要 mute 的 track 集」.
+      // upper/right_hand/RH/Piano(上) → RH 模式時要播放, LH 模式時 mute.
+      // lower/left_hand/LH → 反之.
+      const handMutedSet = new Set<number>();
+      if (handFocus !== "all") {
+        midi.tracks.forEach((track, i) => {
+          const lower = (track.name || "").toLowerCase();
+          const isLH = /(lower|left|\blh\b|l\.h\.|_lower|bass)/.test(lower);
+          const isRH = /(upper|right|\brh\b|r\.h\.|_upper)/.test(lower);
+          if (handFocus === "rh" && isLH) handMutedSet.add(i);
+          if (handFocus === "lh" && isRH) handMutedSet.add(i);
+        });
+      }
+
       let lastTime = 0;
       midi.tracks.forEach((track, trackIdx) => {
         // mute: 此 track 在 mutedTracks 內 → 整段跳過排程 (連 lastTime 都不算)
         if (mutedTracks.has(trackIdx)) return;
+        if (handMutedSet.has(trackIdx)) return;
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
         for (const note of track.notes) {

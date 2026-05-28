@@ -453,6 +453,19 @@ export const EDITING_STRINGS: BiDict = {
     en: "After picking, this panel closes; press ▶ to start looping.",
     ja: "選択後にパネルが閉じます。▶ を押してループ再生を開始。",
   },
+  // 0.1.55 E: 鋼琴分手練習
+  "practice.handFocus.label": {
+    "zh-TW": "分手練", en: "Hand focus", ja: "片手練習",
+  },
+  "practice.handFocus.all": {
+    "zh-TW": "雙手", en: "Both", ja: "両手",
+  },
+  "practice.handFocus.rh": {
+    "zh-TW": "右手", en: "RH", ja: "右手",
+  },
+  "practice.handFocus.lh": {
+    "zh-TW": "左手", en: "LH", ja: "左手",
+  },
   // 0.1.54 E: 練習日誌 PracticeLogSidebar
   "practice.log.heading": {
     "zh-TW": "練習日誌",

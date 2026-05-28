@@ -562,6 +562,26 @@ export const IO_STRINGS: BiDict = {
       + "から {count} 個の和音が生成されました。"
       + "原譜または編成を変更すると再計算されます。",
   },
+  // 0.1.55 移調樂器 — 記譜音 / 實音 切換
+  "target.pitchMode.written": {
+    "zh-TW": "記譜音",
+    en: "Written",
+    ja: "記譜音",
+  },
+  "target.pitchMode.sounding": {
+    "zh-TW": "實音",
+    en: "Concert",
+    ja: "実音",
+  },
+  "target.pitchMode.tooltip": {
+    "zh-TW": "移調樂器顯示模式:\n• 記譜音 (預設) — 玩家拿到的譜, Clarinet/Horn/Trumpet "
+      + "等顯示譜記音\n• 實音 (Concert) — 總譜對齊用, 顯示實際發聲音高",
+    en: "Transposing instrument display:\n• Written (default) — what the player "
+      + "reads (Clarinet/Horn/Trumpet show written pitch)\n• Concert — score "
+      + "alignment view, shows actual sounding pitch",
+    ja: "移調楽器の表示モード:\n• 記譜音 (デフォルト) — 奏者が読む譜 "
+      + "(クラリネット/ホルン/トランペットは記譜音)\n• 実音 — 総譜整合用, 実際の発音音高",
+  },
   "scoreViewer.overlay.difficulty": {
     "zh-TW": "m.{measure} — 難度 {score}/5",
     en: "m.{measure} — difficulty {score}/5",

@@ -875,6 +875,32 @@ export const DIALOG_STRINGS: BiDict = {
       "ハイドン後期の弦楽四重奏です。Mozart / Beethoven のスタイルとの"
       + "対比になります。",
   },
+  // 0.1.55 D: viola / cello amateur 入口 sample
+  "onboard.sample.bach_cello_prelude.title": {
+    "zh-TW": "Bach 無伴奏大提琴組曲 1 序曲 (BWV 1007)",
+    en: "Bach Cello Suite No.1 Prelude (BWV 1007)",
+    ja: "バッハ 無伴奏チェロ組曲 第1番 プレリュード (BWV 1007)",
+  },
+  "onboard.sample.bach_cello_prelude.desc": {
+    "zh-TW": "業餘大提琴第一首必拉. 單線, 1-4 把位涵蓋大半. cello_solo 編制",
+    en:
+      "Every amateur cellist's first piece. Single line, mostly 1st-4th "
+      + "position. Cello solo ensemble.",
+    ja:
+      "アマチュア・チェリストの最初の一曲。単旋律で 1〜4 ポジション中心。",
+  },
+  "onboard.sample.mozart_viola.title": {
+    "zh-TW": "Mozart 弦四 K.155 (中提琴視角)",
+    en: "Mozart String Quartet K.155 (viola perspective)",
+    ja: "モーツァルト 弦楽四重奏 K.155 (ヴィオラ視点)",
+  },
+  "onboard.sample.mozart_viola.desc": {
+    "zh-TW": "弦四改編為中提琴+鋼琴, 業餘中提琴主聲部 demo.",
+    en:
+      "Arrange this string quartet as viola + piano — a quick demo of viola "
+      + "as the lead voice.",
+    ja: "弦楽四重奏をヴィオラ + ピアノに編曲し、ヴィオラ主役のデモを試せます。",
+  },
 
   // === Onboarding: 編制名稱 ===
   "onboard.ensemble.violinPiano": {
@@ -883,6 +909,20 @@ export const DIALOG_STRINGS: BiDict = {
   },
   "onboard.ensemble.stringQuartet": {
     "zh-TW": "弦樂四重奏", en: "String quartet", ja: "弦楽四重奏",
+  },
+  // 0.1.55 D
+  "onboard.ensemble.violaPiano": {
+    "zh-TW": "中提琴 + 鋼琴", en: "Viola + piano", ja: "ヴィオラ + ピアノ",
+  },
+  "onboard.ensemble.celloSolo": {
+    "zh-TW": "大提琴獨奏", en: "Cello solo", ja: "チェロ独奏",
+  },
+  "onboard.ensemble.celloPiano": {
+    "zh-TW": "大提琴 + 鋼琴", en: "Cello + piano", ja: "チェロ + ピアノ",
+  },
+  // 0.1.55 B (含 double bass)
+  "onboard.ensemble.stringQuintet": {
+    "zh-TW": "弦樂五重奏", en: "String quintet", ja: "弦楽五重奏",
   },
   "onboard.ensemble.pianoSolo": {
     "zh-TW": "鋼琴獨奏", en: "Piano solo", ja: "ピアノ独奏",

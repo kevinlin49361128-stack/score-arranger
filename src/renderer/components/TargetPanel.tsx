@@ -11,8 +11,9 @@
  * 0.1.28: 從 App.tsx 抽出. 純呈現; click / drag 邏輯保留在 App.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import { toSoundingPitchXML } from "../utils/displayPitch";
 import { t as tr, useLocale } from "../utils/i18n";
 import { PlaybackControls } from "./PlaybackControls";
 import { ScoreViewer } from "./ScoreViewer";
@@ -39,7 +40,25 @@ export function TargetPanel({
     activePlaybackSide,
     playbackSyncBoth,
     editFlash,
+    displayPitchMode,
+    setDisplayPitchMode,
   } = useSessionStore();
+
+  // 0.1.55 移調樂器: 切到實音時把 written pitch + <transpose> 轉成
+  // sounding pitch (剝 <transpose>). 預設 written 直接用原 XML, 無成本.
+  // 對非移調 part 為 no-op.
+  const renderedMusicXML = useMemo(() => {
+    if (displayPitchMode === "sounding") {
+      return toSoundingPitchXML(targetMusicXML);
+    }
+    return targetMusicXML;
+  }, [targetMusicXML, displayPitchMode]);
+
+  // 判斷此譜是否含移調樂器 — 沒含時 toggle 不顯示 (避免 UI 雜訊)
+  const hasTransposingPart = useMemo(() => {
+    if (!targetMusicXML) return false;
+    return targetMusicXML.includes("<transpose>");
+  }, [targetMusicXML]);
 
   // 0.1.48 B3: 偵測巴洛克 continuo 自動實現狀態
   const [continuoChords, setContinuoChords] = useState<number>(0);
@@ -106,6 +125,40 @@ export function TargetPanel({
             })}
           </span>
         )}
+        {/* 0.1.55 移調樂器 — 記譜音 / 實音 切換. 沒移調 part 就不顯示. */}
+        {hasTransposingPart && (
+          <div
+            title={tr("target.pitchMode.tooltip")}
+            style={{
+              display: "inline-flex",
+              border: "1px solid var(--border-light)",
+              borderRadius: 4,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            {(["written", "sounding"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setDisplayPitchMode(mode)}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  border: "none",
+                  cursor: "pointer",
+                  background: displayPitchMode === mode
+                    ? "var(--accent)" : "transparent",
+                  color: displayPitchMode === mode
+                    ? "var(--accent-fg)" : "var(--fg-muted)",
+                }}
+              >
+                {tr(`target.pitchMode.${mode}`)}
+              </button>
+            ))}
+          </div>
+        )}
         <PlaybackControls side="target" compact />
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
@@ -115,7 +168,7 @@ export function TargetPanel({
               ? tr("app.panel.targetLabel.result", { name: arrangement.name })
               : tr("app.panel.targetLabel.default")
           }
-          musicXmlContent={targetMusicXML}
+          musicXmlContent={renderedMusicXML}
           highlightedMeasure={highlightedMeasure}
           highlightFlashTick={highlightFlashTick}
           // 改編譜自己在播 或 toolbar 同步模式時才顯示游標

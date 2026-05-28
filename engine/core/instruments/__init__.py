@@ -13,6 +13,7 @@ from .canonical import (
     normalize_instrument_id,
 )
 from .cello import CELLO_PROFILE, check_cello_chord
+from .double_bass import DOUBLE_BASS_PROFILE, check_double_bass_chord
 from .fretted_plucked import check_fretted_plucked
 from .guitar import GUITAR_PROFILE, check_guitar_chord
 from .harp import HARP_PROFILE, check_harp_chord
@@ -36,6 +37,7 @@ __all__ = [
     "CELLO_PROFILE",
     "CLARINET_PROFILE",
     "CheckResult",
+    "DOUBLE_BASS_PROFILE",
     "FLUTE_PROFILE",
     "GUITAR_PROFILE",
     "HARP_PROFILE",
@@ -49,6 +51,7 @@ __all__ = [
     "VIOLIN_PROFILE",
     "check_cello_chord",
     "check_clarinet",
+    "check_double_bass_chord",
     "check_flute",
     "check_fretted_plucked",
     "check_guitar_chord",

@@ -40,7 +40,13 @@ ALIASES: dict[str, str] = {
     # === 弦 ===
     "violoncello": "cello",
     "contrabass": "double_bass",
+    "contrabasso": "double_bass",      # 義大利
+    "kontrabass": "double_bass",       # 德文
+    "double_bass": "double_bass",      # 顯式自指, 容忍 'Double Bass' 進來
     "string_bass": "double_bass",
+    "upright_bass": "double_bass",     # jazz
+    "acoustic_bass": "double_bass",    # jazz
+    "db": "double_bass",
     # 義大利 / 巴洛克 (Corelli, Vivaldi corpus 用)
     "violino": "violin",
     "violino_i": "violin",

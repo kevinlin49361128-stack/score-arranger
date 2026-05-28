@@ -59,6 +59,13 @@ export function PracticePanel({ onClose }: Props) {
   );
   const arrangement = useSessionStore((s) => s.arrangement);
   const sourcePath = useSessionStore((s) => s.sourcePath);
+  // 0.1.55 E: 鋼琴 RH/LH 分手練習
+  const handFocus = useSessionStore((s) => s.practiceHandFocus);
+  const setHandFocus = useSessionStore((s) => s.setPracticeHandFocus);
+  // 是否含 grand-staff 樂器 (鋼琴 / 大鍵琴) — 沒有就 hide UI
+  const hasGrandStaff = !!arrangement?.players.some(
+    (p) => p.staves === 2,
+  );
 
   // 0.1.54 E: 練習日誌 — 進面板 = startSession, 關 / 切譜 = endSession.
   // sessionId ref 跨 unmount cleanup 拿得到 (避免 stale closure).
@@ -213,6 +220,40 @@ export function PracticePanel({ onClose }: Props) {
           >
             {t("practice.intro")}
           </div>
+
+          {/* 0.1.55 E: 鋼琴分手練習 — 只在 grand-staff (piano/harpsichord) 顯示 */}
+          {hasGrandStaff && (
+            <div style={{
+              marginBottom: 12, padding: "8px 12px",
+              background: "var(--bg-panel)",
+              border: "1px solid var(--border)", borderRadius: 6,
+              display: "flex", gap: 6, alignItems: "center",
+              fontSize: 12,
+            }}>
+              <span style={{ color: "var(--fg-muted)", marginRight: 4 }}>
+                🎹 {t("practice.handFocus.label")}
+              </span>
+              {(["all", "rh", "lh"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setHandFocus(m)}
+                  style={{
+                    padding: "3px 10px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    background: handFocus === m
+                      ? "var(--accent)" : "var(--button-bg)",
+                    color: handFocus === m ? "#fff" : "var(--button-fg)",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                >
+                  {t(`practice.handFocus.${m}`)}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* 0.1.54 E: 練習日誌 — 今日 / 過去 7 日 / 最近紀錄 */}
           <PracticeLogSidebar entries={practiceLog} />

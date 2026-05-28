@@ -56,6 +56,25 @@ const SAMPLES: SampleScore[] = [
     defaultEnsemble: "string_quartet",
     defaultSkill: "intermediate",
   },
+  // 0.1.55 D: 大提琴 / 中提琴 amateur 入口 — 之前 5 個範例全是小提琴 / 鋼琴 / 弦四,
+  // viola/cello 玩家沒第一手 demo. BWV 1007 Prelude 是大提琴族最標準入門曲目;
+  // viola_piano 用 K155 (已存在曲目, 改 ensemble 即可變成 viola 主聲部視角).
+  {
+    corpus: "corpus:bach/bwv1007_1_prelude",
+    titleKey: "onboard.sample.bach_cello_prelude.title",
+    composer: "J. S. Bach",
+    descKey: "onboard.sample.bach_cello_prelude.desc",
+    defaultEnsemble: "cello_solo",
+    defaultSkill: "amateur",
+  },
+  {
+    corpus: "corpus:mozart/k155/movement1",
+    titleKey: "onboard.sample.mozart_viola.title",
+    composer: "Mozart",
+    descKey: "onboard.sample.mozart_viola.desc",
+    defaultEnsemble: "viola_piano",
+    defaultSkill: "amateur",
+  },
   {
     corpus: "corpus:corelli/opus3no1/1grave",
     titleKey: "onboard.sample.corelli.title",
@@ -85,7 +104,11 @@ const SAMPLES: SampleScore[] = [
 /** ensemble id → i18n key。 */
 const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
   violin_piano: "onboard.ensemble.violinPiano",
+  viola_piano: "onboard.ensemble.violaPiano",
+  cello_solo: "onboard.ensemble.celloSolo",
+  cello_piano: "onboard.ensemble.celloPiano",
   string_quartet: "onboard.ensemble.stringQuartet",
+  string_quintet: "onboard.ensemble.stringQuintet",
   piano_solo: "onboard.ensemble.pianoSolo",
   harpsichord_solo: "onboard.ensemble.harpsichordSolo",
   violin_harpsichord: "onboard.ensemble.violinHarpsichord",
