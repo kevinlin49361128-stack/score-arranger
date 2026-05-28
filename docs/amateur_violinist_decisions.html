@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>業餘小提琴手友善化 — 決策文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf8f4;
+    --paper: #fff;
+    --ink: #2a2a2a;
+    --muted: #6b6b6b;
+    --border: #e5e1d8;
+    --accent: #8b2c2c;
+    --pri-p0: #c44545;
+    --pri-p1: #c4892c;
+    --pri-p2: #6b8e3d;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font: 15px/1.65 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 24px 120px;
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 28px;
+    margin: 0 0 6px;
+    letter-spacing: -.01em;
+  }
+  .subtitle {
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
+  h2 {
+    font-weight: 600;
+    font-size: 18px;
+    margin: 36px 0 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: border-color .15s, transform .1s;
+    position: relative;
+  }
+  .card:hover { border-color: #c9c0ac; }
+  .card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(139, 44, 44, .12), var(--shadow);
+  }
+  .card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .priority-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #fff;
+    letter-spacing: .02em;
+  }
+  .pri-p0 { background: var(--pri-p0); }
+  .pri-p1 { background: var(--pri-p1); }
+  .pri-p2 { background: var(--pri-p2); }
+  .size-tag {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 16px;
+    flex: 1;
+  }
+  .recommend {
+    background: #fff8e0;
+    color: #8a5a00;
+    border: 1px solid #f0d97a;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .card-body {
+    color: #444;
+    font-size: 14px;
+  }
+  .card-body p { margin: 6px 0; }
+  .label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-top: 8px;
+  }
+  .label + p { margin-top: 2px; }
+  .check {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    transition: all .15s;
+  }
+  .card.selected .check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .card.selected .check::after {
+    content: "✓";
+    color: #fff;
+    font-weight: 700;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+  }
+  .footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(250, 248, 244, .95);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+  .footer-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .counter {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .counter strong { color: var(--ink); }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: .9; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .persona-box {
+    background: #fff8ec;
+    border: 1px solid #f0e0c0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: #5a4720;
+  }
+  .pain-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .pain-table th, .pain-table td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .pain-table th { background: #f3efe5; font-weight: 600; }
+  .pain-table .high { color: var(--pri-p0); font-weight: 600; }
+  .pain-table .mid { color: var(--pri-p1); }
+  details {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  details summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 500;
+    user-select: none;
+  }
+  details summary:hover { color: var(--ink); }
+  details > div {
+    margin-top: 6px;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    color: #555;
+  }
+  code {
+    background: #f3efe5;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+  .toast {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 99;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>業餘小提琴手友善化</h1>
+<div class="subtitle">Score Arranger 改善決策文件 · 2026-05-28 · 基於 0.1.53 程式碼 recon</div>
+
+<div class="persona-box">
+  <strong>Persona</strong>: 30-50 歲成人, Suzuki book 3-5, 練 1-3 hr/週, 目標「明年婚禮拉 Pachelbel Canon」或「教會復活節獨奏 Ave Maria」。
+  改編家工具的功能他們用不上, 真正卡關的是: 找不到想拉的曲、降難度不會降把位、印出來沒指法、練習工具不齊。
+</div>
+
+<h2>痛點摘要</h2>
+<table class="pain-table">
+  <thead><tr><th>#</th><th>缺口</th><th>嚴重度</th><th>程式碼證據</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>曲庫零婚禮 / 抒情 / Pachelbel</td><td class="high">高</td><td>311 檔 grep "pachelbel|thais|massenet|elgar" 命中 1</td></tr>
+    <tr><td>2</td><td>amateur 降難度不限把位</td><td class="high">高</td><td><code>simplify.py:65</code> 只夾 G3-E7 = violin 整個音域</td></tr>
+    <tr><td>3</td><td>PDF 沒指法 / 弓法</td><td class="high">高</td><td><code>musicxml_writer.py</code> 不寫 <code>&lt;technical&gt;</code></td></tr>
+    <tr><td>4</td><td>練習日誌零</td><td class="mid">中</td><td>grep "practice.log|progress|diary" 全零</td></tr>
+    <tr><td>5</td><td>沒 metronome</td><td class="mid">中</td><td><code>PlaybackControls.tsx</code> 只有 rate slider</td></tr>
+    <tr><td>6</td><td>MIDI 無 vibrato / dynamic</td><td class="mid">中</td><td>Tone.Sampler 單 layer</td></tr>
+    <tr><td>7</td><td>Onboarding 5 範例 3 個 pro</td><td>低-中</td><td><code>OnboardingWizard.tsx:38-79</code></td></tr>
+  </tbody>
+</table>
+
+<h2>改善方案 — 勾選你想做的</h2>
+
+<div class="card" data-id="A">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p0">P0</span>
+    <span class="size-tag">M · 4-6h</span>
+    <span class="card-title">A. 曲庫業餘友善化 — 加 10 首 PD 名曲</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>加 8-12 首業餘小提琴手熱門 PD 古典曲目, 並在 Onboarding 加「熱門曲」入口。</p>
+    <div class="label">候選曲目</div>
+    <p>Pachelbel Canon in D · Massenet Méditation from Thaïs · Bach Air on G String · Vivaldi Spring/Winter 1st mvt · Schubert Ave Maria · Elgar Salut d'Amour · Mendelssohn Wedding March · Bach Cello Suite 1 Prelude (transposed for vln) · Bach Minuet in G · Boccherini Minuet</p>
+    <details><summary>反方</summary><div>
+      Kevin 鎖定教學/古典市場, 但這些 <strong>本身就是古典 PD</strong>, 不是流行樂, 反而是「古典入門包」, 與品牌一致。風險: 部分曲目需從 IMSLP 抓 .xml 並補 metadata, 耗時。
+    </div></details>
+  </div>
+</div>
+
+<div class="card" data-id="B">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p0">P0</span>
+    <span class="size-tag">M · 6-10h</span>
+    <span class="card-title">B. 真正的 amateur 降難度 — 限把位 + 簡化節奏</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>擴 <code>simplify.py</code> + violin profile 加: <code>amateur</code> skill → 偏好 1-3 把位 (用 fingering DP cost 加把位懲罰), 三十二分音符合併成十六分, 雙音保持單音 (已有)。</p>
+    <div class="label">技術做法</div>
+    <p>在 <code>core/simplify.py</code> 加 <code>simplify_amateur_violin(score)</code>: 用既有 viterbi fingering DP 強化 position transition cost, 高音音符優先用 E 弦低 fret 而非 G 弦高 fret 演奏; 額外把超出 3 把位的音 transpose 8va 下 (檢查可彈)。</p>
+    <details><summary>反方</summary><div>
+      Vivaldi a-minor 中段轉 5 把位是必要的, 強制 1st position 會丟音樂表現。折衷: 啟發式 <strong>偏好</strong>低把位而非絕對 cap, 留 user 在 settings 開「嚴格 1st only」開關。
+    </div></details>
+  </div>
+</div>
+
+<div class="card" data-id="C">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p0">P0</span>
+    <span class="size-tag">S · 3-5h</span>
+    <span class="card-title">C. PDF 帶上指法 + 把位記號</span>
+    <span class="recommend">🎯 建議</span>
+  </div>
+  <div class="card-body">
+    <p>讓 IR 已算好的 viterbi 指法 / 把位真的印到 PDF 上。</p>
+    <div class="label">技術做法</div>
+    <p><code>musicxml_writer.py</code> 序列化 NoteEvent 時加 <code>&lt;notations&gt;&lt;technical&gt;&lt;fingering&gt;3&lt;/fingering&gt;&lt;string&gt;2&lt;/string&gt;&lt;/technical&gt;&lt;/notations&gt;</code>; verovio 自動 render 指法數字 + 弦號。</p>
+    <details><summary>弓法 (up/down bow) 留 Phase 2</summary><div>
+      Bow direction 自動推導不準, 加上去可能誤導使用者。先只做 fingering + string, bow 留 user 自填或下一階段做。
+    </div></details>
+  </div>
+</div>
+
+<div class="card" data-id="D">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">S · 1-2h</span>
+    <span class="card-title">D. metronome 整合</span>
+  </div>
+  <div class="card-body">
+    <p>練習基本工具。<code>PlaybackControls.tsx</code> 加 metronome toggle, Tone.js 用 woodblock sample 跟著 tempo 打點; 練習面板有獨立按鈕。</p>
+  </div>
+</div>
+
+<div class="card" data-id="E">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M · 6-8h</span>
+    <span class="card-title">E. 練習日誌 + 進度追蹤</span>
+  </div>
+  <div class="card-body">
+    <p>zustand 加 <code>practiceLog</code> slice: <code>{date, score_id, duration_min, last_measure, score?, notes}</code>。練習面板 sidebar 顯示「今日 / 本週累計」+ 曲目練習次數。麥克風練習評估自動寫入。</p>
+    <details><summary>反方</summary><div>
+      練習日誌偏離「改編」核心, 像在做另一個 app。但 amateur 真實 journey 是「改編 → 練習 → 看進步」, 整合反而 lock-in。
+    </div></details>
+  </div>
+</div>
+
+<div class="card" data-id="F">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p1">P1</span>
+    <span class="size-tag">M-L · 8-16h</span>
+    <span class="card-title">F. 小提琴音色升級 (vibrato + dynamic layer)</span>
+  </div>
+  <div class="card-body">
+    <p>找 CC0 violin sample (Sonatina Symphonic / Versilian) 加 vibrato layer + 多 dynamic; 長音自動 vibrato, 快音自動直音。</p>
+    <details><summary>反方</summary><div>
+      Binary 已 199M, sample 加完可能 400M+。折衷: 走 CDN 動態載入, fallback 現有 Tone.Sampler — 但 packaged Electron 離線需求衝突。
+    </div></details>
+  </div>
+</div>
+
+<div class="card" data-id="G">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p2">P2</span>
+    <span class="size-tag">S · 2-3h</span>
+    <span class="card-title">G. Amateur Onboarding 分支</span>
+  </div>
+  <div class="card-body">
+    <p>Onboarding 加第 0 步:「你是 ?」(改編家 / 業餘演奏者 / 老師) → 走不同 flow。業餘 flow 用 A 方案的 PD 名曲當範例, 預設 <code>skill_level=amateur</code>。</p>
+  </div>
+</div>
+
+<div class="card" data-id="H">
+  <div class="check"></div>
+  <div class="card-header">
+    <span class="priority-tag pri-p2">P2</span>
+    <span class="size-tag">L · 16h+</span>
+    <span class="card-title">H. 即時麥克風跟拍 (現在只給「彈完評分」)</span>
+  </div>
+  <div class="card-body">
+    <p><code>MicPracticePanel.tsx</code> 升級成「即時 follow」: 拉到哪一個小節, OSMD cursor 自動同步; 拉錯顏色提示。技術: pitch detection per frame + 隱馬可夫對齊到譜面 onset 序列。</p>
+    <details><summary>反方</summary><div>
+      Pitch tracking + score following 是博士論文等級題目, ROI 低於 D/E/F。但做出來是「殺手級」差異化, 可放長期 backlog。
+    </div></details>
+  </div>
+</div>
+
+<h2>建議組合</h2>
+<div class="card" style="background: #fff8e0; border-color: #f0d97a;">
+  <div class="card-body">
+    <p><strong>速勝包 (P0 三項, 約 13-21 hr, 拆 2 個 sprint)</strong>: <code>A + B + C</code> — 把 amateur 客群實際拉得了的曲目、改得下的難度、印得清楚的譜全部做齊, 是「業餘小提琴手友善」最核心的三塊。</p>
+    <p><strong>完整包 (P0+P1)</strong>: 加 <code>D + E</code>, 多 ~10 hr, 練習工具補齊。</p>
+    <p><strong>長期 (P2)</strong>: <code>G</code> 改 onboarding, <code>F/H</code> 等真有人抱怨再做。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+<div class="footer">
+  <div class="footer-inner">
+    <div class="counter"><strong id="count">0</strong> / 8 項已勾選</div>
+    <div>
+      <button class="secondary" id="clear-btn">清除</button>
+      <button id="copy-btn" disabled>複製決策摘要</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = "amateur-violinist-decisions-v1";
+const cards = document.querySelectorAll(".card[data-id]");
+const counter = document.getElementById("count");
+const copyBtn = document.getElementById("copy-btn");
+const clearBtn = document.getElementById("clear-btn");
+const toast = document.getElementById("toast");
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "[]");
+    cards.forEach(c => {
+      if (saved.includes(c.dataset.id)) c.classList.add("selected");
+    });
+  } catch {}
+  update();
+}
+function save() {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected")).map(c => c.dataset.id);
+  localStorage.setItem(KEY, JSON.stringify(sel));
+}
+function update() {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected"));
+  counter.textContent = sel.length;
+  copyBtn.disabled = sel.length === 0;
+}
+cards.forEach(c => c.addEventListener("click", () => {
+  c.classList.toggle("selected");
+  save(); update();
+}));
+clearBtn.addEventListener("click", () => {
+  cards.forEach(c => c.classList.remove("selected"));
+  save(); update();
+});
+copyBtn.addEventListener("click", () => {
+  const sel = Array.from(cards).filter(c => c.classList.contains("selected"));
+  const lines = sel.map(c => {
+    const id = c.dataset.id;
+    const title = c.querySelector(".card-title").textContent.trim();
+    const size = c.querySelector(".size-tag").textContent.trim();
+    return `- ${id}. ${title} [${size}]`;
+  });
+  const summary = `業餘小提琴手友善化 — 決定做:\n${lines.join("\n")}\n\n(共 ${sel.length} 項)`;
+  navigator.clipboard.writeText(summary).then(() => {
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1800);
+  });
+});
+load();
+</script>
+</body>
+</html>

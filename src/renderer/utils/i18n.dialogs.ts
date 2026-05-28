@@ -794,6 +794,10 @@ export const DIALOG_STRINGS: BiDict = {
   },
 
   // === Onboarding: 範例樂譜標題 ===
+  "onboard.sample.schubert_ave_maria.title": {
+    "zh-TW": "Ave Maria D.839", en: "Ave Maria, D.839",
+    ja: "アヴェ・マリア D.839",
+  },
   "onboard.sample.bach.title": {
     "zh-TW": "BWV 66.6 (Chorale)", en: "BWV 66.6 (Chorale)",
     ja: "BWV 66.6 (コラール)",
@@ -816,6 +820,16 @@ export const DIALOG_STRINGS: BiDict = {
   },
 
   // === Onboarding: 範例樂譜描述 ===
+  "onboard.sample.schubert_ave_maria.desc": {
+    "zh-TW":
+      "婚禮經典. 主旋律單純歌唱式, 改編成 violin+piano 業餘小提琴手即可上手.",
+    en:
+      "A wedding staple. The vocal-style melody sits comfortably in violin "
+      + "range — easily playable as violin + piano by amateurs.",
+    ja:
+      "結婚式の定番曲です。歌うようなメロディがヴァイオリンの音域に"
+      + "ぴったりはまり、アマチュアでもヴァイオリン + ピアノで演奏できます。",
+  },
   "onboard.sample.bach.desc": {
     "zh-TW": "SATB 四部和聲, 短小完整, 改成弦四最直觀.",
     en:

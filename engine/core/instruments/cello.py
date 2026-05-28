@@ -29,6 +29,7 @@ CELLO_PROFILE = InstrumentProfile(
     range_absolute=(36, 81),       # C2 — A5
     range_comfortable=(36, 69),    # C2 — A4
     range_professional=(36, 77),   # C2 — F5
+    range_amateur=(36, 60),        # C2 — C4 (1-4 把位, 0.1.54 B)
 
     max_simultaneous_notes=4,
 

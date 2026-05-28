@@ -893,6 +893,24 @@ def _append_notations(
     if "fermata" in arts:
         ET.SubElement(notations, "fermata")
 
+    # 0.1.54 C: <technical> — viterbi 算出的指法 / 弦號 / 把位 / 弓法
+    # IR 端在 TechniqueAnnotation 裡 (string_index 1-based; bow_direction up/down)
+    tech = getattr(ev, "technique", None)
+    if tech is not None and (
+        tech.fingering is not None
+        or tech.string_index is not None
+        or tech.bow_direction in ("up", "down")
+    ):
+        tech_el = ET.SubElement(notations, "technical")
+        if tech.fingering is not None:
+            ET.SubElement(tech_el, "fingering").text = str(tech.fingering)
+        if tech.string_index is not None:
+            ET.SubElement(tech_el, "string").text = str(tech.string_index)
+        if tech.bow_direction == "up":
+            ET.SubElement(tech_el, "up-bow")
+        elif tech.bow_direction == "down":
+            ET.SubElement(tech_el, "down-bow")
+
     if len(notations):
         note.append(notations)
 

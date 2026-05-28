@@ -1,31 +1,37 @@
 /**
- * MicPracticePanel — 0.1.35 Performance-Following
+ * MicPracticePanel — 0.1.35 Performance-Following / 0.1.54 H 跟拍
  *
- * 點工具列 🎤 → 開麥克風 → 即時顯示偵測到的音高 + cents 偏差.
- * 同時跑「最近 5 秒」的 pitch trail 視覺化 (橫向折線, 半音格線).
+ * 兩種模式:
+ * - monitor (現況): 開麥克風 → 顯示音高 + cents 偏差 + 5 秒 pitch trail.
+ * - follow (0.1.54): 軟體找你拉到第幾小節, 同步 highlight 在 score 上.
  *
- * 設計範圍 (MVP v1):
- * - 純監聽 — 顯示「你正在唱/拉/吹什麼」
- * - 不對比 target_score (留 v2)
- * - 不存 session log (留 v2)
- * - 完成: 用 user 真的感受到「軟體在聽我了」, 把流量先做出來
+ * 設計選擇 (避免博士論文等級複雜度): 不做 onset / DTW, 純看 pitch 序列
+ * 對位 — 細節見 utils/scoreFollower.ts.
  *
- * 為什麼不一次做完全自動評估: 真正的 score-following 需要 DTW 對齊
- * + onset 偵測 + 拍子追蹤, 是另一個 2 週工程. MVP 先驗證 mic 鏈路打通,
- * 同時提供有用的調音 / 練習功能.
+ * 為什麼留 monitor: 練習前空拉 / 調音 / 試錄音, 不一定有改編譜.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type PitchSample,
   PitchMonitor,
   midiToName,
 } from "../utils/pitchMonitor";
+import {
+  type MelodyPitch,
+  deviationSemitones,
+  expectedMidiForMeasure,
+  extractMelodyPitches,
+  findCurrentMeasure,
+} from "../utils/scoreFollower";
+import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
 
 interface Props {
   onClose: () => void;
 }
+
+type Mode = "monitor" | "follow";
 
 const TRAIL_SECONDS = 5;
 const TRAIL_PIXELS_PER_SEC = 80;
@@ -34,17 +40,58 @@ const TRAIL_HEIGHT = 280;
 const SHOW_MIDI_MIN = 45;
 const SHOW_MIDI_MAX = 93;
 
+// follow 模式 — 每 250ms 重算對位
+const FOLLOW_INTERVAL_MS = 250;
+// 取最近 8 個 sample (~270ms @ 30Hz) 做 sliding window 匹配
+const FOLLOW_WINDOW = 8;
+// 信心度低於此值不更新 highlight, 避免抖動
+const FOLLOW_CONFIDENCE_THRESHOLD = 0.6;
+
 export function MicPracticePanel({ onClose }: Props) {
   useLocale();
+  const arrangement = useSessionStore((s) => s.arrangement);
+  const setHighlightedMeasure = useSessionStore((s) => s.setHighlightedMeasure);
+
+  // 從 arrangement 抽出旋律序列 (只在 arrangement 變動時重算)
+  const melody = useMemo<MelodyPitch[]>(
+    () => extractMelodyPitches(arrangement),
+    [arrangement],
+  );
+  const canFollow = melody.length > 0;
+
+  const [mode, setMode] = useState<Mode>("monitor");
   const [state, setState] = useState<
     "idle" | "requesting" | "listening" | "error"
   >("idle");
   const [error, setError] = useState<string | null>(null);
   const [latest, setLatest] = useState<PitchSample | null>(null);
+  const [followStatus, setFollowStatus] = useState<{
+    measure: number | null;
+    confidence: number;
+  }>({ measure: null, confidence: 0 });
+
   const monitorRef = useRef<PitchMonitor | null>(null);
   const trailRef = useRef<PitchSample[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const followIntervalRef = useRef<number | null>(null);
+  // 用 ref 拿最新 melody / mode, 避免 setInterval 閉包抓到舊值
+  const melodyRef = useRef<MelodyPitch[]>(melody);
+  const modeRef = useRef<Mode>(mode);
+  // follow 對位的 anchor — 上一輪算出的 measure, 用作下一輪 startHint
+  const followHintRef = useRef<number>(1);
+
+  useEffect(() => {
+    melodyRef.current = melody;
+  }, [melody]);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  // arrangement 消失 → follow 失效, 強制回 monitor
+  useEffect(() => {
+    if (!canFollow && mode === "follow") setMode("monitor");
+  }, [canFollow, mode]);
 
   // 啟動 / 停止
   const start = async () => {
@@ -73,6 +120,21 @@ export function MicPracticePanel({ onClose }: Props) {
         rafRef.current = requestAnimationFrame(draw);
       };
       draw();
+      // follow tick — 不管 mode 都跑, 內部按 mode 判斷; 換 mode 不用重起
+      followIntervalRef.current = window.setInterval(() => {
+        if (modeRef.current !== "follow") return;
+        const mel = melodyRef.current;
+        if (mel.length === 0) return;
+        // 取最近 FOLLOW_WINDOW 個 sample
+        const recent = trailRef.current.slice(-FOLLOW_WINDOW);
+        if (recent.length === 0) return;
+        const res = findCurrentMeasure(recent, mel, followHintRef.current);
+        setFollowStatus({ measure: res.measure, confidence: res.confidence });
+        if (res.confidence >= FOLLOW_CONFIDENCE_THRESHOLD) {
+          followHintRef.current = res.measure;
+          setHighlightedMeasure(res.measure);
+        }
+      }, FOLLOW_INTERVAL_MS);
     } catch (e) {
       setState("error");
       // 0.1.46 D2: 區分錯誤類型, 給可操作建議
@@ -81,7 +143,9 @@ export function MicPracticePanel({ onClose }: Props) {
       let hint = raw;
       if (name === "NotAllowedError" || /permission|denied/i.test(raw)) {
         hint = t("micPractice.error.permission");
-      } else if (name === "NotFoundError" || /no.*device|device.*not.*found/i.test(raw)) {
+      } else if (
+        name === "NotFoundError" || /no.*device|device.*not.*found/i.test(raw)
+      ) {
         hint = t("micPractice.error.noDevice");
       } else if (name === "NotReadableError" || /in use|busy/i.test(raw)) {
         hint = t("micPractice.error.inUse");
@@ -97,12 +161,17 @@ export function MicPracticePanel({ onClose }: Props) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+    if (followIntervalRef.current !== null) {
+      clearInterval(followIntervalRef.current);
+      followIntervalRef.current = null;
+    }
     if (monitorRef.current) {
       await monitorRef.current.stop();
       monitorRef.current = null;
     }
     trailRef.current = [];
     setLatest(null);
+    setFollowStatus({ measure: null, confidence: 0 });
     setState("idle");
   };
 
@@ -112,6 +181,14 @@ export function MicPracticePanel({ onClose }: Props) {
       stop().catch(() => {});
     };
   }, []);
+
+  // 當前期望音 (給偏差顯示用) — 用 follow 算出的 measure 找
+  const expectedMidi = followStatus.measure !== null
+    ? expectedMidiForMeasure(melody, followStatus.measure)
+    : null;
+  const deviation = mode === "follow"
+    ? deviationSemitones(latest?.midi ?? null, expectedMidi)
+    : null;
 
   return (
     <div
@@ -142,6 +219,11 @@ export function MicPracticePanel({ onClose }: Props) {
           <strong style={{ flex: 1, fontSize: 14 }}>
             🎤 {t("micPractice.title")}
           </strong>
+          <ModeToggle
+            mode={mode}
+            canFollow={canFollow}
+            onChange={setMode}
+          />
           <button
             onClick={() => stop().then(onClose)}
             style={{
@@ -197,6 +279,12 @@ export function MicPracticePanel({ onClose }: Props) {
 
           {state === "listening" && (
             <>
+              {mode === "follow" && (
+                <FollowStatus
+                  status={followStatus}
+                  deviation={deviation}
+                />
+              )}
               {/* 當前音高大字顯示 */}
               <NowPlaying sample={latest} />
               {/* trail canvas */}
@@ -236,6 +324,121 @@ export function MicPracticePanel({ onClose }: Props) {
             </>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ModeToggle({
+  mode,
+  canFollow,
+  onChange,
+}: {
+  mode: Mode;
+  canFollow: boolean;
+  onChange: (m: Mode) => void;
+}) {
+  useLocale();
+  const btn = (m: Mode, label: string, disabled = false) => {
+    const active = mode === m;
+    return (
+      <button
+        onClick={() => {
+          if (!disabled) onChange(m);
+        }}
+        disabled={disabled}
+        title={
+          disabled && m === "follow" ? t("mic.follow.noArrangement") : undefined
+        }
+        style={{
+          padding: "4px 10px", fontSize: 12,
+          background: active ? "var(--accent)" : "var(--bg-tertiary)",
+          color: active ? "var(--bg-panel)" : "var(--fg-primary)",
+          border: "1px solid var(--border)",
+          opacity: disabled ? 0.4 : 1,
+          cursor: disabled ? "not-allowed" : "pointer",
+          borderRadius: 0,
+        }}
+      >
+        {label}
+      </button>
+    );
+  };
+  return (
+    <div
+      style={{
+        display: "inline-flex", borderRadius: 4, overflow: "hidden",
+        border: "1px solid var(--border)",
+      }}
+    >
+      {btn("monitor", t("mic.mode.monitor"))}
+      {btn("follow", t("mic.mode.follow"), !canFollow)}
+    </div>
+  );
+}
+
+function FollowStatus({
+  status,
+  deviation,
+}: {
+  status: { measure: number | null; confidence: number };
+  deviation: number | null;
+}) {
+  useLocale();
+  const pct = Math.round(status.confidence * 100);
+  const synced = status.measure !== null && status.confidence > 0.3;
+  const offThreshold = 1; // > 1 semitone 視為偏
+  const isOff = deviation !== null && Math.abs(deviation) > offThreshold;
+
+  return (
+    <div
+      style={{
+        padding: "10px 12px", background: "var(--bg-secondary)",
+        border: "1px solid var(--border-light)", borderRadius: 6,
+        marginBottom: 10,
+      }}
+    >
+      {synced ? (
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-primary)" }}>
+          {t("mic.follow.measure", { n: status.measure! })}
+        </div>
+      ) : (
+        <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>
+          {t("mic.follow.waitingForSync")}
+        </div>
+      )}
+      {/* 信心 bar */}
+      <div
+        style={{
+          marginTop: 8, height: 6, background: "var(--bg-tertiary)",
+          borderRadius: 3, overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: `${pct}%`, height: "100%",
+            background: pct >= 60
+              ? "#34d399"
+              : pct >= 30 ? "var(--accent)" : "#ef4444",
+            transition: "width 120ms linear",
+          }}
+        />
+      </div>
+      <div
+        style={{
+          marginTop: 4, fontSize: 11, color: "var(--fg-tertiary)",
+          display: "flex", justifyContent: "space-between",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        <span>{t("mic.follow.confidence", { pct })}</span>
+        {isOff && deviation !== null && (
+          <span style={{ color: "#ef4444", fontWeight: 600 }}>
+            {deviation < 0
+              ? t("mic.follow.deviationLow", { n: Math.abs(deviation) })
+              : t("mic.follow.deviationHigh", { n: deviation })}
+          </span>
+        )}
       </div>
     </div>
   );

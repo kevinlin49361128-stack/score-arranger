@@ -453,6 +453,32 @@ export const EDITING_STRINGS: BiDict = {
     en: "After picking, this panel closes; press ▶ to start looping.",
     ja: "選択後にパネルが閉じます。▶ を押してループ再生を開始。",
   },
+  // 0.1.54 E: 練習日誌 PracticeLogSidebar
+  "practice.log.heading": {
+    "zh-TW": "練習日誌",
+    en: "Practice log",
+    ja: "練習ログ",
+  },
+  "practice.log.todayMin": {
+    "zh-TW": "今日 {min} 分",
+    en: "today {min} min",
+    ja: "今日 {min} 分",
+  },
+  "practice.log.minutes": {
+    "zh-TW": "分鐘",
+    en: "min",
+    ja: "分",
+  },
+  "practice.log.minShort": {
+    "zh-TW": "分",
+    en: "m",
+    ja: "分",
+  },
+  "practice.log.scoreShort": {
+    "zh-TW": "分",
+    en: "pts",
+    ja: "点",
+  },
   "practice.computeFailed": {
     "zh-TW": "難度計算失敗",
     en: "Difficulty computation failed",
@@ -772,6 +798,43 @@ export const EDITING_STRINGS: BiDict = {
     ja:
       "緑 = 正確 (±10¢) / オレンジ = 少しずれ / 赤 = 大きくずれ. 横軸は時間 "
       + "(5秒), 縦軸は音高 (半音線, C 表示).",
+  },
+  // 0.1.54 H: 即時麥克風跟拍 (score follow)
+  "mic.mode.monitor": {
+    "zh-TW": "監聽", en: "Monitor", ja: "モニター",
+  },
+  "mic.mode.follow": {
+    "zh-TW": "跟拍", en: "Follow", ja: "追従",
+  },
+  "mic.follow.measure": {
+    "zh-TW": "正在跟第 {n} 小節",
+    en: "Following measure {n}",
+    ja: "第 {n} 小節を追従中",
+  },
+  "mic.follow.confidence": {
+    "zh-TW": "信心 {pct}%",
+    en: "Confidence {pct}%",
+    ja: "信頼度 {pct}%",
+  },
+  "mic.follow.deviationLow": {
+    "zh-TW": "偏低 {n} 半音",
+    en: "Flat by {n} semitone(s)",
+    ja: "{n} 半音低い",
+  },
+  "mic.follow.deviationHigh": {
+    "zh-TW": "偏高 {n} 半音",
+    en: "Sharp by {n} semitone(s)",
+    ja: "{n} 半音高い",
+  },
+  "mic.follow.noArrangement": {
+    "zh-TW": "改編譜載入後才能開啟跟拍",
+    en: "Load an arrangement to enable follow mode",
+    ja: "編曲譜を読み込むと追従モードが使えます",
+  },
+  "mic.follow.waitingForSync": {
+    "zh-TW": "等待對位…拉幾個音讓我聽聽",
+    en: "Waiting for alignment… play a few notes",
+    ja: "対位を待っています…数音弾いてください",
   },
   "boost.applied": {
     "zh-TW": "已套用 {count} 種手法,改動 {touched} 處。可用 ↶ 復原。",

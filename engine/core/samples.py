@@ -358,6 +358,19 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "openscore/wolf_eichendorff_3_verschwiegene",
     "openscore/wolf_eichendorff_12_heimweh",
     "openscore/wolf_eichendorff_18_erwartung",
+    # 0.1.54: 業餘小提琴熱門曲 9 首 — 婚禮 / 演奏會經典.
+    # 來源混合 musetrainer/library (CC0 MusicXML) 與 mfiles.co.uk / classicalmidi
+    # (CC MIDI → music21 重輸出 MusicXML, grace-note 已過濾). 作曲家全部 1934 前
+    # 過世, 作品 PD 無爭議.
+    "pachelbel/canon_d",
+    "massenet/meditation_thais",
+    "bach/bwv1068_2_air",
+    "vivaldi/rv269_spring_1",
+    "elgar/salut_damour_op12",
+    "mendelssohn/wedding_march",
+    "bach/bwv1007_1_prelude",
+    "bach/bwv_anh114_minuet_g",
+    "boccherini/minuet_g275",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)
@@ -375,6 +388,13 @@ _COMPOSER = {
     "schumann_clara": "Clara Schumann",
     "schumann_robert": "Schumann",
     "verdi": "Verdi",
+    # 0.1.54 amateur violin set
+    "pachelbel": "Pachelbel",
+    "massenet": "Massenet",
+    "vivaldi": "Vivaldi",
+    "elgar": "Elgar",
+    "mendelssohn": "Mendelssohn",
+    "boccherini": "Boccherini",
 }
 
 

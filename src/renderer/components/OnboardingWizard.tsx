@@ -36,6 +36,18 @@ interface SampleScore {
 }
 
 const SAMPLES: SampleScore[] = [
+  // 0.1.54: 業餘小提琴手友善入口 — 把 Schubert Ave Maria 排第一首.
+  // Ave Maria 是現有 catalog 中 popular_tags ⊇ [wedding, amateur_violinist]
+  // 唯一已存在的曲目, 其他婚禮 / amateur PD 曲目 (Pachelbel Canon /
+  // Massenet Méditation / Air on G String 等) 待人工補進 sample_scores/.
+  {
+    corpus: "corpus:openscore/schubert_d839_ave_maria",
+    titleKey: "onboard.sample.schubert_ave_maria.title",
+    composer: "Schubert",
+    descKey: "onboard.sample.schubert_ave_maria.desc",
+    defaultEnsemble: "violin_piano",
+    defaultSkill: "amateur",
+  },
   {
     corpus: "corpus:bach/bwv66.6",
     titleKey: "onboard.sample.bach.title",
@@ -66,14 +78,6 @@ const SAMPLES: SampleScore[] = [
     composer: "Beethoven",
     descKey: "onboard.sample.beethoven.desc",
     defaultEnsemble: "piano_solo",
-    defaultSkill: "professional",
-  },
-  {
-    corpus: "corpus:haydn/opus74no1/movement1",
-    titleKey: "onboard.sample.haydn.title",
-    composer: "Haydn",
-    descKey: "onboard.sample.haydn.desc",
-    defaultEnsemble: "string_quartet",
     defaultSkill: "professional",
   },
 ];

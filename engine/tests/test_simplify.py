@@ -126,6 +126,55 @@ class TestOctaveFold:
         assert changed == 0
 
 
+class TestAmateurRangeFold:
+    """0.1.54 B: amateur skill_level 套用 range_amateur (1-3 把位)."""
+
+    def test_amateur_violin_folds_above_e6(self):
+        # violin range_amateur 上界 88 (E6); G6 (91) 收回 G5 (79)
+        measures = _measures([NoteEvent(
+            pitch=_p(91), duration=Fraction(4), onset=Fraction(0),
+        )])
+        changed = simplify_part(
+            measures, 1, 1, "light", "violin", skill_level="amateur",
+        )
+        assert changed == 1
+        ev = measures[0].voices[1].events[0]
+        assert ev.pitch.midi_number == 79  # G6 -12 = G5
+        assert ev.pitch.midi_number <= 88  # 落入 amateur range
+
+    def test_intermediate_violin_keeps_g6(self):
+        # 同樣 G6, intermediate skill 不收 (沒超 range_comfortable=100)
+        measures = _measures([NoteEvent(
+            pitch=_p(91), duration=Fraction(4), onset=Fraction(0),
+        )])
+        changed = simplify_part(
+            measures, 1, 1, "light", "violin", skill_level="intermediate",
+        )
+        assert changed == 0
+        assert measures[0].voices[1].events[0].pitch.midi_number == 91
+
+    def test_amateur_viola_folds_above_e5(self):
+        # viola range_amateur=(48, 76); G5 (79) → G4 (67)
+        measures = _measures([NoteEvent(
+            pitch=_p(79), duration=Fraction(4), onset=Fraction(0),
+        )])
+        changed = simplify_part(
+            measures, 1, 1, "light", "viola", skill_level="amateur",
+        )
+        assert changed == 1
+        assert measures[0].voices[1].events[0].pitch.midi_number == 67
+
+    def test_amateur_violin_in_first_position_untouched(self):
+        # G5 (76) 在 1st position, amateur 不應動
+        measures = _measures([NoteEvent(
+            pitch=_p(76), duration=Fraction(4), onset=Fraction(0),
+        )])
+        changed = simplify_part(
+            measures, 1, 1, "light", "violin", skill_level="amateur",
+        )
+        assert changed == 0
+
+
 class TestGuards:
     def test_locked_event_untouched(self):
         measures = _measures([NoteEvent(

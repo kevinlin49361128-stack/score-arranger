@@ -485,6 +485,12 @@ export const IO_STRINGS: BiDict = {
     en: "(Press ▶ once to populate the track list)",
     ja: "(▶ を一度押すとトラック一覧が表示されます)",
   },
+  // 0.1.54 D: metronome
+  "playback.metronome.title": {
+    "zh-TW": "節拍器 — 開啟後播放時跟著拍子打點 (每拍木魚聲)",
+    en: "Metronome — clicks on each beat during playback",
+    ja: "メトロノーム — 再生中に拍ごとにクリック音",
+  },
   "playback.samples.label": {
     "zh-TW": "取樣",
     en: "Samples",

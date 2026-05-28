@@ -166,6 +166,84 @@ def test_articulations_emit_to_xml():
 
 
 # ============================================================================
+# 0.1.54 C — TechniqueAnnotation (fingering / string / bow) 寫到 <technical>
+# ============================================================================
+
+
+def test_technique_fingering_emits_to_xml():
+    """IR.NoteEvent.technique.fingering → <technical><fingering> 元素."""
+    from fractions import Fraction
+    from core.ir import (
+        Duration, Measure, NoteEvent, Part, Pitch, Score, TechniqueAnnotation,
+        TimePoint, Voice,
+    )
+
+    note = NoteEvent(
+        pitch=Pitch(midi_number=64, spelling="E4"),
+        duration=Duration(Fraction(1)),
+        onset=TimePoint(Fraction(0)),
+        technique=TechniqueAnnotation(
+            fingering="3", string_index=2, bow_direction="down",
+        ),
+    )
+    part = Part(
+        part_id="violin_1", instrument_id="violin",
+        name_display="Violin",
+        measures=[Measure(number=1, voices={1: Voice(voice_id=1, events=[note])})],
+    )
+    xml = score_to_musicxml(Score(parts=[part], metadata={}))
+    assert "<technical>" in xml
+    assert "<fingering>3</fingering>" in xml
+    assert "<string>2</string>" in xml
+    assert "<down-bow" in xml
+
+
+def test_technique_up_bow_emits():
+    """bow_direction='up' → <up-bow/>."""
+    from fractions import Fraction
+    from core.ir import (
+        Duration, Measure, NoteEvent, Part, Pitch, Score, TechniqueAnnotation,
+        TimePoint, Voice,
+    )
+
+    note = NoteEvent(
+        pitch=Pitch(midi_number=64, spelling="E4"),
+        duration=Duration(Fraction(1)),
+        onset=TimePoint(Fraction(0)),
+        technique=TechniqueAnnotation(bow_direction="up"),
+    )
+    part = Part(
+        part_id="violin_1", instrument_id="violin",
+        name_display="Violin",
+        measures=[Measure(number=1, voices={1: Voice(voice_id=1, events=[note])})],
+    )
+    xml = score_to_musicxml(Score(parts=[part], metadata={}))
+    assert "<up-bow" in xml
+    assert "<down-bow" not in xml
+
+
+def test_no_technique_no_technical_element():
+    """無 TechniqueAnnotation → 不該生 <technical> 空 element."""
+    from fractions import Fraction
+    from core.ir import (
+        Duration, Measure, NoteEvent, Part, Pitch, Score, TimePoint, Voice,
+    )
+
+    note = NoteEvent(
+        pitch=Pitch(midi_number=64, spelling="E4"),
+        duration=Duration(Fraction(1)),
+        onset=TimePoint(Fraction(0)),
+    )
+    part = Part(
+        part_id="violin_1", instrument_id="violin",
+        name_display="Violin",
+        measures=[Measure(number=1, voices={1: Voice(voice_id=1, events=[note])})],
+    )
+    xml = score_to_musicxml(Score(parts=[part], metadata={}))
+    assert "<technical>" not in xml
+
+
+# ============================================================================
 # Hairpin 保留
 # ============================================================================
 

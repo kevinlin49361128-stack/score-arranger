@@ -98,6 +98,10 @@ class InstrumentProfile:
     available_techniques: list[str] = field(default_factory=list)
     sustain_type: Literal["bow", "breath", "pedal", "decay", "continuous"] = "decay"
     transposition: int = 0                 # 譜記音 → 實際音 的半音偏移 (0 = C 調)
+    # 0.1.54 B: 業餘級音域 — 弦樂限 1-3 把位 (e.g. violin G3-E6, viola C3-E5).
+    # None = 沿用 range_comfortable. simplify_part(skill_level="amateur") 會
+    # 優先使用此音域當八度收摺上下限.
+    range_amateur: Optional[tuple[int, int]] = None
 
 
 # ============================================================================

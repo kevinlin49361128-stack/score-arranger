@@ -57,12 +57,16 @@ def _thin_chord(pitches: list, target_size: int) -> list:
     return kept
 
 
-def _fold_into_range(pitch, profile):
+def _fold_into_range(pitch, profile, override_range=None):
     """音超出 comfortable 音域時移八度收回; 否則回 None。
 
     回傳新的 Pitch (音級不變, 只改八度), 或 None (不需收摺 / 收不回)。
+
+    0.1.54 B: override_range — 若提供 (e.g. amateur 用 range_amateur),
+    取代 comfortable 當判斷上下限. abs_low/abs_high 仍用 absolute (避免
+    把音推到實體不能彈的位置).
     """
-    low, high = profile.range_comfortable
+    low, high = override_range if override_range else profile.range_comfortable
     abs_low, abs_high = profile.range_absolute
     midi = pitch.midi_number
     delta = 0
@@ -80,11 +84,13 @@ def _fold_into_range(pitch, profile):
     return _shift_pitch_octave(pitch, delta)
 
 
-def _simplify_event(ev, target_size: int, profile):
+def _simplify_event(ev, target_size: int, profile, fold_range=None):
     """回傳簡化後要放回聲部的事件; 不需簡化則回 None。
 
     可能就地修改 ev 後回傳同一個物件, 或在和弦瘦身退回單音時回傳一個
     全新的 NoteEvent。
+
+    0.1.54 B: fold_range — 給 amateur 用的 override range (見 _fold_into_range).
     """
     if not isinstance(ev, (NoteEvent, ChordEvent)):
         return None
@@ -110,7 +116,7 @@ def _simplify_event(ev, target_size: int, profile):
 
     # 3. 八度收摺 (僅單音 — 把超出舒適音域的音收回)
     if isinstance(ev, NoteEvent) and profile is not None:
-        folded = _fold_into_range(ev.pitch, profile)
+        folded = _fold_into_range(ev.pitch, profile, override_range=fold_range)
         if folded is not None:
             ev.pitch = folded
             did = True
@@ -143,6 +149,7 @@ def simplify_part(
     measure_end: int,
     level: Level = "medium",
     instrument_id: str = "violin",
+    skill_level: str = "intermediate",
 ) -> int:
     """把目標聲部 [measure_start, measure_end] 的事件簡化, 降低演奏難度。
 
@@ -154,9 +161,16 @@ def simplify_part(
         level: "light" | "medium" | "full" — 和弦瘦身的深度
             (light → 留三和弦, medium → 留雙音, full → 退到單音)。
         instrument_id: 目標樂器 — 決定八度收摺用的舒適音域。
+        skill_level: "amateur" | "intermediate" | "professional" — 0.1.54 B
+            amateur 時若樂器有 range_amateur (e.g. 弦樂限 1-3 把位) 改用該
+            音域當收摺上下限, 使高把位音域自動收回低把位.
     """
     profile = get_profile(instrument_id)
     target_size = _THIN_TARGET.get(level, 2)
+    # amateur 把 fold range 換成 range_amateur (弦樂 1-3 把位)
+    fold_range = None
+    if skill_level == "amateur" and profile is not None:
+        fold_range = getattr(profile, "range_amateur", None)
     changed = 0
     for measure in part_measures:
         if not measure_start <= measure.number <= measure_end:
@@ -167,7 +181,9 @@ def simplify_part(
             new_events: list = []
             voice_changed = False
             for ev in voice.events:
-                result = _simplify_event(ev, target_size, profile)
+                result = _simplify_event(
+                    ev, target_size, profile, fold_range=fold_range,
+                )
                 if result is None:
                     new_events.append(ev)
                 else:

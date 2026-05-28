@@ -12,8 +12,16 @@
  * 觸發點: Toolbar「🎯 練習」按鈕 (需先完成一次改編)。
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
+import {
+  dailyMinutes,
+  endPracticeSession,
+  type PracticeEntry,
+  startPracticeSession,
+  todayMinutes,
+  usePracticeLog,
+} from "../stores/practiceLogStore";
 import { t, useLocale } from "../utils/i18n";
 
 interface Props {
@@ -50,6 +58,24 @@ export function PracticePanel({ onClose }: Props) {
     (s) => s.setHighlightedMeasure,
   );
   const arrangement = useSessionStore((s) => s.arrangement);
+  const sourcePath = useSessionStore((s) => s.sourcePath);
+
+  // 0.1.54 E: 練習日誌 — 進面板 = startSession, 關 / 切譜 = endSession.
+  // sessionId ref 跨 unmount cleanup 拿得到 (避免 stale closure).
+  const sessionIdRef = useRef<string | null>(null);
+  const practiceLog = usePracticeLog();
+  useEffect(() => {
+    if (!arrangement) return;
+    const title = sourcePath ?? arrangement.name ?? "Untitled";
+    const id = startPracticeSession(sourcePath ?? undefined, title);
+    sessionIdRef.current = id;
+    return () => {
+      if (sessionIdRef.current) {
+        endPracticeSession(sessionIdRef.current);
+        sessionIdRef.current = null;
+      }
+    };
+  }, [arrangement, sourcePath]);
 
   const [hardest, setHardest] = useState<HardMeasure[]>([]);
   const [loading, setLoading] = useState(false);
@@ -187,6 +213,9 @@ export function PracticePanel({ onClose }: Props) {
           >
             {t("practice.intro")}
           </div>
+
+          {/* 0.1.54 E: 練習日誌 — 今日 / 過去 7 日 / 最近紀錄 */}
+          <PracticeLogSidebar entries={practiceLog} />
 
           {!arrangement && (
             <div
@@ -464,6 +493,120 @@ function DifficultyFactorBars({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+
+/**
+ * PracticeLogSidebar — 0.1.54 E: 練習日誌摘要.
+ *
+ * 三層:
+ *  1. 今日累計分鐘 + 過去 7 日 bar chart
+ *  2. 最近 3 筆 session (時間 / 曲目 / 分鐘 / 麥克風分數)
+ *  3. 預設摺疊, 點 header 展開
+ *
+ * 不用 chart 套件 — 純 div + width % 畫條.
+ */
+function PracticeLogSidebar({
+  entries,
+}: {
+  entries: PracticeEntry[];
+}) {
+  const [open, setOpen] = useState(false);
+  if (entries.length === 0) return null;
+
+  const today = todayMinutes(entries);
+  const dailyBars = dailyMinutes(entries, 7);
+  const maxDay = Math.max(1, ...dailyBars);
+  const recent = entries
+    .filter((e) => e.ended_at !== undefined)
+    .slice(0, 3);
+
+  return (
+    <div
+      style={{
+        marginBottom: 12, padding: "10px 12px",
+        background: "var(--bg-panel)",
+        border: "1px solid var(--border)", borderRadius: 6,
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((x) => !x)}
+        style={{
+          all: "unset", cursor: "pointer", width: "100%",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          fontSize: 12, fontWeight: 600, color: "var(--fg-secondary)",
+        }}
+      >
+        <span>
+          📔 {t("practice.log.heading")} —
+          {" "}
+          <span style={{ color: "var(--accent)" }}>
+            {t("practice.log.todayMin", { min: Math.round(today) })}
+          </span>
+        </span>
+        <span style={{ fontSize: 10, color: "var(--fg-muted)" }}>
+          {open ? "▾" : "▸"}
+        </span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 10 }}>
+          {/* 7 日 bar chart — 從 6 日前到今日 */}
+          <div style={{
+            display: "flex", alignItems: "flex-end", gap: 4, height: 36,
+            marginBottom: 8,
+          }}>
+            {dailyBars.slice().reverse().map((mins, i) => {
+              const h = mins > 0 ? Math.max(4, (mins / maxDay) * 32) : 2;
+              const isToday = i === dailyBars.length - 1;
+              return (
+                <div
+                  key={i}
+                  title={`${Math.round(mins)} ${t("practice.log.minutes")}`}
+                  style={{
+                    flex: 1, height: h,
+                    background: isToday ? "var(--accent)" : "var(--fg-muted)",
+                    opacity: mins > 0 ? 1 : 0.3,
+                    borderRadius: 2,
+                  }}
+                />
+              );
+            })}
+          </div>
+          {/* 最近 session */}
+          {recent.length > 0 && (
+            <div style={{ fontSize: 11, lineHeight: 1.6 }}>
+              {recent.map((e) => {
+                const dur = Math.round((e.ended_at! - e.started_at) / 60000);
+                const date = new Date(e.started_at).toLocaleDateString();
+                return (
+                  <div
+                    key={e.id}
+                    style={{
+                      display: "flex", justifyContent: "space-between",
+                      gap: 6, color: "var(--fg-muted)",
+                    }}
+                  >
+                    <span style={{
+                      overflow: "hidden", textOverflow: "ellipsis",
+                      whiteSpace: "nowrap", flex: 1,
+                    }}>
+                      {date} · {e.score_title ?? "—"}
+                    </span>
+                    <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                      {dur}{t("practice.log.minShort")}
+                      {e.mic_score !== undefined &&
+                        ` · ${e.mic_score}${t("practice.log.scoreShort")}`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

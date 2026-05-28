@@ -1638,8 +1638,22 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             # subtractive 操作 — 降難度 (見 core/simplify.py)
             from core.simplify import simplify_part
             level = op.get("level", "medium")
+            # 0.1.54 B: skill_level 從 op 拿 (前端可指定 amateur),
+            # 否則從 player.skill_level 拿 (part_id 前綴對 player_id).
+            # amateur 觸發 1-3 把位收摺 (見 simplify.py + violin profile).
+            skill_lvl = op.get("skill_level")
+            if not skill_lvl:
+                try:
+                    pl = next((p for p in arrangement.players
+                               if part.part_id.startswith(p.player_id)), None)
+                    if pl is not None:
+                        skill_lvl = pl.skill_level
+                except Exception:
+                    pass
+            skill_lvl = skill_lvl or "intermediate"
             changed = simplify_part(
                 part.measures, m_start, m_end, level, part.instrument_id,
+                skill_level=skill_lvl,
             )
             results.append({
                 "op": kind,
@@ -1647,6 +1661,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
                 "measure_start": m_start,
                 "measure_end": m_end,
                 "changed": changed,
+                "skill_level": skill_lvl,
             })
             continue
         # 0.1.30: transpose 加樂器音域保護 — 用戶按「移高把位」(+12) 時若會

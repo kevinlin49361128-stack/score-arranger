@@ -48,6 +48,20 @@ export type TeachingTag =
   | "legato" | "staccato" | "counterpoint" | "scales"
   | "shifts" | "expression" | "rhythm" | "ensemble";
 
+/**
+ * 大眾用途 tag — 0.1.54 新增, 與 teaching tag 正交.
+ * teaching tag 是「老師找教 X 的曲子」(技巧導向);
+ * popular tag 是「素人找演奏場合用曲」(用途導向).
+ *
+ * - amateur_violinist: 業餘小提琴手友善 (音域內 / 技巧不超 grade 5 /
+ *   有名旋律或便於改成 violin+piano).
+ * - wedding: 婚禮可用 (進場 / 退場 / 簽署).
+ * - popular: 大眾耳熟能詳 (廣告 / 電影 / 場合常見).
+ * - beginner_friendly: 初學 1 年內可挑戰 (ABRSM 1-3).
+ */
+export type PopularTag =
+  | "amateur_violinist" | "wedding" | "popular" | "beginner_friendly";
+
 /** ABRSM Grade 1-8 + 9 = Diploma / Advanced. 0 = pre-grade (兒童入門) */
 export type AbrsmGrade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 /** Henle Verlag 1-9 分級 (1-3 easy, 4-6 medium, 7-9 difficult) */
@@ -74,7 +88,28 @@ export interface RepertoireEntry {
   henle_level?: HenleLevel;
   /** 教學主旨 — 老師找「教 X 的曲子」用 */
   tags: TeachingTag[];
+  /** 大眾用途 (婚禮 / 業餘小提琴 / 廣為人知). 與 tags 正交. */
+  popular_tags?: PopularTag[];
 }
+
+// ============================================================================
+// 0.1.54: 業餘小提琴熱門曲目 stub.
+// 上一輪用來追蹤「想要但找不到 PD encoding」的曲. 本輪 9 首已全數找到並補進
+// REPERTOIRE / engine/core/samples.py, stub 清空.
+// 來源: musetrainer/library (CC0 MusicXML 3 首) 與 mfiles.co.uk /
+// classicalmidi.co.uk MIDI → music21 重輸出 MusicXML (6 首).
+// 作曲家全部 1934 年前過世, 作品 PD 無爭議.
+// ============================================================================
+export interface MissingEntryStub {
+  corpus_path: string;
+  title: string;
+  composer: string;
+  composer_dates: string;
+  source_hint: string;
+  rationale: string;
+}
+
+export const MISSING_AMATEUR_VIOLIN_REPERTOIRE: MissingEntryStub[] = [];
 
 // ============================================================================
 // 主要 catalog — 按時代排, 同時代按作曲家
@@ -164,6 +199,7 @@ export const REPERTOIRE: RepertoireEntry[] = [
     instruments: ["strings"], year: 1689, measures: 19,
     henle_level: 3,
     tags: ["legato", "ensemble"],
+    popular_tags: ["amateur_violinist"],
   },
   {
     corpus_path: "handel/rinaldo/Lascia_chio_pianga",
@@ -173,6 +209,7 @@ export const REPERTOIRE: RepertoireEntry[] = [
     instruments: ["voice", "piano"], year: 1711, measures: 54,
     grade: 4, henle_level: 3,
     tags: ["legato", "expression"],
+    popular_tags: ["popular", "wedding"],
   },
 
   // ─── Classical (1750-1820) ──────────────────────────────────────────────
@@ -222,6 +259,7 @@ export const REPERTOIRE: RepertoireEntry[] = [
     instruments: ["strings"], year: 1772,
     henle_level: 4,
     tags: ["scales", "ensemble"],
+    popular_tags: ["amateur_violinist"],
   },
   {
     corpus_path: "mozart/k155/movement2",
@@ -231,6 +269,7 @@ export const REPERTOIRE: RepertoireEntry[] = [
     instruments: ["strings"], year: 1772,
     henle_level: 4,
     tags: ["legato", "ensemble"],
+    popular_tags: ["amateur_violinist"],
   },
   {
     corpus_path: "mozart/k155/movement3",
@@ -857,6 +896,7 @@ export const REPERTOIRE: RepertoireEntry[] = [
     instruments: ["voice", "piano"], year: 1825,
     grade: 4, henle_level: 3,
     tags: ["legato", "expression"],
+    popular_tags: ["popular", "wedding", "amateur_violinist"],
   },
   {
     corpus_path: "openscore/schubert_op59_3_dubist",
@@ -2825,6 +2865,107 @@ export const REPERTOIRE: RepertoireEntry[] = [
     tags: ["expression"],
   },
 
+  // ─── 0.1.54: 業餘小提琴熱門 9 首 (PD MusicXML / 從 PD MIDI 重新編碼) ───
+  // Pachelbel — Canon in D: 婚禮頭號曲目, 業餘弦四常排
+  {
+    corpus_path: "pachelbel/canon_d",
+    title: "Canon in D",
+    composer: "Johann Pachelbel", composer_dates: "1653-1706",
+    era: "Baroque", form: "Character Piece", ensemble: "String Quartet",
+    instruments: ["strings"], year: 1680, measures: 102,
+    grade: 4, henle_level: 3,
+    tags: ["ensemble", "legato"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+  // Vivaldi — Four Seasons Spring Mvt 1 (RV 269): 業餘弦樂團最常排協奏曲
+  {
+    corpus_path: "vivaldi/rv269_spring_1",
+    title: "Four Seasons — Spring, Mvt 1 (RV 269)",
+    composer: "Antonio Vivaldi", composer_dates: "1678-1741",
+    era: "Baroque", form: "Character Piece", ensemble: "Other",
+    instruments: ["strings"], year: 1721, measures: 83,
+    grade: 6, henle_level: 5,
+    tags: ["ensemble", "rhythm"],
+    popular_tags: ["amateur_violinist", "popular"],
+  },
+  // Bach — Air on the G String (BWV 1068 mvt 2): 婚禮 / 葬禮 / 業餘弦樂必演
+  {
+    corpus_path: "bach/bwv1068_2_air",
+    title: "Air on the G String (BWV 1068 mvt 2)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Character Piece", ensemble: "String Quartet",
+    instruments: ["strings"], year: 1731, measures: 37,
+    grade: 5, henle_level: 4,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+  // Bach — Cello Suite No.1 Prelude (BWV 1007): 單旋律無伴奏, amateur 練 bowing
+  {
+    corpus_path: "bach/bwv1007_1_prelude",
+    title: "Cello Suite No.1 Prelude (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 42,
+    grade: 5, henle_level: 5,
+    tags: ["legato", "scales"],
+    popular_tags: ["amateur_violinist", "popular"],
+  },
+  // Bach (attr.) — Minuet in G (BWV Anh.114): Suzuki Book 1 兒童入門
+  {
+    corpus_path: "bach/bwv_anh114_minuet_g",
+    title: "Minuet in G (BWV Anh. 114)",
+    composer: "Christian Petzold (attr. J.S. Bach)",
+    composer_dates: "1677-1733",
+    era: "Baroque", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1725, measures: 32,
+    grade: 2, henle_level: 1,
+    tags: ["legato", "rhythm"],
+    popular_tags: ["amateur_violinist", "beginner_friendly"],
+  },
+  // Boccherini — Minuet from String Quintet Op.11 No.5 (G.275): 業餘弦四常排
+  {
+    corpus_path: "boccherini/minuet_g275",
+    title: "Minuet from String Quintet Op.11 No.5 (G.275)",
+    composer: "Luigi Boccherini", composer_dates: "1743-1805",
+    era: "Classical", form: "Character Piece", ensemble: "String Quartet",
+    instruments: ["strings"], year: 1771, measures: 118,
+    grade: 5, henle_level: 4,
+    tags: ["ensemble", "staccato"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+  // Mendelssohn — Wedding March (Op.61 MWV M13): 婚禮退場必演
+  {
+    corpus_path: "mendelssohn/wedding_march",
+    title: "Wedding March (A Midsummer Night's Dream, Op.61)",
+    composer: "Felix Mendelssohn", composer_dates: "1809-1847",
+    era: "Romantic", form: "Character Piece", ensemble: "Other",
+    instruments: ["strings", "piano"], year: 1842, measures: 53,
+    grade: 5, henle_level: 4,
+    tags: ["rhythm", "ensemble"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+  // Massenet — Méditation from Thaïs: 小提琴抒情代表作
+  {
+    corpus_path: "massenet/meditation_thais",
+    title: "Méditation from Thaïs",
+    composer: "Jules Massenet", composer_dates: "1842-1912",
+    era: "Romantic", form: "Aria", ensemble: "Other",
+    instruments: ["strings", "piano"], year: 1894, measures: 71,
+    grade: 7, henle_level: 6,
+    tags: ["legato", "expression", "shifts"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+  // Elgar — Salut d'Amour Op.12: 婚禮 / 演奏會 encore 經典
+  {
+    corpus_path: "elgar/salut_damour_op12",
+    title: "Salut d'Amour, Op.12",
+    composer: "Edward Elgar", composer_dates: "1857-1934",
+    era: "Romantic", form: "Character Piece", ensemble: "Other",
+    instruments: ["strings", "piano"], year: 1888, measures: 100,
+    grade: 5, henle_level: 4,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
 ];
 
 // ============================================================================

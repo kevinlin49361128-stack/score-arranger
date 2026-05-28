@@ -29,6 +29,10 @@ VIOLIN_PROFILE = InstrumentProfile(
     range_absolute=(55, 108),       # G3 (MIDI 55) — C8 (含泛音)
     range_comfortable=(55, 100),    # G3 — E7
     range_professional=(55, 105),   # G3 — A7
+    # 0.1.54 B: 業餘級 (1-3 把位友善) — E string 3rd position 最高 G6/A6 附近,
+    # 給 amateur 用 E6 (88) 上限留些空間, 多數早期業餘曲目都打不到 E6 以上.
+    range_amateur=(55, 88),         # G3 — E6
+
 
     max_simultaneous_notes=4,
 

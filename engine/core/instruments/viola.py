@@ -28,6 +28,7 @@ VIOLA_PROFILE = InstrumentProfile(
     range_absolute=(48, 93),       # C3 — A6
     range_comfortable=(48, 84),    # C3 — C6
     range_professional=(48, 91),   # C3 — G6
+    range_amateur=(48, 76),        # C3 — E5 (1-3 把位, 0.1.54 B)
 
     max_simultaneous_notes=4,
 

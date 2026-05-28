@@ -267,6 +267,8 @@ export function PlaybackControls(
   /** 慢速練習 — 1.0 = 原速, 0.75 = 75%, 0.5 = 50%. 排程時把 note.time /
    * note.duration 都 ×(1/rate), measureStarts 同樣縮放, 所以播放游標跟得上. */
   const [playbackRate, setPlaybackRate] = useState<number>(1);
+  /** 0.1.54 D: 節拍器 — 開啟後播放時每拍打點. */
+  const [metronomeEnabled, setMetronomeEnabled] = useState<boolean>(false);
   /** 聲部 mute — set of track index. 在 handlePlay scheduling 時跳過. */
   const [mutedTracks, setMutedTracks] = useState<Set<number>>(new Set());
   /** 上一次播放 MIDI 的 track 列表 — 提供 mute popover 用 */
@@ -332,6 +334,9 @@ export function PlaybackControls(
   const violinFallbackRef = useRef<Tone.PolySynth | null>(null);
   /** 全局 reverb — 讓所有樂器有些空間感, 不再像乾的合成 sample. */
   const reverbRef = useRef<Tone.Reverb | null>(null);
+  /** 0.1.54 F: 弦樂專屬 vibrato — violin/cello 取樣 → vibrato → reverb,
+   * 讓長音不再死直. depth 細微 (0.025), frequency 5.5Hz 對應古典 vibrato. */
+  const stringVibratoRef = useRef<Tone.Vibrato | null>(null);
   const samplesLoadedRef = useRef(false);
   const sampleLoadFailedRef = useRef(false);
   // 防重入: 啟動播放是 async (取 MIDI + 首次載入取樣)。期間若再次點擊,
@@ -346,6 +351,14 @@ export function PlaybackControls(
   const totalDurationRef = useRef<number>(0);
   /** 預計算的 measure 邊界時間表 (秒),index 0 = 第 1 小節起始 */
   const measureStartsRef = useRef<number[]>([]);
+  /** 0.1.54 D: 節拍器 — woodblock 風格 synth (高音短 decay) + transport
+   * scheduleRepeat 的 id, 停止時 dispose / clear. */
+  const metronomeSynthRef = useRef<Tone.Synth | null>(null);
+  const metronomeScheduleIdRef = useRef<number | null>(null);
+  const metronomeEnabledRef = useRef<boolean>(false);
+  useEffect(() => {
+    metronomeEnabledRef.current = metronomeEnabled;
+  }, [metronomeEnabled]);
 
   useEffect(() => {
     return () => {
@@ -363,6 +376,8 @@ export function PlaybackControls(
       fallbackRef.current?.dispose?.();
       violinFallbackRef.current?.dispose?.();
       reverbRef.current?.dispose?.();
+      stringVibratoRef.current?.dispose?.();
+      metronomeSynthRef.current?.dispose?.();
       pianoRef.current = null;
       violinRef.current = null;
       celloRef.current = null;
@@ -375,6 +390,8 @@ export function PlaybackControls(
       fallbackRef.current = null;
       violinFallbackRef.current = null;
       reverbRef.current = null;
+      stringVibratoRef.current = null;
+      metronomeSynthRef.current = null;
     };
   }, []);
 
@@ -395,6 +412,18 @@ export function PlaybackControls(
       reverbRef.current = rv;
     }
     const bus = reverbRef.current as Tone.Reverb;
+
+    // 0.1.54 F: 弦樂 vibrato 節點 — 介於 string sampler 與 reverb 之間.
+    // 取一次, 多個 string sampler 共享 (subtle: depth=0.025, 5.5Hz 古典感).
+    if (!stringVibratoRef.current) {
+      stringVibratoRef.current = new Tone.Vibrato({
+        frequency: 5.5,
+        depth: 0.025,
+        type: "sine",
+      });
+      stringVibratoRef.current.connect(bus);
+    }
+    const stringVib = stringVibratoRef.current;
 
     // Fallback synth (純合成,通用)
     if (!fallbackRef.current) {
@@ -478,6 +507,24 @@ export function PlaybackControls(
       celloRef.current = cello.sampler.loaded
         ? cello.sampler
         : violinFallbackRef.current;
+      // 0.1.54 F: 把成功載入的 violin/cello sampler 從 bus 改接 vibrato.
+      // disconnect 必先呼叫 (Tone connect 是 add-edge 不是 replace).
+      if (violin.sampler.loaded) {
+        try {
+          violin.sampler.disconnect();
+          violin.sampler.connect(stringVib);
+        } catch {
+          violin.sampler.connect(bus);  // 失敗 fallback 直接回 bus
+        }
+      }
+      if (cello.sampler.loaded) {
+        try {
+          cello.sampler.disconnect();
+          cello.sampler.connect(stringVib);
+        } catch {
+          cello.sampler.connect(bus);
+        }
+      }
       fluteRef.current = flute.sampler.loaded
         ? flute.sampler
         : fallbackRef.current;
@@ -561,6 +608,8 @@ export function PlaybackControls(
     Tone.Transport.stop();
     Tone.Transport.cancel(0);
     scheduledIdsRef.current = [];
+    // 0.1.54 D: cancel(0) 也會清掉 metronome 的 scheduleRepeat, 重置 id 即可.
+    metronomeScheduleIdRef.current = null;
   };
 
   const cancelRaf = () => {
@@ -808,6 +857,26 @@ export function PlaybackControls(
         stopAllScheduled();
       }, lastTime + 0.3);
 
+      // 0.1.54 D: 節拍器 — 開啟時排 4 分音符點擊. Tone.Transport.cancel(0)
+      // 在 stopAllScheduled 會一起清掉, 不用獨立 cleanup.
+      if (metronomeEnabledRef.current) {
+        if (!metronomeSynthRef.current) {
+          const m = new Tone.Synth({
+            oscillator: { type: "square" },
+            envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.05 },
+            volume: -10,
+          });
+          m.toDestination();
+          metronomeSynthRef.current = m;
+        }
+        const click = metronomeSynthRef.current;
+        const id = Tone.Transport.scheduleRepeat((time) => {
+          // 高頻短點 — woodblock 感
+          click.triggerAttackRelease("E6", "64n", time);
+        }, "4n");
+        metronomeScheduleIdRef.current = id;
+      }
+
       Tone.Transport.start("+0.1");
       startTracking();
       setState("playing");
@@ -1010,6 +1079,25 @@ export function PlaybackControls(
           <option value={0.5}>0.5x</option>
         </select>
       </label>
+      {/* 0.1.54 D: 節拍器 toggle — 開啟時播放每拍打點 */}
+      <button
+        type="button"
+        onClick={() => setMetronomeEnabled((x) => !x)}
+        title={t("playback.metronome.title")}
+        style={{
+          ...btn,
+          fontSize: 11,
+          padding: "4px 8px",
+          minWidth: 0,
+          marginLeft: 4,
+          background: metronomeEnabled
+            ? "var(--accent)" : btn.background,
+          color: metronomeEnabled
+            ? "#fff" : (btn.color as string),
+        }}
+      >
+        🥁
+      </button>
       {/* 聲部 mute — compact / non-compact 都顯示. 內容 popover, 點外部關閉 */}
       <div
         ref={muteRef}
