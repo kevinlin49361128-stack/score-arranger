@@ -9,6 +9,9 @@
 import { Fragment, useState } from "react";
 
 import { t, useLocale } from "../utils/i18n";
+// 0.1.58: 從 package.json 動態拿版號, 不再 hardcoded (bump 13 版才發現沒同步).
+// resolveJsonModule + esModuleInterop 已在 tsconfig 啟用.
+import pkg from "../../../package.json";
 
 interface AboutDialogProps {
   onClose: () => void;
@@ -80,7 +83,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
             Score Arranger
           </strong>
           <span style={{ fontSize: 11, color: "var(--fg-tertiary)" }}>
-            v0.1.44
+            v{pkg.version}
           </span>
           <button
             onClick={onClose}
