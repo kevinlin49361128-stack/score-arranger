@@ -665,6 +665,162 @@ def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
     return True
 
 
+def _other_hand_part_id(part_id: str) -> Optional[str]:
+    """Grand-staff 鋼琴配對: piano_*_upper ↔ piano_*_lower。非 grand-staff 回 None."""
+    if part_id.endswith("_upper"):
+        return part_id[: -len("_upper")] + "_lower"
+    if part_id.endswith("_lower"):
+        return part_id[: -len("_lower")] + "_upper"
+    return None
+
+
+def _is_other_hand_slot_free(measure, onset) -> bool:
+    """另一手在這個 onset 是否空閒 (沒事件 / 只是休止符 / 之前事件已結束)。"""
+    if measure is None:
+        return True
+    for vid in sorted(measure.voices):
+        voice = measure.voices[vid]
+        if voice.is_divisi:
+            continue
+        for ev in voice.events:
+            ev_onset = float(ev.onset)
+            ev_end = ev_onset + float(ev.duration)
+            # 完全沒重疊 → 不影響
+            if ev_end <= float(onset) + 1e-6:
+                continue
+            if ev_onset >= float(onset) + 1e-6:
+                # 後續的事件, 此 onset 之前不影響
+                # 但同 onset 的事件需檢查
+                if abs(ev_onset - float(onset)) < 1e-6:
+                    if isinstance(ev, (NoteEvent, ChordEvent)):
+                        return False
+                continue
+            # 重疊中 (ev_onset <= onset < ev_end)
+            if isinstance(ev, (NoteEvent, ChordEvent)):
+                return False
+    return True
+
+
+def _redistribute_event(
+    event: ChordEvent,
+    moved_pitch: Pitch,
+    target_measure,
+    target_voice_id: int,
+) -> ChordEvent:
+    """從 event.pitches 移除 moved_pitch, 並在 target_measure 插入新事件。
+
+    回傳 (mutated) event 的剩餘 ChordEvent — 若只剩 1 音由 caller 改成 NoteEvent。
+    target_measure 不存在 target_voice_id 時自動建立 Voice。
+    """
+    new_pitches = [p for p in event.pitches if p.midi_number != moved_pitch.midi_number]
+    event.pitches = new_pitches
+
+    new_note = NoteEvent(
+        pitch=moved_pitch,
+        duration=event.duration,
+        onset=event.onset,
+        articulations=list(event.articulations),
+        dynamic=event.dynamic,
+    )
+    if target_voice_id not in target_measure.voices:
+        target_measure.voices[target_voice_id] = Voice(
+            voice_id=target_voice_id, events=[new_note],
+        )
+    else:
+        v = target_measure.voices[target_voice_id]
+        # 若該 onset 有 RestEvent, 移除再插入新音 — 否則保留排序
+        v.events = [
+            ev for ev in v.events
+            if not (
+                abs(float(ev.onset) - float(event.onset)) < 1e-6
+                and isinstance(ev, RestEvent)
+            )
+        ]
+        v.events.append(new_note)
+        v.events.sort(key=lambda e: float(e.onset))
+    return event
+
+
+def strategy_hand_redistribute(score: Score, issue: LocatedIssue) -> bool:
+    """策略 (H): 鋼琴 grand-staff 同 onset 重分配 — 把邊界音移到空閒的另一手。
+
+    比 split_to_other_hand 保守: 只有當另一手該 onset 空閒 (無事件 / 只是休止符)
+    才動手, 而且只搬「最外側一音」(upper 搬最低音 / lower 搬最高音). 適合
+    Chopin nocturne 右手寬距離 + 左手在拍頭剛好空, 或 Schumann 左手 thumb-cross
+    寫法把音越過 C4 被 cli.py 初始 split 誤分的場景.
+
+    觸發碼: PIANO_HAND_SPAN_EXCEED / LARGE / TOO_MANY_NOTES_ONE_HAND.
+    僅作用於 *_upper / *_lower 配對的 ChordEvent. 若另一手該 onset 已被佔, 直接
+    回 False 讓 split_to_other_hand 或 omit_note 接手 — 不貿然合併破壞既有結構.
+    """
+    if issue.result.code not in (
+        "E_PIANO_HAND_SPAN_EXCEED",
+        "W_PIANO_HAND_SPAN_LARGE",
+        "W_PIANO_TOO_MANY_NOTES_ONE_HAND",
+    ):
+        return False
+
+    event = _get_event(score, issue)
+    if not isinstance(event, ChordEvent) or len(event.pitches) < 2:
+        return False
+
+    current_part = _get_part(score, issue.part_id)
+    if current_part is None or current_part.instrument_id != "piano":
+        return False
+
+    other_part_id = _other_hand_part_id(current_part.part_id)
+    if other_part_id is None:
+        return False
+    other_part = _get_part(score, other_part_id)
+    if other_part is None:
+        return False
+
+    is_upper = current_part.part_id.endswith("_upper")
+
+    other_measure = next(
+        (m for m in other_part.measures if m.number == issue.measure_number),
+        None,
+    )
+    if not _is_other_hand_slot_free(other_measure, event.onset):
+        return False
+    if other_measure is None:
+        # 沒對應 measure → 不貿然新建
+        return False
+
+    sorted_pitches = sorted(event.pitches, key=lambda p: p.midi_number)
+    # upper 搬最低音到 lower; lower 搬最高音到 upper
+    moved_pitch = sorted_pitches[0] if is_upper else sorted_pitches[-1]
+
+    # 搬走後剩餘音必須真的縮小 span — 否則不採用 (對 stretch 無效就讓給其他策略)
+    remaining = [p for p in sorted_pitches if p.midi_number != moved_pitch.midi_number]
+    if len(remaining) < 1:
+        return False
+
+    target_vid = 1 if 1 in other_measure.voices else (
+        next(iter(other_measure.voices), None) if other_measure.voices else 1
+    )
+    if target_vid is None:
+        target_vid = 1
+
+    _redistribute_event(event, moved_pitch, other_measure, target_vid)
+
+    # 若原 event 變成單音 → 改 NoteEvent
+    if len(event.pitches) == 1:
+        new_event = NoteEvent(
+            pitch=event.pitches[0],
+            duration=event.duration,
+            onset=event.onset,
+            articulations=list(event.articulations),
+            dynamic=event.dynamic,
+            is_tied_from=event.is_tied_from,
+            is_tied_to=event.is_tied_to,
+            slur_group=event.slur_group,
+        )
+        _replace_event(score, issue, new_event)
+
+    return True
+
+
 def strategy_split_to_other_hand(score: Score, issue: LocatedIssue) -> bool:
     """策略 3 (Phase 1 範圍): 鋼琴單手手距過大時, 把部分音移到另一隻手。
 
@@ -1113,8 +1269,11 @@ def strategy_reassign_note(score: Score, issue: LocatedIssue) -> bool:
 # Phase 1 註冊的策略 (按優先序: 影響從小到大)
 # 0.1.48: reassign_note 排在 omit_note 之後 — 兩個都保留旋律連續性
 # 但 reassign 跨聲部成本更高, 優先試 omit 內聲部.
+# H: hand_redistribute 比 split_to_other_hand 更保守 (只搬最外側一音 + 要求
+# 另一手空閒) 故排前. 兩者都不適用時 omit_note 兜底.
 PHASE_1_STRATEGIES: list[tuple[str, RepairStrategy]] = [
     ("octave_shift", strategy_octave_shift),
+    ("hand_redistribute", strategy_hand_redistribute),
     ("omit_note", strategy_omit_note),
     ("split_to_other_hand", strategy_split_to_other_hand),
     ("split_to_parts", strategy_split_chord_to_parts),

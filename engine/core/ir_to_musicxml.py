@@ -114,6 +114,18 @@ _CLEF_TABLE: dict[str, tuple[str, int, int]] = {
     "viola": ("C", 3, 0),
 }
 
+# 0.1.56 G — per-measure clef 切換閾值 (見 ir_to_music21 同樣常數)
+_CELLO_TENOR_AVG_MIN = 60   # C4
+_CELLO_TENOR_LOW_MIN = 53   # F3
+_CELLO_BASS_AVG_MAX = 53    # F3
+_VIOLA_TREBLE_AVG_MIN = 67  # G4
+
+# MusicXML clef tuples
+_BASS_CLEF = ("F", 4, 0)
+_TENOR_CLEF = ("C", 4, 0)
+_ALTO_CLEF = ("C", 3, 0)
+_TREBLE_CLEF = ("G", 2, 0)
+
 # instrument_id → (diatonic, chromatic) for MusicXML <transpose>
 # chromatic = written → sounding 的半音差 (= profile.transposition);
 # diatonic  = written → sounding 的 staff-step 差 (含八度).
@@ -323,17 +335,95 @@ def _build_part(
     transpose = _TRANSPOSE_TABLE.get(part.instrument_id)
 
     cur_time_sig: tuple[int, int] = (4, 4)
-    first = True
-    for measure in part.measures:
+    prev_clef = clef
+    for idx, measure in enumerate(part.measures):
         if measure.time_signature is not None:
             cur_time_sig = measure.time_signature
+        is_first = idx == 0
+        # 0.1.56 G: 從第 2 小節起為 cello / viola 算 per-measure clef.
+        # 第一小節仍走 _CLEF_TABLE 預設 (instrument-level).
+        clef_for_measure: Optional[tuple[str, int, int]] = clef if is_first else None
+        if not is_first:
+            decided = _decide_clef_for_measure(
+                part.instrument_id, measure, prev_clef,
+            )
+            if decided is not None and decided != prev_clef:
+                clef_for_measure = decided
         _build_measure(
             part_el, measure, divisions, cur_time_sig,
-            clef if first else None, first,
+            clef_for_measure, is_first,
             wedge_measures.get(measure.number, []),
-            transpose=transpose if first else None,
+            transpose=transpose if is_first else None,
         )
-        first = False
+        if clef_for_measure is not None:
+            prev_clef = clef_for_measure
+
+
+# ============================================================================
+# 0.1.56 G — per-measure clef 判斷 (cello tenor / viola treble)
+# ============================================================================
+# 與 ir_to_music21 平行實作: 兩條序列化路徑都要支援, 否則高把位段
+# (Bach Suite 5/6 等) 在主路徑寫出來時還是滿是下加線.
+
+def _measure_sounding_midis(measure: Measure) -> list[int]:
+    """取 measure 內所有 NoteEvent/ChordEvent 的 sounding midi 數值."""
+    midis: list[int] = []
+    for voice in measure.voices.values():
+        if voice.is_divisi:
+            continue
+        for ev in voice.events:
+            if isinstance(ev, NoteEvent):
+                midis.append(ev.pitch.midi_number)
+            elif isinstance(ev, ChordEvent):
+                midis.extend(p.midi_number for p in ev.pitches)
+    return midis
+
+
+def _decide_clef_for_measure(
+    instrument_id: str, measure: Measure,
+    prev_clef: tuple[str, int, int],
+) -> Optional[tuple[str, int, int]]:
+    """為 cello / viola 算本小節該用的 MusicXML clef tuple.
+
+    回 None = 此樂器不參與動態切換 (e.g. violin).
+    回值與 prev_clef 比較; 上層僅在不同時寫入 <clef>.
+    """
+    from .instruments import normalize_instrument_id
+    canonical = normalize_instrument_id(instrument_id)
+    if canonical == "cello":
+        return _decide_cello_clef(measure, prev_clef)
+    if canonical == "viola":
+        return _decide_viola_clef(measure, prev_clef)
+    return None
+
+
+def _decide_cello_clef(
+    measure: Measure, prev_clef: tuple[str, int, int],
+) -> tuple[str, int, int]:
+    midis = _measure_sounding_midis(measure)
+    if not midis:
+        return prev_clef
+    avg = sum(midis) / len(midis)
+    lo = min(midis)
+    if avg >= _CELLO_TENOR_AVG_MIN and lo >= _CELLO_TENOR_LOW_MIN:
+        return _TENOR_CLEF
+    if avg < _CELLO_BASS_AVG_MAX:
+        return _BASS_CLEF
+    return prev_clef
+
+
+def _decide_viola_clef(
+    measure: Measure, prev_clef: tuple[str, int, int],
+) -> tuple[str, int, int]:
+    midis = _measure_sounding_midis(measure)
+    if not midis:
+        return prev_clef
+    avg = sum(midis) / len(midis)
+    if avg >= _VIOLA_TREBLE_AVG_MIN:
+        return _TREBLE_CLEF
+    if avg < _VIOLA_TREBLE_AVG_MIN - 7:
+        return _ALTO_CLEF
+    return prev_clef
 
 
 def _build_measure(
@@ -353,10 +443,11 @@ def _build_measure(
         attrs["implicit"] = "yes"
     m_el = ET.SubElement(part_el, "measure", attrs)
 
-    # <attributes> — 第一小節, 或拍號/調號變更時
+    # <attributes> — 第一小節, 或拍號/調號變更, 或 clef 切換時
     need_attr = is_first or (
         measure.time_signature is not None
         or measure.key_signature is not None
+        or clef is not None
     )
     if need_attr:
         attr = ET.Element("attributes")

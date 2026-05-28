@@ -55,12 +55,24 @@ export type TeachingTag =
  *
  * - amateur_violinist: 業餘小提琴手友善 (音域內 / 技巧不超 grade 5 /
  *   有名旋律或便於改成 violin+piano).
+ * - amateur_cellist: 業餘大提琴手友善 (Suzuki / Bach 無伴奏 / 主旋律明顯).
+ *   0.1.55 新增.
+ * - amateur_pianist: 業餘鋼琴手友善 (大眾鋼琴小品, ABRSM ≤ 6).
+ *   0.1.55 新增.
+ * - amateur_harpsichordist: 業餘大鍵琴手友善 (古樂社團 / 巴洛克鍵盤入門).
+ *   0.1.55 新增.
+ * - amateur_flutist: 業餘長笛手友善 (主旋律 + 鋼琴 / 室樂).
+ *   0.1.55 新增.
+ * - amateur_hornist: 業餘法國號手友善 (圓號 + 鋼琴 / 銅管室樂).
+ *   0.1.55 新增.
  * - wedding: 婚禮可用 (進場 / 退場 / 簽署).
  * - popular: 大眾耳熟能詳 (廣告 / 電影 / 場合常見).
  * - beginner_friendly: 初學 1 年內可挑戰 (ABRSM 1-3).
  */
 export type PopularTag =
-  | "amateur_violinist" | "wedding" | "popular" | "beginner_friendly";
+  | "amateur_violinist" | "amateur_cellist" | "amateur_pianist"
+  | "amateur_harpsichordist" | "amateur_flutist" | "amateur_hornist"
+  | "wedding" | "popular" | "beginner_friendly";
 
 /** ABRSM Grade 1-8 + 9 = Diploma / Advanced. 0 = pre-grade (兒童入門) */
 export type AbrsmGrade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -2965,6 +2977,192 @@ export const REPERTOIRE: RepertoireEntry[] = [
     grade: 5, henle_level: 4,
     tags: ["legato", "expression"],
     popular_tags: ["amateur_violinist", "wedding", "popular"],
+  },
+
+  // ─── 0.1.55: 補曲庫 — 大提琴 / 鋼琴 / 大鍵琴 / 管樂 16 首 ────────────────
+  // 來源: kernscores .krn (Sapp) + musedata humdrum-bach-brandenburg
+  // + musetrainer/library CC0 MusicXML + classicalmidi.co.uk MIDI.
+  // grace-note 已過濾, 作曲家全部 1934 前過世, 作品 PD 無爭議.
+
+  // Bach Cello Suite No.1 BWV 1007 — 補完 2-7 樂章 (mvt 1 prelude 已在 0.1.54).
+  {
+    corpus_path: "bach/bwv1007_2_allemande",
+    title: "Cello Suite No.1 mvt.2 Allemande (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 35,
+    grade: 6, henle_level: 5,
+    tags: ["legato", "scales"],
+    popular_tags: ["amateur_cellist"],
+  },
+  {
+    corpus_path: "bach/bwv1007_3_courante",
+    title: "Cello Suite No.1 mvt.3 Courante (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 41,
+    grade: 6, henle_level: 5,
+    tags: ["scales", "rhythm"],
+    popular_tags: ["amateur_cellist"],
+  },
+  {
+    corpus_path: "bach/bwv1007_4_sarabande",
+    title: "Cello Suite No.1 mvt.4 Sarabande (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 17,
+    grade: 5, henle_level: 4,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_cellist", "popular"],
+  },
+  {
+    corpus_path: "bach/bwv1007_5_menuet1",
+    title: "Cello Suite No.1 mvt.5 Menuet I (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 25,
+    grade: 4, henle_level: 3,
+    tags: ["rhythm", "staccato"],
+    popular_tags: ["amateur_cellist", "popular"],
+  },
+  {
+    corpus_path: "bach/bwv1007_6_menuet2",
+    title: "Cello Suite No.1 mvt.6 Menuet II (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 25,
+    grade: 4, henle_level: 3,
+    tags: ["rhythm", "legato"],
+    popular_tags: ["amateur_cellist"],
+  },
+  {
+    corpus_path: "bach/bwv1007_7_gigue",
+    title: "Cello Suite No.1 mvt.7 Gigue (BWV 1007)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings"], year: 1720, measures: 37,
+    grade: 6, henle_level: 5,
+    tags: ["rhythm", "scales"],
+    popular_tags: ["amateur_cellist"],
+  },
+
+  // Bach Brandenburg Concerto No.2 BWV 1047 — 全 3 樂章, 多樂器原典,
+  // 適合改編成小編制 (trumpet + 弦樂四重奏 / 室內樂).
+  {
+    corpus_path: "bach/bwv1047_1_allegro",
+    title: "Brandenburg Concerto No.2 mvt.1 Allegro (BWV 1047)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings", "mixed"], year: 1721, measures: 119,
+    henle_level: 7,
+    tags: ["ensemble", "counterpoint"],
+    popular_tags: ["popular"],
+  },
+  {
+    corpus_path: "bach/bwv1047_2_andante",
+    title: "Brandenburg Concerto No.2 mvt.2 Andante (BWV 1047)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings", "mixed"], year: 1721, measures: 65,
+    henle_level: 5,
+    tags: ["legato", "ensemble"],
+  },
+  {
+    corpus_path: "bach/bwv1047_3_allegro_assai",
+    title: "Brandenburg Concerto No.2 mvt.3 Allegro assai (BWV 1047)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Sonata", ensemble: "Other",
+    instruments: ["strings", "mixed"], year: 1721, measures: 139,
+    henle_level: 8,
+    tags: ["counterpoint", "rhythm"],
+    popular_tags: ["popular"],
+  },
+
+  // Bach WTC Book I Prelude No.1 in C (BWV 846) — 大鍵琴 / 鋼琴入門必彈.
+  {
+    corpus_path: "bach/bwv846_wtc1_1_prelude",
+    title: "WTC Book I Prelude No.1 in C (BWV 846)",
+    composer: "Johann Sebastian Bach", composer_dates: "1685-1750",
+    era: "Baroque", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1722, measures: 34,
+    grade: 4, henle_level: 3,
+    tags: ["legato", "scales"],
+    popular_tags: ["amateur_pianist", "amateur_harpsichordist",
+                   "wedding", "popular"],
+  },
+
+  // Schubert Impromptu Op.90 No.3 D.899 in G-flat — 浪漫鋼琴.
+  {
+    corpus_path: "schubert/d899_3_impromptu_gflat",
+    title: "Impromptu Op.90 No.3 in G-flat (D.899)",
+    composer: "Franz Schubert", composer_dates: "1797-1828",
+    era: "Romantic", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1827, measures: 86,
+    grade: 8, henle_level: 6,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_pianist", "popular"],
+  },
+
+  // Chopin Nocturne Op.9 No.2 in E-flat — 浪漫鋼琴, 婚禮 / 廣告經典.
+  {
+    corpus_path: "chopin/nocturne_op9_no2",
+    title: "Nocturne Op.9 No.2 in E-flat",
+    composer: "Frédéric Chopin", composer_dates: "1810-1849",
+    era: "Romantic", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1832, measures: 38,
+    grade: 7, henle_level: 6,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_pianist", "wedding", "popular"],
+  },
+
+  // Chopin Prelude Op.28 No.4 (完整版) — 與既有 chopin_prelude_28_04 不同來源,
+  // musetrainer 整理過的鋼琴版.
+  {
+    corpus_path: "chopin/prelude_op28_no4_full",
+    title: "Prelude Op.28 No.4 in E minor (full ed.)",
+    composer: "Frédéric Chopin", composer_dates: "1810-1849",
+    era: "Romantic", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1839, measures: 26,
+    grade: 6, henle_level: 5,
+    tags: ["legato", "expression"],
+    popular_tags: ["amateur_pianist", "popular"],
+  },
+
+  // Liszt Liebestraum No.3 in A-flat (S.541 No.3) — 浪漫鋼琴, 婚禮 / 演奏經典.
+  {
+    corpus_path: "liszt/liebestraum_3",
+    title: "Liebestraum No.3 in A-flat (S.541 No.3)",
+    composer: "Franz Liszt", composer_dates: "1811-1886",
+    era: "Romantic", form: "Character Piece", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1850, measures: 88,
+    grade: 8, henle_level: 7,
+    tags: ["legato", "expression", "shifts"],
+    popular_tags: ["amateur_pianist", "wedding", "popular"],
+  },
+
+  // Mozart K.545 mvt.1 完整版 — 既有 exposition only, 補完整 movement.
+  {
+    corpus_path: "mozart/k545_movement1_full",
+    title: "Piano Sonata K.545 mvt.1 Allegro (full)",
+    composer: "Wolfgang Amadeus Mozart", composer_dates: "1756-1791",
+    era: "Classical", form: "Sonata", ensemble: "Piano Solo",
+    instruments: ["piano"], year: 1788, measures: 73,
+    grade: 5, henle_level: 3,
+    tags: ["scales", "staccato"],
+    popular_tags: ["amateur_pianist", "popular"],
+  },
+
+  // Beethoven Cello Sonata Op.5 No.2 in G minor — 古典 cello + piano,
+  // MIDI 來源含全 4 樂章. 鋼琴聲部極具挑戰.
+  {
+    corpus_path: "beethoven/op5_no2_full",
+    title: "Cello Sonata Op.5 No.2 in G minor (full)",
+    composer: "Ludwig van Beethoven", composer_dates: "1770-1827",
+    era: "Classical", form: "Sonata", ensemble: "Other",
+    instruments: ["strings", "piano"], year: 1796, measures: 488,
+    henle_level: 7,
+    tags: ["ensemble", "expression"],
+    popular_tags: ["amateur_cellist"],
   },
 ];
 

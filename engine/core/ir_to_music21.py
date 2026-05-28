@@ -108,6 +108,90 @@ def _default_clef_for(instrument_id: str):
     return factory() if factory else None
 
 
+# ============================================================================
+# 0.1.56 G: Cello tenor clef 自動切換
+# ============================================================================
+# 為什麼: cello 預設 BassClef, 但 Bach 無伴奏 5/6 號、Suite 3 Bourrée、
+# Brahms 雙重奏鳴曲等高把位段落上加線會多到不可讀. 樂譜慣例是高音段
+# 改用 TenorClef (C4 線在第 4 線), 低音段切回 BassClef.
+#
+# 用「sounding」midi 而非「written」: cello 不是移調樂器, 兩者相同;
+# 不過為了將來 viola treble case 一致, 一律取 sounding (Pitch.midi_number).
+#
+# 邊界值說明:
+# - TenorClef 進: avg ≥ 60 (C4) 且 min ≥ 53 (F3) — 避免有個別低音衝到太多
+#   下加線, 反而比 BassClef 還難讀
+# - BassClef 進: avg < 53 (F3) — 整體已經明顯落到低音區
+# - 中間區段保持 prev_clef — 避免每隔一兩小節亂跳
+
+# 切換閾值; 數值用 MIDI 半音數
+_CELLO_TENOR_AVG_MIN = 60   # C4
+_CELLO_TENOR_LOW_MIN = 53   # F3
+_CELLO_BASS_AVG_MAX = 53    # F3
+_VIOLA_TREBLE_AVG_MIN = 67  # G4
+
+
+def _measure_sounding_midis(measure: "Measure") -> list[int]:
+    """取 measure 內所有 NoteEvent/ChordEvent 的 sounding midi 數值."""
+    midis: list[int] = []
+    for voice in measure.voices.values():
+        if voice.is_divisi:
+            continue
+        for ev in voice.events:
+            if isinstance(ev, NoteEvent):
+                midis.append(ev.pitch.midi_number)
+            elif isinstance(ev, ChordEvent):
+                midis.extend(p.midi_number for p in ev.pitches)
+    return midis
+
+
+def _decide_cello_clef_for_measure(measure: "Measure", prev_clef):
+    """依 measure 平均音高判斷 cello 該用 BassClef 還是 TenorClef.
+
+    Returns:
+        music21 Clef 物件; 若無音符 (整小節休止) 一律回 prev_clef.
+    """
+    from music21 import clef as _clef
+    midis = _measure_sounding_midis(measure)
+    if not midis:
+        return prev_clef
+    avg = sum(midis) / len(midis)
+    lo = min(midis)
+    if avg >= _CELLO_TENOR_AVG_MIN and lo >= _CELLO_TENOR_LOW_MIN:
+        return _clef.TenorClef()
+    if avg < _CELLO_BASS_AVG_MAX:
+        return _clef.BassClef()
+    return prev_clef
+
+
+def _decide_viola_clef_for_measure(measure: "Measure", prev_clef):
+    """viola: 預設 AltoClef; 高音段 (Mahler 等) 偶爾用 TrebleClef.
+
+    業餘很少見, 但為了一致性放這裡. 規則: 平均 ≥ G4 才切.
+    """
+    from music21 import clef as _clef
+    midis = _measure_sounding_midis(measure)
+    if not midis:
+        return prev_clef
+    avg = sum(midis) / len(midis)
+    if avg >= _VIOLA_TREBLE_AVG_MIN:
+        return _clef.TrebleClef()
+    if avg < _VIOLA_TREBLE_AVG_MIN - 7:  # 回 alto: 平均 < C4 才回
+        return _clef.AltoClef()
+    return prev_clef
+
+
+def _decide_clef_for_measure(instrument_id: str, measure: "Measure", prev_clef):
+    """為動態 clef 切換的樂器決定本小節的 clef. 回 None = 不切換."""
+    from .instruments import normalize_instrument_id
+    canonical = normalize_instrument_id(instrument_id)
+    if canonical == "cello":
+        return _decide_cello_clef_for_measure(measure, prev_clef)
+    if canonical == "viola":
+        return _decide_viola_clef_for_measure(measure, prev_clef)
+    return None
+
+
 def _make_instrument(instrument_id: str) -> Optional[Any]:
     # 先 normalize 再查 factory, 容忍上游傳入別名
     from .instruments import normalize_instrument_id
@@ -178,15 +262,32 @@ def _build_part(
 
     # 為樂器設定預設譜號 (e.g. cello → bass clef)
     default_clef = _default_clef_for(part.instrument_id)
+    prev_clef = default_clef
 
     for idx, measure in enumerate(part.measures):
         m21_measure = _build_measure(measure, slur_groups)
-        # 在第一小節開頭插入譜號 (若有指定)
-        if idx == 0 and default_clef is not None:
-            m21_measure.insert(0, default_clef)
+        if idx == 0:
+            # 第一小節: 走預設 clef
+            if default_clef is not None:
+                m21_measure.insert(0, default_clef)
+        else:
+            # 第 2 小節起: 依音域動態切換 (僅針對 cello / viola)
+            decided = _decide_clef_for_measure(
+                part.instrument_id, measure, prev_clef,
+            )
+            if decided is not None and not _same_clef(decided, prev_clef):
+                m21_measure.insert(0, decided)
+                prev_clef = decided
         m21_part.append(m21_measure)
 
     return m21_part
+
+
+def _same_clef(a, b) -> bool:
+    """比較兩個 music21 Clef 物件是否同類. None 視為不同."""
+    if a is None or b is None:
+        return a is b
+    return type(a) is type(b)
 
 
 def _build_measure(

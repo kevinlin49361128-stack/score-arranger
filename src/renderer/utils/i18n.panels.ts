@@ -623,6 +623,22 @@ export const PANEL_STRINGS: BiDict = {
     en: "{n} measures total",
     ja: "全 {n} 小節",
   },
+  // 0.1.56 J: 排練筆記
+  "section.notes.title": {
+    "zh-TW": "排練筆記 — 對每個段落 / 排練字母寫提醒",
+    en: "Rehearsal notes — jot reminders per section / rehearsal mark",
+    ja: "リハーサルメモ — 各セクション / リハーサル記号にメモを残します",
+  },
+  "section.notes.heading": {
+    "zh-TW": "排練筆記 (儲存於此電腦)",
+    en: "Rehearsal notes (saved on this computer)",
+    ja: "リハーサルメモ (このコンピュータに保存)",
+  },
+  "section.notes.placeholder": {
+    "zh-TW": "例: 銅管太大聲, 大提琴 cresc.",
+    en: "e.g. brass too loud, cellos cresc.",
+    ja: "例: 金管が大きすぎる、チェロ cresc.",
+  },
 
   // ── FingerboardSimulator ────────────────────────────────────────────────
   "fingerboard.instrument.violin": {

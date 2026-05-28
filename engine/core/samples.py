@@ -371,6 +371,37 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "bach/bwv1007_1_prelude",
     "bach/bwv_anh114_minuet_g",
     "boccherini/minuet_g275",
+    # 0.1.55: 補曲庫 — 大提琴 / 鋼琴 / 大鍵琴 / 管樂 16 首.
+    # 來源: kernscores .krn (Sapp) + musedata humdrum-bach-brandenburg
+    # + musetrainer/library CC0 MusicXML + classicalmidi.co.uk MIDI.
+    # 作曲家全部 1934 前過世, PD. encoding 同 0.1.44 grey-zone (NOTICE.md §3 已涵蓋).
+    # Bach Cello Suite No.1 (BWV 1007) 完整 7 樂章 (mvt 1 已在 0.1.54, 補 2-7)
+    "bach/bwv1007_2_allemande",
+    "bach/bwv1007_3_courante",
+    "bach/bwv1007_4_sarabande",
+    "bach/bwv1007_5_menuet1",
+    "bach/bwv1007_6_menuet2",
+    "bach/bwv1007_7_gigue",
+    # Bach Brandenburg Concerto No.2 (BWV 1047) 全 3 樂章 — trumpet/recorder/oboe/violin
+    # 概念可改成更小編制. musedata humdrum 來源.
+    "bach/bwv1047_1_allegro",
+    "bach/bwv1047_2_andante",
+    "bach/bwv1047_3_allegro_assai",
+    # Bach WTC Book I Prelude No.1 in C (BWV 846) — 大鍵琴 / 鋼琴經典.
+    "bach/bwv846_wtc1_1_prelude",
+    # Schubert Impromptu Op.90 No.3 D.899 in G-flat — 浪漫鋼琴.
+    "schubert/d899_3_impromptu_gflat",
+    # Chopin Nocturne Op.9 No.2 in E-flat — 浪漫鋼琴 / 婚禮經典.
+    "chopin/nocturne_op9_no2",
+    # Chopin Prelude Op.28 No.4 in E minor — 浪漫鋼琴, 完整版 (與 chopin_prelude_28_04 不同來源).
+    "chopin/prelude_op28_no4_full",
+    # Liszt Liebestraum No.3 in A-flat (S.541 No.3) — 浪漫鋼琴, 婚禮 / 演奏經典.
+    "liszt/liebestraum_3",
+    # Mozart K.545 mvt 1 完整版 (已有 exposition only, 補完整 movement).
+    "mozart/k545_movement1_full",
+    # Beethoven Cello Sonata Op.5 No.2 in G minor — 18 世紀末古典 cello + piano.
+    # MIDI 來源含全 4 樂章一檔, 488 小節.
+    "beethoven/op5_no2_full",
 ]
 
 _SET = set(SAMPLE_CORPUS_IDS)
@@ -395,6 +426,8 @@ _COMPOSER = {
     "elgar": "Elgar",
     "mendelssohn": "Mendelssohn",
     "boccherini": "Boccherini",
+    # 0.1.55 大提琴 / 鋼琴 / 大鍵琴 / 管樂補曲
+    "liszt": "Liszt",
 }
 
 
