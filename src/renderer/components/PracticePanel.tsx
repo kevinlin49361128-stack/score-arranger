@@ -70,6 +70,9 @@ export function PracticePanel({ onClose }: Props) {
   // 0.1.54 E: 練習日誌 — 進面板 = startSession, 關 / 切譜 = endSession.
   // sessionId ref 跨 unmount cleanup 拿得到 (避免 stale closure).
   const sessionIdRef = useRef<string | null>(null);
+  // 0.1.59 E: 記最後點選 / 練的小節, endSession 時填進 last_measure
+  // (之前永遠 undefined, 「上次練到哪」恢復點失效).
+  const lastMeasureRef = useRef<number | undefined>(undefined);
   const practiceLog = usePracticeLog();
   useEffect(() => {
     if (!arrangement) return;
@@ -78,7 +81,7 @@ export function PracticePanel({ onClose }: Props) {
     sessionIdRef.current = id;
     return () => {
       if (sessionIdRef.current) {
-        endPracticeSession(sessionIdRef.current);
+        endPracticeSession(sessionIdRef.current, lastMeasureRef.current);
         sessionIdRef.current = null;
       }
     };
@@ -144,6 +147,7 @@ export function PracticePanel({ onClose }: Props) {
   }, [arrangement]);
 
   const handlePick = (m: number) => {
+    lastMeasureRef.current = m;  // 0.1.59 E: 記進 practice log
     requestLoop(m, m);
     setHighlightedMeasure(m);
     onClose();

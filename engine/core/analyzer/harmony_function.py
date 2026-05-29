@@ -382,6 +382,9 @@ def detect_unresolved_tendency_tones(score: object):
     if not regions:
         return []
 
+    # 0.1.59 perf: 預算 region 起點 float key 一次, 給 find_region_at bisect
+    # 重複用 (避免每次呼叫重建 + 線性掃 → 2000 萬次 Fraction 比較).
+    region_starts = _region_starts_float(regions)
     cumulative_starts = _per_part_cumulative_starts(score)
     issues: list = []
 
@@ -414,8 +417,8 @@ def detect_unresolved_tendency_tones(score: object):
         for k in range(len(events) - 1):
             g1, m1, meas1, vid1, idx1 = events[k]
             g2, m2, _, _, _ = events[k + 1]
-            r1 = find_region_at(regions, g1)
-            r2 = find_region_at(regions, g2)
+            r1 = find_region_at(regions, g1, region_starts)
+            r2 = find_region_at(regions, g2, region_starts)
             if r1 is None or r2 is None:
                 continue
             # 只在 V → I 看 (大調; 小調 V 通常為了導音也是大三和弦, 一併)
@@ -526,19 +529,44 @@ def classify_note_function(
     return "other"
 
 
+def _region_starts_float(regions: list[HarmonicRegion]) -> list[float]:
+    """0.1.59 perf: 預算 region 起點的 float key, 給 find_region_at bisect 用.
+
+    呼叫端 (detect_unresolved_tendency_tones) 對每個音呼叫 find_region_at,
+    舊版每次線性掃全部 region + Fraction 比較 (O(events×regions) × 昂貴比較),
+    Beethoven 弦四→鋼琴的密集和聲讓 region 數暴增, 造成 2000 萬次 Fraction
+    比較 / 單次 collect_issues 3.3s → repair_loop 70 次呼叫 = 5 分鐘 timeout.
+    """
+    return [float(r.start_quarter) for r in regions]
+
+
 def find_region_at(
     regions: list[HarmonicRegion], quarter_offset: Fraction,
+    starts_float: Optional[list[float]] = None,
 ) -> Optional[HarmonicRegion]:
-    """給定整曲時間軸 offset, 二分查 region. 回傳 None → 走 fallback."""
+    """給定整曲時間軸 offset, 二分查 region. 回傳 None → 走 fallback.
+
+    0.1.59 perf: 改 bisect (O(log n)) + float key 比較, 取代舊版線性掃 +
+    Fraction 比較. starts_float 可由呼叫端預算一次重複用 (見上).
+    region 依 start_quarter 遞增 (analyze_harmony 順序產出), bisect 前提成立.
+    """
     if not regions:
         return None
-    # 線性掃描足夠 — region 通常 <500 個
-    for r in regions:
-        if r.start_quarter <= quarter_offset < r.end_quarter:
-            return r
-    # 最後一個 region 邊緣寬鬆些
-    if quarter_offset >= regions[-1].start_quarter:
-        return regions[-1]
+    import bisect
+    starts = starts_float if starts_float is not None \
+        else _region_starts_float(regions)
+    q = float(quarter_offset)
+    i = bisect.bisect_right(starts, q) - 1
+    if i < 0:
+        # offset 在第一個 region 之前 — 邊緣寬鬆: 回第一個
+        return regions[0] if quarter_offset >= Fraction(0) else None
+    r = regions[i]
+    # 命中 region 內 (含 gap 防呆: q 落在 region 之間就往最後一個靠)
+    if r.start_quarter <= quarter_offset < r.end_quarter:
+        return r
+    # 落在 region[i] 結束之後 (gap 或最末): 最後一個 region 邊緣寬鬆
+    if i == len(regions) - 1:
+        return r
     return None
 
 

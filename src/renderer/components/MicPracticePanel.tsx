@@ -25,6 +25,11 @@ import {
   findCurrentMeasure,
 } from "../utils/scoreFollower";
 import { useSessionStore } from "../stores/sessionStore";
+import {
+  addMicScore,
+  endPracticeSession,
+  startPracticeSession,
+} from "../stores/practiceLogStore";
 import { t, useLocale } from "../utils/i18n";
 
 interface Props {
@@ -50,6 +55,7 @@ const FOLLOW_CONFIDENCE_THRESHOLD = 0.6;
 export function MicPracticePanel({ onClose }: Props) {
   useLocale();
   const arrangement = useSessionStore((s) => s.arrangement);
+  const sourcePath = useSessionStore((s) => s.sourcePath);
   const setHighlightedMeasure = useSessionStore((s) => s.setHighlightedMeasure);
 
   // 從 arrangement 抽出旋律序列 (只在 arrangement 變動時重算)
@@ -80,6 +86,10 @@ export function MicPracticePanel({ onClose }: Props) {
   const modeRef = useRef<Mode>(mode);
   // follow 對位的 anchor — 上一輪算出的 measure, 用作下一輪 startHint
   const followHintRef = useRef<number>(1);
+  // 0.1.59 E: follow session 累積 — 收 confidence 樣本 + 最遠到達小節,
+  // stop() 時換算成 practice log entry (mic_score = 平均信心 × 100).
+  const followConfSamplesRef = useRef<number[]>([]);
+  const followMaxMeasureRef = useRef<number>(0);
 
   useEffect(() => {
     melodyRef.current = melody;
@@ -130,8 +140,15 @@ export function MicPracticePanel({ onClose }: Props) {
         if (recent.length === 0) return;
         const res = findCurrentMeasure(recent, mel, followHintRef.current);
         setFollowStatus({ measure: res.measure, confidence: res.confidence });
+        // 0.1.59 E: 累積 confidence 樣本 (排除 0 = 沒對到, 不算進平均)
+        if (res.confidence > 0) {
+          followConfSamplesRef.current.push(res.confidence);
+        }
         if (res.confidence >= FOLLOW_CONFIDENCE_THRESHOLD) {
           followHintRef.current = res.measure;
+          followMaxMeasureRef.current = Math.max(
+            followMaxMeasureRef.current, res.measure,
+          );
           setHighlightedMeasure(res.measure);
         }
       }, FOLLOW_INTERVAL_MS);
@@ -169,6 +186,20 @@ export function MicPracticePanel({ onClose }: Props) {
       await monitorRef.current.stop();
       monitorRef.current = null;
     }
+    // 0.1.59 E: 若這次 follow 有對到東西, 寫一筆練習日誌 (mic_score = 平均
+    // 信心 × 100, last_measure = 最遠到達). 用 sourcePath 當 score_id.
+    const samples = followConfSamplesRef.current;
+    if (samples.length >= 3 && followMaxMeasureRef.current > 0) {
+      const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+      const id = startPracticeSession(
+        sourcePath ?? undefined,
+        sourcePath ?? arrangement?.name ?? "Mic practice",
+      );
+      addMicScore(id, Math.round(avg * 100));
+      endPracticeSession(id, followMaxMeasureRef.current);
+    }
+    followConfSamplesRef.current = [];
+    followMaxMeasureRef.current = 0;
     trailRef.current = [];
     setLatest(null);
     setFollowStatus({ measure: null, confidence: 0 });

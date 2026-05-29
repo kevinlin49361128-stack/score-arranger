@@ -341,12 +341,18 @@ def _build_measure(
                 prev_dynamic = event.dynamic
             m.insert(float(event.onset), obj)
     else:
+        # 0.1.59: divisi 展開成各自的 m21 Voice (之前 continue 整個丟掉 →
+        # 記譜失真). 攤平成 (render_vid, voice) tuple 清單, branch 用主號 ×10
+        # + 分支序當不撞號 voice id.
+        out_voices: list[tuple[int, object]] = []
         for voice in voices:
             if voice.is_divisi:
-                # Phase 1 簡化: 把 divisi 兩個 sub-voice 合併為 chord
-                # Phase 2 應正確處理為 voice subdivision
-                continue
-            v = m21_stream.Voice(id=str(voice.voice_id))
+                for bi, branch in enumerate(voice.divisi_branches or []):
+                    out_voices.append((voice.voice_id * 10 + bi, branch))
+            else:
+                out_voices.append((voice.voice_id, voice))
+        for render_vid, voice in out_voices:
+            v = m21_stream.Voice(id=str(render_vid))
             prev_dynamic = None
             for event in voice.events:
                 obj = _build_event(event, slur_groups)

@@ -630,10 +630,18 @@ def _emit_staff_into_measure(
 # ============================================================================
 
 def _collect_events(measure: Measure) -> list:
-    """把小節內所有非 divisi 聲部的事件併成一串, 依 onset 排序。"""
+    """把小節內所有聲部的事件併成一串, 依 onset 排序。
+
+    0.1.59: divisi (弦樂分部 div. a2) 之前被整個 `continue` 跳過 → 兩條
+    sub-voice 的音全部消失 (記譜失真). 改成把 divisi_branches 的事件也收
+    進來, 由下游 _split_voices (greedy interval partition) 自動分到不同
+    MusicXML voice — 同時發聲的兩條線會落在不同 voice, 符合 divisi 記譜.
+    """
     out: list = []
     for voice in measure.voices.values():
         if voice.is_divisi:
+            for branch in (voice.divisi_branches or []):
+                out.extend(branch.events)
             continue
         out.extend(voice.events)
     out.sort(key=lambda e: (Fraction(e.onset), Fraction(e.duration)))
