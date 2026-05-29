@@ -1,7 +1,7 @@
 """
 古典吉他 (Classical Guitar) profile + 和弦可行性檢查
 
-對應規格: architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族首批成員。
+對應規格: docs/architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族首批成員。
 
 與擦弦樂器 (violin/viola/cello) 的差異:
 - 撥弦樂器各弦獨立撥動, 可略過 / 悶住中間的弦 → 使用的弦「不需相鄰」。

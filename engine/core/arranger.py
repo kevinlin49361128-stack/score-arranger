@@ -1,7 +1,7 @@
 """
 Arrangement Engine — 四階段聲部分配
 
-對應規格: architecture.md §4.4.1
+對應規格: docs/architecture.md §4.4.1
 
 Phase 1 範圍 (本檔案):
 - Phase A: 骨架分配 (MELODY → 最高音樂器, BASS → 最低音樂器)
@@ -245,7 +245,7 @@ def arrange(
     _phase_a_skeleton(score, section, players, arrangement)
     _phase_b_fill(score, section, players, arrangement)
 
-    # 樂句級旋律換手 (architecture.md §4.4: 主旋律僅在樂句邊界換聲部)
+    # 樂句級旋律換手 (docs/architecture.md §4.4: 主旋律僅在樂句邊界換聲部)
     try:
         _apply_melody_handoff(score, section, arrangement)
     except Exception:
@@ -471,7 +471,7 @@ def _phase_b_fill(
 
 
 # ============================================================================
-# 樂句級旋律換手 (architecture.md §4.4)
+# 樂句級旋律換手 (docs/architecture.md §4.4)
 # ============================================================================
 
 # section 超過此長度 → 跳過換手偵測 (detect_phrases 的 DP 在超大段落上太慢,

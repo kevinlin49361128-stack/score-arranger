@@ -1,7 +1,7 @@
 """
 聲部功能標記 (Voice Function Tagging)
 
-對應規格: architecture.md §4.2.3 (Voice Function Labeling)
+對應規格: docs/architecture.md §4.2.3 (Voice Function Labeling)
 
 判斷邏輯優先序:
 1. 最高聲部 + 旋律特徵 → MELODY

@@ -1,7 +1,7 @@
 """
 聲樂 (Voice) profiles — SATB 四聲部音域
 
-對應規格: architecture.md §4.3 (Instrument Knowledge Base)
+對應規格: docs/architecture.md §4.3 (Instrument Knowledge Base)
 
 聖詠類作品 (Bach chorales) 在 music21 corpus 中使用 generic Instrument,
 parser 從 partName 偵測為 "Soprano" / "Alto" / "Tenor" / "Bass"。

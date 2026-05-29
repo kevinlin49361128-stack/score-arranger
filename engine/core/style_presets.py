@@ -323,7 +323,7 @@ def _post_classical_unison_spread(arrangement) -> None:
     與 violin_2 同 onset 同 midi_number → violin_1 提升 8va (檢查不超
     violin 高音範圍).
 
-    參考 architecture.md §4.3.3 弦樂分配 + idiomatic 規則.
+    參考 docs/architecture.md §4.3.3 弦樂分配 + idiomatic 規則.
     """
     from .instruments import get_profile
     from .ir import NoteEvent, Pitch

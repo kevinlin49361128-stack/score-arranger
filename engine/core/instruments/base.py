@@ -1,7 +1,7 @@
 """
 樂器知識庫基礎類別 — InstrumentProfile + CheckResult
 
-對應規格: architecture.md §4.3.1 + docs/i18n-spec.md (錯誤代碼結構)
+對應規格: docs/architecture.md §4.3.1 + docs/i18n-spec.md (錯誤代碼結構)
 """
 
 from __future__ import annotations
@@ -61,7 +61,7 @@ class StringDef:
 
 @dataclass
 class InstrumentProfile:
-    """樂器規格 (architecture.md §4.3.1)。
+    """樂器規格 (docs/architecture.md §4.3.1)。
 
     instrument_id 必須與 Part.instrument_id 一致, 用於 registry 查找。
     """

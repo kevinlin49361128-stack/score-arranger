@@ -1,7 +1,7 @@
 """
 Directed Repair Loop — 定向修復迴圈
 
-對應規格: architecture.md §4.5 (Playability Validator + 修復迴圈)
+對應規格: docs/architecture.md §4.5 (Playability Validator + 修復迴圈)
        + i18n-spec.md (錯誤代碼結構)
 
 Phase 1 範圍 (本檔案):

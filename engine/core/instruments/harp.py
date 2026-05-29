@@ -1,7 +1,7 @@
 """
 音樂會踏板豎琴 (Concert Pedal Harp) profile + 和弦可行性檢查
 
-對應規格: architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族成員。
+對應規格: docs/architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族成員。
 
 踏板豎琴的關鍵特性:
 - 47 根弦, 每個字母音名 (C/D/E/F/G/A/B) 每個八度只有「一根」弦。

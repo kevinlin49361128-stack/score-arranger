@@ -1,7 +1,7 @@
 """
 樂器註冊表 — 透過 instrument_id 查找 InstrumentProfile
 
-對應規格: engine/instruments/registry.py (architecture.md §9)
+對應規格: engine/instruments/registry.py (docs/architecture.md §9)
 """
 
 from __future__ import annotations

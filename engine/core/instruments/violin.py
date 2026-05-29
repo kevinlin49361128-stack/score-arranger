@@ -1,7 +1,7 @@
 """
 小提琴 (Violin) profile + 和弦可行性檢查
 
-對應規格: architecture.md §4.3.2 (Violin profile) + §4.3.3 (弦樂和弦可行性)
+對應規格: docs/architecture.md §4.3.2 (Violin profile) + §4.3.3 (弦樂和弦可行性)
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ VIOLIN_PROFILE = InstrumentProfile(
     display_name="Violin",
     family="string_bowed",
 
-    # 音域 (architecture.md §4.3.2)
+    # 音域 (docs/architecture.md §4.3.2)
     range_absolute=(55, 108),       # G3 (MIDI 55) — C8 (含泛音)
     range_comfortable=(55, 100),    # G3 — E7
     range_professional=(55, 105),   # G3 — A7
@@ -57,7 +57,7 @@ VIOLIN_PROFILE = InstrumentProfile(
 
 
 # ============================================================================
-# 弦樂和弦可行性檢查 (architecture.md §4.3.3)
+# 弦樂和弦可行性檢查 (docs/architecture.md §4.3.3)
 # ============================================================================
 
 def check_violin_chord(chord_pitches: list[Pitch]) -> CheckResult:

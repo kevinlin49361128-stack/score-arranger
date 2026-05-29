@@ -1,7 +1,7 @@
 """
 持久 Engine Server — JSON-Lines over stdio 協定
 
-對應 architecture.md §3.1 (前後端通訊). 取代每次 spawn child_process 的成本。
+對應 docs/architecture.md §3.1 (前後端通訊). 取代每次 spawn child_process 的成本。
 
 Protocol:
   Server 啟動時送出 ready 訊息: `{"type": "ready", "version": "0.1.0"}`

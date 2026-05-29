@@ -1,7 +1,7 @@
 """
 主旋律偵測 — Skyline + 評分 + 統計
 
-對應規格: architecture.md §4.2.1 (Melody Extraction)
+對應規格: docs/architecture.md §4.2.1 (Melody Extraction)
 
 策略:
 - 第一層: Skyline (每時間點最高音)

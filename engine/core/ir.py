@@ -30,7 +30,7 @@ Duration = Fraction   # 音符時值, 以四分音符為 1.0
 # ============================================================================
 
 class VoiceFunction(str, Enum):
-    """聲部在音樂結構中的功能角色 (對應 architecture.md §4.2.3)"""
+    """聲部在音樂結構中的功能角色 (對應 docs/architecture.md §4.2.3)"""
     MELODY = "melody"
     BASS = "bass"
     COUNTERMELODY = "countermelody"
@@ -47,7 +47,7 @@ class IssueSeverity(str, Enum):
     INFO = "info"        # 綠: 建議改善但非必要
 
 
-# Issue 加權分數 (見 architecture.md §修復迴圈收斂指標)
+# Issue 加權分數 (見 docs/architecture.md §修復迴圈收斂指標)
 ISSUE_WEIGHTS: dict[IssueSeverity, float] = {
     IssueSeverity.ERROR: 10.0,
     IssueSeverity.WARNING: 3.0,

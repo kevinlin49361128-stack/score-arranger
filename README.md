@@ -80,13 +80,12 @@ engine/
   core/          Python 引擎 (parser、analyzer、arranger、validator、server)
   tests/         引擎單元測試 (pytest)
 build/           electron-builder 的 buildResources (icon、entitlements)
-docs/            設計規格文件
-architecture.md  完整架構設計書
+docs/            設計規格文件 (architecture.md 架構設計書、IR/樂句/和聲/Player 規格等)
 ```
 
 ## 文件
 
-- [`architecture.md`](architecture.md) — 完整架構設計書
+- [`docs/architecture.md`](docs/architecture.md) — 完整架構設計書
 - [`docs/`](docs/) — IR 規格、樂句偵測規格、MCP 設定等
 - [`NOTICE.md`](NOTICE.md) — 第三方元件授權與致謝
 

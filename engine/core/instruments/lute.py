@@ -1,7 +1,7 @@
 """
 文藝復興魯特琴 (Renaissance Lute, 六組弦, G 調) profile + 和弦可行性檢查
 
-對應規格: architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族成員。
+對應規格: docs/architecture.md §4.3 (樂器知識庫) — 撥弦樂器 (plucked) 家族成員。
 
 魯特琴的「組弦」(course):
 - 一個 course 是「成對的兩根弦」, 演奏時當作一根弦處理 (齊奏同音或八度)。

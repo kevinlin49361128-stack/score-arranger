@@ -1,7 +1,7 @@
 """
 改編品質 metrics — 量化「這次改編做得好不好」
 
-對應規格: architecture.md §4.7 (Phase 3, 提早實作以協助使用者選擇變體)
+對應規格: docs/architecture.md §4.7 (Phase 3, 提早實作以協助使用者選擇變體)
 
 三項分數 (0-1, 越高越好):
 

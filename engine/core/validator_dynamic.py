@@ -1,7 +1,7 @@
 """
 Playability Validator 層次 B — 動態序列模擬
 
-對應規格: architecture.md §4.5.1 與 §4.5.6 (StringPositionSimulator)
+對應規格: docs/architecture.md §4.5.1 與 §4.5.6 (StringPositionSimulator)
 
 Phase 1 範圍:
 - 弦樂把位路徑: 模擬左手把位遷移, 在當前速度下評估可行性
@@ -81,7 +81,7 @@ class DynamicIssue:
 class StringPositionSimulator:
     """模擬弦樂左手把位狀態,追蹤連續音符間的把位跳躍。
 
-    對應 architecture.md §4.5.6 的 StringPositionSimulator。
+    對應 docs/architecture.md §4.5.6 的 StringPositionSimulator。
     """
     profile: InstrumentProfile
     current_position: int = 1

@@ -1,7 +1,7 @@
 """
 和聲分析 (Harmonic Analysis)
 
-對應規格: architecture.md §4.2.2
+對應規格: docs/architecture.md §4.2.2
 
 Phase 1 範圍:
 - 自動偵測整曲調性 (music21 key detection)

@@ -1,7 +1,7 @@
 """
 演奏難度評分 — 依改編結果為每個 part 計算難度等級 (1-5)
 
-對應規格: architecture.md §4.6 (Phase 3 探索性, 提早實作以協助使用者)
+對應規格: docs/architecture.md §4.6 (Phase 3 探索性, 提早實作以協助使用者)
 
 評分因子 (每項 0-1):
 1. range_factor: 音高超出 comfortable 比例

@@ -1,7 +1,7 @@
 """
 鋼琴 (Piano) profile + 手距檢查
 
-對應規格: architecture.md §4.3.2 (Piano profile) + §4.3.4 (手距檢查)
+對應規格: docs/architecture.md §4.3.2 (Piano profile) + §4.3.4 (手距檢查)
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ PIANO_PROFILE = InstrumentProfile(
 
 
 # ============================================================================
-# 手距檢查 (architecture.md §4.3.4)
+# 手距檢查 (docs/architecture.md §4.3.4)
 # ============================================================================
 
 Hand = Literal["left", "right"]
