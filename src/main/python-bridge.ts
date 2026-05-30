@@ -92,8 +92,9 @@ class EngineClient {
   private readonly METHOD_TIMEOUT_MS: Record<string, number> = {
     pdf_to_musicxml: 900_000, // Audiveris OMR — 引擎端另有 timeout, 此為 process 卡死後備
     audio_to_musicxml: 600_000, // basic-pitch AMT
-    arrange: 300_000, // 修復迴圈最多 10 次
+    arrange: 300_000, // 修復迴圈 (0.1.60 已加事件數硬上限, 不會跑滿)
     arrange_custom: 300_000,
+    refine: 300_000, // 漸進式背景精修 (硬上限後通常 <15s, 此為後備)
   };
   /** 當前作用中的 tab/session id。每次 call 自動帶入。 */
   private activeSessionId: string = "default";
@@ -357,6 +358,20 @@ export async function arrangeScore(
     path, target, repair,
     skill_level: skillLevel,
     style_preset: stylePreset,
+    strategy_order: strategyOrder,
+  });
+}
+
+/**
+ * 0.1.60 漸進式: 對「已 arrange 的當前 arrangement」跑 repair 精修.
+ * 不重新 parse/arrange, server 端在 sess.current_arrangement 上原地修復.
+ */
+export async function refineArrangement(
+  skillLevel: "amateur" | "intermediate" | "professional" = "professional",
+  strategyOrder: string[] = [],
+): Promise<unknown> {
+  return client.call("refine", {
+    skill_level: skillLevel,
     strategy_order: strategyOrder,
   });
 }

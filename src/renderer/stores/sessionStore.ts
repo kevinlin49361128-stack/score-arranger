@@ -264,6 +264,10 @@ interface SessionState {
   arrangement: ArrangementResult | null;
   setArrangement: (a: ArrangementResult | null) => void;
 
+  // 0.1.60 漸進式: 草稿已顯示, 背景精修進行中 (非阻塞, 使用者可先看/播草稿)
+  refining: boolean;
+  setRefining: (v: boolean) => void;
+
   // 改編產出的 issues (target_score 上的, 可 apply_suggestion)
   arrangementIssues: ArrangementIssue[];
   setArrangementIssues: (issues: ArrangementIssue[]) => void;
@@ -432,6 +436,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   arrangement: null,
   setArrangement: (a) => set({ arrangement: a }),
+  refining: false,
+  setRefining: (v) => set({ refining: v }),
 
   arrangementIssues: [],
   setArrangementIssues: (issues) => set({ arrangementIssues: issues }),

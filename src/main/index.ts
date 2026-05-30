@@ -11,6 +11,7 @@ import {
   applyEditOps,
   applySuggestion,
   arrangeScore,
+  refineArrangement,
   closeSession,
   detectPhrases,
   editEvent,
@@ -251,6 +252,11 @@ function registerIpcHandlers(): void {
     arrangeScore(
       path, target, repair, skillLevel, stylePreset, strategyOrder,
     )));
+  ipcMain.handle("engine:refine", async (
+    _evt,
+    skillLevel?: "amateur" | "intermediate" | "professional",
+    strategyOrder?: string[],
+  ) => safeCall(() => refineArrangement(skillLevel, strategyOrder)));
   ipcMain.handle("engine:listStylePresets", async () =>
     safeCall(() => listStylePresets()));
   ipcMain.handle("engine:listAvailableInstruments", async () =>

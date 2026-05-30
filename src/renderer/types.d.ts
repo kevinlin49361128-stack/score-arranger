@@ -90,6 +90,11 @@ declare global {
           stylePreset?: string,
           strategyOrder?: string[],
         ) => Promise<IpcResponse<ArrangementResult>>;
+        /** 0.1.60 漸進式: 對已 arrange 的 arrangement 跑背景精修, 回傳更新欄位 */
+        refine: (
+          skillLevel?: "amateur" | "intermediate" | "professional",
+          strategyOrder?: string[],
+        ) => Promise<IpcResponse<Partial<ArrangementResult>>>;
         listStylePresets: () => Promise<IpcResponse<
           { id: string; display_name: string; description: string;
             llm_addendum: string }[]

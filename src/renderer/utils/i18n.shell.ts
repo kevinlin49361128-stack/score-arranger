@@ -170,6 +170,16 @@ export const SHELL_STRINGS: BiDict = {
     ja: "編曲後に修復ループを自動実行し, 音域 / ポジションなどの問題の"
       + "解決を試みます",
   },
+  "toolbar.refining": {
+    "zh-TW": "精修中…", en: "Refining…", ja: "調整中…",
+  },
+  "toolbar.refining.title": {
+    "zh-TW": "已顯示草稿, 正在背景執行修復迴圈精修譜面 (可繼續操作)",
+    en: "Draft shown — running the repair loop in the background "
+      + "(you can keep working)",
+    ja: "下書きを表示中 — バックグラウンドで修復ループを実行しています"
+      + "(操作を続けられます)",
+  },
   "toolbar.arrangeOpts.skillLevel": {
     "zh-TW": "演奏者技術水平", en: "Player skill level",
     ja: "奏者の技術レベル",

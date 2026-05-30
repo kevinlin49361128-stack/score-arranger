@@ -93,6 +93,8 @@ export function Toolbar() {
     arrangement,
     setArrangement,
     setArrangementIssues,
+    refining,
+    setRefining,
     setLoading,
     setError,
     setStyleAddendum,
@@ -198,6 +200,8 @@ export function Toolbar() {
     };
   }, [sourcePath]);
   // 引導模式 — 4 個主要動作按鈕的 anchor ref, 給 Coachmark 用
+  // 漸進式改編的世代計數 — 使用者重新改編時 ++, 用來丟棄過期的背景精修結果
+  const arrangeGenRef = useRef(0);
   const arrangeBtnRef = useRef<HTMLButtonElement>(null);
   const nlEditBtnRef = useRef<HTMLButtonElement>(null);
   const boostBtnRef = useRef<HTMLButtonElement>(null);
@@ -660,41 +664,77 @@ export function Toolbar() {
     }
   };
 
+  // 漸進式改編: 兩階段
+  //   Stage 1 (draft) — 一律 repair=false, 快速產生草稿並立即渲染, 解除阻塞遮罩
+  //   Stage 2 (refine) — 若開啟修復, 背景跑 repair_loop, 完成後就地更新譜面
+  // 世代計數 + 分頁 id 防競態: 使用者重新改編或切換分頁時, 過期的精修結果直接丟棄
   const handleArrange = async () => {
     if (!sourcePath) return;
+    const gen = ++arrangeGenRef.current;
+    const originTabId = activeTabId;
+    setRefining(false);
     setLoading(true, tr("toolbar.loading.arranging"));
     setError(null);
     try {
-      const res = targetEnsemble === "__custom__" && customPlayers
+      const draft = targetEnsemble === "__custom__" && customPlayers
         ? await window.scoreArranger.engine.arrangeCustom(
           sourcePath,
           customPlayers,
-          enableRepair,
+          false,
           skillLevel,
           stylePreset,
         )
         : await window.scoreArranger.engine.arrange(
           sourcePath,
           targetEnsemble,
-          enableRepair,
+          false,
           skillLevel,
           stylePreset,
           getStrategyPreference(),
         );
-      if (res.ok && res.data) {
-        setArrangement(res.data);
-        setTargetMusicXML(res.data.target_musicxml ?? null);
-        setArrangementIssues(res.data.issues ?? []);
-        setHistoryFlags(false, false);
-        setMode("arrange");
-        snapshotToTab();
-      } else {
-        setError(res.error ?? tr("toolbar.error.arrangeFailed"));
+      if (gen !== arrangeGenRef.current) return; // 已被新一次改編取代
+      if (!draft.ok || !draft.data) {
+        setError(draft.error ?? tr("toolbar.error.arrangeFailed"));
+        return;
+      }
+      const draftData = draft.data;
+      setArrangement(draftData);
+      setTargetMusicXML(draftData.target_musicxml ?? null);
+      setArrangementIssues(draftData.issues ?? []);
+      setHistoryFlags(false, false);
+      setMode("arrange");
+      snapshotToTab();
+
+      if (!enableRepair) return; // 草稿即最終結果
+
+      // Stage 2: 背景精修 — 不阻塞 UI, 草稿已可操作
+      setLoading(false);
+      setRefining(true);
+      try {
+        const ref = await window.scoreArranger.engine.refine(
+          skillLevel,
+          getStrategyPreference(),
+        );
+        if (gen !== arrangeGenRef.current) return; // 過期
+        if (useSessionStore.getState().activeTabId !== originTabId) return;
+        if (ref.ok && ref.data) {
+          setArrangement({ ...draftData, ...ref.data });
+          setTargetMusicXML(
+            ref.data.target_musicxml ?? draftData.target_musicxml ?? null,
+          );
+          setArrangementIssues(ref.data.issues ?? draftData.issues ?? []);
+          snapshotToTab();
+        }
+        // refine 失敗不覆寫草稿 — 草稿仍是有效改編
+      } finally {
+        if (gen === arrangeGenRef.current) setRefining(false);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      if (gen === arrangeGenRef.current) {
+        setError(e instanceof Error ? e.message : String(e));
+      }
     } finally {
-      setLoading(false);
+      if (gen === arrangeGenRef.current) setLoading(false);
     }
   };
 
@@ -1016,6 +1056,29 @@ export function Toolbar() {
           </div>
         )}
       </div>
+      {refining && (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "3px 9px",
+            borderRadius: 999,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "var(--accent)",
+            background: "var(--accent-soft, rgba(120,90,200,0.12))",
+            border: "1px solid var(--accent)",
+            whiteSpace: "nowrap",
+          }}
+          title={tr("toolbar.refining.title")}
+        >
+          <span className="sa-refining-dot" aria-hidden>
+            ◍
+          </span>
+          {tr("toolbar.refining")}
+        </span>
+      )}
       <button
         ref={nlEditBtnRef}
         onClick={async () => {

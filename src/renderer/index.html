@@ -310,6 +310,16 @@
       .fx-breathe {
         animation: fx-breathe 4.5s ease-in-out infinite;
       }
+
+      /* 漸進式改編 — 背景精修中的脈動點 */
+      @keyframes sa-refining-pulse {
+        0%, 100% { opacity: 0.35; transform: scale(0.85); }
+        50% { opacity: 1; transform: scale(1.1); }
+      }
+      .sa-refining-dot {
+        display: inline-block;
+        animation: sa-refining-pulse 1.1s ease-in-out infinite;
+      }
     </style>
   </head>
   <body>

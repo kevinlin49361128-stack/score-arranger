@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>改編模式 (快速/完整) — 決策文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#faf8f4;--paper:#fff;--ink:#2a2a2a;--muted:#6b6b6b;--border:#e5e1d8;--accent:#8b2c2c;
+    --p0:#c44545;--p1:#c4892c;--p2:#6b8e3d;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);}
+  *{box-sizing:border-box;}
+  body{font:15px/1.65 -apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);
+    max-width:940px;margin:0 auto;padding:40px 24px 130px;}
+  h1{font-weight:600;font-size:27px;margin:0 0 6px;letter-spacing:-.01em;}
+  .subtitle{color:var(--muted);margin-bottom:26px;font-size:14px;}
+  h2{font-weight:600;font-size:18px;margin:34px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .intro{background:#fff8ec;border:1px solid #f0e0c0;border-radius:8px;padding:14px 18px;margin-bottom:22px;font-size:14px;color:#5a4720;}
+  .intro b{color:#3a2f10;}
+  .q-section{margin-bottom:28px;}
+  .q-label{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:12px;
+    box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s;position:relative;}
+  .card:hover{border-color:#c9c0ac;}
+  .card.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(139,44,44,.12),var(--shadow);}
+  .card.radio.selected{background:#fffaf5;}
+  .card-header{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;flex-wrap:wrap;}
+  .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;color:#fff;letter-spacing:.02em;}
+  .t-p0{background:var(--p0);}.t-p1{background:var(--p1);}.t-p2{background:var(--p2);}
+  .size{font-size:11px;color:var(--muted);border:1px solid var(--border);padding:1px 7px;border-radius:4px;}
+  .title{font-weight:600;font-size:15px;flex:1;}
+  .rec{background:#fff8e0;color:#8a5a00;border:1px solid #f0d97a;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:500;}
+  .body{color:#444;font-size:13.5px;}.body p{margin:5px 0;}
+  .check{position:absolute;top:15px;right:18px;width:21px;height:21px;border:2px solid var(--border);border-radius:6px;background:#fff;transition:all .15s;}
+  .card.radio .check{border-radius:50%;}
+  .card.selected .check{background:var(--accent);border-color:var(--accent);}
+  .card.selected .check::after{content:"✓";color:#fff;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;}
+  details{margin-top:6px;font-size:12.5px;}
+  details summary{cursor:pointer;color:var(--muted);font-weight:500;user-select:none;}
+  details>div{margin-top:5px;padding-left:14px;border-left:2px solid var(--border);color:#555;}
+  code{background:#f3efe5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:"SF Mono",Menlo,monospace;}
+  table{border-collapse:collapse;width:100%;margin:8px 0 18px;font-size:13px;}
+  th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;}
+  th{background:#f3efe5;font-weight:600;}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:rgba(250,248,244,.95);backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);padding:14px 24px;}
+  .footer-inner{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .counter{font-size:13px;color:var(--muted);}.counter strong{color:var(--ink);}
+  button{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:6px;font:inherit;font-weight:600;cursor:pointer;transition:opacity .15s;}
+  button:hover{opacity:.9;}button:disabled{opacity:.4;cursor:not-allowed;}
+  button.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<h1>改編模式 — 快速 / 完整 切換</h1>
+<div class="subtitle">Score Arranger 方向決策 · 2026-05-29 · 基於 0.1.59 (timeout 已修, 弦四→鋼琴 35s)</div>
+
+<div class="intro">
+  <b>背景</b>: <code>arrange()</code> 本身 0.2s, 慢的全在 <code>repair_loop</code> (品質精修)。「快 vs 嚴謹」= 跑多少驗證+修復。repair 已參數化 (<code>max_iterations</code> / <code>strategies</code>), collect_issues 檢查可分層 (ERROR 可演奏性 / WARNING 音樂精修), 所以切換技術上乾淨。<br>
+  <b>我的建議</b>: 2 個明確模式 + 自動預設, 不要 3 個。但「漸進式」(秒出草稿+背景精修) 可能比 toggle 更優雅 — 見 Q1。
+</div>
+
+<!-- ============ Q1: 互動模型 ============ -->
+<div class="q-section">
+  <div class="q-label">Q1 · 互動模型 (單選) — 使用者怎麼碰到「快/慢」?</div>
+
+  <div class="card radio" data-group="ux" data-id="UX-progressive">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p1">M-L</span>
+      <span class="title">A. 漸進式 — 秒出草稿, 背景精修 (無模式選擇)</span>
+      <span class="rec">🎯 我的首選</span>
+    </div>
+    <div class="body">
+      <p>按「改編」→ 立刻 (0.2s) 顯示 raw arrange, 標「精修中…」; repair 在背景跑, 完成後 (~數秒~35s) 自動更新譜面 + 通知。使用者永遠看到最快的初稿, 又拿到最完整的結果。</p>
+      <details><summary>為什麼是首選 / 反方</summary><div>
+        繞過「要不要選模式」的認知負擔 — 對音樂老師 / 業餘者最友善。反方: 前端要處理兩階段更新 (raw → refined), 若使用者在精修中已開始編輯會有衝突; 工程量比 toggle 大。但這是「正確的難」。
+      </div></details>
+    </div>
+  </div>
+
+  <div class="card radio" data-group="ux" data-id="UX-toggle">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p0">S</span>
+      <span class="title">B. 明確 toggle — 改編前選「草稿 / 完整」</span>
+    </div>
+    <div class="body">
+      <p>改編按鈕旁加下拉: 草稿 (快) / 完整 (精修)。<b>自動預設</b>依譜長挑 (小譜→完整, 大譜→草稿), 可覆寫。</p>
+      <details><summary>反方</summary><div>多一個決策點; 「草稿」產出較差時使用者可能沒意識到自己選了草稿 → 抱怨「改編很爛」。需清楚標示 + 一鍵升級完整。工程量最小 (repair 已參數化)。</div></details>
+    </div>
+  </div>
+
+  <div class="card radio" data-group="ux" data-id="UX-auto">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p0">S</span>
+      <span class="title">C. 純自動 — 依譜長挑, 完全不給選</span>
+    </div>
+    <div class="body">
+      <p>引擎依音符數 / 小節數自動決定 repair 深度, UI 完全不出現「模式」。小譜全力精修, 大譜自動降級保證不 timeout。</p>
+      <details><summary>反方</summary><div>最少認知負擔, 但剝奪「我就要快」或「我要最好」的控制權。進階使用者 (改編家) 會想要明確控制。</div></details>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Q2: 模式數量 ============ -->
+<div class="q-section">
+  <div class="q-label">Q2 · 模式數量 (單選) — 若採 toggle (Q1=B)</div>
+
+  <div class="card radio" data-group="count" data-id="CNT-2">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="title">2 個: 草稿 / 完整</span>
+      <span class="rec">🎯 建議</span>
+    </div>
+    <div class="body"><p>對應真實心智: 「先看能不能用」vs「印譜前精修」。2 個使用者好分辨。</p></div>
+  </div>
+
+  <div class="card radio" data-group="count" data-id="CNT-3">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="title">3 個: 快速 / 標準 / 嚴謹</span>
+    </div>
+    <div class="body">
+      <p>多一個「標準」中間檔。</p>
+      <details><summary>反方</summary><div>使用者分不清「標準」跟「嚴謹」差在哪 — engineering 概念漏進 UI。我不建議。</div></details>
+    </div>
+  </div>
+</div>
+
+<h2>各模式跑什麼 (技術對照)</h2>
+<table>
+  <thead><tr><th>項目</th><th>草稿 (快)</th><th>完整 (精修)</th></tr></thead>
+  <tbody>
+    <tr><td>repair max_iterations</td><td>2</td><td>10</td></tr>
+    <tr><td>檢查層級</td><td>只 ERROR (可演奏性: 超音域 / 音太多)</td><td>全部 (+ voice-leading / 導音 / stretch / 換氣)</td></tr>
+    <tr><td>候選排序</td><td>第一個合格即採用</td><td>品質 LCS 排序挑最佳 (有方向修復)</td></tr>
+    <tr><td>每輪 MusicXML 快照 (scrubber)</td><td>跳過</td><td>保留</td></tr>
+    <tr><td>目標耗時 (弦四→鋼琴)</td><td>&lt; 3s</td><td>~8s (優化後) / 35s (現況)</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ Q3: 優化範圍 (可複選) ============ -->
+<div class="q-section">
+  <div class="q-label">Q3 · 優化項目 (可複選) — 讓「完整」也快</div>
+
+  <div class="card" data-id="OPT-incremental">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p0">M</span><span class="size">最大結構贏</span>
+      <span class="title">增量 collect_issues — 只重驗被改動的小節</span>
+      <span class="rec">🎯 建議</span>
+    </div>
+    <div class="body">
+      <p>repair 內層每試一個策略就整譜重掃 (×6 策略 × 10 輪)。策略只改 1 個小節, 卻重驗全譜。改成只重驗被動到的小節 + 鄰接 → 兩個模式都受益, 甚至讓「草稿/完整」之分變得沒必要。</p>
+      <details><summary>反方</summary><div>要小心跨小節的檢查 (voice-leading 看相鄰小節邊界) — 需重驗 ±1 小節。改 repair 核心, 中風險, 要完整 regression。</div></details>
+    </div>
+  </div>
+
+  <div class="card" data-id="OPT-lcs">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p1">S</span>
+      <span class="title">memoize 品質 LCS</span>
+    </div>
+    <div class="body"><p><code>quality._lcs_length</code> (旋律相似度, O(n²)) 每輪重算。melody 線多半不變, 可快取 / 只在旋律聲部變動時重算。profile 顯示它是修完 find_region_at 後的第二瓶頸 (~1s)。</p></div>
+  </div>
+
+  <div class="card" data-id="OPT-snapshot">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p1">M</span>
+      <span class="title">輕量 snapshot 取代整譜 deepcopy</span>
+    </div>
+    <div class="body">
+      <p>每策略試錯前 <code>copy.deepcopy(target)</code> 整譜 (470 萬次 deepcopy 呼叫)。改成只快照被改的小節, 或記 undo-delta。</p>
+      <details><summary>反方</summary><div>deepcopy 雖多但單次便宜 (0.04s); 改 snapshot 機制風險高於收益, 優先序低於增量 collect。</div></details>
+    </div>
+  </div>
+
+  <div class="card" data-id="OPT-cap">
+    <div class="check"></div>
+    <div class="card-header">
+      <span class="tag t-p0">S</span><span class="size">安全網</span>
+      <span class="title">超大譜硬上限 — 永遠不再 timeout</span>
+      <span class="rec">🎯 建議</span>
+    </div>
+    <div class="body"><p>不管模式, 依音符數設 repair 時間/迭代硬上限 (e.g. >2000 音符自動降 max_iter), 並 log 告知「已自動降級」。防止任何病態譜再撞 300s。便宜的保險。</p></div>
+  </div>
+</div>
+
+<h2>我的建議組合</h2>
+<div class="card" style="background:#fff8e0;border-color:#f0d97a;">
+  <div class="body">
+    <p><strong>務實首發</strong>: Q1=<code>B toggle</code> + Q2=<code>2 個</code> + Q3=<code>增量 collect + 硬上限</code>。toggle 工程小先上, 增量 collect 把完整模式壓到 ~8s, 硬上限保證不 timeout。</p>
+    <p><strong>理想終態</strong>: Q1=<code>A 漸進式</code> + Q3 全做。秒出草稿 + 背景精修, 使用者無感最好。但工程量大, 建議分兩階段: 先 toggle, 驗證使用者真的會切, 再投資漸進式。</p>
+    <p><em>反方總結</em>: 如果增量 collect 把「完整」壓到 &lt;5s, <strong>可能根本不需要「草稿」模式</strong> — 直接全用完整就好, 省掉整個 toggle 的認知負擔與維護成本。先做 Q3 的增量 collect, 量完速度再決定要不要 Q1/Q2, 是最省的路徑。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+<div class="footer"><div class="footer-inner">
+  <div class="counter"><strong id="count">0</strong> 項已選</div>
+  <div><button class="secondary" id="clear">清除</button><button id="copy" disabled>複製決策摘要</button></div>
+</div></div>
+
+<script>
+const KEY="arrange-modes-decisions-v1";
+const cards=document.querySelectorAll(".card[data-id]");
+const counter=document.getElementById("count");
+const copyBtn=document.getElementById("copy");
+const clearBtn=document.getElementById("clear");
+const toast=document.getElementById("toast");
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"[]");cards.forEach(c=>{if(s.includes(c.dataset.id))c.classList.add("selected");});}catch{}update();}
+function save(){localStorage.setItem(KEY,JSON.stringify([...cards].filter(c=>c.classList.contains("selected")).map(c=>c.dataset.id)));}
+function update(){const n=[...cards].filter(c=>c.classList.contains("selected")).length;counter.textContent=n;copyBtn.disabled=n===0;}
+cards.forEach(c=>c.addEventListener("click",e=>{
+  if(e.target.closest("details"))return;
+  const grp=c.dataset.group;
+  if(grp){ // radio: 同組互斥
+    document.querySelectorAll(`.card[data-group="${grp}"]`).forEach(o=>{if(o!==c)o.classList.remove("selected");});
+    c.classList.add("selected");
+  } else {
+    c.classList.toggle("selected");
+  }
+  save();update();
+}));
+clearBtn.addEventListener("click",()=>{cards.forEach(c=>c.classList.remove("selected"));save();update();});
+copyBtn.addEventListener("click",()=>{
+  const sel=[...cards].filter(c=>c.classList.contains("selected"));
+  const lines=sel.map(c=>{
+    const t=c.querySelector(".title").textContent.trim();
+    const grp=c.dataset.group?`[${c.dataset.group}] `:"";
+    return `- ${grp}${t}`;
+  });
+  navigator.clipboard.writeText(`改編模式 — 決定:\n${lines.join("\n")}\n\n(共 ${sel.length} 項)`).then(()=>{
+    toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1800);
+  });
+});
+load();
+</script>
+</body>
+</html>

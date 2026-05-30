@@ -955,6 +955,71 @@ def _method_arrange(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_refine(params: dict[str, Any]) -> dict:
+    """0.1.60 漸進式: 對「已存在的 arrangement」跑 repair_loop (精修).
+
+    前端流程: arrange(repair=false) 秒出草稿 → 立即呼叫 refine() 在背景精修.
+    本方法不重新 parse/arrange, 只在 sess.current_arrangement 上原地修復,
+    回傳更新後的 target_musicxml + issues + quality + difficulty + repair 摘要
+    (與 _method_arrange 同欄位子集, 前端可直接覆蓋).
+    """
+    sess = _session(params)
+    arrangement = sess.current_arrangement
+    if arrangement is None or arrangement.target_score is None:
+        return {"error": "no current arrangement to refine"}
+    skill_level = params.get("skill_level", "professional")
+    if skill_level not in ("amateur", "intermediate", "professional"):
+        skill_level = "professional"
+
+    before = severity_score(
+        collect_issues(arrangement.target_score, skill_level=skill_level)
+    )
+    report = repair_loop(
+        arrangement,
+        strategies=_ordered_strategies(params.get("strategy_order")),
+    )
+    after = severity_score(
+        collect_issues(arrangement.target_score, skill_level=skill_level)
+    )
+    repair_info = _build_repair_info(report, before, after)
+
+    target_xml = None
+    if arrangement.target_score is not None:
+        try:
+            target_xml = write_musicxml_string(arrangement.target_score)
+        except Exception:
+            target_xml = None
+
+    sess.current_arrangement = arrangement
+    _persist_session(params.get("session_id"))
+
+    quality_dict = _serialize_quality(arrangement)
+    difficulty_dict = _serialize_difficulty(arrangement)
+    explanation_dict = None
+    try:
+        from .explainer import explanation_to_dict, generate_explanation
+        exp = generate_explanation(
+            arrangement,
+            quality_dict=quality_dict,
+            difficulty_dict=difficulty_dict,
+            repair_dict=repair_info,
+        )
+        explanation_dict = explanation_to_dict(exp)
+    except Exception:
+        pass
+
+    return {
+        "target_musicxml": target_xml,
+        "repair": repair_info,
+        "issues": _serialize_issues(
+            collect_issues(arrangement.target_score, skill_level=skill_level)
+        ),
+        "difficulty": difficulty_dict,
+        "quality": quality_dict,
+        "explanation": explanation_dict,
+    }
+
+
 def _serialize_quality(arrangement) -> Optional[dict]:
     """整體改編品質 (melody/harmony/playability) — 給 A/B 版本比較用。"""
     if arrangement is None or arrangement.target_score is None \
@@ -1007,6 +1072,8 @@ def _build_repair_info(report, before: float, after: float) -> dict:
     return {
         "iterations": len(report.iterations),
         "converged": report.converged,
+        # 0.1.60 Q3d: 大譜觸發硬上限縮放 → UI 可提示「已自動降級, 可手動再修」
+        "capped": getattr(report, "capped", False),
         "severity_before": before,
         "severity_after": after,
         # 修復前後的改編品質 (melody/harmony/playability) — 讓 UI 顯示
@@ -2804,6 +2871,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "analyze_harmony": _method_analyze_harmony,
     "analyze": _method_analyze,
     "arrange": _method_arrange,
+    "refine": _method_refine,
     "transcribe": _method_transcribe,
     "list_source_parts": _method_list_source_parts,
     "suggest_transposition": _method_suggest_transposition,

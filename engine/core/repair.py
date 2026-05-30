@@ -61,6 +61,37 @@ DEFAULT_EPSILON = 0.5
 # issue 清空或全部標為 manual 時就會提早結束, 不會空轉。
 DEFAULT_MAX_ITERATIONS = 50
 
+# 0.1.60 Q3d 硬上限: 每輪成本 ≈ collect_issues × 策略數 + per-iter 序列化,
+# 隨譜面事件數線性增長。密集大譜 (e.g. 弦四 92 小節 → 鋼琴, 數千事件) ×
+# 50 輪會逼近 server 300s timeout。依事件數縮放迭代上限, 保證任何譜都不
+# 再 timeout (寧可少修幾輪也不要卡死); 觸發時 RepairReport.capped=True.
+_HARD_CAP_EVENT_THRESHOLD = 1500   # 超過此事件數開始縮放
+_HARD_CAP_MIN_ITERATIONS = 12      # 縮放後的下限
+
+
+def _count_events(score: Score) -> int:
+    n = 0
+    for part in score.parts:
+        for m in part.measures:
+            for v in m.voices.values():
+                branches = v.divisi_branches if v.is_divisi else [v]
+                for b in (branches or []):
+                    n += len(b.events)
+    return n
+
+
+def _capped_max_iterations(score: Score, requested: int) -> int:
+    """依事件數縮放迭代上限. 小譜不受影響; 大譜線性收斂到 MIN."""
+    events = _count_events(score)
+    if events <= _HARD_CAP_EVENT_THRESHOLD:
+        return requested
+    # events 越多, 允許的輪數越少 (反比), 但不低於 MIN
+    scaled = max(
+        _HARD_CAP_MIN_ITERATIONS,
+        int(requested * _HARD_CAP_EVENT_THRESHOLD / events),
+    )
+    return min(requested, scaled)
+
 
 # ============================================================================
 # 定位的問題
@@ -108,6 +139,9 @@ class RepairReport:
     # 修復除了減少 issue 數, 對音樂品質的實際影響。
     quality_before: Optional[QualityReport] = None
     quality_after: Optional[QualityReport] = None
+    # 0.1.60 Q3d: 大譜觸發硬上限縮放迭代數 (避免 timeout). True = 此次修復
+    # 未必修完所有 issue, 是為了不卡死主動降級.
+    capped: bool = False
 
 
 # ============================================================================
@@ -1363,6 +1397,12 @@ def repair_loop(
     report = RepairReport()
     target = arrangement.target_score
     report.quality_before = _safe_quality(arrangement)
+
+    # 0.1.60 Q3d: 大譜硬上限 — 依事件數縮放迭代上限, 保證不 timeout.
+    effective_max = _capped_max_iterations(target, max_iterations)
+    if effective_max < max_iterations:
+        report.capped = True
+    max_iterations = effective_max
 
     # 跨輪持久的 manual issue keys (reviewer 建議):
     # collect_issues 每輪重建 LocatedIssue 物件, 所以 is_manual 在物件上不持久;
