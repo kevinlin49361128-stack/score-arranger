@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "score-arranger-engine"
-version = "0.1.61"
+version = "0.1.62"
 description = "Score Arranger Python core engine — IR, parser, analyzer, arranger, validator"
 requires-python = ">=3.11"
 authors = [{ name = "Kevin Lin" }]

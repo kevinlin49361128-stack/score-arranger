@@ -5,10 +5,11 @@
  * 顯示義式速度術語 (D4)、視覺拍點燈 (E1)、每拍重音點擊切換 (A5)。
  * 訓練器 (D1 漸進加速 / D2 靜音) 在面板下方 (見 useMetronome trainer)。
  */
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
+import { parseMusicXmlTempo } from "../utils/musicXmlTempo";
 import {
   type AccentLevel,
   type MetronomeSoundId,
@@ -30,27 +31,57 @@ export function MetronomePanel() {
   const open = useSessionStore((s) => s.metronomeOpen);
   const setOpen = useSessionStore((s) => s.setMetronomeOpen);
   const arrangement = useSessionStore((s) => s.arrangement);
+  const sourceMusicXML = useSessionStore((s) => s.sourceMusicXML);
 
   const m = useMetronome();
-  const { state, stop } = m;
+  const { state, stop, setBpm, setTimeSig } = m;
+
+  // 目前樂譜的速度/拍號: 優先用改編結果 (引擎 canonical), 否則解析來源譜
+  // (載入但還沒改編時也能同步)。
+  const scoreTempo = useMemo(() => {
+    const at = arrangement?.tempo;
+    if (at) {
+      return {
+        bpm: Math.round(at.base_bpm),
+        numerator: at.time_signature.numerator,
+        denominator: at.time_signature.denominator,
+      };
+    }
+    const p = parseMusicXmlTempo(sourceMusicXML);
+    if (p && (p.bpm !== null || p.numerator !== null)) return p;
+    return null;
+  }, [arrangement, sourceMusicXML]);
 
   // 面板關閉時停止節拍器 (避免背景一直響)。stop 為 useCallback-stable。
   useEffect(() => {
     if (!open && state.isRunning) stop();
   }, [open, state.isRunning, stop]);
 
+  // 自動同步: 開啟面板 / 換譜時, 把節拍器設成樂曲的速度+拍號 (不必手按帶入)。
+  // lastSyncRef 記住已套用的 key — 同一首不重複覆寫使用者後續的 Tap/手調。
+  const lastSyncRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!open || !scoreTempo) return;
+    const { bpm, numerator, denominator } = scoreTempo;
+    const key = `${bpm}|${numerator}|${denominator}`;
+    if (lastSyncRef.current === key) return;
+    lastSyncRef.current = key;
+    if (bpm !== null) setBpm(bpm);
+    if (numerator !== null && denominator !== null) {
+      setTimeSig(numerator, denominator);
+    }
+  }, [open, scoreTempo, setBpm, setTimeSig]);
+
   if (!open) return null;
 
   const term = bpmToTempoTerm(state.bpm);
-  const tempo = arrangement?.tempo ?? null;
 
   const pullFromScore = () => {
-    if (!tempo) return;
-    m.setBpm(tempo.base_bpm);
-    m.setTimeSig(
-      tempo.time_signature.numerator,
-      tempo.time_signature.denominator,
-    );
+    if (!scoreTempo) return;
+    if (scoreTempo.bpm !== null) setBpm(scoreTempo.bpm);
+    if (scoreTempo.numerator !== null && scoreTempo.denominator !== null) {
+      setTimeSig(scoreTempo.numerator, scoreTempo.denominator);
+    }
   };
 
   const accentColor = (lvl: AccentLevel): string =>
@@ -143,7 +174,7 @@ export function MetronomePanel() {
         >
           {DENOMINATORS.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
-        {tempo && (
+        {scoreTempo && (
           <button type="button" onClick={pullFromScore} style={pullBtn}
             title={t("metronome.fromScore.title")}>
             {t("metronome.fromScore")}
