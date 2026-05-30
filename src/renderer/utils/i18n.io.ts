@@ -461,9 +461,12 @@ export const IO_STRINGS: BiDict = {
     ja: "Salamander のピアノサンプルを使用するにはチェック (ネットワークが必要)",
   },
   "playback.rate.title": {
-    "zh-TW": "慢速練習 — 開始播放前選擇速率",
-    en: "Slow practice — pick a rate before starting playback",
-    ja: "スロー練習 — 再生前に速度を選択",
+    "zh-TW": "練習速度 — 以實際 BPM (♩=) 顯示, 開始播放前選擇",
+    en: "Practice tempo — shown as actual BPM (♩=), pick before playback",
+    ja: "練習テンポ — 実際の BPM (♩=) で表示, 再生前に選択",
+  },
+  "playback.rate.original": {
+    "zh-TW": "原速", en: "orig", ja: "原速",
   },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
@@ -491,6 +494,65 @@ export const IO_STRINGS: BiDict = {
     en: "Metronome — clicks on each beat during playback",
     ja: "メトロノーム — 再生中に拍ごとにクリック音",
   },
+  // 0.1.61: 獨立節拍器面板
+  "metronome.open": {
+    "zh-TW": "節拍器", en: "Metronome", ja: "メトロノーム",
+  },
+  "metronome.open.title": {
+    "zh-TW": "開啟獨立節拍器 (BPM / 拍號 / 重音 / 細分 / 練習訓練器)",
+    en: "Open the standalone metronome (BPM / meter / accents / subdivisions / trainers)",
+    ja: "独立メトロノームを開く (BPM / 拍子 / アクセント / 分割 / トレーナー)",
+  },
+  "metronome.title": {
+    "zh-TW": "節拍器", en: "Metronome", ja: "メトロノーム",
+  },
+  "metronome.close": { "zh-TW": "關閉", en: "Close", ja: "閉じる" },
+  "metronome.start": { "zh-TW": "開始", en: "Start", ja: "開始" },
+  "metronome.stop": { "zh-TW": "停止", en: "Stop", ja: "停止" },
+  "metronome.tap": { "zh-TW": "Tap", en: "Tap", ja: "Tap" },
+  "metronome.tap.title": {
+    "zh-TW": "連點幾下以抓出速度", en: "Tap a few times to set the tempo",
+    ja: "数回タップしてテンポを設定",
+  },
+  "metronome.timeSig": { "zh-TW": "拍號", en: "Meter", ja: "拍子" },
+  "metronome.subdivision": { "zh-TW": "細分", en: "Subdiv", ja: "分割" },
+  "metronome.sound": { "zh-TW": "音色", en: "Sound", ja: "音色" },
+  "metronome.sound.woodblock": {
+    "zh-TW": "木魚", en: "Woodblock", ja: "ウッドブロック",
+  },
+  "metronome.sound.click": { "zh-TW": "點擊", en: "Click", ja: "クリック" },
+  "metronome.sound.beep": { "zh-TW": "電子嗶", en: "Beep", ja: "ビープ" },
+  "metronome.sound.cowbell": { "zh-TW": "牛鈴", en: "Cowbell", ja: "カウベル" },
+  "metronome.accent.title": {
+    "zh-TW": "點一下循環: 重音 → 普通 → 靜音",
+    en: "Click to cycle: accent → normal → mute",
+    ja: "クリックで切替: アクセント → 通常 → ミュート",
+  },
+  "metronome.fromScore": { "zh-TW": "帶入樂譜", en: "From score", ja: "楽譜から" },
+  "metronome.fromScore.title": {
+    "zh-TW": "從目前樂譜帶入速度與拍號",
+    en: "Pull tempo and meter from the current score",
+    ja: "現在の楽譜からテンポと拍子を取り込む",
+  },
+  "metronome.countIn": { "zh-TW": "預備拍", en: "Count-in", ja: "カウントイン" },
+  "metronome.countIn.title": {
+    "zh-TW": "播放樂譜前先打 1 小節預備拍",
+    en: "Play one count-in bar before score playback",
+    ja: "楽譜再生前に1小節のカウントインを鳴らす",
+  },
+  "metronome.trainer": { "zh-TW": "練習訓練器", en: "Trainer", ja: "トレーナー" },
+  "metronome.trainer.off": { "zh-TW": "關", en: "Off", ja: "オフ" },
+  "metronome.trainer.speedUp": {
+    "zh-TW": "漸進加速", en: "Speed up", ja: "スピードアップ",
+  },
+  "metronome.trainer.mute": {
+    "zh-TW": "靜音訓練", en: "Mute bars", ja: "ミュート",
+  },
+  "metronome.trainer.everyBars": {
+    "zh-TW": "每 N 小節", en: "every N bars", ja: "N小節ごと",
+  },
+  "metronome.trainer.byBpm": { "zh-TW": "加 BPM", en: "+BPM", ja: "+BPM" },
+  "metronome.trainer.toBpm": { "zh-TW": "上限", en: "max", ja: "上限" },
   "playback.samples.label": {
     "zh-TW": "取樣",
     en: "Samples",

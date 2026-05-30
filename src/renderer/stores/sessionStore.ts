@@ -268,6 +268,10 @@ interface SessionState {
   refining: boolean;
   setRefining: (v: boolean) => void;
 
+  // 0.1.61: 節拍器浮動面板開關
+  metronomeOpen: boolean;
+  setMetronomeOpen: (v: boolean) => void;
+
   // 改編產出的 issues (target_score 上的, 可 apply_suggestion)
   arrangementIssues: ArrangementIssue[];
   setArrangementIssues: (issues: ArrangementIssue[]) => void;
@@ -438,6 +442,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setArrangement: (a) => set({ arrangement: a }),
   refining: false,
   setRefining: (v) => set({ refining: v }),
+  metronomeOpen: false,
+  setMetronomeOpen: (v) => set({ metronomeOpen: v }),
 
   arrangementIssues: [],
   setArrangementIssues: (issues) => set({ arrangementIssues: issues }),

@@ -81,7 +81,9 @@ export async function renderMidiToWav(
     const transport = ctx.transport;
     // 全局 reverb (室內樂空間感) — 所有 instruments connect 到此.
     // Tone.Offline 內部 context 接管全域 ctor — 直接 new Tone.X 就會落到 offline ctx.
-    const reverb = new Tone.Reverb({ decay: 1.4, wet: 0.12 }).toDestination();
+    // 0.1.61: master limiter — 大鍵琴提升音量後防止離線渲染削波 (寫進檔案的削波更難救)
+    const limiter = new Tone.Limiter(-1).toDestination();
+    const reverb = new Tone.Reverb({ decay: 1.4, wet: 0.12 }).connect(limiter);
     midi.tracks.forEach((track) => {
       if (track.notes.length === 0) return;
       const name = (track.instrument?.name || track.name || "").toLowerCase();
@@ -96,7 +98,7 @@ export async function renderMidiToWav(
             resonance: 0.78,
             release: 0.4,
           } as ConstructorParameters<typeof Tone.PluckSynth>[0]);
-          p.volume.value = -9;
+          p.volume.value = -5; // 0.1.61: 大鍵琴提升 (-9→-5), 與 live 退路一致補償
           p.connect(reverb);
           return p;
         });

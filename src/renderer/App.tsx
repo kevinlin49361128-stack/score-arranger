@@ -27,6 +27,7 @@ import { AnalyzePanel } from "./components/AnalyzePanel";
 import { ExportPanel } from "./components/ExportPanel";
 import { ExplanationPanel } from "./components/ExplanationPanel";
 import { IssuePanel } from "./components/IssuePanel";
+import { MetronomePanel } from "./components/MetronomePanel";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { MeasureEditor } from "./components/MeasureEditor";
 import { ModeBar } from "./components/ModeBar";
@@ -427,6 +428,9 @@ export default function App() {
           setPitchHint(null);
         }}
       />
+
+      {/* 0.1.61: 獨立節拍器浮動面板 */}
+      <MetronomePanel />
     </div>
   );
 }

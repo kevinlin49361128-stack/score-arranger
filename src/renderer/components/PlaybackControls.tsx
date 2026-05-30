@@ -13,6 +13,7 @@ import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
+import { bpmToTempoTerm } from "../utils/tempoTerms";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
 
@@ -336,6 +337,10 @@ export function PlaybackControls(
   const violinFallbackRef = useRef<Tone.PolySynth | null>(null);
   /** 全局 reverb — 讓所有樂器有些空間感, 不再像乾的合成 sample. */
   const reverbRef = useRef<Tone.Reverb | null>(null);
+  /** 0.1.61: master brickwall limiter — 接在 reverb 之後、destination 之前.
+   * 大鍵琴提升音量後 (見下) 密集和弦可能逼近 0dBFS; -1dB 限制器當保險,
+   * 透明地擋住削波尖峰, 不影響一般段落。 */
+  const limiterRef = useRef<Tone.Limiter | null>(null);
   /** 0.1.54 F: 弦樂專屬 vibrato — violin/cello 取樣 → vibrato → reverb,
    * 讓長音不再死直. depth 細微 (0.025), frequency 5.5Hz 對應古典 vibrato. */
   const stringVibratoRef = useRef<Tone.Vibrato | null>(null);
@@ -378,6 +383,7 @@ export function PlaybackControls(
       fallbackRef.current?.dispose?.();
       violinFallbackRef.current?.dispose?.();
       reverbRef.current?.dispose?.();
+      limiterRef.current?.dispose?.();
       stringVibratoRef.current?.dispose?.();
       metronomeSynthRef.current?.dispose?.();
       pianoRef.current = null;
@@ -392,6 +398,7 @@ export function PlaybackControls(
       fallbackRef.current = null;
       violinFallbackRef.current = null;
       reverbRef.current = null;
+      limiterRef.current = null;
       stringVibratoRef.current = null;
       metronomeSynthRef.current = null;
     };
@@ -400,11 +407,14 @@ export function PlaybackControls(
   // 載入樂器
   const ensureInstruments = async (): Promise<InstrumentRouter> => {
     // === 全局 reverb master bus ===
-    // 所有樂器都先 connect 進 reverb, reverb 再 .toDestination().
+    // 所有樂器都先 connect 進 reverb, reverb → limiter → destination.
     // wet=0.12 讓房間感不會蓋掉旋律. decay=1.4 對應小室內樂的空間.
+    if (!limiterRef.current) {
+      limiterRef.current = new Tone.Limiter(-1).toDestination();
+    }
     if (!reverbRef.current) {
       const rv = new Tone.Reverb({ decay: 1.4, wet: 0.12 });
-      rv.toDestination();
+      rv.connect(limiterRef.current);
       // Tone.Reverb 用 async generate impulse response; 等它 ready 再返回
       try {
         await rv.ready;
@@ -450,7 +460,8 @@ export function PlaybackControls(
     if (!harpsichordFallbackRef.current) {
       const hps = new PolyPluckSynth(16, {});
       hps.connect(bus);
-      hps.volume.value = -9;
+      // 0.1.61: Karplus-Strong pluck 退路提升 (-9→-4) — 與下方取樣器一致補償
+      hps.volume.value = -4;
       harpsichordFallbackRef.current = hps;
     }
 
@@ -492,8 +503,10 @@ export function PlaybackControls(
         buildSampler(CLARINET_URLS, TONEJS_INSTRUMENTS_BASE, 0.5, -10);
       const guitar = buildSampler(GUITAR_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
       const harp = buildSampler(HARP_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
+      // 0.1.61: FluidR3 GM 大鍵琴取樣本身錄製偏小聲 + 撥弦衰減快, 與弦樂 (-8)
+      // 同 dB 聽感上明顯弱; 提升到 -2 補償, 讓獨奏 / 合奏 (小提琴+大鍵琴) 平衡。
       const harpsichord =
-        buildSampler(HARPSICHORD_URLS, HARPSICHORD_BASE, 0.4, -8);
+        buildSampler(HARPSICHORD_URLS, HARPSICHORD_BASE, 0.4, -2);
       const all = [
         piano, violin, cello, flute, clarinet, guitar, harp, harpsichord,
       ];
@@ -887,10 +900,17 @@ export function PlaybackControls(
           metronomeSynthRef.current = m;
         }
         const click = metronomeSynthRef.current;
+        // 0.1.61: 點擊間隔 = 一拍秒數 × stretch — 跟著慢速練習一起變慢 (修同步:
+        // 舊版固定 "4n" 走原速 bpm, 0.75x 時音符變慢但點擊照原速 → 對不上)。
+        // 第 1 拍重音 (高八度), 拍號 numerator 取自樂譜。
+        const beatSec = (60 / bpm) * stretch;
+        const numer = arrangement?.tempo?.time_signature.numerator ?? 4;
+        let mBeat = 0;
         const id = Tone.Transport.scheduleRepeat((time) => {
-          // 高頻短點 — woodblock 感
-          click.triggerAttackRelease("E6", "64n", time);
-        }, "4n");
+          const accent = mBeat % numer === 0;
+          click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+          mBeat++;
+        }, beatSec);
         metronomeScheduleIdRef.current = id;
       }
 
@@ -1065,37 +1085,59 @@ export function PlaybackControls(
           }}
         />
       </div>
-      {/* 速度 — compact / non-compact 都顯示, 練習用很常切 */}
-      <label
-        title={t("playback.rate.title")}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 3,
-          fontSize: 11,
-          color: "var(--fg-muted)",
-          marginLeft: 8,
-        }}
-      >
-        🐢
-        <select
-          value={playbackRate}
-          onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
-          disabled={state !== "idle"}
-          style={{
-            fontSize: 11,
-            padding: "1px 3px",
-            border: "1px solid var(--border)",
-            borderRadius: 3,
-            background: "var(--bg-panel)",
-            color: "var(--fg-primary)",
-          }}
-        >
-          <option value={1}>1.0x</option>
-          <option value={0.75}>0.75x</option>
-          <option value={0.5}>0.5x</option>
-        </select>
-      </label>
+      {/* 0.1.61: 速度改用 BPM (取代 1.5x/0.75x 倍率) — 顯示實際 ♩=BPM + 義式術語.
+          base 取自樂譜 tempo; 沒有時退回百分比。練習用很常切, compact 也顯示。 */}
+      {(() => {
+        const baseBpm = arrangement?.tempo?.base_bpm ?? null;
+        const RATE_OPTS = [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.25, 1.5];
+        const effBpm = baseBpm != null
+          ? Math.round(baseBpm * playbackRate)
+          : null;
+        return (
+          <label
+            title={t("playback.rate.title")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 11,
+              color: "var(--fg-muted)",
+              marginLeft: 8,
+            }}
+          >
+            <span aria-hidden>♩</span>
+            <select
+              value={playbackRate}
+              onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
+              disabled={state !== "idle"}
+              style={{
+                fontSize: 11,
+                padding: "1px 3px",
+                border: "1px solid var(--border)",
+                borderRadius: 3,
+                background: "var(--bg-panel)",
+                color: "var(--fg-primary)",
+              }}
+            >
+              {RATE_OPTS.map((r) => {
+                const label = baseBpm != null
+                  ? `=${Math.round(baseBpm * r)}${
+                    r === 1 ? ` ${t("playback.rate.original")}` : ""
+                  }`
+                  : `${Math.round(r * 100)}%`;
+                return (
+                  <option key={r} value={r}>{label}</option>
+                );
+              })}
+            </select>
+            {effBpm != null && (
+              <span style={{ opacity: 0.85, whiteSpace: "nowrap" }}>
+                {bpmToTempoTerm(effBpm)}
+              </span>
+            )}
+          </label>
+        );
+      })()}
       {/* 0.1.54 D: 節拍器 toggle — 開啟時播放每拍打點 */}
       <button
         type="button"

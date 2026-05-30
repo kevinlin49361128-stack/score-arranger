@@ -139,6 +139,25 @@ export interface ArrangementResult {
   quality?: QualityScores | null;
   /** 0.1.32 老師評語層 — 改編完成後輸出的人類可讀說明 */
   explanation?: ArrangementExplanation | null;
+  /** 0.1.61: 樂譜速度/拍號 — 節拍器帶入 / 播放速度 BPM 顯示 / 跟隨變速共用 */
+  tempo?: ScoreTempo | null;
+}
+
+/**
+ * 0.1.61: 樂譜的速度與拍號資訊 (對應 engine _serialize_tempo)。
+ * 節拍器從樂譜帶入 (F1)、播放速度改 BPM 顯示 (F4)、跟隨變速 (F2)、
+ * 義式速度術語對照 (D4) 共用。
+ */
+export interface ScoreTempo {
+  /** 起始 BPM (♩=) — 第一小節速度, 未標則用樂譜預設 (120) */
+  base_bpm: number;
+  /** 義式速度標記 ("Allegro con brio")，無則 null */
+  tempo_text: string | null;
+  time_signature: { numerator: number; denominator: number };
+  /** 曲中速度變更點 (measure → bpm)，給跟隨變速用 */
+  tempo_map: { measure: number; bpm: number }[];
+  /** 曲中拍號變更點 */
+  time_sig_map: { measure: number; numerator: number; denominator: number }[];
 }
 
 /** 0.1.32: 改編評語 — 對應 engine/core/explainer.py ArrangementExplanation */

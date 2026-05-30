@@ -108,6 +108,23 @@ class TestServerMethods:
         assert resp["data"]["target_musicxml"] is not None
         assert "<?xml" in resp["data"]["target_musicxml"]
 
+    def test_arrange_returns_tempo(self, bach_xml):
+        """0.1.61: arrange 回傳 tempo (節拍器 / 播放速度 BPM 顯示共用)。"""
+        resp = handle_request({
+            "id": "a-tempo", "method": "arrange",
+            "params": {"path": bach_xml, "target": "violin_piano"},
+        })
+        assert resp["ok"]
+        tempo = resp["data"]["tempo"]
+        assert tempo is not None
+        assert isinstance(tempo["base_bpm"], (int, float))
+        assert tempo["base_bpm"] > 0
+        assert set(tempo["time_signature"]) == {"numerator", "denominator"}
+        assert tempo["time_signature"]["numerator"] >= 1
+        assert tempo["time_signature"]["denominator"] >= 1
+        assert isinstance(tempo["tempo_map"], list)
+        assert isinstance(tempo["time_sig_map"], list)
+
     def test_arrange_with_repair(self, bach_xml):
         resp = handle_request({
             "id": "a2", "method": "arrange",

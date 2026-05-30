@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>節拍器重新設計 — 決策文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#faf8f4;--paper:#fff;--ink:#2a2a2a;--muted:#6b6b6b;--border:#e5e1d8;--accent:#8b2c2c;
+    --p0:#c44545;--p1:#c4892c;--p2:#6b8e3d;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);}
+  *{box-sizing:border-box;}
+  body{font:15px/1.65 -apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);
+    max-width:940px;margin:0 auto;padding:40px 24px 130px;}
+  h1{font-weight:600;font-size:27px;margin:0 0 6px;letter-spacing:-.01em;}
+  .subtitle{color:var(--muted);margin-bottom:26px;font-size:14px;}
+  h2{font-weight:600;font-size:18px;margin:34px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  h2 .hint{font-weight:400;font-size:13px;color:var(--muted);margin-left:8px;}
+  .intro{background:#fff8ec;border:1px solid #f0e0c0;border-radius:8px;padding:14px 18px;margin-bottom:22px;font-size:14px;color:#5a4720;}
+  .intro b{color:#3a2f10;}
+  .now{background:#fbeaea;border:1px solid #e9c4c4;border-radius:8px;padding:12px 18px;margin-bottom:22px;font-size:13.5px;color:#6a2020;}
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:12px;
+    box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s;position:relative;}
+  .card:hover{border-color:#c9c0ac;}
+  .card.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(139,44,44,.12),var(--shadow);}
+  .card-header{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;flex-wrap:wrap;padding-right:30px;}
+  .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;color:#fff;letter-spacing:.02em;}
+  .t-p0{background:var(--p0);}.t-p1{background:var(--p1);}.t-p2{background:var(--p2);}
+  .size{font-size:11px;color:var(--muted);border:1px solid var(--border);padding:1px 7px;border-radius:4px;}
+  .title{font-weight:600;font-size:15px;flex:1;}
+  .rec{background:#fff8e0;color:#8a5a00;border:1px solid #f0d97a;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:500;}
+  .body{color:#444;font-size:13.5px;}.body p{margin:5px 0;}
+  .check{position:absolute;top:15px;right:18px;width:21px;height:21px;border:2px solid var(--border);border-radius:6px;background:#fff;transition:all .15s;}
+  .card.selected .check{background:var(--accent);border-color:var(--accent);}
+  .card.selected .check::after{content:"✓";color:#fff;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;}
+  details{margin-top:6px;font-size:12.5px;}
+  details summary{cursor:pointer;color:var(--muted);font-weight:500;user-select:none;}
+  details>div{margin-top:5px;padding-left:14px;border-left:2px solid var(--border);color:#555;}
+  code{background:#f3efe5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:"SF Mono",Menlo,monospace;}
+  table{border-collapse:collapse;width:100%;margin:8px 0 18px;font-size:13px;}
+  th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top;}
+  th{background:#f3efe5;font-weight:600;}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:rgba(250,248,244,.95);backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);padding:14px 24px;}
+  .footer-inner{max-width:940px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .counter{font-size:13px;color:var(--muted);}.counter strong{color:var(--ink);}
+  button{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:6px;font:inherit;font-weight:600;cursor:pointer;transition:opacity .15s;}
+  button:hover{opacity:.9;}button:disabled{opacity:.4;cursor:not-allowed;}
+  button.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;}
+  .legend{font-size:12px;color:var(--muted);margin:-14px 0 22px;}
+  .legend .tag{margin-right:4px;}
+</style>
+</head>
+<body>
+
+<h1>節拍器 — 重新設計</h1>
+<div class="subtitle">Score Arranger 功能決策 · 2026-05-30 · 基於 0.1.60 · 參考 Soundbrenner / Pro Metronome / Dr. Betotte / 古典練習慣例</div>
+
+<div class="now">
+  <b>現況 (為什麼「嚴重不足」)</b>：目前的節拍器只是<strong>綁在樂譜播放上的一條 click track</strong> —— 每四分音符一個方波點、每拍同音高 (無強拍重音)、固定音量、<strong>不能獨立啟動</strong> (一定要播樂譜才會響)、速度鎖死樂譜。沒有拍號、細分、Tap、預備拍、速度術語、訓練器。
+</div>
+
+<div class="intro">
+  <b>重新設計的核心洞察</b>：市面節拍器 app 的功能我都能做，但<strong>真正的差異化是「樂譜整合」</strong> —— 這 app 手上有譜，節拍器能自動帶入速度/拍號、跟隨變速、播放前 count-in、對選定段落 loop+漸進加速。這是 Soundbrenner 們做不到的。<br>
+  <b>我的建議範圍 (🎯)</b>：做到「專業節拍器 + 古典練習訓練器 + 樂譜整合」這一層 (下方已預勾)，先不碰最 niche 的 (複節奏、6 層細分、人聲數拍、鐘擺動畫、setlist)。<strong>你可自由增減，底部「複製決策摘要」給我即可。</strong>
+</div>
+
+<div class="legend">
+  <span class="tag t-p0">P0</span>地基/必要　<span class="tag t-p1">P1</span>專業+練習價值　<span class="tag t-p2">P2</span>進階/未來　·　大小 = 工程量
+</div>
+
+<!-- ============ A. 核心引擎 ============ -->
+<h2>A · 核心引擎重寫 <span class="hint">把 click track 換成真正的節拍器</span></h2>
+
+<div class="card selected" data-id="A1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">M</span><span class="title">A1 · 獨立節拍器 (脫離樂譜播放)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>常駐節拍器面板，可單獨 啟動/停止，不需要先播樂譜。這是地基 —— 現在最大的洞。</p></div>
+</div>
+<div class="card selected" data-id="A2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">A2 · 手動 BPM (滑桿 + ±1 微調 + 數字輸入，30–250)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>自由設定速度，不被樂譜鎖死。大數字顯示目前 BPM。</p></div>
+</div>
+<div class="card selected" data-id="A3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">A3 · Tap tempo (點擊測速)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>連點幾下抓出 BPM —— 跟著樂團/錄音抓速度時必備。</p></div>
+</div>
+<div class="card selected" data-id="A4">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">M</span><span class="title">A4 · 拍號 (4/4 3/4 2/4 6/8 9/8 12/8 5/4 7/8 + 自訂)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>每小節幾拍、什麼音符為一拍 —— 決定強拍位置與複拍 (6/8 的兩大拍) 的分組。</p></div>
+</div>
+<div class="card selected" data-id="A5">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">M</span><span class="title">A5 · 重音模式 (強拍 + 每拍可點 重音/普通/弱/靜音)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>第 1 拍重音是基本，進一步每拍可點選 4 種強度。不規則拍 (7/8 = 2+2+3) 靠這個分組。</p></div>
+</div>
+
+<!-- ============ B. 細分與重音 ============ -->
+<h2>B · 細分 (Subdivisions)</h2>
+
+<div class="card selected" data-id="B1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">B1 · 細分音型 (八分 / 三連音 / 十六分 / 附點 / swing)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>每拍內再切細的點 —— 練習複雜節奏與穩定內部律動的核心工具。</p></div>
+</div>
+<div class="card" data-id="B2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">L</span><span class="title">B2 · 多層獨立細分 (Dr. Betotte 式)</span></div>
+  <div class="body"><p>多條細分層各自設音量/靜音/音色。非常進階，多數人用不到。</p></div>
+</div>
+<div class="card" data-id="B3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">L</span><span class="title">B3 · 複節奏 Polyrhythm (3 對 4 等)</span></div>
+  <div class="body"><p>兩個不同分割同時跑。現代/爵士練習用，古典較少。</p></div>
+</div>
+
+<!-- ============ C. 音色 ============ -->
+<h2>C · 音色</h2>
+
+<div class="card selected" data-id="C1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">S</span><span class="title">C1 · 多種點擊音色 (木魚 / 牛鈴 / 電子嗶 / 鼓邊 / 真實節拍器)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>現在只有一種刺耳方波。多音色讓長時間練習不疲勞。</p></div>
+</div>
+<div class="card selected" data-id="C2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">S</span><span class="title">C2 · 重音 / 普通 / 細分 各自獨立音色 + 音量</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>強拍一個音、弱拍另一個、細分更小聲 —— 層次清楚才聽得出拍子結構。</p></div>
+</div>
+<div class="card" data-id="C3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">M</span><span class="title">C3 · 人聲數拍 (1-2-3-4)</span></div>
+  <div class="body"><p>真人念拍號。需要錄音素材，本地化 (中/英/日) 也麻煩。</p></div>
+</div>
+
+<!-- ============ D. 練習訓練器 ============ -->
+<h2>D · 練習訓練器 <span class="hint">古典練習最有價值的一層</span></h2>
+
+<div class="card selected" data-id="D1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">D1 · 漸進加速 Speed Trainer (每 N 小節 +M BPM 到上限)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>練快速樂段的標準方法 —— 從慢速自動逐步加快。設起點/終點/增幅/間隔。</p></div>
+</div>
+<div class="card selected" data-id="D2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">D2 · 靜音訓練器 (週期/隨機靜音小節)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>每隔幾小節節拍器消失，逼你靠內在拍感撐住，再回來對拍 —— 練 time 的經典法。</p></div>
+</div>
+<div class="card selected" data-id="D3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">D3 · Count-in 預備拍 (1–2 小節後才開始)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>「一二三四」預備拍 —— 跟樂譜播放/練習一起用時尤其需要。</p></div>
+</div>
+<div class="card selected" data-id="D4">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">S</span><span class="title">D4 · 義大利速度術語 (Largo…Presto 對照 + 一鍵套用)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>顯示目前 BPM 對應的術語 (Andante 等)，也可點術語直接跳到該速度範圍 —— 古典樂手的母語。</p></div>
+</div>
+
+<!-- ============ E. 視覺 ============ -->
+<h2>E · 視覺回饋</h2>
+
+<div class="card selected" data-id="E1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">S</span><span class="title">E1 · 視覺拍點 (閃光 / 拍點燈列)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>一排拍點燈隨拍亮，強拍不同色。靜音訓練/吵雜環境也能用眼睛跟拍。</p></div>
+</div>
+<div class="card" data-id="E2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">M</span><span class="title">E2 · 鐘擺動畫 + 大型 BPM 顯示</span></div>
+  <div class="body"><p>傳統節拍器鐘擺視覺。好看但功能上 E1 已涵蓋。</p></div>
+</div>
+<div class="card" data-id="E3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">M</span><span class="title">E3 · 拍點與譜面游標同步高亮</span></div>
+  <div class="body"><p>節拍器拍點時譜面對應位置閃 —— 跟樂譜整合時的加分項。</p></div>
+</div>
+
+<!-- ============ F. 樂譜整合 ============ -->
+<h2>F · 樂譜整合 <span class="hint">本 app 的獨有優勢 — 差異化關鍵</span></h2>
+
+<div class="card selected" data-id="F1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">F1 · 從樂譜自動帶入 tempo + 拍號</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>開譜後節拍器一鍵套用該曲的速度與拍號，不用手動設。引擎已有這些資料。</p></div>
+</div>
+<div class="card selected" data-id="F2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">F2 · 跟隨樂譜變速 / 變拍 (多 tempo 標記)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>曲子中途換速度/拍號時，節拍器跟著變 —— 配合樂譜播放練習時不脫節。</p></div>
+</div>
+<div class="card selected" data-id="F3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">F3 · 段落練習 (選小節範圍 loop + 漸進加速)</span><span class="rec">🎯 建議</span></div>
+  <div class="body"><p>選一段難的小節，loop 它並逐次加速 —— 接上既有的段落 loop 播放功能 (D1 速度訓練器的樂譜版)。</p></div>
+</div>
+<div class="card selected" data-id="F4">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">F4 · 播放速度改用 BPM / 義式術語 (取代 1.5x / 0.75x 倍率)</span><span class="rec">🎯 你已指定</span></div>
+  <div class="body">
+    <p>現在播放速度是 DJ 式倍率 (🐢 1.0x/0.75x/0.5x) —— 音樂人的心智是「我用 ♩=92 練這段」，不是「0.77 倍」。改成顯示<strong>實際 BPM</strong>，例如 <code>♩ = 96 (Andante)</code>，可直接選目標 BPM 或義式術語；內部仍換算成 rate。也補上加速 (現在只能放慢)。</p>
+    <details><summary>技術註</summary><div>引擎 IR 已有 <code>tempo_bpm</code> + <code>tempo_text</code>("Allegro con brio")，只是沒往前端送。做這項 = 順手把 tempo 暴露出來，<strong>F1 (自動帶入速度) 與 D4 (義式術語) 直接共用同一條線</strong> —— 所以這三項天然綁一起做。</div></details>
+  </div>
+</div>
+
+<!-- ============ G. 保存 ============ -->
+<h2>G · 預設 / 保存</h2>
+
+<div class="card" data-id="G1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">M</span><span class="title">G1 · 節拍器設定存成 preset / setlist</span></div>
+  <div class="body"><p>常用組合 (拍號+細分+音色+訓練器) 存起來一鍵叫出。表演者用。</p></div>
+</div>
+<div class="card" data-id="G2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">S</span><span class="title">G2 · 每首曲子記住節拍器設定</span></div>
+  <div class="body"><p>跟著 tab/專案存，下次開同一首自動恢復。</p></div>
+</div>
+
+<!-- ============ 建議範圍 ============ -->
+<h2>建議首發範圍 (🎯 已預勾)</h2>
+<div class="card" style="background:#fff8e0;border-color:#f0d97a;cursor:default;">
+  <div class="body">
+    <p><strong>地基 (P0)</strong>：A1–A5 + D3 + F1 + F4 —— 獨立節拍器、BPM/Tap/拍號/重音、count-in、從樂譜帶入、<strong>播放速度改 BPM</strong>。這一層做完就已經是「正常的節拍器」。F1+F4+D4 共用同一條 tempo 暴露的線，一起做最省。</p>
+    <p><strong>專業 + 練習 (P1)</strong>：B1 細分、C1–C2 音色分層、D1 漸進加速、D2 靜音訓練、D4 速度術語、E1 視覺拍點、F2 跟隨變速、F3 段落練習。這一層做完是「古典樂手會愛的練習節拍器」。</p>
+    <p><strong>暫緩 (P2)</strong>：B2/B3 複雜細分與複節奏、C3 人聲、E2/E3 鐘擺+譜面同步、G1/G2 preset —— 等前兩層上線、你用過再決定要不要。</p>
+    <p><em>反方/取捨</em>：全勾 P0+P1 約是一個中型 sprint (新面板 + 獨立排程器 + 訓練器邏輯)。若想更快見效，可只做 P0 (一個小 sprint) 先換掉現在的爛 click track，P1 下一輪。<strong>另一個誠實點</strong>：F2「跟隨變速」技術上最麻煩 (要對齊樂譜的 tempo map)，若你主要是「獨立練習」用途，F2 可降優先。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+<div class="footer"><div class="footer-inner">
+  <div class="counter"><strong id="count">0</strong> 項已選</div>
+  <div><button class="secondary" id="clear">清除</button><button id="copy" disabled>複製決策摘要</button></div>
+</div></div>
+
+<script>
+const KEY="metronome-redesign-v1";
+const cards=document.querySelectorAll(".card[data-id]");
+const counter=document.getElementById("count");
+const copyBtn=document.getElementById("copy");
+const clearBtn=document.getElementById("clear");
+const toast=document.getElementById("toast");
+function update(){const n=[...cards].filter(c=>c.classList.contains("selected")).length;counter.textContent=n;copyBtn.disabled=n===0;}
+function save(){localStorage.setItem(KEY,JSON.stringify([...cards].filter(c=>c.classList.contains("selected")).map(c=>c.dataset.id)));}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw!==null){const s=JSON.parse(raw);cards.forEach(c=>c.classList.toggle("selected",s.includes(c.dataset.id)));}}catch{}update();}
+cards.forEach(c=>c.addEventListener("click",e=>{
+  if(e.target.closest("details"))return;
+  c.classList.toggle("selected");
+  save();update();
+}));
+clearBtn.addEventListener("click",()=>{cards.forEach(c=>c.classList.remove("selected"));save();update();});
+copyBtn.addEventListener("click",()=>{
+  const sel=[...cards].filter(c=>c.classList.contains("selected"));
+  const lines=sel.map(c=>`- ${c.dataset.id} ${c.querySelector(".title").textContent.trim()}`);
+  navigator.clipboard.writeText(`節拍器重新設計 — 決定:\n${lines.join("\n")}\n\n(共 ${sel.length} 項)`).then(()=>{
+    toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1800);
+  });
+});
+load();
+</script>
+</body>
+</html>

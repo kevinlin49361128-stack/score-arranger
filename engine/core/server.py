@@ -498,6 +498,7 @@ def _method_arrange_custom(params: dict[str, Any]) -> dict:
             for a in arrangement.assignments
         ],
         "target_musicxml": target_xml,
+        "tempo": _serialize_tempo(score),
         "issues": _serialize_issues(
             collect_issues(arrangement.target_score)
         ),
@@ -853,6 +854,53 @@ def _method_transcribe(params: dict[str, Any]) -> dict:
     }
 
 
+def _serialize_tempo(score: Score) -> dict:
+    """0.1.61: 把樂譜的速度 / 拍號資訊送給前端。
+
+    節拍器從樂譜帶速度 (F1)、播放速度改用 BPM 顯示 (F4)、跟隨變速 (F2)、
+    義式速度術語對照 (D4) 共用這份資料。
+
+    - base_bpm / time_signature: 取第一小節 (未設則用 Score 預設)。
+    - tempo_map / time_sig_map: 收集後續變更點 (measure → 新值), 給跟隨變速用。
+    - tempo_text: 第一個義式速度標記 ("Allegro con brio")。
+    """
+    measures = score.parts[0].measures if score.parts else []
+    base_bpm = float(score.default_tempo_bpm)
+    base_ts = score.default_time_signature
+    tempo_text: Optional[str] = None
+    tempo_map: list[dict] = []
+    time_sig_map: list[dict] = []
+    seen_tempo = False
+    seen_ts = False
+    for m in measures:
+        if m.tempo_bpm is not None:
+            if not seen_tempo:
+                base_bpm = float(m.tempo_bpm)
+                seen_tempo = True
+            tempo_map.append({"measure": m.number, "bpm": float(m.tempo_bpm)})
+        if m.tempo_text and tempo_text is None:
+            tempo_text = m.tempo_text
+        if m.time_signature is not None:
+            if not seen_ts:
+                base_ts = m.time_signature
+                seen_ts = True
+            time_sig_map.append({
+                "measure": m.number,
+                "numerator": int(m.time_signature[0]),
+                "denominator": int(m.time_signature[1]),
+            })
+    return {
+        "base_bpm": base_bpm,
+        "tempo_text": tempo_text,
+        "time_signature": {
+            "numerator": int(base_ts[0]),
+            "denominator": int(base_ts[1]),
+        },
+        "tempo_map": tempo_map,
+        "time_sig_map": time_sig_map,
+    }
+
+
 def _method_arrange(params: dict[str, Any]) -> dict:
     sess = _session(params)
     # 新改編 → 清空歷史
@@ -944,6 +992,7 @@ def _method_arrange(params: dict[str, Any]) -> dict:
             for a in arrangement.assignments
         ],
         "target_musicxml": target_xml,
+        "tempo": _serialize_tempo(score),
         "repair": repair_info,
         "issues": _serialize_issues(
             collect_issues(arrangement.target_score, skill_level=skill_level)

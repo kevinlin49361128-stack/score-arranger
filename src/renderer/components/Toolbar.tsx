@@ -95,6 +95,8 @@ export function Toolbar() {
     setArrangementIssues,
     refining,
     setRefining,
+    metronomeOpen,
+    setMetronomeOpen,
     setLoading,
     setError,
     setStyleAddendum,
@@ -1113,6 +1115,18 @@ export function Toolbar() {
         title={tr("toolbar.teacherHub.title")}
       >
         {tr("toolbar.teacherHub")}
+      </button>
+      {/* 0.1.61: 獨立節拍器面板開關 */}
+      <button
+        onClick={() => setMetronomeOpen(!metronomeOpen)}
+        style={{
+          ...btnBase,
+          background: metronomeOpen ? "var(--accent)" : btnBase.background,
+          color: metronomeOpen ? "var(--accent-fg)" : btnBase.color,
+        }}
+        title={tr("metronome.open.title")}
+      >
+        {tr("metronome.open")}
       </button>
 
       <Sep />
