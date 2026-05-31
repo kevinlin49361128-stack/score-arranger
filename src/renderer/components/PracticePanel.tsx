@@ -641,7 +641,11 @@ function PracticeLogSidebar({
                       {date} · {e.score_title ?? "—"}
                     </span>
                     <span style={{ fontVariantNumeric: "tabular-nums" }}>
-                      {dur}{t("practice.log.minShort")}
+                      {/* 0.1.68 C4: drill 紀錄顯示「選段·速度區間·圈數」(符號式, 跨語通用);
+                          一般 session 顯示時長 */}
+                      {e.drill
+                        ? `mm.${e.drill.measure_from}–${e.drill.measure_to} · ♩${e.drill.bpm_from}→${e.drill.bpm_to} · ${e.drill.passes}×`
+                        : `${dur}${t("practice.log.minShort")}`}
                       {e.mic_score !== undefined &&
                         ` · ${e.mic_score}${t("practice.log.scoreShort")}`}
                     </span>

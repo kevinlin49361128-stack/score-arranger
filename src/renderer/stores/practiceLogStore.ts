@@ -37,6 +37,18 @@ export interface PracticeEntry {
   mic_score?: number;
   /** 使用者手寫筆記 */
   notes?: string;
+  /**
+   * 0.1.68 C4: 選段漸進加速「練習回合」紀錄 — 由 PlaybackControls 在 F3
+   * accel 練習結束時自動寫入 (選段→count-in→loop+漸進加速→自動寫 log)。
+   * measure 為 1-based; bpm 為 ♩=BPM (含慢速倍率後的實際起始)。
+   */
+  drill?: {
+    measure_from: number;
+    measure_to: number;
+    bpm_from: number;
+    bpm_to: number;
+    passes: number;
+  };
 }
 
 function load(): PracticeEntry[] {
@@ -152,6 +164,32 @@ export function setPracticeNote(id: string, notes: string): void {
     save(_cache);
     notify();
   }
+}
+
+/**
+ * 0.1.68 C4: 記錄一次「選段漸進加速」練習回合 (完整 entry, 立即 ended)。
+ * 與 start/endPracticeSession 不同 —— drill 是離散事件 (一次加速練習),
+ * 不影響進行中的 session。回傳新 entry id。
+ */
+export function logDrill(
+  score_id: string | undefined,
+  score_title: string | undefined,
+  started_at: number,
+  drill: NonNullable<PracticeEntry["drill"]>,
+): string {
+  const id = genId();
+  const entry: PracticeEntry = {
+    id,
+    started_at,
+    ended_at: Date.now(),
+    score_id,
+    score_title,
+    drill,
+  };
+  _cache = [entry, ..._cache];
+  save(_cache);
+  notify();
+  return id;
 }
 
 export function deletePracticeEntry(id: string): void {

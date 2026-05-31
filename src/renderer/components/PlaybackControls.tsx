@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
+import { logDrill } from "../stores/practiceLogStore";
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
 import { MetronomeVoice } from "../utils/metronomeSounds";
@@ -367,6 +368,15 @@ export function PlaybackControls(
   const measureNumberOffsetRef = useRef<number>(0);
   /** 0.1.64 F3: 選段加速練習進行中 (rAF seek-loop 改由 per-pass restart 接管) */
   const accelActiveRef = useRef<boolean>(false);
+  // 0.1.68 C4: 進行中的選段加速「練習回合」metadata — 結束時自動寫 practice log
+  const drillRunRef = useRef<{
+    startedAt: number;
+    measureFrom: number;
+    measureTo: number;
+    bpmFrom: number;
+    bpmReached: number;
+    passes: number;
+  } | null>(null);
   /** 0.1.54 D: 節拍器 — woodblock 風格 synth (高音短 decay) + transport
    * scheduleRepeat 的 id, 停止時 dispose / clear. */
   // 0.1.65 C1: 播放中點擊與獨立節拍器共用 MetronomeVoice (修 #4 分裂)
@@ -635,6 +645,24 @@ export function PlaybackControls(
     scheduledIdsRef.current = [];
     // 0.1.54 D: cancel(0) 也會清掉 metronome 的 scheduleRepeat, 重置 id 即可.
     metronomeScheduleIdRef.current = null;
+    // 0.1.68 C4: 加速練習結束 → 自動記一筆 drill 到 practice log (≥1 圈才記,
+    // 避免誤觸/秒停產生雜訊)。選段→count-in→loop+漸進加速→自動寫 log 的收尾。
+    const run = drillRunRef.current;
+    if (run && run.passes >= 1) {
+      logDrill(
+        sourcePath ?? undefined,
+        sourcePath ?? arrangement?.name ?? undefined,
+        run.startedAt,
+        {
+          measure_from: run.measureFrom,
+          measure_to: run.measureTo,
+          bpm_from: run.bpmFrom,
+          bpm_to: run.bpmReached,
+          passes: run.passes,
+        },
+      );
+    }
+    drillRunRef.current = null;
     // 0.1.64 F3: 重置選段加速狀態 (handlePlay 進 F3 分支會在此之後再開)
     accelActiveRef.current = false;
     measureNumberOffsetRef.current = 0;
@@ -1011,6 +1039,12 @@ export function PlaybackControls(
           // 一圈結束 → 加速後重排 (到 max 維持)。restart 移出 audio callback。
           const endId = Tone.Transport.scheduleOnce(() => {
             if (!accelActiveRef.current) return;
+            // 0.1.68 C4: 完成一圈 → 計數 + 記錄實際彈過的最快速度 (增速前)
+            const run = drillRunRef.current;
+            if (run) {
+              run.passes += 1;
+              run.bpmReached = Math.max(run.bpmReached, curBpm);
+            }
             if (curBpm < maxBpm) curBpm = Math.min(maxBpm, curBpm + step);
             window.setTimeout(() => {
               if (accelActiveRef.current) playPass();
