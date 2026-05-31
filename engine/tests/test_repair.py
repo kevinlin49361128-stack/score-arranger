@@ -32,6 +32,8 @@ from core.repair import (
     strategy_reassign_note,
     strategy_split_chord_to_parts,
     strategy_split_to_other_hand,
+    _force_resolve_chord_errors,
+    _reduce_chord_to_playable,
     _shift_pitch_octave,
 )
 
@@ -949,3 +951,57 @@ def test_strategy_reassign_note_skips_chord_event():
         return
     result = strategy_reassign_note(score, range_errs[0])
     assert result is False, "ChordEvent 不該被 reassign_note 處理"
+
+
+# ============================================================================
+# 回歸: repair_loop 必須把「和弦不可演奏」ERROR 清零 (0.1.67)
+#
+# Kevin 回報: 密集鋼琴譜 → Violin+Harpsichord, 修復後仍殘留「跨非相鄰弦」
+# 錯誤 (「之前都會跌帶到全部錯誤都沒有」)。根因: 4-音和弦同時擠兩根弦,
+# 單步 omit 後仍違規 → strict-better 門檻擋掉, 錯誤被標 manual 永不修。
+# ============================================================================
+
+class TestForceResolveChordErrors:
+    # G3+Bb3 同擠 G 弦、Eb4+G4 同擠 D 弦 — 小提琴上根本演奏不了 (需省 2 音)
+    UNPLAYABLE = [55, 58, 63, 67]
+
+    def test_reduce_chord_to_playable_violin(self):
+        remaining = _reduce_chord_to_playable(
+            _chord(self.UNPLAYABLE).pitches, "violin"
+        )
+        from core.repair import _chord_severity
+        assert len(remaining) < 4, "應省掉足夠的音"
+        assert _chord_severity(remaining, "violin") != "error", "剩下的必須可演奏"
+
+    def test_reduce_leaves_playable_two_note_chord_untouched(self):
+        # G3 + D4 (相鄰弦, 可演奏) — 不該被動到
+        pitches = _chord([55, 62]).pitches
+        remaining = _reduce_chord_to_playable(pitches, "violin")
+        assert len(remaining) == 2
+
+    def test_repair_loop_drives_chord_errors_to_zero(self):
+        score = _single_part_score("violin_1", "violin", [_chord(self.UNPLAYABLE)])
+        arr = _make_arrangement(score)
+        repair_loop(arr)
+        issues = collect_issues(arr.target_score)
+        errors = [i for i in issues if i.severity == "error"]
+        assert errors == [], f"修復後不該有 error, 仍有: {[i.result.code for i in errors]}"
+
+    def test_force_resolve_directly(self):
+        score = _single_part_score("violin_1", "violin", [_chord(self.UNPLAYABLE)])
+        before = sum(
+            1 for i in collect_issues(score) if i.severity == "error"
+        )
+        assert before > 0
+        resolved = _force_resolve_chord_errors(score)
+        assert resolved >= 1
+        after = sum(
+            1 for i in collect_issues(score) if i.severity == "error"
+        )
+        assert after == 0
+
+    def test_clean_score_no_op(self):
+        # 可演奏的雙音 — cleanup 不該動它
+        score = _single_part_score("violin_1", "violin", [_chord([55, 62])])
+        resolved = _force_resolve_chord_errors(score)
+        assert resolved == 0

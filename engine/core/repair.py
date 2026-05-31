@@ -691,12 +691,28 @@ def strategy_omit_note(score: Score, issue: LocatedIssue) -> bool:
         if omit_idx is None:
             # 沒一個 omit 能改善 — 交給其他策略 (例 split_to_parts)
             return False
+        remaining = [p for i, p in enumerate(event.pitches) if i != omit_idx]
     else:
-        omit_idx = _harmonic_omit_choice(event.pitches)
-    sorted_pitches = sorted(
-        (p for i, p in enumerate(event.pitches) if i != omit_idx),
-        key=lambda p: p.midi_number,
-    )
+        # 一般 omit: 對「和弦在該樂器上無法演奏」類錯誤, 反覆省略和聲最不
+        # 關鍵的音, 直到該樂器能演奏 (或剩單音)。
+        #
+        # 為何要 loop (0.1.67 修回歸): 4-音「雙非相鄰弦」和弦 (e.g. G3+Bb3
+        # 同擠 G 弦、Eb4+G4 同擠 D 弦) 省「一」音後仍違規 → repair_loop 的
+        # strict-better 門檻會擋掉只降一點點的單步省略, 該錯誤就永遠修不掉、
+        # 被標 manual (使用者看到殘留的錯誤)。一次省到可演奏, 單步即嚴格降
+        # 嚴重度, ERROR 才能收斂歸零。
+        # 2-音和弦 / warning 類 (該樂器評估非 error): while 不觸發 → 等同舊單步.
+        part = _get_part(score, issue.part_id)
+        instrument_id = part.instrument_id if part is not None else ""
+        remaining = _reduce_chord_to_playable(event.pitches, instrument_id)
+        if len(remaining) == len(event.pitches):
+            # 一步都沒省 (該樂器的 error _chord_severity 不涵蓋, e.g. 鋼琴/
+            # 大鍵琴跨距類) → 退回舊單步啟發式, 維持既有行為.
+            omit_idx = _harmonic_omit_choice(event.pitches)
+            remaining = [
+                p for i, p in enumerate(event.pitches) if i != omit_idx
+            ]
+    sorted_pitches = sorted(remaining, key=lambda p: p.midi_number)
 
     if len(sorted_pitches) < 2:
         # 變單音 → 改為 NoteEvent (in-place)
@@ -1007,6 +1023,23 @@ def _chord_severity(pitches: list[Pitch], instrument_id: str) -> str:
         if _severity_rank(sev) > _severity_rank(worst):
             worst = sev
     return worst
+
+
+def _reduce_chord_to_playable(pitches: list, instrument_id: str) -> list:
+    """反覆省略和聲最不關鍵的音, 直到該樂器能演奏 (或剩單音)。回傳剩餘 pitch list。
+
+    用於兩處: (1) strategy_omit_note 一般 omit 分支; (2) repair_loop 收斂後的
+    _force_resolve_chord_errors 保底掃描。關鍵: 一次省到可演奏 —— 4-音「雙非
+    相鄰弦」和弦省一音後仍違規, 單步省略無法讓嚴重度嚴格下降。
+    _chord_severity 評估非 'error' (e.g. 2-音 / 該樂器不涵蓋) 時不省, 原樣回傳。
+    """
+    remaining = list(pitches)
+    while (
+        len(remaining) >= 2
+        and _chord_severity(remaining, instrument_id) == "error"
+    ):
+        remaining.pop(_harmonic_omit_choice(remaining))
+    return remaining
 
 
 def _event_at_onset(measure, onset) -> tuple[Optional[int], Optional[int], Any]:
@@ -1378,6 +1411,49 @@ def _pick_best_candidate(
     return max(tied, key=quality_key)
 
 
+def _force_resolve_chord_errors(target: Score) -> int:
+    """保底: 強制清掉迴圈後殘留的「和弦在該樂器上不可演奏」錯誤。
+
+    iterative repair_loop 受硬上限 / strict-better 門檻限制, 密集鋼琴譜 → 小編制
+    (e.g. Vln+Hpsd, 一個 4-音和弦同時擠兩根弦) 可能殘留數個~數十個此類錯誤。
+    這些是局部、確定性的問題: 用 _reduce_chord_to_playable 一次省到可演奏即可,
+    不需逐輪 + deepcopy + strict-better。在此一次掃掉, 保證交付「沒有不可演奏
+    和弦」的譜, 成本僅 O(殘留錯誤數)。回傳清掉的錯誤數。
+
+    刻意不動單音類錯誤 (音域外 → octave_shift 的範疇) 與 warning。
+    """
+    resolved = 0
+    for issue in actionable_issues(collect_issues(target)):
+        if issue.severity != "error":
+            continue
+        event = _get_event(target, issue)
+        if not isinstance(event, ChordEvent) or len(event.pitches) < 2:
+            continue
+        part = _get_part(target, issue.part_id)
+        instrument_id = part.instrument_id if part is not None else ""
+        if _chord_severity(list(event.pitches), instrument_id) != "error":
+            continue
+        remaining = _reduce_chord_to_playable(event.pitches, instrument_id)
+        if len(remaining) == len(event.pitches):
+            continue  # 沒省任何音 → 非此函式能解, 留給既有流程 / 使用者
+        sorted_pitches = sorted(remaining, key=lambda p: p.midi_number)
+        if len(sorted_pitches) < 2:
+            _replace_event(target, issue, NoteEvent(
+                pitch=sorted_pitches[0],
+                duration=event.duration,
+                onset=event.onset,
+                articulations=list(event.articulations),
+                dynamic=event.dynamic,
+                is_tied_from=event.is_tied_from,
+                is_tied_to=event.is_tied_to,
+                slur_group=event.slur_group,
+            ))
+        else:
+            event.pitches = sorted_pitches
+        resolved += 1
+    return resolved
+
+
 def repair_loop(
     arrangement: Arrangement,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
@@ -1399,6 +1475,8 @@ def repair_loop(
     report.quality_before = _safe_quality(arrangement)
 
     # 0.1.60 Q3d: 大譜硬上限 — 依事件數縮放迭代上限, 保證不 timeout.
+    # (殘留的「和弦不可演奏」錯誤在迴圈後由 _force_resolve_chord_errors 保底
+    #  清掉, 故這裡維持嚴格的時間上限, 不為了清錯誤而拖慢大譜 arrange。)
     effective_max = _capped_max_iterations(target, max_iterations)
     if effective_max < max_iterations:
         report.capped = True
@@ -1494,6 +1572,13 @@ def repair_loop(
             # 所有策略都失敗 — 永久標記 (跨輪持久)
             manual_keys.add(issue_key(target_issue))
             target_issue.is_manual = True
+
+    # 0.1.67 最終保底: iterative loop 受硬上限 / strict-better 門檻限制, 密集
+    # 鋼琴譜 → 小編制 (e.g. Vln+Hpsd) 可能殘留數個~數十個「和弦在該樂器上不
+    # 可演奏」錯誤。這些是局部、確定性的 omit-to-playable 即可解 (不需逐輪 +
+    # deepcopy + strict-better), 在此一次掃掉 —— 保證交付的譜「沒有不可演奏的
+    # 和弦」(Kevin: 全部錯誤都要歸零), 且成本 O(殘留錯誤數), 不拖慢大譜。
+    _force_resolve_chord_errors(target)
 
     # 最終狀態
     final_issues = collect_issues(target)
