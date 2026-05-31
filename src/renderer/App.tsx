@@ -28,6 +28,7 @@ import { ExportPanel } from "./components/ExportPanel";
 import { ExplanationPanel } from "./components/ExplanationPanel";
 import { IssuePanel } from "./components/IssuePanel";
 import { MetronomePanel } from "./components/MetronomePanel";
+import { usePracticeSessionPersistence } from "./hooks/usePracticeSessionPersistence";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { MeasureEditor } from "./components/MeasureEditor";
 import { ModeBar } from "./components/ModeBar";
@@ -49,6 +50,7 @@ import { diffMeasures } from "./utils/measureDiff";
 
 export default function App() {
   useLocale();
+  usePracticeSessionPersistence(); // 0.1.66 C3: 每曲保存/恢復練習設定
   const {
     error,
     sourcePath,
