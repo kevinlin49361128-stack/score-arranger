@@ -583,6 +583,22 @@ export const IO_STRINGS: BiDict = {
     en: "Loop end measure (inclusive)",
     ja: "ループ終了小節 (この小節を含む)",
   },
+  // 0.1.64 F3: 選段漸進加速
+  "playback.loopAccel.title": {
+    "zh-TW": "選段漸進加速 — 每圈加速到上限後維持",
+    en: "Progressive speed-up — faster each loop until the cap",
+    ja: "段階スピードアップ — 上限まで毎回加速",
+  },
+  "playback.loopAccel.step.title": {
+    "zh-TW": "每圈增加的 BPM",
+    en: "BPM added each loop",
+    ja: "ループごとに上げる BPM",
+  },
+  "playback.loopAccel.max.title": {
+    "zh-TW": "加速上限 BPM (♩=)",
+    en: "Speed-up ceiling BPM (♩=)",
+    ja: "スピードアップ上限 BPM (♩=)",
+  },
   // === ScoreViewer ===
   "scoreViewer.error.renderFailed": {
     "zh-TW": "渲染失敗: {message}",

@@ -267,6 +267,10 @@ export function PlaybackControls(
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
   const [loopEnabled, setLoopEnabled] = useState(false);
+  // 0.1.64 F3: 選段漸進加速練習 — 每圈 +step BPM 到 max 後維持
+  const [loopAccel, setLoopAccel] = useState(false);
+  const [loopAccelStep, setLoopAccelStep] = useState(5);
+  const [loopAccelMax, setLoopAccelMax] = useState(160);
   /** 慢速練習 — 1.0 = 原速, 0.75 = 75%, 0.5 = 50%. 排程時把 note.time /
    * note.duration 都 ×(1/rate), measureStarts 同樣縮放, 所以播放游標跟得上. */
   const [playbackRate, setPlaybackRate] = useState<number>(1);
@@ -358,6 +362,10 @@ export function PlaybackControls(
   const totalDurationRef = useRef<number>(0);
   /** 預計算的 measure 邊界時間表 (秒),index 0 = 第 1 小節起始 */
   const measureStartsRef = useRef<number[]>([]);
+  /** 0.1.64 F3: 選段加速時 measureStarts 只含區段 → 還原真實小節號的 offset */
+  const measureNumberOffsetRef = useRef<number>(0);
+  /** 0.1.64 F3: 選段加速練習進行中 (rAF seek-loop 改由 per-pass restart 接管) */
+  const accelActiveRef = useRef<boolean>(false);
   /** 0.1.54 D: 節拍器 — woodblock 風格 synth (高音短 decay) + transport
    * scheduleRepeat 的 id, 停止時 dispose / clear. */
   const metronomeSynthRef = useRef<Tone.Synth | null>(null);
@@ -625,6 +633,9 @@ export function PlaybackControls(
     scheduledIdsRef.current = [];
     // 0.1.54 D: cancel(0) 也會清掉 metronome 的 scheduleRepeat, 重置 id 即可.
     metronomeScheduleIdRef.current = null;
+    // 0.1.64 F3: 重置選段加速狀態 (handlePlay 進 F3 分支會在此之後再開)
+    accelActiveRef.current = false;
+    measureNumberOffsetRef.current = 0;
   };
 
   const cancelRaf = () => {
@@ -644,7 +655,8 @@ export function PlaybackControls(
       if (starts[mid] <= seconds) lo = mid;
       else hi = mid - 1;
     }
-    return lo + 1;
+    // 0.1.64 F3: 選段加速時 measureStarts 只含區段, 加 offset 還原真實小節號
+    return lo + 1 + measureNumberOffsetRef.current;
   };
 
   /** 從 MIDI 預計算每個 measure 起始的秒數 (支援變速 / 變拍號) */
@@ -785,7 +797,7 @@ export function PlaybackControls(
       const lEnd = loopEndRef.current;
       if (
         loopEnabledRef.current && lStart != null && lEnd != null
-        && lEnd > lStart
+        && lEnd > lStart && !accelActiveRef.current
       ) {
         const starts = measureStartsRef.current;
         const endIdx = Math.min(lEnd - 1, starts.length - 1);
@@ -916,6 +928,105 @@ export function PlaybackControls(
           if (handFocus === "rh" && isLH) handMutedSet.add(i);
           if (handFocus === "lh" && isRH) handMutedSet.add(i);
         });
+      }
+
+      // 0.1.64 F3: 選段漸進加速 — 取代正常排程, 每圈重排區段並提速。
+      // 每一圈用 per-pass restart (Transport pause→cancel→position 0→重排→start),
+      // 所以可逐圈換 rate; 走 measureNumberOffset 讓游標顯示真實小節號。
+      if (
+        loopEnabled && loopAccel
+        && loopStart != null && loopEnd != null && loopEnd > loopStart
+      ) {
+        const unstretched = computeMeasureStarts(midi, pickupQuarters);
+        const sIdx = Math.max(0, loopStart - 1);
+        const regionStartSec = unstretched[sIdx] ?? 0;
+        let maxNoteEnd = 0;
+        for (const tr of midi.tracks) {
+          for (const n of tr.notes) {
+            const e = n.time + n.duration;
+            if (e > maxNoteEnd) maxNoteEnd = e;
+          }
+        }
+        const regionEndSec = unstretched[loopEnd] ?? maxNoteEnd;
+        const regionStarts = unstretched.slice(sIdx, loopEnd);
+        measureNumberOffsetRef.current = sIdx;
+
+        if (metronomeEnabledRef.current && !metronomeSynthRef.current) {
+          const mSynth = new Tone.Synth({
+            oscillator: { type: "square" },
+            envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.05 },
+            volume: -10,
+          });
+          mSynth.toDestination();
+          metronomeSynthRef.current = mSynth;
+        }
+
+        const baseBpm = bpm;
+        // 起始速度 = 目前練習速度 (♩=BPM 選擇器), 逐圈加速到上限 (慢→快經典練法)
+        let curBpm = Math.max(20, Math.round(baseBpm * playbackRate));
+        const step = Math.max(1, loopAccelStep);
+        const maxBpm = Math.max(curBpm, loopAccelMax);
+
+        const playPass = () => {
+          const st = baseBpm / curBpm; // = 1 / rate
+          Tone.Transport.pause();
+          Tone.Transport.cancel(0);
+          scheduledIdsRef.current = [];
+          Tone.Transport.position = 0;
+          measureStartsRef.current = regionStarts.map(
+            (s) => (s - regionStartSec) * st,
+          );
+          let last = 0;
+          midi.tracks.forEach((track, ti) => {
+            if (mutedTracks.has(ti) || handMutedSet.has(ti)) return;
+            const instrument = router.get(router.routeTrack(ti, track.name));
+            for (const note of track.notes) {
+              if (note.time < regionStartSec || note.time >= regionEndSec) {
+                continue;
+              }
+              const nt = (note.time - regionStartSec) * st;
+              const nd = note.duration * st;
+              const id = Tone.Transport.schedule((time) => {
+                instrument.triggerAttackRelease(
+                  note.name, nd, time, note.velocity,
+                );
+              }, nt);
+              scheduledIdsRef.current.push(id);
+              if (nt + nd > last) last = nt + nd;
+            }
+          });
+          totalDurationRef.current = last;
+          const click = metronomeSynthRef.current;
+          if (metronomeEnabledRef.current && click) {
+            for (const beat of beatGrid) {
+              if (beat.time < regionStartSec || beat.time >= regionEndSec) {
+                continue;
+              }
+              const t = (beat.time - regionStartSec) * st;
+              const accent = beat.accent;
+              const id = Tone.Transport.schedule((time) => {
+                click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+              }, t);
+              scheduledIdsRef.current.push(id);
+            }
+          }
+          // 一圈結束 → 加速後重排 (到 max 維持)。restart 移出 audio callback。
+          const endId = Tone.Transport.scheduleOnce(() => {
+            if (!accelActiveRef.current) return;
+            if (curBpm < maxBpm) curBpm = Math.min(maxBpm, curBpm + step);
+            window.setTimeout(() => {
+              if (accelActiveRef.current) playPass();
+            }, 0);
+          }, last + 0.2);
+          scheduledIdsRef.current.push(endId);
+          Tone.Transport.start("+0.05");
+        };
+
+        accelActiveRef.current = true;
+        playPass();
+        startTracking();
+        setState("playing");
+        return;
       }
 
       let lastTime = 0;
@@ -1427,6 +1538,69 @@ export function PlaybackControls(
             }}
             title={t("playback.loop.to.title")}
           />
+          {/* 0.1.64 F3: 選段漸進加速 */}
+          {loopEnabled && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                fontSize: 11,
+                color: "var(--fg-muted)",
+              }}
+              title={t("playback.loopAccel.title")}
+            >
+              <input
+                type="checkbox"
+                checked={loopAccel}
+                onChange={(e) => setLoopAccel(e.target.checked)}
+              />
+              ⏩
+            </label>
+          )}
+          {loopEnabled && loopAccel && (
+            <>
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={loopAccelStep}
+                onChange={(e) =>
+                  setLoopAccelStep(parseInt(e.target.value, 10) || 5)}
+                title={t("playback.loopAccel.step.title")}
+                style={{
+                  width: 42,
+                  padding: "2px 4px",
+                  fontSize: 11,
+                  border: "1px solid var(--border)",
+                  borderRadius: 3,
+                  background: "var(--bg-panel)",
+                  color: "var(--fg-primary)",
+                }}
+              />
+              <span style={{ color: "var(--fg-tertiary)", fontSize: 11 }}>
+                →♩
+              </span>
+              <input
+                type="number"
+                min={40}
+                max={300}
+                value={loopAccelMax}
+                onChange={(e) =>
+                  setLoopAccelMax(parseInt(e.target.value, 10) || 160)}
+                title={t("playback.loopAccel.max.title")}
+                style={{
+                  width: 48,
+                  padding: "2px 4px",
+                  fontSize: 11,
+                  border: "1px solid var(--border)",
+                  borderRadius: 3,
+                  background: "var(--bg-panel)",
+                  color: "var(--fg-primary)",
+                }}
+              />
+            </>
+          )}
         </>
       )}
     </div>
