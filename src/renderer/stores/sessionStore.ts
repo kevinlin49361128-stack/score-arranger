@@ -20,6 +20,7 @@ import type {
   QualityScores,
 } from "@shared/types";
 import { t as tr } from "../utils/i18n";
+import type { MetronomeSoundId } from "../utils/metronomeSounds";
 
 export type AppMode =
   | "setup"
@@ -276,6 +277,10 @@ interface SessionState {
   countInBars: number;
   setCountInBars: (n: number) => void;
 
+  // 0.1.65 C1: 節拍器音色 — 獨立節拍器與播放中點擊共用 (修 #4 分裂)
+  metronomeSoundId: MetronomeSoundId;
+  setMetronomeSoundId: (id: MetronomeSoundId) => void;
+
   // 改編產出的 issues (target_score 上的, 可 apply_suggestion)
   arrangementIssues: ArrangementIssue[];
   setArrangementIssues: (issues: ArrangementIssue[]) => void;
@@ -450,6 +455,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setMetronomeOpen: (v) => set({ metronomeOpen: v }),
   countInBars: 0,
   setCountInBars: (n) => set({ countInBars: n }),
+  metronomeSoundId: "woodblock",
+  setMetronomeSoundId: (id) => set({ metronomeSoundId: id }),
 
   arrangementIssues: [],
   setArrangementIssues: (issues) => set({ arrangementIssues: issues }),

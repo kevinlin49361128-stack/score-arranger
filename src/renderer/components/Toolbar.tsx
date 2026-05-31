@@ -719,6 +719,12 @@ export function Toolbar() {
         );
         if (gen !== arrangeGenRef.current) return; // 過期
         if (useSessionStore.getState().activeTabId !== originTabId) return;
+        // 0.1.65 P0-refine: 編輯安全 — 若使用者在精修中已改動 arrangement
+        // (套用建議 / NL 改譜 / 編輯小節 / 換 variant, 都會 setArrangement 換物件),
+        // 此次 refine 的輸出是「改動前」的, 已過時 → 丟棄, 保留使用者的編輯。
+        // (引擎 serial 處理, 編輯會排在 refine 後執行, 不會 race; 這裡只是讓
+        //  過時的 refine 結果不要蓋掉前端已更新的狀態。)
+        if (useSessionStore.getState().arrangement !== draftData) return;
         if (ref.ok && ref.data) {
           setArrangement({ ...draftData, ...ref.data });
           setTargetMusicXML(

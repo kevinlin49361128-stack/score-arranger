@@ -14,6 +14,7 @@ import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
+import { MetronomeVoice } from "../utils/metronomeSounds";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
 
@@ -368,7 +369,8 @@ export function PlaybackControls(
   const accelActiveRef = useRef<boolean>(false);
   /** 0.1.54 D: 節拍器 — woodblock 風格 synth (高音短 decay) + transport
    * scheduleRepeat 的 id, 停止時 dispose / clear. */
-  const metronomeSynthRef = useRef<Tone.Synth | null>(null);
+  // 0.1.65 C1: 播放中點擊與獨立節拍器共用 MetronomeVoice (修 #4 分裂)
+  const metronomeVoiceRef = useRef<MetronomeVoice | null>(null);
   const metronomeScheduleIdRef = useRef<number | null>(null);
   const metronomeEnabledRef = useRef<boolean>(false);
   useEffect(() => {
@@ -393,7 +395,7 @@ export function PlaybackControls(
       reverbRef.current?.dispose?.();
       limiterRef.current?.dispose?.();
       stringVibratoRef.current?.dispose?.();
-      metronomeSynthRef.current?.dispose?.();
+      metronomeVoiceRef.current?.dispose();
       pianoRef.current = null;
       violinRef.current = null;
       celloRef.current = null;
@@ -408,7 +410,7 @@ export function PlaybackControls(
       reverbRef.current = null;
       limiterRef.current = null;
       stringVibratoRef.current = null;
-      metronomeSynthRef.current = null;
+      metronomeVoiceRef.current = null;
     };
   }, []);
 
@@ -892,6 +894,8 @@ export function PlaybackControls(
 
       // 0.1.63 F2: 逐拍時間表 (跟隨變速/變拍) — 給播放中節拍器 + count-in 用
       const beatGrid = computeBeatGrid(midi, pickupQuarters);
+      // 0.1.65 C1: 播放中點擊音色取自共用 store (與獨立節拍器同一份)
+      const metroSoundId = useSessionStore.getState().metronomeSoundId;
       const beatSec = beatGrid.length >= 2
         ? (beatGrid[1].time - beatGrid[0].time) * stretch
         : (60 / bpm) * stretch;
@@ -951,14 +955,8 @@ export function PlaybackControls(
         const regionStarts = unstretched.slice(sIdx, loopEnd);
         measureNumberOffsetRef.current = sIdx;
 
-        if (metronomeEnabledRef.current && !metronomeSynthRef.current) {
-          const mSynth = new Tone.Synth({
-            oscillator: { type: "square" },
-            envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.05 },
-            volume: -10,
-          });
-          mSynth.toDestination();
-          metronomeSynthRef.current = mSynth;
+        if (metronomeEnabledRef.current && !metronomeVoiceRef.current) {
+          metronomeVoiceRef.current = new MetronomeVoice(-10);
         }
 
         const baseBpm = bpm;
@@ -996,8 +994,8 @@ export function PlaybackControls(
             }
           });
           totalDurationRef.current = last;
-          const click = metronomeSynthRef.current;
-          if (metronomeEnabledRef.current && click) {
+          const voice = metronomeVoiceRef.current;
+          if (metronomeEnabledRef.current && voice) {
             for (const beat of beatGrid) {
               if (beat.time < regionStartSec || beat.time >= regionEndSec) {
                 continue;
@@ -1005,7 +1003,7 @@ export function PlaybackControls(
               const t = (beat.time - regionStartSec) * st;
               const accent = beat.accent;
               const id = Tone.Transport.schedule((time) => {
-                click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+                voice.fire(metroSoundId, accent ? "accent" : "normal", time);
               }, t);
               scheduledIdsRef.current.push(id);
             }
@@ -1070,21 +1068,15 @@ export function PlaybackControls(
       // loop 回跳時自動重新觸發; Transport.cancel(0) 一起清掉。
       const needClicks = countInOffset > 0 || metronomeEnabledRef.current;
       if (needClicks) {
-        if (!metronomeSynthRef.current) {
-          const mSynth = new Tone.Synth({
-            oscillator: { type: "square" },
-            envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.05 },
-            volume: -10,
-          });
-          mSynth.toDestination();
-          metronomeSynthRef.current = mSynth;
+        if (!metronomeVoiceRef.current) {
+          metronomeVoiceRef.current = new MetronomeVoice(-10);
         }
-        const click = metronomeSynthRef.current;
+        const voice = metronomeVoiceRef.current;
         // D3 count-in: 音樂前的空拍 (k*beatSec), 每小節第 1 拍重音
         for (let k = 0; k < countInBeats; k++) {
           const accent = k % firstNumer === 0;
           const id = Tone.Transport.schedule((time) => {
-            click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+            voice.fire(metroSoundId, accent ? "accent" : "normal", time);
           }, k * beatSec);
           scheduledIdsRef.current.push(id);
         }
@@ -1094,7 +1086,7 @@ export function PlaybackControls(
             const t = beat.time * stretch + countInOffset;
             const accent = beat.accent;
             const id = Tone.Transport.schedule((time) => {
-              click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+              voice.fire(metroSoundId, accent ? "accent" : "normal", time);
             }, t);
             scheduledIdsRef.current.push(id);
           }

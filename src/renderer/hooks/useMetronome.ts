@@ -11,9 +11,15 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
+import {
+  type ClickTier,
+  MetronomeVoice,
+  type MetronomeSoundId,
+} from "../utils/metronomeSounds";
+import { useSessionStore } from "../stores/sessionStore";
 
+export type { MetronomeSoundId };
 export type AccentLevel = "accent" | "normal" | "mute";
-export type MetronomeSoundId = "woodblock" | "click" | "beep" | "cowbell";
 export type TrainerMode = "off" | "speedUp" | "mute";
 
 export interface TrainerConfig {
@@ -53,27 +59,7 @@ function defaultAccents(n: number): AccentLevel[] {
   return Array.from({ length: n }, (_, i) => (i === 0 ? "accent" : "normal"));
 }
 
-type Tier = "accent" | "normal" | "sub";
-
-/**
- * 依音色 + 強度算出 (音高, 時長秒, 音量dB 偏移)。
- * accent 高且響、normal 中、sub (細分) 更高更小聲更短。
- */
-function clickSpec(
-  sound: MetronomeSoundId,
-  tier: Tier,
-): { freq: number; dur: number; gain: number } {
-  const base: Record<MetronomeSoundId, number> = {
-    woodblock: 1200,
-    click: 2000,
-    beep: 880,
-    cowbell: 800,
-  };
-  const f = base[sound];
-  if (tier === "accent") return { freq: f * 1.5, dur: 0.03, gain: 0 };
-  if (tier === "normal") return { freq: f, dur: 0.03, gain: -5 };
-  return { freq: f * 1.5, dur: 0.018, gain: -12 }; // sub
-}
+type Tier = ClickTier;
 
 export function useMetronome() {
   const [state, setState] = useState<MetronomeState>({
@@ -83,7 +69,8 @@ export function useMetronome() {
     denominator: 4,
     accents: defaultAccents(4),
     subdivision: 1,
-    soundId: "woodblock",
+    // C1: 音色從共用 store 初始化 (與播放中點擊同一份)
+    soundId: useSessionStore.getState().metronomeSoundId,
     volumeDb: -6,
     currentBeat: -1,
     trainer: {
@@ -99,11 +86,8 @@ export function useMetronome() {
   const sRef = useRef(state);
   sRef.current = state;
 
-  // 合成音色節點 (lazy)
-  const synthRef = useRef<Tone.Synth | null>(null);
-  const noiseRef = useRef<Tone.NoiseSynth | null>(null);
-  const metalRef = useRef<Tone.MetalSynth | null>(null);
-  const gainRef = useRef<Tone.Gain | null>(null);
+  // 0.1.65 C1: 共用發聲器 (與播放中點擊同一套, 見 utils/metronomeSounds)
+  const voiceRef = useRef<MetronomeVoice | null>(null);
 
   // lookahead scheduler 內部狀態
   const timerRef = useRef<number | null>(null);
@@ -118,48 +102,15 @@ export function useMetronome() {
   const rafRef = useRef<number | null>(null);
 
   const ensureNodes = useCallback(() => {
-    if (!gainRef.current) {
-      gainRef.current = new Tone.Gain(
-        Tone.dbToGain(sRef.current.volumeDb),
-      ).toDestination();
-    }
-    if (!synthRef.current) {
-      synthRef.current = new Tone.Synth({
-        oscillator: { type: "triangle" },
-        envelope: { attack: 0.001, decay: 0.03, sustain: 0, release: 0.02 },
-      }).connect(gainRef.current);
-    }
-    if (!noiseRef.current) {
-      noiseRef.current = new Tone.NoiseSynth({
-        noise: { type: "white" },
-        envelope: { attack: 0.001, decay: 0.02, sustain: 0 },
-      }).connect(gainRef.current);
-    }
-    if (!metalRef.current) {
-      metalRef.current = new Tone.MetalSynth({
-        envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
-        harmonicity: 5.1,
-        resonance: 4000,
-        octaves: 1.2,
-      }).connect(gainRef.current);
+    if (!voiceRef.current) {
+      voiceRef.current = new MetronomeVoice(sRef.current.volumeDb);
     }
   }, []);
 
   /** 在精確的 audio time 觸發一次點擊 */
   const fireClick = useCallback((tier: Tier, time: number) => {
-    const { soundId } = sRef.current;
-    const spec = clickSpec(soundId, tier);
-    const vel = Tone.dbToGain(spec.gain);
     try {
-      if (soundId === "click") {
-        noiseRef.current?.triggerAttackRelease(spec.dur, time, vel);
-      } else if (soundId === "cowbell") {
-        metalRef.current?.triggerAttackRelease(spec.dur, time, vel);
-      } else {
-        synthRef.current?.triggerAttackRelease(
-          spec.freq, spec.dur, time, vel,
-        );
-      }
+      voiceRef.current?.fire(sRef.current.soundId, tier, time);
     } catch {
       /* 重疊觸發偶發 — 忽略 */
     }
@@ -201,9 +152,7 @@ export function useMetronome() {
   const start = useCallback(async () => {
     await Tone.start();
     ensureNodes();
-    if (gainRef.current) {
-      gainRef.current.gain.value = Tone.dbToGain(sRef.current.volumeDb);
-    }
+    voiceRef.current?.setVolumeDb(sRef.current.volumeDb);
     const ctx = Tone.getContext();
     beatRef.current = 0;
     barIndexRef.current = 0;
@@ -303,11 +252,13 @@ export function useMetronome() {
 
   const setSoundId = useCallback((soundId: MetronomeSoundId) => {
     setState((p) => ({ ...p, soundId }));
+    // C1: 同步到共用 store, 讓播放中點擊也用同一音色
+    useSessionStore.getState().setMetronomeSoundId(soundId);
   }, []);
 
   const setVolumeDb = useCallback((volumeDb: number) => {
     setState((p) => ({ ...p, volumeDb }));
-    if (gainRef.current) gainRef.current.gain.value = Tone.dbToGain(volumeDb);
+    voiceRef.current?.setVolumeDb(volumeDb);
   }, []);
 
   const setTrainer = useCallback((patch: Partial<TrainerConfig>) => {
@@ -339,10 +290,7 @@ export function useMetronome() {
     return () => {
       if (timerRef.current !== null) window.clearInterval(timerRef.current);
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      synthRef.current?.dispose();
-      noiseRef.current?.dispose();
-      metalRef.current?.dispose();
-      gainRef.current?.dispose();
+      voiceRef.current?.dispose();
     };
   }, []);
 

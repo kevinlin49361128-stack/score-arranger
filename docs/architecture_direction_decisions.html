@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<title>架構方向 + 練習工作台 — 決策文件</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#faf8f4;--paper:#fff;--ink:#2a2a2a;--muted:#6b6b6b;--border:#e5e1d8;--accent:#8b2c2c;
+    --p0:#c44545;--p1:#c4892c;--p2:#6b8e3d;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);}
+  *{box-sizing:border-box;}
+  body{font:15px/1.65 -apple-system,"PingFang TC","Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);
+    max-width:960px;margin:0 auto;padding:40px 24px 130px;}
+  h1{font-weight:600;font-size:27px;margin:0 0 6px;letter-spacing:-.01em;}
+  .subtitle{color:var(--muted);margin-bottom:24px;font-size:14px;}
+  h2{font-weight:600;font-size:18px;margin:34px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  h2 .hint{font-weight:400;font-size:13px;color:var(--muted);margin-left:8px;}
+  .intro{background:#fff8ec;border:1px solid #f0e0c0;border-radius:8px;padding:14px 18px;margin-bottom:22px;font-size:14px;color:#5a4720;}
+  .intro b{color:#3a2f10;}
+  .q-label{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px;}
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:12px;
+    box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s;position:relative;}
+  .card:hover{border-color:#c9c0ac;}
+  .card.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(139,44,44,.12),var(--shadow);}
+  .card.radio.selected{background:#fffaf5;}
+  .card-header{display:flex;align-items:baseline;gap:9px;margin-bottom:5px;flex-wrap:wrap;padding-right:30px;}
+  .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;color:#fff;letter-spacing:.02em;}
+  .t-p0{background:var(--p0);}.t-p1{background:var(--p1);}.t-p2{background:var(--p2);}
+  .size{font-size:11px;color:var(--muted);border:1px solid var(--border);padding:1px 7px;border-radius:4px;}
+  .title{font-weight:600;font-size:15px;flex:1;}
+  .rec{background:#fff8e0;color:#8a5a00;border:1px solid #f0d97a;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:500;}
+  .body{color:#444;font-size:13.5px;}.body p{margin:5px 0;}
+  .check{position:absolute;top:15px;right:18px;width:21px;height:21px;border:2px solid var(--border);border-radius:6px;background:#fff;transition:all .15s;}
+  .card.radio .check{border-radius:50%;}
+  .card.selected .check{background:var(--accent);border-color:var(--accent);}
+  .card.selected .check::after{content:"✓";color:#fff;font-weight:700;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;}
+  details{margin-top:6px;font-size:12.5px;}
+  details summary{cursor:pointer;color:var(--muted);font-weight:500;user-select:none;}
+  details>div{margin-top:5px;padding-left:14px;border-left:2px solid var(--border);color:#555;}
+  code{background:#f3efe5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:"SF Mono",Menlo,monospace;}
+  table{border-collapse:collapse;width:100%;margin:6px 0 20px;font-size:13px;}
+  th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top;}
+  th{background:#f3efe5;font-weight:600;}
+  .v-ok{color:#3a7a35;font-weight:600;}.v-warn{color:#b06a16;font-weight:600;}.v-wrong{color:#a33;font-weight:600;}
+  .footer{position:fixed;bottom:0;left:0;right:0;background:rgba(250,248,244,.95);backdrop-filter:blur(8px);
+    border-top:1px solid var(--border);padding:14px 24px;}
+  .footer-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .counter{font-size:13px;color:var(--muted);}.counter strong{color:var(--ink);}
+  button{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:6px;font:inherit;font-weight:600;cursor:pointer;transition:opacity .15s;}
+  button:hover{opacity:.9;}button:disabled{opacity:.4;cursor:not-allowed;}
+  button.secondary{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 22px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<h1>架構方向 — 練習工作台優先 (路線 C)</h1>
+<div class="subtitle">Score Arranger 方向決策 · 2026-05-31 · 基於 0.1.64 · 回應外部架構審查</div>
+
+<div class="intro">
+  <b>背景</b>：外部審查指出 7 個結構問題並提 A/B/C 三條路線。我逐項<strong>查證過程式碼</strong>後評級 (見下表)，並補上第三方沒掌握的「即時狀態」。<br>
+  <b>我的結論</b>：產品已實質變成<strong>練習/教學平台</strong>，<strong>路線 C 最對</strong> —— 它直接修掉我這幾版自己造的 #4 (節拍器分裂)、把 #6 (.sarr) 用「每曲練習設定」務實切片、且是直接的產品價值。另把 2 個近乎免費的修正 (#1 文件、#2 refine 編輯安全) 不分路線都先做。
+</div>
+
+<!-- ===== 評級表 ===== -->
+<h2>一、審查 7 點 — 查證後評級 <span class="hint">(資訊參考，非選項)</span></h2>
+<table>
+  <tr><th>#</th><th>結論</th><th>評級</th><th>查證發現</th></tr>
+  <tr><td>1</td><td>架構文件過期</td><td class="v-ok">準確</td><td><code>0.1.0 Draft / 05-18</code>。便宜該做</td></tr>
+  <tr><td>2</td><td>refine 覆蓋編輯</td><td class="v-warn">誤診</td><td>引擎 serial 單線程，無 server race。真風險在前端 refine-merge 用過期 <code>draftData</code> → 輕量修 (精修中停編輯 / 編輯時取消 refine)，非 optimistic lock</td></tr>
+  <tr><td>3</td><td>repair 止血非根治</td><td class="v-warn">部分過期</td><td><code>collect_issues</code> 已修成 0.04s (0.1.59)；真成本是 <code>deepcopy×候選</code>。「增量 collect」已沒意義</td></tr>
+  <tr><td>4</td><td>播放系統分裂</td><td class="v-ok">準確</td><td>這幾版我自己造的 (hook vs 播放內 click)。屬實 → 路線 C 主修</td></tr>
+  <tr><td>5</td><td>Type 偏鬆</td><td class="v-ok">準確</td><td><code>python-bridge.ts</code> 44 處 unknown</td></tr>
+  <tr><td>6</td><td>無 .sarr schema</td><td class="v-ok">準確</td><td>狀態散在 localStorage/Zustand/Python。最大結構債 → C 切片起步</td></tr>
+  <tr><td>7</td><td>能力模型逐項補丁</td><td class="v-wrong">大致錯誤</td><td>已有 <code>InstrumentProfile</code> dataclass 統一 range/breath/sustain/transposition/skill。模型已存在</td></tr>
+</table>
+
+<!-- ===== Q1 路線 ===== -->
+<div class="q-label">Q1 · 主路線 (單選)</div>
+<div class="card radio selected" data-group="route" data-id="route-C">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">M–L</span><span class="title">C · 練習工作台優先 (承認是練習/教學平台，先接順體驗)</span><span class="rec">🎯 我的推薦</span></div>
+  <div class="body">
+    <p>統一兩套節拍器、把 loop/trainer/count-in/practice log 串成一條練習流程、每曲保存設定、Mic/分手/熱圖/指法走同一個 Practice Session model、做完整老師↔學生工作流。</p>
+    <details><summary>為什麼是首選 / 反方</summary><div>修掉確認的真債 (#4)，#6 用練習設定務實切片，產品價值直接，且趁節拍器程式還在我 context 裡收斂最省。<b>反方</b>：不碰改編「輸出可信度」(B) 與型別契約 (A#5)。但核心改編已多輪打磨夠成熟，新而碎的是練習層。若近期要開源/找貢獻者，A 權重會上升。</div></details>
+  </div>
+</div>
+<div class="card radio" data-group="route" data-id="route-B">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">M–L</span><span class="title">B · 音樂品質與效能優先 (改出來的譜更可信)</span></div>
+  <div class="body"><p>repair 減 deepcopy、Persona×曲目×編制 golden matrix、統一 skill level 影響、品質 gate (旋律/和聲/可演奏性/voice-leading 不互相犧牲)。</p>
+    <details><summary>反方</summary><div>核心已相當成熟，邊際效益遞減；對「產品是練習平台」的識別沒幫助。golden matrix 有長期價值但見效慢。</div></details></div>
+</div>
+<div class="card radio" data-group="route" data-id="route-A">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">L</span><span class="title">A · 架構收斂優先 (暫停大功能 1 sprint)</span></div>
+  <div class="body"><p>重寫文件、定義完整 .sarr schema、IPC/server response schema 硬化、silent fallback → telemetry。</p>
+    <details><summary>反方</summary><div>大半理由是「團隊失去共同地圖」——我們是 solo+AI，地圖在我 context 裡，這部分價值打折。除非要開源/找人。</div></details></div>
+</div>
+
+<!-- ===== Q2 不分路線先做 ===== -->
+<h2>二、不分路線都先做 <span class="hint">(近乎免費 / 正確性)</span></h2>
+<div class="card selected" data-id="P0-arch">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">改寫 architecture.md → v0.1.64 現況</span><span class="rec">🎯</span></div>
+  <div class="body"><p>把 0.1.0 Draft 更新成多編制/MCP/PDF/AMT/練習/節拍器/Persona/漸進精修的真實架構。半天，給未來決策一張對的地圖。</p></div>
+</div>
+<div class="card selected" data-id="P0-refine">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">S</span><span class="title">refine 編輯安全 (精修中停用編輯 / 編輯時取消背景 refine)</span><span class="rec">🎯</span></div>
+  <div class="body"><p>修 #2 的真風險 (前端 refine-merge 用過期 draftData)。輕量：精修中把編輯類動作 disable + 顯示「精修中」，或一旦使用者編輯就 bump generation 丟棄該次 refine。不需 edit-revision 系統。</p></div>
+</div>
+
+<!-- ===== Q3 C 路線工作項 ===== -->
+<h2>三、路線 C 的工作項 <span class="hint">(多選 — 🎯 已預勾建議範圍)</span></h2>
+
+<div class="card selected" data-id="C1">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p0">P0</span><span class="size">M</span><span class="title">C1 · 統一節拍器 model (修 #4)</span><span class="rec">🎯</span></div>
+  <div class="body"><p>獨立節拍器與播放內點擊共用同一份設定 (音色/重音/細分/音量/訓練器) 與同一個 click engine 抽象。改一處兩邊一致，不再各走各的。</p></div>
+</div>
+<div class="card selected" data-id="C2">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">L</span><span class="title">C2 · Practice Session model (Mic/分手/熱圖/指法/loop/trainer/count-in 同一 state)</span><span class="rec">🎯</span></div>
+  <div class="body"><p>一個正式 <code>PracticeSession</code> 結構承接目前散落的練習狀態，各面板讀寫同一份，不再各自 localStorage/local state。也是 #6 的務實起點。</p></div>
+</div>
+<div class="card selected" data-id="C3">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">C3 · 每曲保存 metronome / practice / rehearsal 設定</span><span class="rec">🎯</span></div>
+  <div class="body"><p>跟著曲子/tab 存：BPM、拍號、重音、count-in、loop 範圍、trainer、分手模式、rehearsal notes。下次開同一首自動恢復。#6 的可落地切片。</p></div>
+</div>
+<div class="card selected" data-id="C4">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p1">P1</span><span class="size">M</span><span class="title">C4 · 練習流程串接 (loop + speed trainer + count-in + practice log 一條龍)</span><span class="rec">🎯</span></div>
+  <div class="body"><p>選段→count-in→loop+漸進加速→自動把這段練習結果 (速度/次數/達標) 寫進 practice log。把這幾版各自的零件接成一個流程。</p></div>
+</div>
+<div class="card" data-id="C5">
+  <div class="check"></div>
+  <div class="card-header"><span class="tag t-p2">P2</span><span class="size">L</span><span class="title">C5 · 完整老師↔學生工作流</span></div>
+  <div class="body"><p>老師指派曲目/段落/目標速度 → 學生練習 (自動記錄) → 回報進度 → 老師看 dashboard。把既有 TeacherHub/StudentCard/practice log 串成閉環。<b>較大、可後續</b>。</p></div>
+</div>
+
+<!-- ===== 建議範圍 ===== -->
+<h2>建議首發範圍 (🎯 已預勾)</h2>
+<div class="card" style="background:#fff8e0;border-color:#f0d97a;cursor:default;">
+  <div class="body">
+    <p><strong>0.1.65 sprint</strong>：P0 兩項 (architecture.md + refine 安全) + <strong>C1 統一節拍器</strong> + <strong>C3 每曲保存設定</strong>。先把「我剛造的分裂」收掉並讓設定不流失 —— 立即有感、風險小。</p>
+    <p><strong>0.1.66 sprint</strong>：<strong>C2 Practice Session model</strong> + <strong>C4 練習流程串接</strong>。把散落狀態收進一個 model，是 C5 的地基。</p>
+    <p><strong>之後</strong>：C5 完整師生工作流 (最大、等前面穩了再做)。</p>
+    <p><em>反方/取捨</em>：C2 的 PracticeSession model 是這條路線的核心投資，做不好會變成「又一層抽象」。建議 C1/C3 先上 (小、獨立)，用它們的需求反推 C2 的最小 schema，不要先設計大 model 再硬塞。</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+<div class="footer"><div class="footer-inner">
+  <div class="counter"><strong id="count">0</strong> 項已選</div>
+  <div><button class="secondary" id="clear">清除</button><button id="copy" disabled>複製決策摘要</button></div>
+</div></div>
+
+<script>
+const KEY="arch-direction-decisions-v1";
+const cards=document.querySelectorAll(".card[data-id]");
+const counter=document.getElementById("count");
+const copyBtn=document.getElementById("copy");
+const clearBtn=document.getElementById("clear");
+const toast=document.getElementById("toast");
+function update(){const n=[...cards].filter(c=>c.classList.contains("selected")).length;counter.textContent=n;copyBtn.disabled=n===0;}
+function save(){localStorage.setItem(KEY,JSON.stringify([...cards].filter(c=>c.classList.contains("selected")).map(c=>c.dataset.id)));}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw!==null){const s=JSON.parse(raw);cards.forEach(c=>c.classList.toggle("selected",s.includes(c.dataset.id)));}}catch{}update();}
+cards.forEach(c=>c.addEventListener("click",e=>{
+  if(e.target.closest("details"))return;
+  const grp=c.dataset.group;
+  if(grp){document.querySelectorAll(`.card[data-group="${grp}"]`).forEach(o=>{if(o!==c)o.classList.remove("selected");});c.classList.add("selected");}
+  else c.classList.toggle("selected");
+  save();update();
+}));
+clearBtn.addEventListener("click",()=>{cards.forEach(c=>c.classList.remove("selected"));save();update();});
+copyBtn.addEventListener("click",()=>{
+  const sel=[...cards].filter(c=>c.classList.contains("selected"));
+  const lines=sel.map(c=>`- ${c.dataset.id} ${c.querySelector(".title").textContent.trim()}`);
+  navigator.clipboard.writeText(`架構方向 — 決定:\n${lines.join("\n")}\n\n(共 ${sel.length} 項)`).then(()=>{
+    toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),1800);
+  });
+});
+load();
+</script>
+</body>
+</html>

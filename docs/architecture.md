@@ -1,7 +1,46 @@
 # Score Arranger — 架構設計規格書
 
-> 版本: 0.1.0 (Draft)
-> 最後更新: 2026-05-18
+> 版本: 0.1.64
+> 最後更新: 2026-05-31
+> 原始設計: 0.1.0 Draft (2026-05-18)
+
+---
+
+## 0. 現況快照 (v0.1.64)
+
+> **讀法**：本書的「核心模組設計」(§4)、「資料流」(§6) 大致仍是現行架構；但原始的
+> 「開發階段規劃」(§7) 與「Phase 1 僅小提琴+鋼琴」等敘述**已過時**。本節是目前
+> 產品的權威現況；§7 末有「已落地清單」。
+
+**產品實質**：已從「改編工具」長成「改編 + 練習/教學平台」。原 Phase 0–3 規劃均已完成。
+
+**已落地子系統 (多數超出原 Phase 1–3 規劃)**：
+- **改編編制**：小提琴+鋼琴、弦樂四重奏、鋼琴/大鍵琴獨奏、巴洛克三重奏鳴曲、
+  木管/銅管五重奏、吉他/魯特/豎琴、長笛+吉他、自訂 ensemble builder
+- **輸入**：MusicXML / MIDI / PDF→MusicXML (Audiveris OMR) / 錄音→MusicXML
+  (basic-pitch AMT) / ABC / Humdrum；「移植」(transcribe, 跨樂器移調) 模式
+- **分析/改編**：旋律偵測、聲部功能、羅馬數字和聲、NCT/掛留音、voice-leading DP、
+  弦樂指法 viterbi DP、figured-bass continuo、enrich / simplify / 目標難度控制、風格 preset
+- **可演奏性**：靜態規則 + 動態序列模擬 + 管樂換氣 + 銅管耐力 + 高把位/跨弦懲罰 +
+  Persona 技術水平 (amateur / intermediate / professional)
+- **修復**：定向修復迴圈 + 嚴重度加權 + 漸進式 (draft→背景精修) + 超大譜迭代硬上限
+- **播放 / 練習**：Tone.js 取樣播放、播放跟隨游標、段落 loop + 漸進加速、慢速(BPM/義式)、
+  分手練習、**獨立節拍器** (BPM/Tap/拍號/重音/細分/音色/訓練器) + **播放中跟隨變速點擊** +
+  **count-in**、麥克風即時跟拍評估、難度熱圖、練習日誌、排練筆記
+- **匯出**：MusicXML / MIDI / 分譜 PDF (verovio) / 音訊 wav·mp3 (OfflineContext)
+- **教學**：教師中心 (TeacherHub)、學生卡、合奏範本、曲庫資料庫 (多維篩選, ~100+ 曲)
+- **AI**：LLM 改編建議 / 自然語言改譜 / Issue 解讀 (provider 抽象: Anthropic/OpenAI-compat/Ollama)、
+  MCP server (暴露引擎給外部 AI, 多 session + Prompts)
+- **工程**：PyInstaller 凍結引擎、Developer ID 簽章 + Apple 公證、auto-update、
+  i18n (zh-TW / en / ja)、CSP / sandbox / navigation guard 安全強化、多 tab + variants 編輯樹
+
+**目前焦點 (0.1.65+, 方向「路線 C · 練習工作台」)**：練習層收斂 —— 統一節拍器 model、
+PracticeSession 統一狀態、每曲保存練習設定、練習流程 (選段→count-in→loop+加速→日誌) 串接。
+
+**已知結構債 (詳見 `docs/architecture_direction_decisions.html`)**：節拍器曾分裂成兩套 (收斂中)、
+refine 背景精修的編輯安全、前後端型別契約偏鬆 (python-bridge ~44 unknown)、
+尚無完整 `.sarr` project schema (狀態散在 localStorage / Zustand / Python session)、
+repair 每候選 deepcopy 成本。
 
 ---
 
@@ -32,7 +71,8 @@ Score Arranger 定位為**智慧輔助改編工具**——系統提供分析、�
 | 室內樂 | 不同編制的室內樂 |
 | 鋼琴譜 | 弦樂四重奏 (反向展開) |
 
-Phase 1 僅支援「管弦樂 → 小提琴 + 鋼琴」。
+> 現況 (0.1.64)：上表編制均已支援，另加大鍵琴/巴洛克三重奏鳴曲/銅管五重奏/吉他/魯特/
+> 豎琴/長笛+吉他，以及「自訂 ensemble builder」。原始「Phase 1 僅小提琴+鋼琴」已過時 (見 §0)。
 
 ---
 
@@ -811,7 +851,11 @@ class StringPositionSimulator:
 
 ## 7. 開發階段規劃
 
-### Phase 0 — 核心可行性驗證 (4-6 週)
+> **狀態 (0.1.64)**：Phase 0–3 **均已完成**，且實際範圍遠超下列原始規劃 (見 §0 現況快照)。
+> 以下保留為歷史設計記錄。目前的方向是「路線 C · 練習工作台收斂」(0.1.65+)，
+> 非新功能擴張 —— 詳見 `docs/architecture_direction_decisions.html`。
+
+### Phase 0 — 核心可行性驗證 (4-6 週) ✅ 已完成
 
 **目標**: 用純 Python CLI 驗證三個核心假設。
 
@@ -828,9 +872,9 @@ class StringPositionSimulator:
 - Python CLI tool，接受 MusicXML 輸入，輸出分析報告（JSON）
 - 測試結果報告與可行性評估
 
-### Phase 1 — MVP (3-4 個月)
+### Phase 1 — MVP (3-4 個月) ✅ 已完成
 
-**目標**: 最小可用產品，僅支援「管弦樂 → 小提琴 + 鋼琴」。
+**目標 (原始)**: 最小可用產品，僅支援「管弦樂 → 小提琴 + 鋼琴」。(現況已遠超此範圍，見 §0)
 
 **功能範圍**:
 - Score Parser (MusicXML)
@@ -848,7 +892,7 @@ class StringPositionSimulator:
 - A/B 比較
 - Undo/Redo
 
-### Phase 2 — 完整可用版 (3-4 個月)
+### Phase 2 — 完整可用版 (3-4 個月) ✅ 已完成
 
 **新增功能**:
 - 互動式拖拽重新分配
@@ -858,7 +902,7 @@ class StringPositionSimulator:
 - Undo/Redo
 - 問題面板一鍵修正 + 預覽 A/B 比較
 
-### Phase 3 — 打磨與擴展
+### Phase 3 — 打磨與擴展 ✅ 已完成 (且持續擴張)
 
 **新增功能**:
 - A/B 版本比較
