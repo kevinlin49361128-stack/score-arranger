@@ -699,6 +699,60 @@ export function PlaybackControls(
     return starts;
   };
 
+  /**
+   * 0.1.63 F2: 逐拍時間表 (跟隨曲中變速 / 變拍號)。
+   * 用 ticksToSeconds 算每一拍的實際秒數 — 變速段落自動跟上, 不再用固定間隔。
+   * 一拍 = 拍號分母單位 (4/4→四分, 6/8→八分); accent = 每小節第 1 拍。
+   * 回傳未 stretch 的秒數 (與 measureStarts 一致, 呼叫端再 ×stretch + offset)。
+   */
+  const computeBeatGrid = (
+    midi: Midi,
+    pickupQuarters: number = 0,
+  ): { time: number; accent: boolean }[] => {
+    const tsigs = [...midi.header.timeSignatures].sort(
+      (a, b) => a.ticks - b.ticks,
+    );
+    if (tsigs.length === 0) {
+      tsigs.push({
+        ticks: 0, timeSignature: [4, 4], measures: 0,
+      } as unknown as (typeof tsigs)[number]);
+    }
+    let maxTime = 0;
+    for (const track of midi.tracks) {
+      for (const n of track.notes) {
+        const end = n.time + n.duration;
+        if (end > maxTime) maxTime = end;
+      }
+    }
+    if (maxTime === 0) return [];
+
+    const ppq = midi.header.ppq;
+    const grid: { time: number; accent: boolean }[] = [];
+    let measureTicks = 0;
+    for (let i = 0; i < 10_000; i++) {
+      let tsig = tsigs[0];
+      for (const t of tsigs) {
+        if (t.ticks <= measureTicks) tsig = t;
+        else break;
+      }
+      const [num, denom] = tsig.timeSignature;
+      const beatTicks = (ppq * 4) / denom;
+      const isPickup = i === 0 && pickupQuarters > 0;
+      const measureTickLen = isPickup ? ppq * pickupQuarters : beatTicks * num;
+      const beatsThis = isPickup
+        ? Math.max(1, Math.round(measureTickLen / beatTicks))
+        : num;
+      for (let b = 0; b < beatsThis; b++) {
+        const sec = midi.header.ticksToSeconds(measureTicks + b * beatTicks);
+        if (sec > maxTime + 0.5) return grid;
+        grid.push({ time: sec, accent: !isPickup && b === 0 });
+      }
+      measureTicks += measureTickLen;
+      if (midi.header.ticksToSeconds(measureTicks) > maxTime + 1) break;
+    }
+    return grid;
+  };
+
   const startTracking = () => {
     let prevMeasure = -1;
     // start("+0.1") 後約 100ms 內 Tone.Transport.state 仍是 "stopped" —
@@ -823,8 +877,21 @@ export function PlaybackControls(
       // 慢速練習 — 把所有時間軸 ×(1/rate). 注意要在 scheduling 跟 measure
       // starts 同時套用, 不然播放游標位置會跟聲音脫節。
       const stretch = 1 / playbackRate;
+
+      // 0.1.63 F2: 逐拍時間表 (跟隨變速/變拍) — 給播放中節拍器 + count-in 用
+      const beatGrid = computeBeatGrid(midi, pickupQuarters);
+      const beatSec = beatGrid.length >= 2
+        ? (beatGrid[1].time - beatGrid[0].time) * stretch
+        : (60 / bpm) * stretch;
+
+      // 0.1.63 D3: count-in 預備拍 — 音樂整體後移 countInOffset, 前面補空拍點擊
+      const countInBars = useSessionStore.getState().countInBars;
+      const firstNumer = midi.header.timeSignatures[0]?.timeSignature[0] ?? 4;
+      const countInBeats = countInBars > 0 ? countInBars * firstNumer : 0;
+      const countInOffset = countInBeats * beatSec;
+
       measureStartsRef.current = computeMeasureStarts(midi, pickupQuarters)
-        .map((s) => s * stretch);
+        .map((s) => s * stretch + countInOffset);
 
       // 把 track 列表更新到 state, 給 mute popover 顯示用. 用 idx 區分,
       // name 為空時 fallback 給 "Track N+1" — 避免 popover 顯示空白行.
@@ -859,7 +926,7 @@ export function PlaybackControls(
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
         for (const note of track.notes) {
-          const noteTime = note.time * stretch;
+          const noteTime = note.time * stretch + countInOffset;
           const noteDur = note.duration * stretch;
           const id = Tone.Transport.schedule((time) => {
             instrument.triggerAttackRelease(
@@ -887,31 +954,40 @@ export function PlaybackControls(
         stopAllScheduled();
       }, lastTime + 0.3);
 
-      // 0.1.54 D: 節拍器 — 開啟時排 4 分音符點擊. Tone.Transport.cancel(0)
-      // 在 stopAllScheduled 會一起清掉, 不用獨立 cleanup.
-      if (metronomeEnabledRef.current) {
+      // 0.1.63: 節拍器點擊 — count-in 預備拍 (D3) + 播放中逐拍 (F2)。
+      // 都用同一 woodblock synth 並走 Transport.schedule (絕對時間), 所以
+      // loop 回跳時自動重新觸發; Transport.cancel(0) 一起清掉。
+      const needClicks = countInOffset > 0 || metronomeEnabledRef.current;
+      if (needClicks) {
         if (!metronomeSynthRef.current) {
-          const m = new Tone.Synth({
+          const mSynth = new Tone.Synth({
             oscillator: { type: "square" },
             envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.05 },
             volume: -10,
           });
-          m.toDestination();
-          metronomeSynthRef.current = m;
+          mSynth.toDestination();
+          metronomeSynthRef.current = mSynth;
         }
         const click = metronomeSynthRef.current;
-        // 0.1.61: 點擊間隔 = 一拍秒數 × stretch — 跟著慢速練習一起變慢 (修同步:
-        // 舊版固定 "4n" 走原速 bpm, 0.75x 時音符變慢但點擊照原速 → 對不上)。
-        // 第 1 拍重音 (高八度), 拍號 numerator 取自樂譜。
-        const beatSec = (60 / bpm) * stretch;
-        const numer = arrangement?.tempo?.time_signature.numerator ?? 4;
-        let mBeat = 0;
-        const id = Tone.Transport.scheduleRepeat((time) => {
-          const accent = mBeat % numer === 0;
-          click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
-          mBeat++;
-        }, beatSec);
-        metronomeScheduleIdRef.current = id;
+        // D3 count-in: 音樂前的空拍 (k*beatSec), 每小節第 1 拍重音
+        for (let k = 0; k < countInBeats; k++) {
+          const accent = k % firstNumer === 0;
+          const id = Tone.Transport.schedule((time) => {
+            click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+          }, k * beatSec);
+          scheduledIdsRef.current.push(id);
+        }
+        // F2: 播放中逐拍 — beatGrid 跟隨曲中變速/變拍, 強拍重音
+        if (metronomeEnabledRef.current) {
+          for (const beat of beatGrid) {
+            const t = beat.time * stretch + countInOffset;
+            const accent = beat.accent;
+            const id = Tone.Transport.schedule((time) => {
+              click.triggerAttackRelease(accent ? "E7" : "E6", "64n", time);
+            }, t);
+            scheduledIdsRef.current.push(id);
+          }
+        }
       }
 
       Tone.Transport.start("+0.1");

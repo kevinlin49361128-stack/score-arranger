@@ -32,6 +32,8 @@ export function MetronomePanel() {
   const setOpen = useSessionStore((s) => s.setMetronomeOpen);
   const arrangement = useSessionStore((s) => s.arrangement);
   const sourceMusicXML = useSessionStore((s) => s.sourceMusicXML);
+  const countInBars = useSessionStore((s) => s.countInBars);
+  const setCountInBars = useSessionStore((s) => s.setCountInBars);
 
   const m = useMetronome();
   const { state, stop, setBpm, setTimeSig } = m;
@@ -258,6 +260,35 @@ export function MetronomePanel() {
           onChange={(e) => m.setVolumeDb(parseInt(e.target.value, 10))}
           style={{ flex: 1 }}
         />
+      </div>
+
+      {/* D3 count-in 預備拍 — 套用到樂譜播放 (▶) */}
+      <div style={{ ...row, marginTop: 10 }}>
+        <span style={label} title={t("metronome.countIn.title")}>
+          {t("metronome.countIn")}
+        </span>
+        <div style={{ display: "flex", gap: 4 }}>
+          {[0, 1, 2].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setCountInBars(n)}
+              title={t("metronome.countIn.title")}
+              style={{
+                ...miniBtn,
+                width: "auto",
+                padding: "0 10px",
+                fontSize: 11,
+                background: countInBars === n
+                  ? "var(--accent)" : "transparent",
+                color: countInBars === n
+                  ? "var(--accent-fg)" : "var(--fg-primary)",
+              }}
+            >
+              {n === 0 ? t("metronome.trainer.off") : `${n}`}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 練習訓練器 D1/D2 */}

@@ -272,6 +272,10 @@ interface SessionState {
   metronomeOpen: boolean;
   setMetronomeOpen: (v: boolean) => void;
 
+  // 0.1.63 D3: 播樂譜前的 count-in 預備拍小節數 (0 = 關)
+  countInBars: number;
+  setCountInBars: (n: number) => void;
+
   // 改編產出的 issues (target_score 上的, 可 apply_suggestion)
   arrangementIssues: ArrangementIssue[];
   setArrangementIssues: (issues: ArrangementIssue[]) => void;
@@ -444,6 +448,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setRefining: (v) => set({ refining: v }),
   metronomeOpen: false,
   setMetronomeOpen: (v) => set({ metronomeOpen: v }),
+  countInBars: 0,
+  setCountInBars: (n) => set({ countInBars: n }),
 
   arrangementIssues: [],
   setArrangementIssues: (issues) => set({ arrangementIssues: issues }),
