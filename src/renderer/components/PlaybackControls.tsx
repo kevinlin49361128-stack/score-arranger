@@ -13,6 +13,10 @@ import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
 import { logDrill } from "../stores/practiceLogStore";
+import {
+  loadPracticeSession,
+  savePracticeSession,
+} from "../utils/practiceSession";
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
 import { MetronomeVoice } from "../utils/metronomeSounds";
@@ -318,6 +322,52 @@ export function PlaybackControls(
   useEffect(() => {
     loopEnabledRef.current = loopEnabled;
   }, [loopEnabled]);
+
+  // 0.1.69 C3: 每曲保存 / 恢復 loop 選段 + 練習速度 + 漸進加速設定。
+  // 換曲 (sourcePath 變) → 恢復該曲存過的值; 沒存過 → 重設為預設 (不沿用上一
+  // 首 — 否則 piece A 的 loop 範圍會套到 measure 數不同的 piece B)。與 C3
+  // hook (countInBars / metronomeSoundId / handFocus) 各寫各欄位,
+  // savePracticeSession 會 merge 同一把 key, 不互相覆寫。
+  const loopRateLoadedRef = useRef<string | null>(null);
+  const loopRateSkipSaveRef = useRef(false);
+  useEffect(() => {
+    if (loopRateLoadedRef.current === sourcePath) return;
+    loopRateLoadedRef.current = sourcePath;
+    loopRateSkipSaveRef.current = true; // 這一輪值可能還是上一首的, 不存
+    const saved = sourcePath ? loadPracticeSession(sourcePath) : null;
+    setLoopStart(saved?.loopStart ?? null);
+    setLoopEnd(saved?.loopEnd ?? null);
+    setLoopEnabled(saved?.loopEnabled ?? false);
+    setLoopAccel(saved?.loopAccelEnabled ?? false);
+    setLoopAccelStep(saved?.loopAccelStep ?? 5);
+    setLoopAccelMax(saved?.loopAccelMax ?? 160);
+    setPlaybackRate(saved?.playbackRate ?? 1);
+  }, [sourcePath]);
+  useEffect(() => {
+    if (loopRateLoadedRef.current !== sourcePath || !sourcePath) return;
+    if (loopRateSkipSaveRef.current) {
+      loopRateSkipSaveRef.current = false;
+      return;
+    }
+    savePracticeSession(sourcePath, {
+      loopStart,
+      loopEnd,
+      loopEnabled,
+      loopAccelEnabled: loopAccel,
+      loopAccelStep,
+      loopAccelMax,
+      playbackRate,
+    });
+  }, [
+    sourcePath,
+    loopStart,
+    loopEnd,
+    loopEnabled,
+    loopAccel,
+    loopAccelStep,
+    loopAccelMax,
+    playbackRate,
+  ]);
 
   // 練習模式 — 外部請求 loop 一段 (PracticePanel 點選最難小節)
   useEffect(() => {

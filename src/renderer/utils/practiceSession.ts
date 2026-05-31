@@ -7,14 +7,14 @@
  * 邊界: 節拍器的「音樂內容」(BPM / 拍號 / 重音) 不收在這裡 —— 那些 0.1.62 起
  * 已從樂譜自動同步 (見 MetronomePanel)。這裡收的是「練習偏好」: 怎麼練這首。
  *
- * 漸進落地: 欄位先定義齊全 (contract); 持久化目前套用 store-resident 子集
- * (countInBars / metronomeSoundId / handFocus), loop / playbackRate 等待從
- * PlaybackControls 提升到 store 後再納入 (見各欄位註記)。
+ * 持久化分兩處 (各寫各欄位, savePracticeSession 對同一把 key merge, 不互相覆寫):
+ * - usePracticeSessionPersistence hook (App 級): countInBars / metronomeSoundId / handFocus
+ * - PlaybackControls (0.1.69 C3): loop 選段 / playbackRate / 漸進加速設定
  */
 import type { MetronomeSoundId } from "./metronomeSounds";
 
 export interface PracticeSessionSettings {
-  /** 練習速度倍率 (♩=BPM 選擇器內部值)。TODO: 待從 PlaybackControls 提升 */
+  /** 練習速度倍率 (1.0 = 原速; PlaybackControls 的 ♩=BPM 選擇器內部值) */
   playbackRate?: number;
   /** 播樂譜前的 count-in 預備拍小節數 (D3) */
   countInBars?: number;
@@ -22,11 +22,11 @@ export interface PracticeSessionSettings {
   metronomeSoundId?: MetronomeSoundId;
   /** 鋼琴分手練習 */
   handFocus?: "all" | "rh" | "lh";
-  /** 段落 loop 範圍 (1-based measure)。TODO: 待從 PlaybackControls 提升 */
+  /** 段落 loop 範圍 (1-based measure) + 是否啟用 */
   loopStart?: number | null;
   loopEnd?: number | null;
   loopEnabled?: boolean;
-  /** F3 段落漸進加速設定。TODO: 待提升 */
+  /** F3 段落漸進加速設定 */
   loopAccelEnabled?: boolean;
   loopAccelStep?: number;
   loopAccelMax?: number;
