@@ -408,17 +408,25 @@ export interface CustomPlayerInput {
   skill_level?: "amateur" | "intermediate" | "professional";
 }
 
+export interface MelodyRoutingEntry {
+  span: [number, number];
+  targets: string[];
+  register?: "natural" | "octave_down" | "key_down";
+}
+
 export async function arrangeCustom(
   path: string,
   players: CustomPlayerInput[],
   repair = false,
   skillLevel: "amateur" | "intermediate" | "professional" = "professional",
   stylePreset = "none",
+  melodyRouting?: MelodyRoutingEntry[],
 ): Promise<unknown> {
   return client.call("arrange_custom", {
     path, players, repair,
     skill_level: skillLevel,
     style_preset: stylePreset,
+    melody_routing: melodyRouting,
   });
 }
 

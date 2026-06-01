@@ -55,6 +55,7 @@ import {
   listAvailableInstruments,
   arrangeCustom,
   type CustomPlayerInput,
+  type MelodyRoutingEntry,
 } from "./python-bridge";
 import {
   callLLMEditPlan,
@@ -268,8 +269,11 @@ function registerIpcHandlers(): void {
     repair: boolean,
     skillLevel?: "amateur" | "intermediate" | "professional",
     stylePreset?: string,
+    melodyRouting?: MelodyRoutingEntry[],
   ) => safeCall(() =>
-    arrangeCustom(path, players, repair, skillLevel, stylePreset)));
+    arrangeCustom(
+      path, players, repair, skillLevel, stylePreset, melodyRouting,
+    )));
   ipcMain.handle(
     "engine:toMusicXML",
     async (

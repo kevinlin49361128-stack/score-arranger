@@ -110,9 +110,15 @@ const api = {
       repair = false,
       skillLevel: "amateur" | "intermediate" | "professional" = "professional",
       stylePreset = "none",
+      melodyRouting?: Array<{
+        span: [number, number];
+        targets: string[];
+        register?: "natural" | "octave_down" | "key_down";
+      }>,
     ) =>
       ipcRenderer.invoke(
         "engine:arrangeCustom", path, players, repair, skillLevel, stylePreset,
+        melodyRouting,
       ),
     toMusicXML: (
       path: string, maxMeasures?: number, startMeasure?: number,

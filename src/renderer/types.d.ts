@@ -119,6 +119,11 @@ declare global {
           repair?: boolean,
           skillLevel?: "amateur" | "intermediate" | "professional",
           stylePreset?: string,
+          melodyRouting?: Array<{
+            span: [number, number];
+            targets: string[];
+            register?: "natural" | "octave_down" | "key_down";
+          }>,
         ) => Promise<IpcResponse<ArrangementResult>>;
         toMusicXML: (
           path: string, maxMeasures?: number, startMeasure?: number,
