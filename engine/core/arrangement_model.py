@@ -59,6 +59,9 @@ class Assignment:
     is_phrase_locked: bool = False
     is_user_edited: bool = False
     is_auto_generated: bool = True
+    # 主旋律路線 (melody routing) 移到低聲部時的移調方式 — 由 build_target_score
+    # 消費 (M-C): "natural" 不動 / "octave_down" 同調降八度 / "key_down" 整曲降Key。
+    melody_register: str = "natural"
 
 
 # ============================================================================

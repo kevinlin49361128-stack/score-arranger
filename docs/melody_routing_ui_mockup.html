@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>主旋律路線編輯器 — UI 設計 mockup</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--panel2:#1d2129;--line:#2a2f3a;
+    --fg:#e7ebf2;--muted:#9aa4b2;--accent:#7aa2ff;
+    --v1:#5b8cff;--v2:#36c5d6;--va:#5ec77e;--vc:#e0a458;--auto:#3a4150;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    line-height:1.6;padding:26px 20px 60px}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 2px}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:13.5px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .lbl{font-size:12px;color:var(--muted);margin-right:4px}
+  .vchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 10px;border-radius:20px;
+    border:1px solid var(--line);background:#1b2027}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .preset{background:#222732;border:1px solid var(--line);border-radius:18px;padding:6px 13px;font-size:12.5px;
+    cursor:pointer;color:#cdd5e0;transition:.12s}
+  .preset:hover{border-color:var(--accent);color:#fff}
+  /* timeline */
+  .tl-wrap{overflow-x:auto;padding-bottom:6px}
+  .path{display:flex;height:30px;border-radius:7px;overflow:hidden;min-width:760px;margin-bottom:3px;border:1px solid var(--line)}
+  .seg{flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;color:#0c1220;font-weight:700;
+    position:relative;border-right:1px solid #0f1115aa}
+  .seg:last-child{border-right:0}
+  .seg .reg{position:absolute;top:1px;right:3px;font-size:9px;color:#0c1220;opacity:.8}
+  .strip{display:flex;min-width:760px;gap:3px}
+  .cell{flex:1;min-width:54px;height:44px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    font-size:10px;color:var(--muted);transition:.12s;position:relative}
+  .cell:hover{border-color:#3a4456}
+  .cell.sel{outline:2px solid var(--accent);outline-offset:1px}
+  .cell .who{font-size:11px;font-weight:700}
+  .cell.auto .who{color:var(--muted);font-weight:500}
+  .cell .mm{font-size:9px;color:#6b7585}
+  .cell .badge{position:absolute;top:2px;right:4px;font-size:9px;color:#0c1220;background:#ffd166;border-radius:6px;padding:0 3px;font-weight:700}
+  .cell .dbl{position:absolute;top:2px;left:4px;font-size:9px}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:8px}
+  /* detail */
+  .detail{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .detail h3{font-size:13px;margin:0 0 8px;color:var(--accent)}
+  .pick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+  .pchip{font-size:12.5px;padding:5px 12px;border-radius:18px;border:1.5px solid var(--line);background:#222732;
+    cursor:pointer;color:#cdd5e0;display:inline-flex;align-items:center;gap:6px;transition:.12s}
+  .pchip.on{border-color:#fff;color:#fff}
+  .reg-opts{margin:6px 0 0;padding:9px 11px;background:#1a1d24;border:1px solid #33415044;border-radius:8px;display:none}
+  .reg-opts.show{display:block}
+  .reg-opts .t{font-size:12px;color:var(--vc);margin-bottom:5px}
+  .radio{display:inline-flex;gap:5px;align-items:center;font-size:12.5px;margin-right:14px;cursor:pointer;color:#cdd5e0}
+  .small{font-size:11px;color:var(--muted)}
+  .actions{display:flex;gap:10px;margin-top:14px}
+  button{background:var(--accent);color:#06101f;border:0;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:700;cursor:pointer}
+  button.ghost{background:#222732;color:var(--fg);border:1px solid var(--line)}
+  .legend{font-size:11.5px;color:var(--muted)}
+  .k{display:inline-block;background:#222732;border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>主旋律路線編輯器</h1>
+  <p class="sub">設計稿 — 鋼琴 → 弦樂四重奏。核心理念：<b>預設全自動，只覆寫你在意的樂句</b>；主旋律的「遊走」做成<b>看得見的彩色路徑</b>；選低聲部時<b>就地</b>跳出移調選項。</p>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <span class="lbl">聲部</span>
+      <span class="vchip"><span class="dot" style="background:var(--v1)"></span>Violin I</span>
+      <span class="vchip"><span class="dot" style="background:var(--v2)"></span>Violin II</span>
+      <span class="vchip"><span class="dot" style="background:var(--va)"></span>Viola <span class="small">(低·需移調)</span></span>
+      <span class="vchip"><span class="dot" style="background:var(--vc)"></span>Cello <span class="small">(低·需移調)</span></span>
+    </div>
+    <div class="row"><span class="lbl">常用路線</span>
+      <div class="presets">
+        <span class="preset" data-p="allv1">全程 Violin I</span>
+        <span class="preset" data-p="split">V1 ↔ V2 分擔</span>
+        <span class="preset" data-p="rotate">四聲部輪流</span>
+        <span class="preset" data-p="chorusvc">副歌交給大提</span>
+        <span class="preset" data-p="auto">全部自動</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="legend" style="margin-bottom:6px">主旋律路徑（彩色 = 該句承擔聲部；<span class="k">↓8</span>/<span class="k">↓K</span> = 移低八度 / 降Key；左上 <b>=</b> 加倍）</div>
+    <div class="tl-wrap">
+      <div class="path" id="path"></div>
+      <div class="strip" id="strip"></div>
+    </div>
+    <div class="hint" id="hint"></div>
+
+    <div class="detail" id="detail" style="display:none">
+      <h3 id="dt-title">樂句設定</h3>
+      <div class="small" style="margin-bottom:6px">這句主旋律給（可多選 = 加倍齊奏）：</div>
+      <div class="pick" id="pick"></div>
+      <div class="reg-opts" id="reg">
+        <div class="t">⚠ 此聲部音域較低 — 旋律要怎麼放進去？</div>
+        <label class="radio"><input type="radio" name="reg" value="octave" checked> 移低八度（同調，只搬旋律）</label>
+        <label class="radio"><input type="radio" name="reg" value="key"> 整曲降Key（全域變調）</label>
+        <div class="small" style="margin-top:5px">旋律讓位後，原聲部角色會自動重填和聲。</div>
+      </div>
+      <div class="actions">
+        <button id="apply">套用並試聽這句</button>
+        <button class="ghost" id="toauto">回到自動</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card legend">
+    <b>互動說明（這是設計稿）：</b>點任一樂句格 → 下方出現設定。選 1 聲部 = 單獨；選 2 = 加倍。選 Viola/Cello 會自動跳出移調選項。未動到的樂句維持「自動」(灰字, 沿用引擎判斷)。<br>
+    真實版會即時重改編 + 試聽該句，並沿用現有的拖拉 reassign 視覺與可演奏性檢查。
+  </div>
+</div>
+
+<script>
+const VOICES={v1:{n:"Violin I",c:"#5b8cff",low:false},v2:{n:"Violin II",c:"#36c5d6",low:false},
+  va:{n:"Viola",c:"#5ec77e",low:true},vc:{n:"Cello",c:"#e0a458",low:true}};
+const ORDER=["v1","v2","va","vc"];
+const PHRASES=Array.from({length:12},(_,i)=>({mm:`mm.${i*4+1}–${i*4+4}`}));
+const KEY="melody_ui_mockup_v1";
+let st=load()||PHRASES.map(()=>({carrier:[],reg:"octave",auto:true})); // auto by default
+let selIdx=-1;
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(st))}
+
+function segColor(p){
+  if(p.auto||p.carrier.length===0)return"var(--auto)";
+  if(p.carrier.length>1)return`linear-gradient(90deg,${VOICES[p.carrier[0]].c},${VOICES[p.carrier[1]].c})`;
+  return VOICES[p.carrier[0]].c;
+}
+function label(p){
+  if(p.auto||p.carrier.length===0)return"自動";
+  return p.carrier.map(v=>VOICES[v].n.replace("Violin","V").replace("iola","a").replace("ello","c")).join("+");
+}
+function needsReg(p){return p.carrier.some(v=>VOICES[v].low)}
+
+function render(){
+  const path=document.getElementById("path"),strip=document.getElementById("strip");
+  path.innerHTML="";strip.innerHTML="";
+  st.forEach((p,i)=>{
+    const seg=document.createElement("div");seg.className="seg";
+    seg.style.background=segColor(p);
+    seg.textContent=p.auto?"":label(p);
+    if(!p.auto&&needsReg(p)){const r=document.createElement("span");r.className="reg";r.textContent=p.reg==="key"?"↓K":"↓8";seg.appendChild(r)}
+    path.appendChild(seg);
+
+    const c=document.createElement("div");c.className="cell"+(p.auto?" auto":"")+(i===selIdx?" sel":"");
+    c.innerHTML=`<div class="who" style="${p.auto?'':'color:'+(p.carrier.length>1?'#fff':VOICES[p.carrier[0]].c)}">${label(p)}</div><div class="mm">${PHRASES[i].mm}</div>`;
+    if(!p.auto&&p.carrier.length>1)c.insertAdjacentHTML("beforeend",'<span class="dbl">=</span>');
+    if(!p.auto&&needsReg(p))c.insertAdjacentHTML("beforeend",`<span class="badge">${p.reg==="key"?"↓K":"↓8"}</span>`);
+    c.onclick=()=>{selIdx=i;openDetail()};
+    strip.appendChild(c);
+  });
+  const overrides=st.filter(p=>!p.auto).length;
+  document.getElementById("hint").textContent=`共 ${st.length} 個樂句 · 已覆寫 ${overrides} 句 · 其餘 ${st.length-overrides} 句沿用自動分配`;
+}
+function openDetail(){
+  const d=document.getElementById("detail");d.style.display="block";
+  const p=st[selIdx];
+  document.getElementById("dt-title").textContent=`樂句設定 — ${PHRASES[selIdx].mm}`;
+  const pick=document.getElementById("pick");pick.innerHTML="";
+  ORDER.forEach(v=>{
+    const on=!p.auto&&p.carrier.includes(v);
+    const el=document.createElement("span");el.className="pchip"+(on?" on":"");
+    el.innerHTML=`<span class="dot" style="background:${VOICES[v].c}"></span>${VOICES[v].n}`;
+    el.onclick=()=>{
+      p.auto=false;
+      const k=p.carrier.indexOf(v);
+      if(k>=0)p.carrier.splice(k,1);else{if(p.carrier.length>=2)p.carrier.shift();p.carrier.push(v)}
+      if(p.carrier.length===0)p.auto=true;
+      persist();openDetail();render();
+    };
+    pick.appendChild(el);
+  });
+  document.getElementById("reg").classList.toggle("show",!p.auto&&needsReg(p));
+  document.querySelectorAll('input[name=reg]').forEach(r=>{r.checked=(r.value===p.reg);
+    r.onchange=()=>{p.reg=r.value;persist();render()}});
+  render();
+}
+document.getElementById("toauto").onclick=()=>{if(selIdx<0)return;st[selIdx]={carrier:[],reg:"octave",auto:true};persist();openDetail();render()};
+document.getElementById("apply").onclick=()=>{const b=document.getElementById("apply");b.textContent="已套用 ✓ (試聽…)";setTimeout(()=>b.textContent="套用並試聽這句",1300)};
+document.querySelectorAll(".preset").forEach(pr=>pr.onclick=()=>{
+  const p=pr.dataset.p;
+  st=st.map((_,i)=>{
+    if(p==="auto")return{carrier:[],reg:"octave",auto:true};
+    if(p==="allv1")return{carrier:["v1"],reg:"octave",auto:false};
+    if(p==="split")return{carrier:[i%2?"v2":"v1"],reg:"octave",auto:false};
+    if(p==="rotate")return{carrier:[ORDER[i%4]],reg:"octave",auto:false};
+    if(p==="chorusvc")return (i>=6&&i<=9)?{carrier:["vc"],reg:"octave",auto:false}:{carrier:["v1"],reg:"octave",auto:false};
+    return{carrier:[],reg:"octave",auto:true};
+  });
+  selIdx=-1;document.getElementById("detail").style.display="none";persist();render();
+});
+render();
+</script>
+</body>
+</html>

@@ -214,6 +214,7 @@ def arrange(
     section: Optional[Section] = None,
     arrangement_name: str = "自動分配 v1",
     fill_inner_voices: bool = True,
+    melody_routing: Optional[list[dict]] = None,
 ) -> Arrangement:
     """執行 Phase 1 四階段分配。
 
@@ -250,6 +251,13 @@ def arrange(
         _apply_melody_handoff(score, section, arrangement)
     except Exception:
         pass  # 換手偵測失敗 → 保留 section 級 MELODY 指派
+
+    # 使用者逐樂句主旋律路線覆寫 (M-core) — 在自動分配/換手之後疊上
+    if melody_routing:
+        try:
+            _apply_melody_routing_overrides(arrangement, melody_routing)
+        except Exception:
+            pass
 
     # Phase C: 衝突解決 (Phase 1 僅 octave shift)
     # Phase D: 連貫性修正 (Phase 2 實作)
@@ -566,6 +574,106 @@ def _apply_melody_handoff(
             span=(start_m, end_m),
             function=VoiceFunction.MELODY,
         ))
+    arrangement.assignments = others + new_melody
+    for i, a in enumerate(arrangement.assignments):
+        a.assignment_id = i
+
+
+def _apply_melody_routing_overrides(
+    arrangement: Arrangement,
+    routing: Optional[list[dict]],
+) -> None:
+    """套用使用者的逐樂句主旋律路線覆寫 (melody routing)。
+
+    在自動分配 + 換手之後疊上 —— 使用者只覆寫在意的樂句, 其餘沿用引擎判斷。
+    routing 每筆: {"span":[start_m,end_m], "targets":[player_id,...],
+                   "register":"natural"|"octave_down"|"key_down"}
+    - targets 多個 → 主旋律加倍 (同 span 多筆 MELODY 指派, 由 M-B 決定齊奏/8va)。
+    - 某樂句無對應 entry / targets 空 → 沿用自動分配。
+    硬約束: 主旋律只在樂句邊界換聲部 — 呼叫端負責讓 span 對齊樂句邊界。
+    register 存進 Assignment.melody_register, 由 M-C 消費 (本階段同音域不移調)。
+    """
+    if not routing:
+        return
+    by_player = {p.player_id: p for p in arrangement.players}
+    melody = [
+        a for a in arrangement.assignments
+        if a.function == VoiceFunction.MELODY
+    ]
+    others = [
+        a for a in arrangement.assignments
+        if a.function != VoiceFunction.MELODY
+    ]
+    if not melody:
+        return
+
+    sec_start = min(a.span[0] for a in melody)
+    sec_end = max(a.span[1] for a in melody)
+    # 每小節既有的 source / target — 自動分配基準
+    src_at: dict[int, str] = {}
+    auto_tgt: dict[int, list[str]] = {}
+    for a in melody:
+        for mm in range(a.span[0], a.span[1] + 1):
+            src_at[mm] = a.source_part_id
+            auto_tgt.setdefault(mm, []).append(a.target_player_id)
+
+    tgt_at: dict[int, list[str]] = {
+        mm: list(dict.fromkeys(auto_tgt.get(mm, [])))
+        for mm in range(sec_start, sec_end + 1)
+    }
+    reg_at: dict[int, str] = {mm: "natural" for mm in range(sec_start, sec_end + 1)}
+    overridden: set[int] = set()  # 被使用者覆寫的小節 (區分 auto 餘段)
+    for ov in routing:
+        span = ov.get("span") or []
+        if len(span) != 2:
+            continue
+        s, e = int(span[0]), int(span[1])
+        targets = [t for t in (ov.get("targets") or []) if t in by_player]
+        if not targets:
+            continue  # auto
+        reg = ov.get("register", "natural")
+        for mm in range(max(s, sec_start), min(e, sec_end) + 1):
+            tgt_at[mm] = targets
+            reg_at[mm] = reg
+            overridden.add(mm)
+
+    # 合併連續相同 (targets, source, register) 的小節成 span
+    fallback_src = melody[0].source_part_id
+    new_melody: list[Assignment] = []
+    mm = sec_start
+    while mm <= sec_end:
+        tg = tuple(tgt_at.get(mm, []))
+        src = src_at.get(mm, fallback_src)
+        reg = reg_at.get(mm, "natural")
+        if not tg:
+            mm += 1
+            continue
+        n = mm
+        while (
+            n + 1 <= sec_end
+            and tuple(tgt_at.get(n + 1, [])) == tg
+            and src_at.get(n + 1, fallback_src) == src
+            and reg_at.get(n + 1, "natural") == reg
+        ):
+            n += 1
+        is_edited = mm in overridden  # 覆寫段 = 使用者編輯; auto 餘段保持自動
+        for tp in tg:
+            pl = by_player[tp]
+            staff: Staff = "upper" if pl.staves == 2 else "main"
+            new_melody.append(Assignment(
+                assignment_id=0,
+                source_part_id=src,
+                target_player_id=tp,
+                target_instrument=pl.primary_instrument,
+                target_staff=staff,
+                span=(mm, n),
+                function=VoiceFunction.MELODY,
+                is_user_edited=is_edited,
+                is_auto_generated=not is_edited,
+                melody_register=reg,
+            ))
+        mm = n + 1
+
     arrangement.assignments = others + new_melody
     for i, a in enumerate(arrangement.assignments):
         a.assignment_id = i
