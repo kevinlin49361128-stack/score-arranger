@@ -40,6 +40,10 @@ import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
+import {
+  MelodyRoutingPanel,
+  type MelodyRoutingEntry,
+} from "./MelodyRoutingPanel";
 import { RepertoireDialog } from "./RepertoireDialog";
 import { ZoomControls } from "./ZoomControls";
 import { useSessionStore } from "../stores/sessionStore";
@@ -210,6 +214,7 @@ export function Toolbar() {
   const practiceBtnRef = useRef<HTMLButtonElement>(null);
   // 改編選項 popover (自動修復 / 技術水平 / 風格)
   const [arrangeOptsOpen, setArrangeOptsOpen] = useState(false);
+  const [melodyOpen, setMelodyOpen] = useState(false);
   const arrangeOptsRef = useRef<HTMLDivElement>(null);
   // 響應式收合: 0=全顯示, 1=收起檢視, 2=+縮放, 3=+匯出
   const [collapseLevel, setCollapseLevel] = useState(0);
@@ -670,6 +675,47 @@ export function Toolbar() {
   //   Stage 1 (draft) — 一律 repair=false, 快速產生草稿並立即渲染, 解除阻塞遮罩
   //   Stage 2 (refine) — 若開啟修復, 背景跑 repair_loop, 完成後就地更新譜面
   // 世代計數 + 分頁 id 防競態: 使用者重新改編或切換分頁時, 過期的精修結果直接丟棄
+  // M-UI: 用目前 arrangement 的聲部 + 主旋律路線重新改編。
+  // PlayerInfo 沒帶 staves → 鍵盤類推 2 staff, 其餘 1 (重改編常見情境足夠)。
+  const handleArrangeWithRouting = async (routing: MelodyRoutingEntry[]) => {
+    if (!sourcePath || !arrangement) return;
+    const KEYBOARDS = new Set([
+      "piano", "harpsichord", "organ", "celesta", "accordion",
+    ]);
+    const players = arrangement.players.map((p) => ({
+      player_id: p.player_id,
+      display_name: p.display_name,
+      instrument_id: p.primary_instrument,
+      staves: KEYBOARDS.has(p.primary_instrument) ? 2 : 1,
+      skill_level: skillLevel,
+    }));
+    const gen = ++arrangeGenRef.current;
+    setRefining(false);
+    setLoading(true, tr("toolbar.loading.arranging"));
+    setError(null);
+    try {
+      const res = await window.scoreArranger.engine.arrangeCustom(
+        sourcePath, players, false, skillLevel, stylePreset,
+        routing.length ? routing : undefined,
+      );
+      if (gen !== arrangeGenRef.current) return;
+      if (!res.ok || !res.data) {
+        setError(res.error ?? tr("toolbar.error.arrangeFailed"));
+        return;
+      }
+      setArrangement(res.data);
+      setTargetMusicXML(res.data.target_musicxml ?? null);
+      setArrangementIssues(res.data.issues ?? []);
+      setHistoryFlags(false, false);
+      setMode("arrange");
+      snapshotToTab();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleArrange = async () => {
     if (!sourcePath) return;
     const gen = ++arrangeGenRef.current;
@@ -981,6 +1027,28 @@ export function Toolbar() {
               gap: 10,
             }}
           >
+            {arrangement && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMelodyOpen(true);
+                  setArrangeOptsOpen(false);
+                }}
+                style={{
+                  background: "var(--bg-hover, #2a3140)",
+                  color: "var(--fg)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 6,
+                  padding: "7px 10px",
+                  fontSize: 12.5,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  width: "100%",
+                }}
+              >
+                🎼 {tr("melodyRouting.openButton")}
+              </button>
+            )}
             <div
               style={{
                 fontSize: 11,
@@ -1454,6 +1522,13 @@ export function Toolbar() {
       )}
       {repertoireOpen && (
         <RepertoireDialog onClose={() => setRepertoireOpen(false)} />
+      )}
+      {melodyOpen && (
+        <MelodyRoutingPanel
+          open
+          onClose={() => setMelodyOpen(false)}
+          onApply={(routing) => handleArrangeWithRouting(routing)}
+        />
       )}
       {customEnsembleOpen && (
         <CustomEnsembleDialog

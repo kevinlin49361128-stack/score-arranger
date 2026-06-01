@@ -711,4 +711,70 @@ export const PANEL_STRINGS: BiDict = {
     en: "Some notes are in a high position — more technically demanding",
     ja: "一部の音が高ポジションにあります — 技術的な難易度が高めです",
   },
+
+  // ── MelodyRoutingPanel (M-UI 主旋律路線) ──────────────────────────────────
+  "melodyRouting.title": {
+    "zh-TW": "主旋律路線", en: "Melody Routing", ja: "主旋律ルート",
+  },
+  "melodyRouting.needArrangement": {
+    "zh-TW": "請先改編一份譜，再來設定主旋律路線。",
+    en: "Arrange a score first, then set up melody routing.",
+    ja: "先に編曲してから主旋律ルートを設定してください。",
+  },
+  "melodyRouting.hint": {
+    "zh-TW": "共 {total} 段 · 已覆寫 {overrides} 段 · 其餘沿用自動分配",
+    en: "{total} segments · {overrides} overridden · rest stay automatic",
+    ja: "全 {total} 区間 · {overrides} 区間を上書き · 残りは自動",
+  },
+  "melodyRouting.auto": { "zh-TW": "自動", en: "Auto", ja: "自動" },
+  "melodyRouting.preset.allFirst": {
+    "zh-TW": "全程第一聲部", en: "All on 1st voice", ja: "全て第1声部",
+  },
+  "melodyRouting.preset.split": {
+    "zh-TW": "前兩聲部分擔", en: "Split top two", ja: "上2声部で分担",
+  },
+  "melodyRouting.preset.rotate": {
+    "zh-TW": "各聲部輪流", en: "Rotate voices", ja: "各声部で輪番",
+  },
+  "melodyRouting.preset.auto": {
+    "zh-TW": "全部自動", en: "All automatic", ja: "全て自動",
+  },
+  "melodyRouting.segLabel": {
+    "zh-TW": "樂段 mm.{from}-{to}", en: "Segment mm.{from}-{to}",
+    ja: "区間 mm.{from}-{to}",
+  },
+  "melodyRouting.pickVoices": {
+    "zh-TW": "這段主旋律給（可多選 = 加倍齊奏）：",
+    en: "Melody for this segment (multi-select = double):",
+    ja: "この区間の主旋律（複数選択＝重複）：",
+  },
+  "melodyRouting.lowWarn": {
+    "zh-TW": "⚠ 此聲部音域較低 — 旋律要怎麼放進去？",
+    en: "⚠ This voice sits low — how should the melody fit?",
+    ja: "⚠ この声部は低め — 主旋律をどう収めますか？",
+  },
+  "melodyRouting.reg.octave_down": {
+    "zh-TW": "移低八度（同調）", en: "Down an octave (same key)",
+    ja: "1オクターブ下げる（同じ調）",
+  },
+  "melodyRouting.reg.key_down": {
+    "zh-TW": "整曲降Key", en: "Transpose the key down", ja: "曲全体を移調",
+  },
+  "melodyRouting.rebalanceNote": {
+    "zh-TW": "旋律讓位後，原聲部角色會自動重填和聲。",
+    en: "After the melody moves, the freed voice's role is auto-refilled.",
+    ja: "主旋律が移動した後、空いた声部の役割は自動で埋め直されます。",
+  },
+  "melodyRouting.toAuto": {
+    "zh-TW": "回到自動", en: "Back to auto", ja: "自動に戻す",
+  },
+  "melodyRouting.apply": {
+    "zh-TW": "套用並重新改編", en: "Apply & re-arrange", ja: "適用して再編曲",
+  },
+  "melodyRouting.cancel": {
+    "zh-TW": "取消", en: "Cancel", ja: "キャンセル",
+  },
+  "melodyRouting.openButton": {
+    "zh-TW": "主旋律路線", en: "Melody routing", ja: "主旋律ルート",
+  },
 };
