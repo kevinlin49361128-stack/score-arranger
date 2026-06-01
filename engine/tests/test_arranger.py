@@ -513,3 +513,50 @@ def test_scarlatti_k502_arranges_non_empty():
         if isinstance(e, (NoteEvent, ChordEvent))
     )
     assert total > 0, "scarlatti_K502 改編成空白 (section span bug 回歸)"
+
+
+# ============================================================================
+# 廣度回歸: 代表性樣本改編後必須非空 + 不被截斷
+# (test_samples 只驗「檔案找得到」, 沒驗「改編出非空」—— section span bug
+#  正是因此潛伏。此測試補上, 從根本擋住「整首改編成空白/只剩 1 小節」這類。)
+# ============================================================================
+
+# 前 6 首是 section span bug 曾把它們改編成空白/1 小節的 (含反覆結構);
+# 後 4 首是各時期/織體的對照組。
+_BROAD_SAMPLES = [
+    "mozart_sonata_02_1", "beethoven_sonata_06_1", "haydn_sonata_37_1",
+    "bach_bwv1007_3_courante", "bach_invention_06", "scarlatti_K502",
+    "bach_chorale_336", "bach_bwv846_wtc1_1_prelude",
+    "chopin_prelude_28_13", "corelli_opus3no1_1grave",
+]
+
+
+@pytest.mark.parametrize("sample", _BROAD_SAMPLES)
+def test_sample_arranges_non_empty_and_full_length(sample):
+    import os
+    import warnings
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(here, "core", "sample_scores", f"{sample}.musicxml")
+    if not os.path.exists(path):
+        pytest.skip(f"{sample} 不在")
+    from core.analyzer.function import tag_all_sections
+    from core.arrangement_model import build_ensemble
+    from core.parser import parse_musicxml
+    warnings.filterwarnings("ignore")
+
+    score = parse_musicxml(path); tag_all_sections(score)
+    src_max = max((m.number for p in score.parts for m in p.measures), default=0)
+    players = build_ensemble("string_quartet", skill_level="professional")
+    arr = arrange(score, players)
+
+    notes = sum(
+        1 for p in arr.target_score.parts for m in p.measures
+        for v in m.voices.values() for e in v.events
+        if isinstance(e, (NoteEvent, ChordEvent))
+    )
+    assert notes > 0, f"{sample} 改編成空白"
+    # 不被截斷: target 小節數應涵蓋來源大部分 (bug 會截成 1 小節)
+    tgt_measures = max((len(p.measures) for p in arr.target_score.parts), default=0)
+    assert tgt_measures >= src_max * 0.5, (
+        f"{sample} 被截斷: target {tgt_measures} 小節 vs source max {src_max}"
+    )
