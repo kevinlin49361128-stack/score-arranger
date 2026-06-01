@@ -363,15 +363,17 @@ def _ensure_default_section(score: Score) -> Section:
         if movement.sections:
             return movement.sections[0]
     # 0.1.45: start_measure 不能硬編 1 — 若 source 有 pickup, m1.number=0.
-    # 取所有 part 第一小節 number 的最小值, 末小節同理.
+    # start 取各 part 第一小節 number 的最小值。
     first_numbers = [
         p.measures[0].number for p in score.parts if p.measures
     ]
-    last_numbers = [
-        p.measures[-1].number for p in score.parts if p.measures
-    ]
+    # end 取「所有小節 number 的最大值」, 不是「最後一個小節的 number」——
+    # 有些譜 (如 Scarlatti K502) 末尾有一個 number=0 的空小節 (music21 對
+    # 結尾不完整小節/反覆結構的編號 artifact)。若用 measures[-1].number 會得到
+    # 0 → Section(1,0) → n_measures=0 → 整首改編成空白。
+    all_numbers = [m.number for p in score.parts for m in p.measures]
     start = min(first_numbers) if first_numbers else 1
-    end = max(last_numbers) if last_numbers else 0
+    end = max(all_numbers) if all_numbers else 0
     return Section(section_id=0, start_measure=start, end_measure=end)
 
 

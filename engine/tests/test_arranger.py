@@ -466,3 +466,50 @@ class TestMelodyHandoff:
         if "violin_am" in targets:
             assert targets.count("violin_pro") >= targets.count("violin_am"), \
                 "主手應該拿到較多或等量段數, 副手只接容易樂句"
+
+
+# ============================================================================
+# 回歸: _ensure_default_section 對「末尾 number=0 空小節」的處理 (Scarlatti K502)
+# ============================================================================
+
+def test_ensure_default_section_ignores_trailing_zero_measure():
+    """有些譜 (Scarlatti K502) music21 在末尾留一個 number=0 的空小節。
+    end_measure 必須取所有小節 number 的最大值, 不能取 measures[-1].number (=0),
+    否則 Section(1,0) → n_measures=0 → 整首改編成空白。"""
+    from core.arranger import _ensure_default_section
+
+    def mk(num):
+        return Measure(number=num, time_signature=None,
+                       voices={1: Voice(voice_id=1, events=[])})
+
+    # 小節 number = [1, 2, 3, 0] (末尾 0 是 artifact)
+    part = Part(part_id="p", name_display="P", instrument_id="piano",
+                measures=[mk(1), mk(2), mk(3), mk(0)])
+    score = Score(movements=[], parts=[part])
+    sec = _ensure_default_section(score)
+    assert sec.start_measure == 1
+    assert sec.end_measure == 3, f"end 應為 max(3)，不是 measures[-1]=0，實際 {sec.end_measure}"
+
+
+def test_scarlatti_k502_arranges_non_empty():
+    """真實檔回歸: scarlatti_K502 (末尾 number=0 空小節) 不應改編成空白。"""
+    import os
+    import warnings
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(here, "core", "sample_scores", "scarlatti_K502.musicxml")
+    if not os.path.exists(path):
+        pytest.skip("scarlatti_K502.musicxml 不在")
+    from core.analyzer.function import tag_all_sections
+    from core.arrangement_model import build_ensemble
+    from core.parser import parse_musicxml
+    warnings.filterwarnings("ignore")
+
+    score = parse_musicxml(path); tag_all_sections(score)
+    players = build_ensemble("string_quartet", skill_level="professional")
+    arr = arrange(score, players)
+    total = sum(
+        1 for p in arr.target_score.parts for m in p.measures
+        for v in m.voices.values() for e in v.events
+        if isinstance(e, (NoteEvent, ChordEvent))
+    )
+    assert total > 0, "scarlatti_K502 改編成空白 (section span bug 回歸)"
