@@ -1,7 +1,7 @@
-"""A1: 演奏表情塑形 (performance.apply_playback_expression) 測試。
+"""A1+A2: 演奏表情塑形 (performance.apply_playback_expression) 測試。
 
-走真實 IR → music21 路徑, 同時驗證 articulation 字串 → music21 類別
-→ 塑形 的整條接線。
+走真實 IR → music21 路徑, 同時驗證 articulation/dynamic 字串 → music21
+物件 → 塑形 的整條接線。
 """
 from fractions import Fraction
 
@@ -10,20 +10,22 @@ import pytest
 from core.ir import Measure, NoteEvent, Part, Pitch, Score, Voice
 from core.ir_to_music21 import ir_to_music21
 from core.performance import (
-    _ACCENT_VELOCITY,
-    _BASE_VELOCITY,
-    _MARCATO_VELOCITY,
+    _ACCENT_BOOST,
+    _DEFAULT_VELOCITY,
+    _DYNAMIC_VELOCITY,
+    _MARCATO_BOOST,
     _MIN_SOUNDING_QL,
     apply_playback_expression,
 )
 
 
-def _one_note_m21(articulations, ql=4.0):
+def _one_note_m21(articulations, ql=4.0, dynamic=None):
     note = NoteEvent(
         pitch=Pitch(midi_number=69, spelling="A4"),
         duration=Fraction(ql).limit_denominator(),
         onset=Fraction(0),
         articulations=list(articulations),
+        dynamic=dynamic,
     )
     measure = Measure(
         number=1, voices={1: Voice(voice_id=1, events=[note])},
@@ -40,10 +42,12 @@ def _one_note_m21(articulations, ql=4.0):
     return notes[0]
 
 
-def test_plain_note_unchanged_duration_base_velocity():
+# ── A1: 時值塑形 ─────────────────────────────────────────────────────────
+
+def test_plain_note_unchanged_duration_default_velocity():
     n = _one_note_m21([])
     assert float(n.quarterLength) == pytest.approx(4.0)
-    assert n.volume.velocity == _BASE_VELOCITY
+    assert n.volume.velocity == _DEFAULT_VELOCITY
 
 
 def test_staccato_halves_duration():
@@ -61,28 +65,40 @@ def test_breath_trims_tail():
     assert float(n.quarterLength) == pytest.approx(4.0 * 0.6)
 
 
-def test_accent_boosts_velocity_not_duration():
-    n = _one_note_m21(["accent"])
-    assert n.volume.velocity == _ACCENT_VELOCITY
-    assert float(n.quarterLength) == pytest.approx(4.0)
-
-
-def test_marcato_boosts_more_than_accent():
-    n = _one_note_m21(["marcato"])
-    assert n.volume.velocity == _MARCATO_VELOCITY
-    assert _MARCATO_VELOCITY > _ACCENT_VELOCITY
-
-
 def test_min_sounding_floor_protects_tiny_staccato():
-    # 1/8 拍 staccatissimo → 0.125*0.34 = 0.0425 < 地板 → 夾到地板
     n = _one_note_m21(["staccatissimo"], ql=0.125)
     assert float(n.quarterLength) == pytest.approx(_MIN_SOUNDING_QL)
 
 
-def test_accent_plus_staccato_combines_both():
-    n = _one_note_m21(["accent", "staccato"])
-    assert n.volume.velocity == _ACCENT_VELOCITY
-    assert float(n.quarterLength) == pytest.approx(2.0)
+# ── A2: 力度動態 ─────────────────────────────────────────────────────────
+
+def test_accent_boosts_velocity_relative_to_default():
+    n = _one_note_m21(["accent"])
+    assert n.volume.velocity == _DEFAULT_VELOCITY + _ACCENT_BOOST
+    assert float(n.quarterLength) == pytest.approx(4.0)  # 重音不改時值
+
+
+def test_marcato_boosts_more_than_accent():
+    n = _one_note_m21(["marcato"])
+    assert n.volume.velocity == _DEFAULT_VELOCITY + _MARCATO_BOOST
+    assert _MARCATO_BOOST > _ACCENT_BOOST
+
+
+def test_pp_quieter_than_ff():
+    pp = _one_note_m21([], dynamic="pp")
+    ff = _one_note_m21([], dynamic="ff")
+    assert pp.volume.velocity == _DYNAMIC_VELOCITY["pp"]
+    assert ff.volume.velocity == _DYNAMIC_VELOCITY["ff"]
+    assert pp.volume.velocity < ff.volume.velocity
+
+
+def test_accent_is_relative_to_active_dynamic():
+    # accent 在 p 與 f 上應給「不同」絕對 velocity (相對加成, 非絕對)
+    p_accent = _one_note_m21(["accent"], dynamic="p")
+    f_accent = _one_note_m21(["accent"], dynamic="f")
+    assert p_accent.volume.velocity == _DYNAMIC_VELOCITY["p"] + _ACCENT_BOOST
+    assert f_accent.volume.velocity == _DYNAMIC_VELOCITY["f"] + _ACCENT_BOOST
+    assert f_accent.volume.velocity > p_accent.volume.velocity
 
 
 def test_chord_velocity_set_on_subnotes_and_duration_shaped():
@@ -94,6 +110,7 @@ def test_chord_velocity_set_on_subnotes_and_duration_shaped():
         ],
         duration=Fraction(4), onset=Fraction(0),
         articulations=["marcato", "staccato"],
+        dynamic="f",
     )
     measure = Measure(
         number=1, voices={1: Voice(voice_id=1, events=[chord])},
@@ -109,7 +126,7 @@ def test_chord_velocity_set_on_subnotes_and_duration_shaped():
     assert len(chords) == 1
     c = chords[0]
     assert c.isChord
-    assert c.volume.velocity == _MARCATO_VELOCITY
+    assert c.volume.velocity == _DYNAMIC_VELOCITY["f"] + _MARCATO_BOOST
     assert float(c.quarterLength) == pytest.approx(2.0)
     for sub in c.notes:  # 子音 velocity 也要設到, 匯出才生效
-        assert sub.volume.velocity == _MARCATO_VELOCITY
+        assert sub.volume.velocity == _DYNAMIC_VELOCITY["f"] + _MARCATO_BOOST
