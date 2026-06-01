@@ -69,6 +69,8 @@ mac:
     - target: dmg
       arch:
         - arm64
+  # 連字號統一檔名 (見 dmg.artifactName 說明) — mac zip 是 auto-update 主格式。
+  artifactName: "Score-Arranger-${version}-${arch}-mac.${ext}"
   darkModeSupport: true
   hardenedRuntime: true
   gatekeeperAssess: false
@@ -93,7 +95,10 @@ publish:
   releaseType: release
 
 dmg:
-  artifactName: "${productName}-${version}-mac.${ext}"
+  # 用連字號 "Score-Arranger" 而非 ${productName} (含空白) — 否則檔名有空白,
+  # GitHub 上傳會轉成點 (Score.Arranger), 但 latest*.yml 的 url 是連字號,
+  # 兩邊對不上 → auto-update 404. 連字號從源頭統一檔名/yml/asset 三者。
+  artifactName: "Score-Arranger-${version}-mac.${ext}"
   contents:
     - x: 130
       y: 220
@@ -114,11 +119,11 @@ win:
     - target: zip
       arch:
         - x64
-  artifactName: "${productName}-${version}-win-${arch}.${ext}"
+  artifactName: "Score-Arranger-${version}-win-${arch}.${ext}"
   icon: build/icon.png
 
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  artifactName: "${productName}-${version}-win-${arch}-setup.${ext}"
+  artifactName: "Score-Arranger-${version}-win-${arch}-setup.${ext}"

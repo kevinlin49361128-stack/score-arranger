@@ -84,9 +84,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "${{ github.ref_name }}"
-          $files = Get-ChildItem -Path "dist-windows" `
-            -Include *.exe,*.zip,*.yml,*.blockmap `
-            -Recurse `
+          # 只取 dist-windows 頂層的散佈檔 — 不 -Recurse, 否則會把 win-unpacked/
+          # 內部 junk (elevate.exe, base_library.zip, score-arranger-engine.exe,
+          # app-update.yml…) 也當成 release asset 上傳, 污染 Release 頁面。
+          $files = Get-ChildItem -Path "dist-windows\*" `
+            -Include *-setup.exe,*-setup.exe.blockmap,*-win-x64.zip,latest.yml `
             -ErrorAction SilentlyContinue
           if ($files.Count -eq 0) {
             Write-Host "No artifacts found, skipping release upload."
