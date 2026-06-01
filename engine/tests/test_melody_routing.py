@@ -330,3 +330,44 @@ def test_alternating_routing_fills_resting_voice():
     v2_empty = [m.number for m in part_ms(alt, v2) if not has_note(m)]
     assert not v1_empty, f"V1 讓位樂句變空白: {v1_empty}"
     assert not v2_empty, f"V2 讓位樂句變空白: {v2_empty}"
+
+
+# ============================================================================
+# M-B 8va: 主旋律加倍的「八度」變體 (第 2+ 聲部高八度)
+# ============================================================================
+
+def test_double_8va_second_voice_octave_up():
+    players = build_ensemble("string_quartet", skill_level="professional")
+    vlns = [p.player_id for p in players if p.primary_instrument == "violin"]
+    v1, v2 = vlns[0], vlns[1]
+
+    def notes(arr, pid, lo, hi):
+        from core.ir import NoteEvent
+        p = next((x for x in arr.target_score.parts if x.part_id == pid), None)
+        out = []
+        for m in (p.measures if p else []):
+            if lo <= m.number <= hi:
+                for vv in m.voices.values():
+                    out += [e.pitch.midi_number for e in vv.events
+                            if isinstance(e, NoteEvent)]
+        return out
+
+    s = _two_part_source(8); tag_all_sections(s)
+    arr = run_arrange(s, players, melody_routing=[
+        {"span": [1, 8], "targets": [v1, v2], "double_8va": True}])
+    n1, n2 = notes(arr, v1, 1, 8), notes(arr, v2, 1, 8)
+    assert n1 and n2
+    # V2 每個音 = V1 對應音 + 12 (高八度)
+    assert all(b - a == 12 for a, b in zip(n1, n2)), f"V1={n1[:4]} V2={n2[:4]}"
+
+
+def test_double_unison_still_same():
+    """沒帶 double_8va 時, 加倍仍是齊奏 (回歸保護)。"""
+    players = build_ensemble("string_quartet", skill_level="professional")
+    vlns = [p.player_id for p in players if p.primary_instrument == "violin"]
+    v1, v2 = vlns[0], vlns[1]
+    s = _two_part_source(8); tag_all_sections(s)
+    arr = run_arrange(s, players,
+                      melody_routing=[{"span": [1, 8], "targets": [v1, v2]}])
+    m = [a for a in arr.assignments if a.function == VoiceFunction.MELODY]
+    assert all(a.melody_register == "natural" for a in m)

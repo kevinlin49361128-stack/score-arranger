@@ -16,6 +16,7 @@ export interface MelodyRoutingEntry {
   span: [number, number];
   targets: string[];
   register?: "natural" | "octave_down" | "key_down";
+  double_8va?: boolean; // 加倍 ≥2 聲部時, 第 2+ 聲部高八度 (否則齊奏)
 }
 
 const VOICE_COLORS = [
@@ -40,6 +41,7 @@ interface Props {
 interface SegState {
   targets: string[]; // 空 = 自動
   register: "natural" | "octave_down" | "key_down";
+  double8va?: boolean; // 加倍時第 2+ 聲部高八度
 }
 
 export function MelodyRoutingPanel({ open, onClose, onApply }: Props) {
@@ -126,6 +128,8 @@ export function MelodyRoutingPanel({ open, onClose, onApply }: Props) {
         span: [s, e],
         targets: st.targets,
         register: needsReg(i) ? st.register : "natural",
+        // 8va 僅在加倍 (≥2 聲部) 時有意義
+        double_8va: st.targets.length >= 2 ? !!st.double8va : undefined,
       });
     });
     return out;
@@ -233,6 +237,17 @@ export function MelodyRoutingPanel({ open, onClose, onApply }: Props) {
                   </label>
                 ))}
                 <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 5 }}>{t("melodyRouting.rebalanceNote")}</div>
+              </div>
+            )}
+            {stOf(sel).targets.length >= 2 && (
+              <div style={{ padding: "9px 11px", background: "var(--bg-elev, #1a1d24)", border: "1px solid #5552", borderRadius: 8, marginBottom: 8 }}>
+                <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 5 }}>{t("melodyRouting.doublingMode")}</div>
+                {([["unison", false], ["oct8va", true]] as const).map(([key, val]) => (
+                  <label key={key} style={{ fontSize: 12.5, marginRight: 14, cursor: "pointer", color: "var(--fg)" }}>
+                    <input type="radio" name="mr-dbl" checked={!!stOf(sel).double8va === val} onChange={() => setSegState(sel, { double8va: val })} style={{ marginRight: 4 }} />
+                    {t(`melodyRouting.dbl.${key}`)}
+                  </label>
+                ))}
               </div>
             )}
             <button onClick={() => { setSegState(sel, { targets: [] }); }} style={chipStyle(false)}>{t("melodyRouting.toAuto")}</button>

@@ -765,6 +765,15 @@ export const PANEL_STRINGS: BiDict = {
     en: "After the melody moves, the freed voice's role is auto-refilled.",
     ja: "主旋律が移動した後、空いた声部の役割は自動で埋め直されます。",
   },
+  "melodyRouting.doublingMode": {
+    "zh-TW": "加倍方式", en: "Doubling", ja: "重ねかた",
+  },
+  "melodyRouting.dbl.unison": {
+    "zh-TW": "齊奏（同音）", en: "Unison", ja: "ユニゾン（同音）",
+  },
+  "melodyRouting.dbl.oct8va": {
+    "zh-TW": "高八度（8va）", en: "Octave above (8va)", ja: "1オクターブ上（8va）",
+  },
   "melodyRouting.toAuto": {
     "zh-TW": "回到自動", en: "Back to auto", ja: "自動に戻す",
   },

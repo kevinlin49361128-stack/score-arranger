@@ -412,6 +412,7 @@ export interface MelodyRoutingEntry {
   span: [number, number];
   targets: string[];
   register?: "natural" | "octave_down" | "key_down";
+  double_8va?: boolean;
 }
 
 export async function arrangeCustom(

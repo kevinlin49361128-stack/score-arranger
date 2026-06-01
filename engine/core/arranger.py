@@ -649,6 +649,7 @@ def _apply_melody_routing_overrides(
         for mm in range(sec_start, sec_end + 1)
     }
     reg_at: dict[int, str] = {mm: "natural" for mm in range(sec_start, sec_end + 1)}
+    dbl_at: dict[int, bool] = {mm: False for mm in range(sec_start, sec_end + 1)}
     overridden: set[int] = set()  # 被使用者覆寫的小節 (區分 auto 餘段)
     for ov in routing:
         span = ov.get("span") or []
@@ -659,9 +660,11 @@ def _apply_melody_routing_overrides(
         if not targets:
             continue  # auto
         reg = ov.get("register", "natural")
+        dbl = bool(ov.get("double_8va"))  # 加倍時第 2+ 聲部高八度 (M-B 8va)
         for mm in range(max(s, sec_start), min(e, sec_end) + 1):
             tgt_at[mm] = targets
             reg_at[mm] = reg
+            dbl_at[mm] = dbl
             overridden.add(mm)
 
     # 合併連續相同 (targets, source, register) 的小節成 span
@@ -672,6 +675,7 @@ def _apply_melody_routing_overrides(
         tg = tuple(tgt_at.get(mm, []))
         src = src_at.get(mm, fallback_src)
         reg = reg_at.get(mm, "natural")
+        dbl = dbl_at.get(mm, False)
         if not tg:
             mm += 1
             continue
@@ -681,12 +685,15 @@ def _apply_melody_routing_overrides(
             and tuple(tgt_at.get(n + 1, [])) == tg
             and src_at.get(n + 1, fallback_src) == src
             and reg_at.get(n + 1, "natural") == reg
+            and dbl_at.get(n + 1, False) == dbl
         ):
             n += 1
         is_edited = mm in overridden  # 覆寫段 = 使用者編輯; auto 餘段保持自動
-        for tp in tg:
+        for idx, tp in enumerate(tg):
             pl = by_player[tp]
             staff: Staff = "upper" if pl.staves == 2 else "main"
+            # 8va 加倍: 第一聲部用該段 register, 第 2+ 聲部高八度 (octave_up)。
+            tp_reg = "octave_up" if (dbl and idx > 0) else reg
             new_melody.append(Assignment(
                 assignment_id=0,
                 source_part_id=src,
@@ -697,7 +704,7 @@ def _apply_melody_routing_overrides(
                 function=VoiceFunction.MELODY,
                 is_user_edited=is_edited,
                 is_auto_generated=not is_edited,
-                melody_register=reg,
+                melody_register=tp_reg,
             ))
         mm = n + 1
 
@@ -810,7 +817,7 @@ _REGISTER_PITCH_NAMES = ["C", "C#", "D", "D#", "E", "F",
 # 主旋律「移中低聲部」的兩種降法 (Kevin: 兩種都給)。
 #   octave_down = 降一個八度 (-12, 同音級, 僅低八度)
 #   key_down    = 降純五度 (-7, 提琴家族下一把樂器的調音關係 — 小提琴→中提琴)
-_REGISTER_SEMITONES = {"octave_down": -12, "key_down": -7}
+_REGISTER_SEMITONES = {"octave_down": -12, "key_down": -7, "octave_up": 12}
 
 
 def _shift_pitch_semitones(p: Pitch, semitones: int) -> Pitch:
