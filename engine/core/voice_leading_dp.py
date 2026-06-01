@@ -79,13 +79,9 @@ class _Slot:
 @dataclass
 class VoiceLeadingDPResult:
     optimized_count: int = 0
-    skipped_parts: list[str] = None
+    skipped_parts: list[str] = field(default_factory=list)
     cost_before: float = 0.0
     cost_after: float = 0.0
-
-    def __post_init__(self):
-        if self.skipped_parts is None:
-            self.skipped_parts = []
 
 
 def optimize_inner_voices(arrangement: Arrangement) -> VoiceLeadingDPResult:

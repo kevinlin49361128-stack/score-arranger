@@ -34,6 +34,7 @@ from ..arrangement_model import Arrangement
 from ..instruments import get_profile
 from ..ir import (
     ChordEvent,
+    Event,
     NoteEvent,
     Part,
     Pitch,
@@ -213,13 +214,13 @@ def realize_continuo(
                     continue
                 # 把 upper notes 調到 upper staff comfortable
                 adjusted = []
-                for m in upper:
-                    while m < upper_min:
-                        m += 12
-                    while m > upper_max:
-                        m -= 12
-                    if upper_min <= m <= upper_max:
-                        adjusted.append(m)
+                for midi in upper:
+                    while midi < upper_min:
+                        midi += 12
+                    while midi > upper_max:
+                        midi -= 12
+                    if upper_min <= midi <= upper_max:
+                        adjusted.append(midi)
                 if not adjusted:
                     continue
                 upper_midis = sorted(set(adjusted))
@@ -255,7 +256,7 @@ def realize_continuo(
 
     # 寫入 target_part — 取代既有 voice 1 events
     for measure in target_part.measures:
-        new_events = []
+        new_events: list[Event] = []
         beats_used = []
         # 收集這小節的 realized chords
         for (mnum, onset), chord in sorted(
@@ -266,11 +267,11 @@ def realize_continuo(
                 beats_used.append((onset, chord.duration))
                 result.realized_chord_count += 1
         if new_events:
-            voice = measure.voices.get(1)
-            if voice is None:
-                voice = Voice(voice_id=1, events=[])
-                measure.voices[1] = voice
-            voice.events = new_events
+            target_voice = measure.voices.get(1)
+            if target_voice is None:
+                target_voice = Voice(voice_id=1, events=[])
+                measure.voices[1] = target_voice
+            target_voice.events = new_events
 
     return result
 
@@ -504,12 +505,12 @@ def _viterbi_select_voicings(
         layer: list[tuple[float, int]] = []
         for j, curr in enumerate(curr_cands):
             best = (float("inf"), -1)
-            for k, prev in enumerate(prev_cands):
-                prev_cost = dp[i - 1][k][0]
+            for pk, prev in enumerate(prev_cands):
+                prev_cost = dp[i - 1][pk][0]
                 trans = _voicing_transition_cost(prev, curr)
                 total = prev_cost + trans
                 if total < best[0]:
-                    best = (total, k)
+                    best = (total, pk)
             layer.append(best)
         dp.append(layer)
 

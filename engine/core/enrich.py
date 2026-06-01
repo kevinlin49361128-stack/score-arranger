@@ -50,7 +50,7 @@ from collections.abc import Callable
 from fractions import Fraction
 from typing import Optional
 
-from core.ir import ChordEvent, NoteEvent, Ornament, Pitch, Score
+from core.ir import ChordEvent, Event, NoteEvent, Ornament, Pitch, Score
 
 # 低於此音高的音視為低音聲部 — 下方沒有加和弦的空間, 略過 (~E3)
 BASS_FLOOR = 52
@@ -347,7 +347,7 @@ def _alberti_or_waltz_events(
         low = accomp[0]
         high = accomp[-1]
         mid = accomp[len(accomp) // 2] if len(accomp) >= 3 else low
-        seq = [low, high, mid, high]
+        seq: list[int | list[int]] = [low, high, mid, high]
     else:  # waltz
         # 3 拍 pattern: low / chord_above / chord_above
         low = accomp[0]
@@ -357,7 +357,7 @@ def _alberti_or_waltz_events(
 
     n = len(seq)
     sub = ev.duration / n
-    out = []
+    out: list[Event] = []
     for k, item in enumerate(seq):
         onset = ev.onset + k * sub
         if isinstance(item, int):

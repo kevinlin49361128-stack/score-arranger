@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
-from .instruments import get_profile
+from .instruments import StringDef, get_profile
 from .ir import ChordEvent, NoteEvent, Part, Score
 
 
@@ -110,7 +110,7 @@ _TECH_MULTISTOP_W = 0.20
 _TECH_CROSSSTRING_W = 0.15
 
 
-def _infer_string_index(midi: int, strings) -> int | None:
+def _infer_string_index(midi: int, strings: list[StringDef]) -> int | None:
     """推測這個音落在哪條弦. 啟發式: 最低把位 = 能彈該音的最高 open 弦.
 
     回傳 string.index (0 = 最低弦). 若沒任何弦能彈 (音太低) 回 None.

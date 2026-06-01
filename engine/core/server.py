@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import sys
 import traceback
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
 from core.analyzer import (
     analyze_harmony,
@@ -95,7 +95,7 @@ class _SessionView:
     def history(self) -> list:
         if self._is_default:
             return _HISTORY
-        return _SESSIONS_BY_ID[self.session_id]["history"]
+        return cast(list, _SESSIONS_BY_ID[self.session_id]["history"])
 
     @history.setter
     def history(self, value: list):
@@ -109,7 +109,7 @@ class _SessionView:
     def redo_stack(self) -> list:
         if self._is_default:
             return _REDO_STACK
-        return _SESSIONS_BY_ID[self.session_id]["redo_stack"]
+        return cast(list, _SESSIONS_BY_ID[self.session_id]["redo_stack"])
 
     @redo_stack.setter
     def redo_stack(self, value: list):
@@ -1247,6 +1247,7 @@ def _method_apply_suggestion(params: dict[str, Any]) -> dict:
 
     # 重新驗證與輸出
     new_issues = collect_issues(target)
+    traceback_text: Optional[str]
     try:
         new_xml = write_musicxml_string(target)
     except Exception as e:
@@ -1935,7 +1936,7 @@ def _method_reassign(params: dict[str, Any]) -> dict:
     # 更新 assignment
     for a in matching:
         a.target_player_id = target_player_id
-        a.target_staff = target_staff  # type: ignore
+        a.target_staff = target_staff
         a.target_instrument = target_player.primary_instrument
         a.is_user_edited = True
 
@@ -2674,8 +2675,9 @@ def _method_get_measure_fingering(params: dict[str, Any]) -> dict:
 
     for part in target.parts:
         profile = get_profile(part.instrument_id)
-        if profile is None or not getattr(profile, "strings", None):
+        if profile is None or not profile.strings:
             continue  # 非弦樂 part 跳過
+        strings = profile.strings
 
         # 抽出 [measure - context, measure] 範圍的 chord pitches 序列
         start_measure = max(1, target_measure - context)
@@ -2709,7 +2711,7 @@ def _method_get_measure_fingering(params: dict[str, Any]) -> dict:
 
         fingerings = find_best_fingering_sequence(
             seq_chords,
-            profile.strings,
+            strings,
             max_fret=24,
             max_stretch_semitones=6,
         )
@@ -2725,7 +2727,7 @@ def _method_get_measure_fingering(params: dict[str, Any]) -> dict:
                 # string_idx → string letter (e.g. "G", "D", "A", "E" for violin)
                 # 從 open_pitch.spelling 取字母 + 變化音 (去掉 octave 數字)
                 string_def = next(
-                    (s for s in profile.strings if s.index == string_idx),
+                    (s for s in strings if s.index == string_idx),
                     None,
                 )
                 string_name = (

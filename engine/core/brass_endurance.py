@@ -22,10 +22,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from .instruments import CheckResult, get_profile
 from .ir import ChordEvent, NoteEvent, Part, RestEvent, Score
+
+if TYPE_CHECKING:
+    # 執行期由各函式 late import 避開與 repair.py 的循環依賴; 此處僅供型別檢查。
+    from .repair import LocatedIssue
 
 
 # 視窗大小 (小節數). 16 小節 ≈ 30-60 秒, 與業餘銅管嘴形循環 (~30-45 秒)
@@ -130,7 +134,7 @@ def _analyze_part(
     # 滾動視窗: 起點 [0, n - WINDOW_MEASURES] (若 part 比視窗短, 整段算一個視窗)
     n = len(per_measure_hits)
     span = min(WINDOW_MEASURES, n)
-    reported_starts: set[int] = set()
+    reported_starts: set[tuple[int, int, int]] = set()
     for start in range(0, max(1, n - span + 1)):
         end = start + span
         total_beats = sum(per_measure_beats[start:end], Fraction(0))

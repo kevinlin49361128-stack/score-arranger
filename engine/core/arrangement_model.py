@@ -12,7 +12,7 @@ Phase 1 簡化:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional
 
 from .ir import Score, VoiceFunction
 
@@ -427,7 +427,7 @@ def cello_piano_ensemble() -> list[Player]:
 
 
 # 編制 ID → 構造函式的對照表 (用於 server / CLI dispatch)
-ENSEMBLE_TEMPLATES: dict[str, "callable"] = {  # type: ignore[name-defined]
+ENSEMBLE_TEMPLATES: dict[str, Callable[[], list[Player]]] = {
     "violin_piano": violin_piano_ensemble,
     "viola_piano": viola_piano_ensemble,
     "cello_solo": cello_solo_ensemble,

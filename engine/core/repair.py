@@ -149,17 +149,19 @@ class RepairReport:
 # ============================================================================
 
 def collect_issues(
-    score: Score,
+    score: Optional[Score],
     skill_level: Optional[str] = None,
 ) -> list[LocatedIssue]:
     """掃描整個 Score, 收集所有可演奏性問題。
 
     Args:
-        score: 待檢查樂譜
+        score: 待檢查樂譜。None (如 arrangement 尚未建構 target_score) → 回空清單。
         skill_level: 若提供 ("amateur"/"intermediate"/"professional"), 額外跑
             銅管嘴形耐力檢查 (W_BRASS_EMBOUCHURE_FATIGUE). professional 自動
             跳過該檢查 (專業可承受 16 小節高音轟炸)。None = 跳過 (向後相容)。
     """
+    if score is None:
+        return []
     issues: list[LocatedIssue] = []
     for part in score.parts:
         profile = get_profile(part.instrument_id)
@@ -553,7 +555,7 @@ def _stretch_omit_choice(pitches: list, max_stretch_semitones: int) -> int:
 
 
 # Per-instrument 和弦 checker — lazy import 避免循環依賴
-_CHORD_CHECKERS: dict[str, Any] = {}
+_CHORD_CHECKERS: dict[str, Optional[Callable]] = {}
 
 
 def _get_chord_checker(instrument_id: str) -> Optional[Callable]:
@@ -563,11 +565,11 @@ def _get_chord_checker(instrument_id: str) -> Optional[Callable]:
     checker: Optional[Callable] = None
     try:
         if instrument_id.startswith("violin"):
-            from .instruments import check_violin_chord as checker  # type: ignore
+            from .instruments import check_violin_chord as checker
         elif instrument_id.startswith("viola"):
-            from .instruments import check_viola_chord as checker  # type: ignore
+            from .instruments import check_viola_chord as checker
         elif instrument_id.startswith("cello"):
-            from .instruments import check_cello_chord as checker  # type: ignore
+            from .instruments import check_cello_chord as checker
     except ImportError:
         checker = None
     _CHORD_CHECKERS[instrument_id] = checker
@@ -961,6 +963,7 @@ def strategy_split_to_other_hand(score: Score, issue: LocatedIssue) -> bool:
     if other_measure is None:
         return False
 
+    moved_event: NoteEvent | ChordEvent
     if len(move_pitches) == 1:
         moved_event = NoteEvent(
             pitch=move_pitches[0],

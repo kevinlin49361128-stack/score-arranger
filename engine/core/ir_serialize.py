@@ -15,7 +15,7 @@ import json
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from fractions import Fraction
-from typing import Any, get_args, get_origin, get_type_hints
+from typing import Any, cast, get_args, get_origin, get_type_hints
 
 from . import ir
 from .ir import Pitch, Score
@@ -73,7 +73,7 @@ def _register_types() -> None:
     """從 ir 模組收集所有 dataclass。"""
     for name in dir(ir):
         cls = getattr(ir, name)
-        if is_dataclass(cls):
+        if is_dataclass(cls) and isinstance(cls, type):
             _TYPE_REGISTRY[name] = cls
 
 
@@ -199,4 +199,4 @@ def _str_to_fraction(s: Any) -> Fraction:
 
 def from_json(s: str) -> Score:
     """JSON 字串 → Score"""
-    return from_dict(json.loads(s))
+    return cast(Score, from_dict(json.loads(s)))

@@ -21,7 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Any, Optional
+from typing import Any, Literal, Optional, cast
 
 from core.analyzer import (
     analyze_harmony,
@@ -295,7 +295,8 @@ def _check_piano_chord(
 
 
 def _validate_hand(
-    pitches, hand: str, measure_number: int, issues: list[dict],
+    pitches, hand: Literal["left", "right"], measure_number: int,
+    issues: list[dict],
 ) -> None:
     result = check_piano_hand_span(pitches, hand=hand)
     if not result.is_ok:
@@ -554,12 +555,12 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
         print(f"\n{'Piece':<30} {'F1':>6} {'P':>6} {'R':>6} {'Disp':>6} "
               f"{'TP/FP/FN':>10} {'Phase0':>8}")
         print("-" * 80)
-        for r in results:
-            mark = "✓" if r["passes"] else "—"
-            print(f"{r['piece_id']:<30} "
-                  f"{r['f1']:>6.2f} {r['precision']:>6.2f} "
-                  f"{r['recall']:>6.2f} {r['displacement']:>6.1f} "
-                  f"{r['tp']:>2}/{r['fp']:>2}/{r['fn']:>2}   {mark:>5}")
+        for row in results:
+            mark = "✓" if row["passes"] else "—"
+            print(f"{row['piece_id']:<30} "
+                  f"{row['f1']:>6.2f} {row['precision']:>6.2f} "
+                  f"{row['recall']:>6.2f} {row['displacement']:>6.1f} "
+                  f"{row['tp']:>2}/{row['fp']:>2}/{row['fn']:>2}   {mark:>5}")
         if results:
             avg_f1 = sum(r["f1"] for r in results) / len(results)
             print("-" * 80)
@@ -744,7 +745,7 @@ def main(argv: list[str] | None = None) -> int:
     p_analyze.set_defaults(func=cmd_analyze)
 
     args = parser.parse_args(argv)
-    return args.func(args)
+    return cast(int, args.func(args))
 
 
 if __name__ == "__main__":

@@ -110,7 +110,7 @@ def _pick_same_instrument(
             continue
         for staff in (("upper", "lower") if p.staves == 2 else ("main",)):
             if (p.player_id, staff) not in occupied:
-                return (p.player_id, staff)  # type: ignore[return-value]
+                return (p.player_id, staff)
     return None
 
 
@@ -147,7 +147,7 @@ def pick_target_for_function(
         # 音域下界最低的 player → lower staff
         sorted_players = sorted(players, key=_profile_lower)
         for p in sorted_players:
-            staff: Staff = "lower" if p.staves == 2 else "main"
+            staff = "lower" if p.staves == 2 else "main"
             if (p.player_id, staff) not in occupied:
                 return (p.player_id, staff)
 
@@ -159,7 +159,7 @@ def pick_target_for_function(
         # (2) 偏好鍵盤的 upper
         keyboards = [p for p in players if _is_keyboard(p)]
         for p in keyboards:
-            for staff in ("upper", "lower"):  # type: Staff
+            for staff in ("upper", "lower"):
                 if (p.player_id, staff) not in occupied:
                     return (p.player_id, staff)
         # (3) 無鍵盤: 依「中音域排序」掃過所有 player, 取第一個未佔用的
@@ -186,7 +186,7 @@ def pick_target_for_function(
             seen.add(p.player_id)
             for staff in (("upper", "lower") if p.staves == 2 else ("main",)):
                 if (p.player_id, staff) not in occupied:
-                    return (p.player_id, staff)  # type: ignore[return-value]
+                    return (p.player_id, staff)
 
     elif function == VoiceFunction.COUNTERMELODY:
         # 與 MELODY 不同的 player; 偏好同樂器, 其次鍵盤 upper
@@ -566,9 +566,13 @@ def _apply_melody_handoff(
             for sp in spans
         ]
         # 過濾掉「音域超出副手」(回 None) 的樂句 — 那些只能留主手
-        feasible = [d for d in difficulties if d[2] is not None]
+        feasible = [
+            (d[0], d[1], diff)
+            for d in difficulties
+            if (diff := d[2]) is not None
+        ]
         if feasible:
-            sorted_d = sorted(feasible, key=lambda x: x[2])  # type: ignore[arg-type]
+            sorted_d = sorted(feasible, key=lambda x: x[2])
             # 後 50% 容易的 → 副手
             half = max(1, len(sorted_d) // 2)
             for (s, e, _) in sorted_d[:half]:
@@ -885,10 +889,8 @@ def _find_secondary_melody_target(
     if primary_player is None:
         return None
     primary_skill = _skill_rank(primary_player.skill_level)
-    primary_family = (
-        get_profile(primary_player.primary_instrument).family
-        if get_profile(primary_player.primary_instrument) else None
-    )
+    primary_profile = get_profile(primary_player.primary_instrument)
+    primary_family = primary_profile.family if primary_profile else None
     # 候選: 同樂器家族 + skill < primary_skill + 還能容納旋律的 staff
     candidates: list[tuple[str, str, Staff]] = []
     for p in arrangement.players:
@@ -1092,8 +1094,8 @@ def build_target_score(
     # 開始, 否則 source ↔ target 上下對照會錯位一格.
     n_measures = section.end_measure - section.start_measure + 1
     src_pickup_numbers: set[int] = set()
-    for src_part in source.parts:
-        for m in src_part.measures:
+    for sp in source.parts:
+        for m in sp.measures:
             if m.is_pickup:
                 src_pickup_numbers.add(m.number)
     for tp in target_parts.values():
@@ -1101,8 +1103,8 @@ def build_target_score(
             number = section.start_measure + i
             ts = None
             # 從 source 對應 measure 取 time_signature
-            for src_part in source.parts:
-                for m in src_part.measures:
+            for sp in source.parts:
+                for m in sp.measures:
                     if m.number == number and m.time_signature:
                         ts = m.time_signature
                         break
@@ -1240,12 +1242,12 @@ def _transform_event(event, profile, skill_level: str = "professional"):
         new_midi = _adjust_octave(event.pitch.midi_number, low, high)
         if new_midi == event.pitch.midi_number:
             return copy.deepcopy(event)
-        new_event = copy.deepcopy(event)
-        new_event.pitch = Pitch(midi_number=new_midi, spelling=event.pitch.spelling)
-        return new_event
+        note_event = copy.deepcopy(event)
+        note_event.pitch = Pitch(midi_number=new_midi, spelling=event.pitch.spelling)
+        return note_event
 
     if isinstance(event, ChordEvent):
-        new_event = copy.deepcopy(event)
+        chord_event = copy.deepcopy(event)
         adjusted = []
         for p in event.pitches:
             new_midi = _adjust_octave(p.midi_number, low, high)
@@ -1283,8 +1285,8 @@ def _transform_event(event, profile, skill_level: str = "professional"):
                 is_tied_to=event.is_tied_to,
                 slur_group=event.slur_group,
             )
-        new_event.pitches = unique
-        return new_event
+        chord_event.pitches = unique
+        return chord_event
 
     return None
 

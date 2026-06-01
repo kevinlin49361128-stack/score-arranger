@@ -79,7 +79,7 @@ def _post_emphasize_melody_octave(arrangement) -> None:
 def _post_thicken_bass_octave(arrangement) -> None:
     """電影配樂風: BASS line 加下八度 (若 target 樂器可達). 用 ChordEvent."""
     from .instruments import get_profile
-    from .ir import ChordEvent, NoteEvent, Pitch
+    from .ir import ChordEvent, Event, NoteEvent, Pitch
 
     if arrangement.target_score is None:
         return
@@ -101,7 +101,7 @@ def _post_thicken_bass_octave(arrangement) -> None:
         range_lo = profile.range_absolute[0]
         for m in target_part.measures:
             for voice in m.voices.values():
-                new_events = []
+                new_events: list[Event] = []
                 for ev in voice.events:
                     if isinstance(ev, NoteEvent):
                         lower = ev.pitch.midi_number - 12

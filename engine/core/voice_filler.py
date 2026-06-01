@@ -31,6 +31,7 @@ from .arrangement_model import Arrangement, Player
 from .instruments import get_profile
 from .ir import (
     ChordEvent,
+    Event,
     Measure,
     NoteEvent,
     Part,
@@ -262,7 +263,7 @@ def _fill_player(
                 continue
             # 該 measure 是否有任何 chord onset
             any_chord = False
-            new_events = []
+            new_events: list[Event] = []
             # 走 granularity 格 (e.g. 1.0, 2.0, 3.0, 4.0 for 4/4)
             num_beats = 4  # 預設; 若 measure 有 time_signature 用它
             if measure.time_signature is not None:

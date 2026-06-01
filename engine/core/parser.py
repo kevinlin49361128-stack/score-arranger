@@ -30,7 +30,7 @@ import os
 import sys
 from collections import OrderedDict
 from fractions import Fraction
-from typing import Any, Optional
+from typing import Any, Literal, Optional, TypeVar, cast
 
 from music21 import (
     chord as m21_chord,
@@ -118,7 +118,12 @@ def _cache_key(path: str) -> Any:
         return os.path.abspath(path)
 
 
-def _cache_get(cache: "OrderedDict[Any, Any]", key: Any) -> Any:
+_CacheVal = TypeVar("_CacheVal")
+
+
+def _cache_get(
+    cache: "OrderedDict[Any, _CacheVal]", key: Any,
+) -> Optional[_CacheVal]:
     val = cache.get(key)
     if val is not None:
         cache.move_to_end(key)  # LRU: 最近用到的移到尾端
@@ -166,7 +171,7 @@ def _load_m21_uncached(path: str) -> m21_stream.Score:
         from core.samples import resolve as resolve_sample
         sample_path = resolve_sample(corpus_id)
         if sample_path is not None:
-            return converter.parse(str(sample_path))
+            return cast(m21_stream.Score, converter.parse(str(sample_path)))
         # 找不到隨附範例。打包版沒有完整 music21 corpus —
         # 給明確錯誤而非讓 music21 噴 '/music21' 之類的破路徑。
         if getattr(sys, "frozen", False):
@@ -175,8 +180,8 @@ def _load_m21_uncached(path: str) -> m21_stream.Score:
                 f"(打包版只含內建精選範例)",
             )
         from music21 import corpus as m21_corpus  # 開發模式 fallback
-        return m21_corpus.parse(corpus_id)
-    return converter.parse(path)
+        return cast(m21_stream.Score, m21_corpus.parse(corpus_id))
+    return cast(m21_stream.Score, converter.parse(path))
 
 
 def parse_musicxml(path: str) -> Score:
@@ -230,7 +235,7 @@ def _to_sounding_safe(
         sc.atSoundingPitch = False
         for p in sc.parts:
             p.atSoundingPitch = False
-        return sc.toSoundingPitch(inPlace=False)
+        return cast(m21_stream.Score, sc.toSoundingPitch(inPlace=False))
     except Exception:
         return m21_score
 
@@ -428,7 +433,7 @@ class _Parser:
             try:
                 if int(iv.semitones) == 0:
                     return None
-                return iv.reverse()
+                return cast(m21_interval.Interval, iv.reverse())
             except Exception:
                 return None
         return None
@@ -492,8 +497,8 @@ class _Parser:
         return measure
 
     @staticmethod
-    def _convert_barline(m21_type: str) -> str:
-        mapping = {
+    def _convert_barline(m21_type: str) -> Literal["normal", "double", "final"]:
+        mapping: dict[str, Literal["normal", "double", "final"]] = {
             "double": "double",
             "final": "final",
             "regular": "normal",
@@ -582,11 +587,14 @@ class _Parser:
         return events
 
     @staticmethod
-    def _is_grace(m21_n: m21_note.Note) -> bool:
+    def _is_grace(m21_n: m21_note.NotRest) -> bool:
+        # Note 與 Chord 同為 NotRest 子類, 皆有 .duration — grace 和弦也走這。
         return m21_n.duration.isGrace or m21_n.duration.quarterLength == 0
 
     @staticmethod
-    def _grace_type(m21_n: m21_note.Note) -> str:
+    def _grace_type(
+        m21_n: m21_note.NotRest,
+    ) -> Literal["acciaccatura", "appoggiatura"]:
         # music21 grace note 的 slash 屬性區分 acciaccatura (有斜線) 與 appoggiatura
         try:
             if getattr(m21_n.duration, "slash", True):

@@ -41,7 +41,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-from typing import Any
+from typing import Any, cast
 
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
@@ -534,6 +534,14 @@ def _engine_call(
     return resp.get("data")
 
 
+def _engine_call_dict(
+    method: str, params: dict[str, Any], session: str | None = None,
+) -> dict[str, Any]:
+    """_engine_call 的 dict 變體 — 給契約上回傳物件的 method 用 (analyze /
+    apply_suggestion / export_* 等), 省去每個 wrapper 各自 cast。"""
+    return cast(dict[str, Any], _engine_call(method, params, session=session))
+
+
 def _session_of(args: dict[str, Any]) -> str:
     """從 tool args 取 session_id, 省略 → 'mcp-default'。"""
     sid = args.get("session_id")
@@ -621,7 +629,7 @@ def _difficulty_summary(diff: dict[str, dict]) -> list[dict]:
 
 
 def _do_analyze_score(args: dict[str, Any]) -> dict[str, Any]:
-    return _engine_call("analyze", {"path": args["source"]})
+    return _engine_call_dict("analyze", {"path": args["source"]})
 
 
 def _do_arrange_score(args: dict[str, Any]) -> dict[str, Any]:
@@ -656,7 +664,7 @@ def _do_get_status(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def _do_apply_suggestion(args: dict[str, Any]) -> dict[str, Any]:
-    return _engine_call("apply_suggestion", {
+    return _engine_call_dict("apply_suggestion", {
         "part_id": args["part_id"],
         "measure": args["measure"],
         "voice_id": args["voice_id"],
@@ -666,7 +674,7 @@ def _do_apply_suggestion(args: dict[str, Any]) -> dict[str, Any]:
 
 
 def _do_edit_event(args: dict[str, Any]) -> dict[str, Any]:
-    return _engine_call("edit_event", {
+    return _engine_call_dict("edit_event", {
         "part_id": args["part_id"],
         "measure": args["measure"],
         "voice_id": args["voice_id"],
@@ -680,13 +688,13 @@ def _do_export_arrangement(args: dict[str, Any]) -> dict[str, Any]:
     path = _validate_export_path(args["output_path"])
     sid = _session_of(args)
     if path.lower().endswith((".mid", ".midi")):
-        return _engine_call("export_target_midi", {"path": path}, session=sid)
-    return _engine_call(
+        return _engine_call_dict("export_target_midi", {"path": path}, session=sid)
+    return _engine_call_dict(
         "export_target_musicxml", {"path": path}, session=sid)
 
 
 def _do_transcribe(args: dict[str, Any]) -> dict[str, Any]:
-    return _engine_call("transcribe", {
+    return _engine_call_dict("transcribe", {
         "path": args["source"],
         "mapping": args.get("mapping") or {},
     }, session=_session_of(args))
@@ -697,7 +705,7 @@ def _do_list_source_parts(args: dict[str, Any]) -> Any:
 
 
 def _do_suggest_transposition(args: dict[str, Any]) -> dict[str, Any]:
-    return _engine_call("suggest_transposition", {
+    return _engine_call_dict("suggest_transposition", {
         "source": args["source"],
         "target": args["target"],
     })
@@ -746,7 +754,7 @@ def _do_export_all_parts(args: dict[str, Any]) -> dict[str, Any]:
 def _do_apply_edit_ops(args: dict[str, Any]) -> dict[str, Any]:
     """批次套用結構化編輯 — 走 server 的 apply_edit_ops 方法."""
     sid = _session_of(args)
-    return _engine_call("apply_edit_ops", {"ops": args["ops"]}, session=sid)
+    return _engine_call_dict("apply_edit_ops", {"ops": args["ops"]}, session=sid)
 
 
 def _do_compute_difficulty(args: dict[str, Any]) -> Any:

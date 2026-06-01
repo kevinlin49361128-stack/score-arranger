@@ -222,7 +222,7 @@ def ir_to_music21(score: Score) -> m21_stream.Score:
     m21_score.insert(0, md)
 
     # Parts
-    slur_groups: dict[int, list[m21_note.Note]] = {}
+    slur_groups: dict[int, list[m21_note.NotRest]] = {}
     for part in score.parts:
         m21_part = _build_part(part, slur_groups)
         m21_score.insert(0, m21_part)
@@ -234,9 +234,9 @@ def ir_to_music21(score: Score) -> m21_stream.Score:
     # 慢到 ~28 秒。索引化後降為 O(N)。
     if slur_groups:
         note_to_part: dict[int, m21_stream.Part] = {}
-        for part in m21_score.parts:
-            for n in part.recurse().notes:
-                note_to_part[id(n)] = part
+        for m21_part in m21_score.parts:
+            for n in m21_part.recurse().notes:
+                note_to_part[id(n)] = m21_part
         for notes in slur_groups.values():
             if len(notes) >= 2:
                 owner = note_to_part.get(id(notes[0]))
@@ -251,7 +251,7 @@ def ir_to_music21(score: Score) -> m21_stream.Score:
 # ============================================================================
 
 def _build_part(
-    part: Part, slur_groups: dict[int, list[m21_note.Note]]
+    part: Part, slur_groups: dict[int, list[m21_note.NotRest]]
 ) -> m21_stream.Part:
     m21_part = m21_stream.Part()
     m21_part.partName = part.name_display
@@ -291,7 +291,7 @@ def _same_clef(a, b) -> bool:
 
 
 def _build_measure(
-    measure: Measure, slur_groups: dict[int, list[m21_note.Note]]
+    measure: Measure, slur_groups: dict[int, list[m21_note.NotRest]]
 ) -> m21_stream.Measure:
     m = m21_stream.Measure(number=measure.number)
 
@@ -344,7 +344,7 @@ def _build_measure(
         # 0.1.59: divisi 展開成各自的 m21 Voice (之前 continue 整個丟掉 →
         # 記譜失真). 攤平成 (render_vid, voice) tuple 清單, branch 用主號 ×10
         # + 分支序當不撞號 voice id.
-        out_voices: list[tuple[int, object]] = []
+        out_voices: list[tuple[int, Voice]] = []
         for voice in voices:
             if voice.is_divisi:
                 for bi, branch in enumerate(voice.divisi_branches or []):
@@ -391,7 +391,7 @@ def _parse_key_signature(name: str) -> Optional[m21_key.KeySignature]:
 # ============================================================================
 
 def _build_event(
-    event: Any, slur_groups: dict[int, list[m21_note.Note]]
+    event: Any, slur_groups: dict[int, list[m21_note.NotRest]]
 ) -> Optional[Any]:
     if isinstance(event, NoteEvent):
         return _build_note(event, slur_groups)
@@ -403,7 +403,7 @@ def _build_event(
 
 
 def _build_note(
-    event: NoteEvent, slur_groups: dict[int, list[m21_note.Note]]
+    event: NoteEvent, slur_groups: dict[int, list[m21_note.NotRest]]
 ) -> m21_note.Note:
     n = m21_note.Note(_spell_for_m21(event.pitch.spelling))
     n.duration = _build_duration(event.duration, event.tuplet)
@@ -427,7 +427,7 @@ def _build_note(
 
 
 def _build_chord(
-    event: ChordEvent, slur_groups: dict[int, list[m21_note.Note]]
+    event: ChordEvent, slur_groups: dict[int, list[m21_note.NotRest]]
 ) -> m21_chord.Chord:
     pitches = [_spell_for_m21(p.spelling) for p in event.pitches]
     c = m21_chord.Chord(pitches)

@@ -155,7 +155,7 @@ class StringPositionSimulator:
                         + shift * self.per_distance_time_sec
                     )
                     if time_needed > time_available * self.safety_margin:
-                        severity = (
+                        severity: Literal["error", "warning"] = (
                             "error"
                             if time_needed > time_available
                             else "warning"
