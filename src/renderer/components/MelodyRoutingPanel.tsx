@@ -59,7 +59,11 @@ export function MelodyRoutingPanel({ open, onClose, onApply }: Props) {
   );
 
   const measureCount = useMemo(() => {
-    const spans = (arrangement?.assignments ?? []).map((a) => a.span[1]);
+    // span?.[1] + filter — 防呆: 萬一某 assignment 沒帶 span (如舊版 engine
+    // 的 arrange_custom 回應), 退回 0 顯示空狀態, 不要讓整個 renderer 崩潰。
+    const spans = (arrangement?.assignments ?? [])
+      .map((a) => a.span?.[1])
+      .filter((n): n is number => typeof n === "number");
     return spans.length ? Math.max(...spans) : 0;
   }, [arrangement]);
 

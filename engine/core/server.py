@@ -496,6 +496,10 @@ def _method_arrange_custom(params: dict[str, Any]) -> dict:
                 "target_instrument": a.target_instrument,
                 "target_staff": a.target_staff,
                 "function": a.function.value,
+                # span 必須帶 — 前端 (如 MelodyRoutingPanel) 用它算小節數;
+                # _method_arrange 有帶, custom 之前漏帶 → 二次套用主旋律路線後
+                # arrangement.assignments 少了 span, 面板 a.span[1] 崩潰。
+                "span": list(a.span),
             }
             for a in arrangement.assignments
         ],

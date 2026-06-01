@@ -108,6 +108,28 @@ class TestServerMethods:
         assert resp["data"]["target_musicxml"] is not None
         assert "<?xml" in resp["data"]["target_musicxml"]
 
+    def test_arrange_custom_returns_span(self, bach_xml):
+        """回歸: arrange_custom 之前漏帶 assignment.span → 前端 MelodyRoutingPanel
+        二次套用主旋律路線後 a.span[1] 崩潰。span 必須跟 arrange 一樣帶上。"""
+        resp = handle_request({
+            "id": "ac1", "method": "arrange_custom",
+            "params": {
+                "path": bach_xml,
+                "players": [
+                    {"player_id": "violin_1", "instrument_id": "violin"},
+                    {"player_id": "viola_1", "instrument_id": "viola"},
+                    {"player_id": "cello_1", "instrument_id": "cello"},
+                ],
+                "melody_routing": [{"span": [3, 4], "targets": ["viola_1"]}],
+            },
+        })
+        assert resp["ok"]
+        assigns = resp["data"]["assignments"]
+        assert assigns
+        for a in assigns:
+            assert "span" in a and a["span"] is not None
+            assert len(a["span"]) == 2
+
     def test_arrange_returns_tempo(self, bach_xml):
         """0.1.61: arrange 回傳 tempo (節拍器 / 播放速度 BPM 顯示共用)。"""
         resp = handle_request({
