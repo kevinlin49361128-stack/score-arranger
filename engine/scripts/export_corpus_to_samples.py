@@ -41,8 +41,8 @@ PIECES: list[tuple[str, str]] = [
     # Ciconia 1370-1412, 早期文藝復興過渡期
     ("ciconia/quod_jactatur", "ciconia_quod_jactatur"),
     # Palestrina Pope Marcellus Mass (~1562) — 對位範本
-    ("palestrina/Kyrie", "palestrina_kyrie"),
-    ("palestrina/Agnus", "palestrina_agnus"),
+    ("palestrina/Kyrie", "palestrina_Kyrie"),
+    ("palestrina/Agnus", "palestrina_Agnus"),
     # Monteverdi Madrigali — Book 3 + 5 (從 polyphony 到 monody 過渡)
     ("monteverdi/madrigal.3.1", "monteverdi_madrigal_3_1"),
     ("monteverdi/madrigal.5.1", "monteverdi_madrigal_5_1"),
