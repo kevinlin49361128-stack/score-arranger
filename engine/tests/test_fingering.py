@@ -93,7 +93,15 @@ class TestFindBestFingering:
         assert result is not None
         frets = [a[2] for a in result.assignments]
         assert frets == [0, 0, 0, 0]
-        assert result.score == 0.0
+        # B1 開放弦獎勵: 四音全開放 → avg_fret 0 + stretch 0 - 0.5*(4/4) = -0.5
+        assert result.score == -0.5
+
+    def test_open_string_bonus_prefers_open_and_negative_score(self):
+        # B1: A4 可拉開放 A 弦 (fret 0); 開放弦獎勵使其被選且分數為負
+        result = find_best_fingering([Pitch(69, "A4")], VIOLIN_STRINGS)
+        assert result is not None
+        assert result.assignments[0][2] == 0  # 選到開放弦
+        assert result.score < 0  # 獎勵 → 負分
 
 
 class TestFindBestFingeringSequence:

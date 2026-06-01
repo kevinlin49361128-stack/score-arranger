@@ -36,6 +36,12 @@ from .base import StringDef
 # 跨事件換把位懲罰權重: 把位差每格 penalty TRANSITION_WEIGHT 分
 TRANSITION_WEIGHT: float = 0.4
 
+# B1: 開放弦獎勵 — 開放弦 (fret 0) 不需按弦, 最好彈 (amateur 友善) 且共鳴亮。
+# 值 < 1 (一格把位成本), 故只在「近乎平手」時把選擇偏向開放弦, 不會蓋過
+# 明顯較低把位的指法。(進階演奏在抒情句有時刻意避開開放弦 — 那屬表情選擇,
+# 不在「最易彈指法提示」的最佳化目標內。)
+_OPEN_STRING_BONUS: float = 0.5
+
 
 @dataclass
 class Fingering:
@@ -94,6 +100,8 @@ def _enumerate_candidates(
                 score = fret * 1.0
                 if fret > 7:
                     score += (fret - 7) * 0.8
+                if fret == 0:
+                    score -= _OPEN_STRING_BONUS
                 candidates.append(Fingering(assignments=[(p, s.index, fret)], score=score))
     else:
         string_count = len(strings)
@@ -129,6 +137,9 @@ def _enumerate_candidates(
                 score = avg_fret + stretch * 0.5
                 if avg_fret > 7:
                     score += (avg_fret - 7) * 0.8
+                open_count = sum(1 for a in assignments if a[2] == 0)
+                if open_count:
+                    score -= _OPEN_STRING_BONUS * open_count / n
                 candidates.append(Fingering(assignments=list(assignments), score=score))
 
     candidates.sort(key=lambda f: f.score)
