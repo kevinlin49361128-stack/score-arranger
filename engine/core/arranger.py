@@ -303,6 +303,20 @@ def arrange(
         except Exception:
             pass
 
+    # 主旋律 routing 後: 交替讓位的聲部 (某些樂句有主旋律、某些樂句空白) 的空白樂句
+    # 改填和聲, 不要整段空下來 (Kevin 回報: 輪唱讓位處變空白很怪)。一般 filler 只補
+    # 「完全沒 assignment 的聲部」, 抓不到這種部分空白的聲部, 故另外補。
+    if melody_routing:
+        try:
+            from .voice_filler import fill_voice_gaps
+            melody_players = {
+                a.target_player_id for a in arrangement.assignments
+                if a.function == VoiceFunction.MELODY
+            }
+            fill_voice_gaps(arrangement, melody_players)
+        except Exception:
+            pass
+
     # Baroque continuo realization: 在 harpsichord 右手 (upper staff) 自動生成
     # 和聲填充。僅當 harpsichord 與其他樂器同台 (擔任通奏低音角色) 時才跑 ——
     # harpsichord 獨奏時它已承擔整個改編 (含旋律), 跑 continuo 會把旋律覆蓋掉。

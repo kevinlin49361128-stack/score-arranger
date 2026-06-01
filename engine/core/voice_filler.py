@@ -30,6 +30,7 @@ from typing import Optional
 from .arrangement_model import Arrangement, Player
 from .instruments import get_profile
 from .ir import (
+    ChordEvent,
     Measure,
     NoteEvent,
     Part,
@@ -109,6 +110,48 @@ def fill_inner_voices(
     )
 
 
+def fill_voice_gaps(
+    arrangement: Arrangement,
+    player_ids: set[str],
+    *,
+    beat_granularity: Fraction = Fraction(1),
+) -> FillerResult:
+    """補完「部分樂句有音、部分空白」聲部的空白小節 (保留既有實音)。
+
+    用於主旋律 routing 後 —— 交替讓位的聲部 (某些樂句演奏主旋律、某些樂句空著) 在
+    沒有主旋律的樂句改填和聲, 不要整段空下來。只填空白小節, 不覆蓋仍持有主旋律的小節。
+    """
+    if arrangement.target_score is None or arrangement.source_score is None:
+        return FillerResult(filled_players=[], notes_added=0, skipped_measures=0)
+    targets = [p for p in arrangement.players if p.player_id in player_ids]
+    if not targets:
+        return FillerResult(filled_players=[], notes_added=0, skipped_measures=0)
+    chord_map = _chordify_source(arrangement.source_score, beat_granularity)
+    if not chord_map:
+        return FillerResult(filled_players=[], notes_added=0, skipped_measures=0)
+    target_busy = _collect_target_busy(arrangement)
+
+    notes_added = 0
+    skipped = 0
+    filled: list[str] = []
+    for player in targets:
+        profile = get_profile(player.primary_instrument)
+        if profile is None:
+            continue
+        added, skip_m = _fill_player(
+            player, profile, arrangement.target_score, chord_map,
+            target_busy, beat_granularity, only_empty_measures=True,
+        )
+        if added:
+            filled.append(player.player_id)
+        notes_added += added
+        skipped += skip_m
+    return FillerResult(
+        filled_players=filled, notes_added=notes_added,
+        skipped_measures=skipped,
+    )
+
+
 # === 內部 ===
 
 def _chordify_source(
@@ -173,8 +216,13 @@ def _fill_player(
     chord_map: dict[tuple[int, Fraction], list[int]],
     target_busy: dict[tuple[int, Fraction], set[int]],
     granularity: Fraction,
+    only_empty_measures: bool = False,
 ) -> tuple[int, int]:
-    """為單一 player 的 target part(s) 填音, 回傳 (notes_added, skipped_measures)."""
+    """為單一 player 的 target part(s) 填音, 回傳 (notes_added, skipped_measures).
+
+    only_empty_measures=True 時, 只填「沒有實音」的小節, 保留既有內容 (如主旋律) —
+    用於 routing 後讓位聲部的空白樂句補和聲, 不覆蓋它仍持有主旋律的樂句。
+    """
     # 找到該 player 的 target part(s)
     parts: list[Part] = []
     for tp in target_score.parts:
@@ -200,6 +248,18 @@ def _fill_player(
             if voice is None:
                 voice = Voice(voice_id=1, events=[])
                 measure.voices[1] = voice
+            # only_empty_measures: 已有實音 (主旋律等) 的小節不覆蓋, 但更新
+            # prev_midi 讓接續補的和聲聲線連貫。
+            if only_empty_measures and any(
+                isinstance(e, (NoteEvent, ChordEvent)) for e in voice.events
+            ):
+                last = next(
+                    (e for e in reversed(voice.events)
+                     if isinstance(e, NoteEvent)), None,
+                )
+                if last is not None:
+                    prev_midi = last.pitch.midi_number
+                continue
             # 該 measure 是否有任何 chord onset
             any_chord = False
             new_events = []

@@ -274,3 +274,59 @@ def test_rebalance_refills_vacated_melody_voice():
     assert notes(viola_part, 3, 4)
     # m1-2 (未覆寫) violin_1 仍有內容 (主旋律)。
     assert notes(v1_part, 1, 2)
+
+
+# ============================================================================
+# 和聲 gap-fill: 稀疏來源 (內聲部靠 filler) 交替輪唱後讓位聲部不空白
+# ============================================================================
+
+def _wtc_prelude_path() -> str:
+    import os
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(here, "core", "sample_scores",
+                        "bach_bwv846_wtc1_1_prelude.musicxml")
+
+
+def test_alternating_routing_fills_resting_voice():
+    """稀疏 (2-staff 鍵盤) 來源 → 弦四時, V2 的和聲是 filler 生成的。主旋律交替
+    V1/V2 後, 一般 filler 抓不到「部分空白」的聲部 → 讓位樂句變空白。gap-fill 應補上。"""
+    import os
+    import warnings
+    path = _wtc_prelude_path()
+    if not os.path.exists(path):
+        import pytest
+        pytest.skip("bach_bwv846 不在")
+    from core.ir import ChordEvent, NoteEvent
+    from core.parser import parse_musicxml
+    warnings.filterwarnings("ignore")
+
+    players = build_ensemble("string_quartet", skill_level="professional")
+    vlns = [p.player_id for p in players if p.primary_instrument == "violin"]
+    v1, v2 = vlns[0], vlns[1]
+
+    def part_ms(arr, pid):
+        p = next((x for x in arr.target_score.parts if x.part_id == pid), None)
+        return p.measures if p else []
+
+    def has_note(m):
+        return any(isinstance(e, (NoteEvent, ChordEvent))
+                   for v in m.voices.values() for e in v.events)
+
+    score = parse_musicxml(path); tag_all_sections(score)
+    base = run_arrange(score, players)
+    mnums = [m.number for m in part_ms(base, v1)]
+    lo, hi = min(mnums), max(mnums)
+    routing, i, seg = [], 0, lo
+    while seg <= hi:
+        end = min(seg + 3, hi)
+        routing.append({"span": [seg, end], "targets": [v1 if i % 2 == 0 else v2]})
+        seg = end + 1; i += 1
+
+    score2 = parse_musicxml(path); tag_all_sections(score2)
+    alt = run_arrange(score2, players, melody_routing=routing)
+
+    # 交替輪唱後, V1 與 V2 都不應有空白小節 (讓位樂句改填和聲)。
+    v1_empty = [m.number for m in part_ms(alt, v1) if not has_note(m)]
+    v2_empty = [m.number for m in part_ms(alt, v2) if not has_note(m)]
+    assert not v1_empty, f"V1 讓位樂句變空白: {v1_empty}"
+    assert not v2_empty, f"V2 讓位樂句變空白: {v2_empty}"
