@@ -543,6 +543,21 @@ class _Parser:
                 continue
 
             if isinstance(element, m21_chord.Chord):
+                if self._is_grace(element):
+                    # grace-note 和弦 (duration=0): 比照單音 grace, 把每個音
+                    # 展開為 GraceNote 附到後續主音符的 grace_before。
+                    # 直接建 ChordEvent 會踩 IR 的 duration>0 驗證 → 整首掛掉。
+                    # GraceNote 模型為單音、grace_before 亦無同時性概念, 故和弦
+                    # 拆成多個同 grace_type 的 GraceNote (保留音高, 不丟棄)。
+                    gtype = self._grace_type(element)
+                    seen: set[int] = set()
+                    for p in element.pitches:
+                        pitch = self._make_pitch(p)
+                        if pitch.midi_number in seen:
+                            continue
+                        seen.add(pitch.midi_number)
+                        pending_grace.append(GraceNote(pitch=pitch, grace_type=gtype))
+                    continue
                 if len(element.pitches) == 1:
                     # spec §4.1.1: 單音 Chord wrapper → NoteEvent
                     ev_n = self._parse_chord_as_note(element, current_dynamic)

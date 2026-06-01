@@ -186,6 +186,78 @@ def test_chord_all_duplicate_midi_becomes_note():
 
 
 # ============================================================================
+# Grace notes (含 grace 和弦)
+# ============================================================================
+
+def test_grace_chord_attaches_to_following_note():
+    """regression (scarlatti_K146/K200): grace-note 和弦的 duration=0,
+    直接建 ChordEvent 會觸發 IR 的 duration>0 驗證 → 整首 parse 崩潰。
+    應比照單音 grace, 展開為 grace_before 附到後續主音符 (保留音高, 不丟棄)。
+    """
+    score = m21_stream.Score()
+    part = m21_stream.Part()
+    m = m21_stream.Measure(number=1)
+    m.append(meter.TimeSignature("4/4"))
+    # 兩音 grace 和弦 (acciaccatura) 接一個主音符 — 對應 K146 的 D5+F#5→C#5
+    m.append(m21_chord.Chord(["D5", "F#5"]).getGrace())
+    m.append(m21_note.Note("C#5", quarterLength=4.0))
+    part.append(m)
+    score.insert(0, part)
+
+    ir = parse_stream(score)
+    events = ir.parts[0].measures[0].voices[1].events
+    # grace 和弦不自成事件 — 僅主音符
+    assert len(events) == 1
+    main = events[0]
+    assert isinstance(main, NoteEvent)
+    assert main.pitch.spelling == "C#5"
+    # 兩個 grace 音都保留
+    grace_spellings = {g.pitch.spelling for g in main.grace_before}
+    assert grace_spellings == {"D5", "F#5"}
+    assert all(g.grace_type == "acciaccatura" for g in main.grace_before)
+    # IR 須通過硬不變式驗證
+    assert validate(ir).errors == []
+
+
+def test_single_pitch_grace_chord_does_not_crash():
+    """單音 grace 和弦 wrapper 走 _parse_chord_as_note → NoteEvent(duration=0)
+    同樣會崩潰; grace 檢查須在 pitch 數判斷之前攔下。"""
+    score = m21_stream.Score()
+    part = m21_stream.Part()
+    m = m21_stream.Measure(number=1)
+    m.append(meter.TimeSignature("4/4"))
+    m.append(m21_chord.Chord(["G5"]).getGrace())  # 單音 grace 和弦
+    m.append(m21_note.Note("C5", quarterLength=4.0))
+    part.append(m)
+    score.insert(0, part)
+
+    ir = parse_stream(score)
+    events = ir.parts[0].measures[0].voices[1].events
+    assert len(events) == 1
+    assert events[0].pitch.spelling == "C5"
+    assert [g.pitch.spelling for g in events[0].grace_before] == ["G5"]
+    assert validate(ir).errors == []
+
+
+def test_grace_chord_dedups_duplicate_midi():
+    """grace 和弦同樣可能含異名同音重複 (notation↔MIDI roundtrip), 去重避免冗餘。"""
+    score = m21_stream.Score()
+    part = m21_stream.Part()
+    m = m21_stream.Measure(number=1)
+    m.append(meter.TimeSignature("4/4"))
+    # C#5 與 Db5 同為 MIDI 73
+    m.append(m21_chord.Chord(["C#5", "D-5", "E5"]).getGrace())
+    m.append(m21_note.Note("C5", quarterLength=4.0))
+    part.append(m)
+    score.insert(0, part)
+
+    ir = parse_stream(score)
+    main = ir.parts[0].measures[0].voices[1].events[0]
+    midis = [g.pitch.midi_number for g in main.grace_before]
+    assert midis == [73, 76]  # 去重後保留首次出現
+
+
+# ============================================================================
 # Articulations / Dynamics
 # ============================================================================
 
