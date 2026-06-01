@@ -269,6 +269,13 @@ def arrange(
     # Phase 1: 保留 source 以供之後 reassign 重建
     arrangement.source_score = score
 
+    # M-C: 主旋律路線的「移低八度」— build 後對目標聲部該段降八度
+    if melody_routing:
+        try:
+            _apply_melody_register_shifts(arrangement)
+        except Exception:
+            pass
+
     # 為管樂 part 自動插入呼吸標記 (skill / dynamic 感知)
     try:
         from .breath_marks import insert_breath_marks
@@ -674,9 +681,169 @@ def _apply_melody_routing_overrides(
             ))
         mm = n + 1
 
+    # 旋律讓位後自動重填和聲 (Kevin: 自動重填) — 把新接旋律聲部原本的內聲部
+    # 和聲, 搬到讓出旋律的聲部, 使讓位聲部不空白、接旋律聲部不堆疊。
+    others = _rebalance_harmony_after_routing(
+        others, auto_tgt, tgt_at, overridden, by_player
+    )
+
     arrangement.assignments = others + new_melody
     for i, a in enumerate(arrangement.assignments):
         a.assignment_id = i
+
+
+# 可上移到讓出聲部的和聲類功能 (低音 BASS/PEDAL 不上移到高聲部 — 會把低音擺到小提琴)
+_RELOCATABLE_FUNCS = {
+    VoiceFunction.HARMONY_FILL,
+    VoiceFunction.COUNTERMELODY,
+    VoiceFunction.ORNAMENTAL,
+}
+
+
+def _rebalance_harmony_after_routing(
+    others: list[Assignment],
+    auto_tgt: dict[int, list[str]],
+    tgt_at: dict[int, list[str]],
+    overridden: set[int],
+    by_player: dict[str, Player],
+) -> list[Assignment]:
+    """主旋律 routing 覆寫後, 重平衡內聲部和聲 (per-measure swap)。
+
+    覆寫小節裡:
+    - vacated = 原本演奏主旋律、現在讓出的聲部
+    - received = 新接到主旋律、原本不是主旋律的聲部
+    received 聲部原有的「可上移和聲」搬到 vacated 聲部 (swap), 讓讓位聲部不空、
+    接旋律聲部不和旋律堆疊。無 vacated 可收時 (如主旋律加倍) 直接丟棄該段和聲。
+    低音 (BASS/PEDAL) 不動 — 避免把低音線擺到高把位樂器。
+    """
+    if not overridden:
+        return others
+    vacated: dict[int, list[str]] = {}
+    received: dict[int, list[str]] = {}
+    for mm in overridden:
+        auto = auto_tgt.get(mm, [])
+        new = tgt_at.get(mm, [])
+        vacated[mm] = [p for p in auto if p not in new]
+        received[mm] = [p for p in new if p not in auto]
+
+    # 炸成 per-measure → 套 retarget/drop → 再合併成 span
+    present: dict[tuple, set[int]] = {}
+    for a in others:
+        for mm in range(a.span[0], a.span[1] + 1):
+            player = a.target_player_id
+            instrument = a.target_instrument
+            staff = a.target_staff
+            edited = a.is_user_edited
+            auto_gen = a.is_auto_generated
+            if (
+                mm in overridden
+                and a.function in _RELOCATABLE_FUNCS
+                and player in received.get(mm, [])
+            ):
+                vac = vacated.get(mm, [])
+                if not vac:
+                    continue  # 加倍情境: 無讓出聲部可收 → 丟棄此段和聲
+                idx = received[mm].index(player) % len(vac)
+                newp = by_player.get(vac[idx])
+                if newp is None:
+                    continue
+                player = newp.player_id
+                instrument = newp.primary_instrument
+                staff = "upper" if newp.staves == 2 else "main"
+                edited, auto_gen = True, False
+            key = (player, a.source_part_id, a.function,
+                   instrument, staff, edited, auto_gen)
+            present.setdefault(key, set()).add(mm)
+
+    rebalanced: list[Assignment] = []
+    for key, measures in present.items():
+        player, source, func, instrument, staff, edited, auto_gen = key
+        for lo, hi in _coalesce_runs(sorted(measures)):
+            rebalanced.append(Assignment(
+                assignment_id=0,
+                source_part_id=source,
+                target_player_id=player,
+                target_instrument=instrument,
+                target_staff=staff,
+                span=(lo, hi),
+                function=func,
+                is_user_edited=edited,
+                is_auto_generated=auto_gen,
+            ))
+    return rebalanced
+
+
+def _coalesce_runs(nums: list[int]) -> list[tuple[int, int]]:
+    """把排序好的小節號合併成連續 (lo, hi) 區間。"""
+    runs: list[tuple[int, int]] = []
+    for x in nums:
+        if runs and x == runs[-1][1] + 1:
+            runs[-1] = (runs[-1][0], x)
+        else:
+            runs.append((x, x))
+    return runs
+
+
+_REGISTER_PITCH_NAMES = ["C", "C#", "D", "D#", "E", "F",
+                         "F#", "G", "G#", "A", "A#", "B"]
+
+# 主旋律「移中低聲部」的兩種降法 (Kevin: 兩種都給)。
+#   octave_down = 降一個八度 (-12, 同音級, 僅低八度)
+#   key_down    = 降純五度 (-7, 提琴家族下一把樂器的調音關係 — 小提琴→中提琴)
+_REGISTER_SEMITONES = {"octave_down": -12, "key_down": -7}
+
+
+def _shift_pitch_semitones(p: Pitch, semitones: int) -> Pitch:
+    """位移半音數。整八度位移僅調 octave 數 (保留升降記號拼寫); 其餘 (如純五度)
+    由新 midi 重算拼寫 (升記號慣例)。"""
+    import re
+    new_midi = p.midi_number + semitones
+    if semitones % 12 == 0:
+        m = re.match(r"^([A-Ga-g][#b]?)(-?\d+)$", p.spelling or "")
+        if m:
+            spelling = f"{m.group(1)}{int(m.group(2)) + semitones // 12}"
+            return Pitch(new_midi, spelling)
+    name = _REGISTER_PITCH_NAMES[new_midi % 12]
+    return Pitch(new_midi, f"{name}{(new_midi // 12) - 1}")
+
+
+def _shift_pitch_down_octave(p: Pitch) -> Pitch:
+    """降一個八度 (octave_down)。"""
+    return _shift_pitch_semitones(p, -12)
+
+
+def _apply_melody_register_shifts(arrangement: Arrangement) -> None:
+    """M-C: 把標了 melody_register 的主旋律段, 在目標聲部裡降音域。
+    octave_down=降八度; key_down=降純五度。仍偏高時由既有可演奏性檢查 / repair
+    再 fit。和聲重平衡 (讓位後重填) 另做。"""
+    score = arrangement.target_score
+    if score is None:
+        return
+    for a in arrangement.assignments:
+        if a.function != VoiceFunction.MELODY:
+            continue
+        semitones = _REGISTER_SEMITONES.get(a.melody_register)
+        if not semitones:
+            continue
+        part_id = (
+            a.target_player_id if a.target_staff == "main"
+            else f"{a.target_player_id}_{a.target_staff}"
+        )
+        part = next((p for p in score.parts if p.part_id == part_id), None)
+        if part is None:
+            continue
+        for measure in part.measures:
+            if not (a.span[0] <= measure.number <= a.span[1]):
+                continue
+            for voice in measure.voices.values():
+                for ev in voice.events:
+                    if isinstance(ev, NoteEvent):
+                        ev.pitch = _shift_pitch_semitones(ev.pitch, semitones)
+                    elif isinstance(ev, ChordEvent):
+                        ev.pitches = [
+                            _shift_pitch_semitones(p, semitones)
+                            for p in ev.pitches
+                        ]
 
 
 def _find_secondary_melody_target(

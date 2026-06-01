@@ -162,3 +162,115 @@ def test_full_arrange_routes_melody_through_pipeline():
     # m1 仍維持自動 (非 viola) — 證明只覆寫指定段
     at_m1 = [a for a in mel if a.span[0] <= 1 <= a.span[1]]
     assert at_m1 and all(a.target_player_id != viola_id for a in at_m1)
+
+
+# ============================================================================
+# M-C: octave_down register — 主旋律降八度
+# ============================================================================
+
+def test_shift_pitch_down_octave():
+    from core.arranger import _shift_pitch_down_octave
+    out = _shift_pitch_down_octave(Pitch(72, "C5"))
+    assert out.midi_number == 60
+    assert out.spelling == "C4"
+
+
+def _part_pitches_in_span(arr, part_id, span):
+    part = next(
+        (p for p in arr.target_score.parts if p.part_id == part_id), None,
+    )
+    assert part is not None
+    out = []
+    for m in part.measures:
+        if span[0] <= m.number <= span[1]:
+            for v in m.voices.values():
+                for ev in v.events:
+                    out += [p.midi_number for p in getattr(ev, "pitches", [])]
+                    if hasattr(ev, "pitch"):
+                        out.append(ev.pitch.midi_number)
+    return out
+
+
+def test_octave_down_lowers_routed_melody():
+    # viola 是乾淨目標 (無既有分配)，可隔離驗證 register shift 本身。
+    # cello 已載 bass，melody 撞 bass 屬「自動重填和聲」範疇 (另案)。
+    players = build_ensemble("string_quartet", skill_level="professional")
+    viola_id = next(p.player_id for p in players
+                    if p.primary_instrument == "viola")
+
+    s1 = _two_part_source(8); tag_all_sections(s1)
+    nat = run_arrange(s1, players,
+                      melody_routing=[{"span": [1, 8], "targets": [viola_id]}])
+    s2 = _two_part_source(8); tag_all_sections(s2)
+    low = run_arrange(s2, players, melody_routing=[
+        {"span": [1, 8], "targets": [viola_id], "register": "octave_down"}])
+
+    # 主旋律來源 treble = midi 72。natural → viola 含 72; octave_down → 含 60。
+    assert 72 in _part_pitches_in_span(nat, viola_id, (1, 8))
+    assert 60 in _part_pitches_in_span(low, viola_id, (1, 8))
+    assert 72 not in _part_pitches_in_span(low, viola_id, (1, 8))
+
+
+def test_key_down_lowers_routed_melody_a_fifth():
+    players = build_ensemble("string_quartet", skill_level="professional")
+    viola_id = next(p.player_id for p in players
+                    if p.primary_instrument == "viola")
+
+    s = _two_part_source(8); tag_all_sections(s)
+    low = run_arrange(s, players, melody_routing=[
+        {"span": [1, 8], "targets": [viola_id], "register": "key_down"}])
+
+    # key_down = 降純五度 (-7)。treble 72 → 65 (F4)。
+    pitches = _part_pitches_in_span(low, viola_id, (1, 8))
+    assert 65 in pitches
+    assert 72 not in pitches
+
+
+# ============================================================================
+# M-C: 和聲自動重平衡 (旋律讓位後重填) — 用真實 Bach chorale (SATB)
+# ============================================================================
+
+def _bach_chorale_path() -> str:
+    import os
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(here, "core", "sample_scores", "bach_chorale_336.musicxml")
+
+
+def test_rebalance_refills_vacated_melody_voice():
+    import os
+    import warnings
+    path = _bach_chorale_path()
+    if not os.path.exists(path):
+        import pytest
+        pytest.skip("bach_chorale_336.musicxml 不在")
+    from core.parser import parse_musicxml
+    warnings.filterwarnings("ignore")
+
+    players = build_ensemble("string_quartet", skill_level="professional")
+    vlns = [p.player_id for p in players if p.primary_instrument == "violin"]
+    v1 = vlns[0]
+    viola = next(p.player_id for p in players
+                 if p.primary_instrument == "viola")
+
+    score = parse_musicxml(path); tag_all_sections(score)
+    arr = run_arrange(score, players,
+                      melody_routing=[{"span": [3, 4], "targets": [viola]}])
+
+    v1_part = next(p for p in arr.target_score.parts if p.part_id == v1)
+    viola_part = next(p for p in arr.target_score.parts if p.part_id == viola)
+
+    def notes(part, lo, hi):
+        out = []
+        for m in part.measures:
+            if lo <= m.number <= hi:
+                for v in m.voices.values():
+                    out += [e.pitch.midi_number for e in v.events
+                            if hasattr(e, "pitch")]
+        return out
+
+    # 讓位的 violin_1 在 m3-4 不可空白 (自動重填和聲)。
+    assert notes(v1_part, 3, 4), "violin_1 讓出旋律後不應靜默 — 和聲未重填"
+    # viola 在 m3-4 應接到主旋律 (比它原本的內聲部更高)。
+    assert notes(viola_part, 3, 4)
+    # m1-2 (未覆寫) violin_1 仍有內容 (主旋律)。
+    assert notes(v1_part, 1, 2)
