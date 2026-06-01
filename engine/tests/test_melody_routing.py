@@ -4,9 +4,28 @@
 """
 from __future__ import annotations
 
-from core.arrangement_model import Arrangement, Assignment, Player
+from fractions import Fraction
+
+from core.analyzer.function import tag_all_sections
+from core.arrangement_model import (
+    Arrangement,
+    Assignment,
+    Player,
+    build_ensemble,
+)
 from core.arranger import _apply_melody_routing_overrides
-from core.ir import VoiceFunction
+from core.arranger import arrange as run_arrange
+from core.ir import (
+    Measure,
+    Movement,
+    NoteEvent,
+    Part,
+    Pitch,
+    Score,
+    Section,
+    Voice,
+    VoiceFunction,
+)
 
 
 def _quartet() -> list[Player]:
@@ -98,3 +117,48 @@ class TestMelodyRouting:
             ((1, 2), "violin_1"), ((3, 4), "violin_2"),
             ((5, 6), "viola_3"), ((7, 8), "cello_4"),
         ]
+
+
+# ============================================================================
+# 整合: 跑完整 arrange(melody_routing=...) — 證明 build_target_score 也吃這套
+# ============================================================================
+
+def _two_part_source(n: int = 8) -> Score:
+    """treble (高音=主旋律) + bass — arrange 到 quartet 時 melody → violin。"""
+    def part(pid, name, midi):
+        ms = [Measure(
+            number=i + 1, time_signature=(4, 4) if i == 0 else None,
+            voices={1: Voice(voice_id=1, events=[
+                NoteEvent(pitch=Pitch(midi, "x"), duration=Fraction(4),
+                          onset=Fraction(0)),
+            ])},
+        ) for i in range(n)]
+        return Part(part_id=pid, name_display=name,
+                    instrument_id="piano", measures=ms)
+    return Score(
+        movements=[Movement(movement_id=1, measure_count=n,
+                            sections=[Section(0, 1, n)])],
+        parts=[part("treble", "Treble", 72), part("bass", "Bass", 48)],
+    )
+
+
+def test_full_arrange_routes_melody_through_pipeline():
+    score = _two_part_source(8)
+    tag_all_sections(score)
+    players = build_ensemble("string_quartet", skill_level="professional")
+    viola_id = next(p.player_id for p in players
+                    if p.primary_instrument == "viola")
+
+    arr = run_arrange(
+        score, players, melody_routing=[{"span": [5, 8], "targets": [viola_id]}],
+    )
+    assert arr.target_score is not None
+    mel = [a for a in arr.assignments if a.function == VoiceFunction.MELODY]
+    at_m6 = [a for a in mel if a.span[0] <= 6 <= a.span[1]]
+    assert at_m6, "m6 應有 MELODY 指派"
+    assert any(a.target_player_id == viola_id for a in at_m6), (
+        f"m6 主旋律應路由到 viola, 實際: {[a.target_player_id for a in at_m6]}"
+    )
+    # m1 仍維持自動 (非 viola) — 證明只覆寫指定段
+    at_m1 = [a for a in mel if a.span[0] <= 1 <= a.span[1]]
+    assert at_m1 and all(a.target_player_id != viola_id for a in at_m1)

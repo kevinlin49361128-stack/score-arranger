@@ -443,7 +443,9 @@ def _method_arrange_custom(params: dict[str, Any]) -> dict:
         ))
 
     tag_all_sections(score)
-    arrangement = run_arrange(score, players)
+    # 主旋律路線 (M-core): 逐樂句覆寫主旋律落在哪個聲部 (+ 加倍 / 移調 register)
+    melody_routing = params.get("melody_routing")
+    arrangement = run_arrange(score, players, melody_routing=melody_routing)
 
     if style_preset and style_preset != "none":
         try:
