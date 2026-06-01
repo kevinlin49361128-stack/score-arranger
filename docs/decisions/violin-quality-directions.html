@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小提琴編曲 &amp; 播放音色 — 改進方向決策</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#181b22; --card2:#1f232c; --line:#2a2f3a;
+    --fg:#e8eaed; --mut:#9aa3b2; --acc:#7aa2ff; --acc2:#ffd479;
+    --good:#5fd49a; --warn:#ffb454; --risk:#ff7a85; --pick:#ffd479;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    line-height:1.6;padding:32px 20px 96px}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px}
+  .sub{color:var(--mut);margin:0 0 4px}
+  .verified{color:var(--good);font-size:13px;margin:10px 0 24px}
+  .verified b{color:var(--fg)}
+  .synergy{background:linear-gradient(135deg,#1c2433,#231d2e);
+    border:1px solid var(--line);border-left:3px solid var(--acc2);
+    border-radius:12px;padding:16px 18px;margin:0 0 28px}
+  .synergy h3{margin:0 0 6px;font-size:15px;color:var(--acc2)}
+  .synergy p{margin:0;color:var(--mut);font-size:14px}
+  .synergy b{color:var(--fg)}
+  h2.sec{font-size:18px;margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+  h2.sec .tag{font-size:12px;font-weight:600;color:var(--bg);
+    background:var(--acc);padding:2px 9px;border-radius:999px}
+  h2.sec.arr .tag{background:var(--good)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:15px 16px;position:relative;cursor:pointer;transition:.15s;display:flex;gap:12px}
+  .card:hover{border-color:var(--acc);background:var(--card2)}
+  .card.pick{border-color:var(--pick);box-shadow:0 0 0 1px rgba(255,212,121,.25)}
+  .card.on{background:var(--card2);border-color:var(--acc)}
+  .card.on.pick{border-color:var(--pick)}
+  .cb{flex:0 0 auto;width:20px;height:20px;border:2px solid var(--mut);border-radius:6px;
+    margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--bg)}
+  .card.on .cb{background:var(--acc);border-color:var(--acc)}
+  .card.on.pick .cb{background:var(--pick);border-color:var(--pick)}
+  .body{flex:1}
+  .row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  .id{font-weight:700;font-size:14px;color:var(--acc)}
+  .arr .id{color:var(--good)}
+  .ttl{font-weight:600;font-size:15px}
+  .star{color:var(--pick);font-size:13px;font-weight:600;white-space:nowrap}
+  .what{color:var(--mut);font-size:13.5px;margin:2px 0 9px}
+  .badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+  .b{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line)}
+  .b.eff-s{color:var(--good);border-color:#2f5340}
+  .b.eff-m{color:var(--warn);border-color:#5a4a2a}
+  .b.eff-l{color:var(--risk);border-color:#5a2f33}
+  .b.roi-h{color:#bcd0ff;border-color:#33405a}
+  .b.roi-m{color:var(--mut)}
+  .note{font-size:12.5px;color:#8f98a8;border-top:1px dashed var(--line);padding-top:7px;margin-top:2px}
+  .note .con{color:var(--risk)}
+  .note .pro{color:var(--good)}
+  .barbox{margin:26px 0 0;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:16px 18px}
+  .barbox h3{margin:0 0 10px;font-size:15px}
+  .reco{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-size:13px;padding:6px 12px;border-radius:999px;background:var(--card2);
+    border:1px solid var(--line)}
+  .chip b{color:var(--pick)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#0c0e12cc;backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;
+    justify-content:space-between;gap:14px;z-index:9}
+  .cnt{color:var(--mut);font-size:13px}
+  .cnt b{color:var(--fg)}
+  button.copy{background:var(--acc);color:#0c0e12;border:0;border-radius:10px;
+    padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  button.copy:hover{filter:brightness(1.08)}
+  .toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);
+    background:var(--good);color:#0c0e12;padding:9px 18px;border-radius:10px;font-weight:600;
+    opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>小提琴編曲 &amp; 播放音色 — 改進方向</h1>
+  <p class="sub">勾選你想推進的方向，底部「複製決策摘要」把結果貼回給我。🎯 = 我的建議。</p>
+  <p class="verified">✅ 已讀碼驗證：<b>① 播放完全沒吃 articulation</b>（<code>triggerAttackRelease</code> 只收 name/dur/time/velocity；staccato·圓滑線·撥奏畫在譜上但不發聲）。
+  <b>② 引擎會「評分」難度</b>（<code>difficulty.py</code> 有高把位+跨弦 penalty）<b>但編曲時不拿來當目標</b>（arranger 主流程不碰 difficulty，指法 DP 只看平均把位高度）。</p>
+
+  <div class="synergy">
+    <h3>⚡ 關鍵綜效 — 為什麼建議「成套做」</h3>
+    <p>編曲端生成弓法/articulation（<b>B3</b>）如果播放不認（沒做 <b>A1</b>）就<b>白做</b>；播放認 articulation（<b>A1</b>）但編曲不產生好的弓法，就只是普通。
+    <b>A1 + B3 一起做，才會「聽起來像小提琴音樂」，而不是「小提琴音域的 MIDI」。</b>單一最高槓桿 = 先做 A1：最便宜、修掉最刺眼的「看得到聽不到」落差，同時替 B3 鋪路。</p>
+  </div>
+
+  <h2 class="sec"><span class="tag">播放音色</span> Playback Timbre</h2>
+  <div class="grid" id="grp-play">
+    <div class="card pick" data-id="A1" data-title="Articulation → 音訊">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">A1</span><span class="ttl">Articulation → 音訊</span><span class="star">🎯 最高槓桿</span></div>
+        <div class="what">staccato 縮時值、legato 重疊、accent 加力度、pizz 換撥弦音色、呼吸標記留白。資料已 parse 存在 IR，純粹接線進 <code>triggerAttackRelease</code>。</div>
+        <div class="badges"><span class="b eff-s">工時 小 (1–2天)</span><span class="b roi-h">ROI 極高</span></div>
+        <div class="note"><span class="pro">修掉音樂人一秒就察覺的「譜上有點、聽起來沒點」可信度落差。</span></div>
+      </div>
+    </div>
+    <div class="card" data-id="A2" data-title="力度動態可聽 + 圓滑線 portamento">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">A2</span><span class="ttl">力度動態 + 圓滑線</span></div>
+        <div class="what">velocity 目前有傳但 Tone.Sampler 吃很弱 → 真正做出 pp/f/ff 對比與重音；圓滑線(slur)做 portamento 滑音而非硬切。</div>
+        <div class="badges"><span class="b eff-m">工時 中</span><span class="b roi-h">ROI 高</span></div>
+        <div class="note"><span class="pro">讓樂句有呼吸起伏</span>，不再每顆音一樣大聲。</div>
+      </div>
+    </div>
+    <div class="card" data-id="A3" data-title="真實感細節">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">A3</span><span class="ttl">真實感細節</span></div>
+        <div class="what">unison 微離調（兩把小提琴完全同相位很假）、vibrato 隨音長/強度變化（現在固定 5.5Hz 死板）、各弦音色差異。</div>
+        <div class="badges"><span class="b eff-m">工時 中</span><span class="b roi-m">ROI 中（邊際遞減）</span></div>
+        <div class="note"><span class="con">反方：</span>這是工具，使用者最後多半匯出到 MuseScore/Dorico 播 → 細節真實感的投報率較低，建議擺後面。</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec arr"><span class="tag">編曲</span> Arrangement</h2>
+  <div class="grid" id="grp-arr">
+    <div class="card arr pick" data-id="B1" data-title="Idiom-aware 聲部選擇">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">B1</span><span class="ttl">Idiom-aware 聲部選擇</span><span class="star">🎯 建議</span></div>
+        <div class="what">弦性格（E 弦亮給高音旋律、G 弦暗給厚度）、開放弦加分、甜蜜點八度選擇。把<b>已經存在的 difficulty 評分接成編曲目標</b>，不再只當事後報告。</div>
+        <div class="badges"><span class="b eff-m">工時 中 (2–4天)</span><span class="b roi-h">ROI 高</span></div>
+        <div class="note"><span class="pro">低風險、立刻更好彈又更好聽</span>，不必動 Phase 2 架構。</div>
+      </div>
+    </div>
+    <div class="card arr" data-id="B2" data-title="慣用音型生成">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">B2</span><span class="ttl">慣用音型生成</span></div>
+        <div class="what">來源是分解和弦時，產生小提琴慣用的 broken chord / bariolage（同音換弦）/ 音階順弦，而不是堆 block chord。</div>
+        <div class="badges"><span class="b eff-l">工時 中大</span><span class="b roi-h">ROI 高（音樂性）</span></div>
+        <div class="note"><span class="con">反方/風險：</span>idiom 生成可能過度風格化或猜錯情境，反而讓編曲變糟 → 必須<b>保守 + 可關 + 預設忠於來源</b>。</div>
+      </div>
+    </div>
+    <div class="card arr pick" data-id="B3" data-title="弓法 / 圓滑線生成">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">B3</span><span class="ttl">弓法 / 圓滑線生成</span><span class="star">🎯 與 A1 綜效</span></div>
+        <div class="what">來源 slur → 目標、legato/détaché 預設、基本上下弓分配。同時餵記譜（譜面更專業）+ 播放（A1 修好後直接發聲）。</div>
+        <div class="badges"><span class="b eff-m">工時 中</span><span class="b roi-h">ROI 高</span></div>
+        <div class="note"><span class="pro">和 A1 是一對</span>：兩個一起做，編曲產生的弓法才聽得到。</div>
+      </div>
+    </div>
+    <div class="card arr" data-id="B4" data-title="動態把位模擬自動化">
+      <div class="cb">✓</div>
+      <div class="body">
+        <div class="row1"><span class="id">B4</span><span class="ttl">動態把位模擬自動化</span></div>
+        <div class="what"><code>StringPositionSimulator</code> 已存在但目前 opt-in 不自動跑 → 自動跑進 repair，加手指 pattern 可行性，把「換把太快根本彈不出來」自動抓出來。</div>
+        <div class="badges"><span class="b eff-m">工時 中</span><span class="b roi-m">ROI 中（正確性）</span></div>
+        <div class="note"><span class="pro">補驗證盲區</span>：目前靜態逐和弦檢查為主，跨小節的左手連續性沒自動驗。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="barbox">
+    <h3>🧭 如果要我排優先序</h3>
+    <div class="reco">
+      <span class="chip">第 1 衝刺：<b>A1 + B3</b>（綜效包，最有感）</span>
+      <span class="chip">第 2 衝刺：<b>B1</b>（編曲更好彈好聽）</span>
+      <span class="chip">第 3：<b>A2 → B2 → B4 → A3</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="cnt">已選 <b id="n">0</b> 項</div>
+  <button class="copy" onclick="copySummary()">複製決策摘要</button>
+</div>
+<div class="toast" id="toast">已複製到剪貼簿 ✓</div>
+
+<script>
+  const KEY='violin-quality-directions-v1';
+  const cards=[...document.querySelectorAll('.card')];
+  const saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+  function render(){
+    let n=0;
+    cards.forEach(c=>{const id=c.dataset.id; const on=!!saved[id];
+      c.classList.toggle('on',on); c.querySelector('.cb').textContent=on?'✓':''; if(on)n++;});
+    document.getElementById('n').textContent=n;
+  }
+  cards.forEach(c=>c.addEventListener('click',()=>{
+    const id=c.dataset.id; saved[id]=!saved[id];
+    localStorage.setItem(KEY,JSON.stringify(saved)); render();
+  }));
+  render();
+  function copySummary(){
+    const picked=cards.filter(c=>saved[c.dataset.id]);
+    let txt;
+    if(!picked.length){txt='（沒有勾選任何方向）';}
+    else{
+      txt='小提琴編曲 & 播放音色 — 我要推進這些方向：\n\n'+
+        picked.map(c=>`[${c.dataset.id}] ${c.dataset.title}`).join('\n')+
+        '\n\n請依這個範圍開工。';
+    }
+    navigator.clipboard.writeText(txt).then(()=>{
+      const t=document.getElementById('toast'); t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),1600);
+    });
+  }
+</script>
+</body>
+</html>

@@ -2477,7 +2477,9 @@ def _method_to_midi(params: dict[str, Any]) -> dict:
         raise ValueError("尚無 arrangement")
 
     from core.ir_to_music21 import ir_to_music21
+    from core.performance import apply_playback_expression
     m21 = ir_to_music21(sess.current_arrangement.target_score)
+    apply_playback_expression(m21)  # A1: staccato/呼吸/重音 → 可聽 (僅播放)
 
     # Track name 給前端 PlaybackControls (1) 路由音色 (用 instrument_id 比對),
     # (2) 顯示給使用者 (mute popover). 為了同時滿足兩者, 寫成
@@ -2538,7 +2540,9 @@ def _method_to_source_midi(params: dict[str, Any]) -> dict:
         raise ValueError("尚無 source_score; 請提供 path 參數")
 
     from core.ir_to_music21 import ir_to_music21
+    from core.performance import apply_playback_expression
     m21 = ir_to_music21(source_score)
+    apply_playback_expression(m21)  # A1: 與 target 一致, A/B 比較才公平
     # 同 to_midi 處理: name_display + [instrument_id] 同時帶, 前端兩用
     for ir_part, m21_part in zip(source_score.parts, m21.parts):
         m21_part.partName = (
