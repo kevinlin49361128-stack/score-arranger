@@ -620,7 +620,6 @@ app.whenReady().then(async () => {
 function setupAutoUpdater(win: BrowserWindow): void {
   if (isDev) return;
   // 延後 import 避免 dev mode 也載入 (electron-updater 會抓 app.isPackaged)
-  // biome-ignore lint/suspicious/noExplicitAny: dynamic import for prod-only dep
   let autoUpdater: any;
   try {
     autoUpdater = require("electron-updater").autoUpdater;

@@ -104,7 +104,9 @@ export class PitchMonitor {
       this.rafId = null;
     }
     if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((t) => t.stop());
+      this.mediaStream.getTracks().forEach((t) => {
+        t.stop();
+      });
       this.mediaStream = null;
     }
     if (this.audioCtx) {
@@ -140,7 +142,9 @@ export class PitchMonitor {
       sample.midi = midiInt;
       sample.cents = cents;
     }
-    this.listeners.forEach((cb) => cb(sample));
+    this.listeners.forEach((cb) => {
+      cb(sample);
+    });
   }
 }
 

@@ -3336,7 +3336,6 @@ export function ensembleIcon(e: EnsembleType): string {
     case "Trio Sonata":
       // 3 條弦樂線
       return "M3,2 L3,14 M7,2 L7,14 M11,2 L11,14";
-    case "Other":
     default:
       return "M3,8 A1,1 0 1,1 5,8 A1,1 0 1,1 3,8 "
         + "M7,8 A1,1 0 1,1 9,8 A1,1 0 1,1 7,8 "

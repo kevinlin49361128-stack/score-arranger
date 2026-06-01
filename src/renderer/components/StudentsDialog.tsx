@@ -204,7 +204,7 @@ function StudentRow({
           {student.notes && (
             <span style={{ marginLeft: 6, opacity: 0.85 }}>
               · {student.notes.length > 40
-                ? student.notes.slice(0, 40) + "…"
+                ? `${student.notes.slice(0, 40)}…`
                 : student.notes}
             </span>
           )}
@@ -239,7 +239,6 @@ function StudentEditor({ initial, onSave, onCancel, onDelete }: EditorProps) {
     }}>
       <div style={{ display: "flex", gap: 8 }}>
         <input
-          autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t("students.namePlaceholder")}

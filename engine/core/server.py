@@ -1770,7 +1770,7 @@ def _method_apply_edit_ops(params: dict[str, Any]) -> dict:
             skill_lvl = op.get("skill_level")
             if not skill_lvl:
                 try:
-                    pl = next((p for p in arrangement.players
+                    pl = next((p for p in sess.current_arrangement.players
                                if part.part_id.startswith(p.player_id)), None)
                     if pl is not None:
                         skill_lvl = pl.skill_level

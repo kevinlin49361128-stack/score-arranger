@@ -145,7 +145,7 @@ export function FingerboardSimulator({ instrument, pitches }: Props) {
     window.scoreArranger.engine.getChordFingering(instrument, pitches)
       .then((res) => {
         if (cancelled) return;
-        if (!res.ok || !res.data || !res.data.feasible) {
+        if (!res.ok || !res.data?.feasible) {
           setEnginePlaced(null);
           return;
         }
