@@ -92,5 +92,14 @@ jobs:
             Write-Host "No artifacts found, skipping release upload."
             exit 0
           }
+          # 確保 release 存在 — 不存在就自動建。
+          # (這是 v0.1.65–v0.1.70 Windows CI 連續失敗的根因: attach 階段
+          #  找不到同名 Release。改成 create-if-missing 後不必再手動先建。)
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Release $tag 不存在 — 自動建立"
+            gh release create $tag --repo $env:GITHUB_REPOSITORY `
+              --title $tag --notes "Automated release for $tag."
+          }
           # gh release upload 對已存在的 file 會 fail, 用 --clobber 覆蓋
           gh release upload $tag $files.FullName --clobber --repo $env:GITHUB_REPOSITORY
