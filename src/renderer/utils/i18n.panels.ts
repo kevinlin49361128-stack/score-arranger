@@ -315,6 +315,59 @@ export const PANEL_STRINGS: BiDict = {
     en: "Fretted position jump difficult",
     ja: "撥弦のポジション移動が難しい",
   },
+  // B4: 弓弦把位序列稽核
+  "issue.short.E_VIOLIN_POSITION_JUMP_TOO_FAST": {
+    "zh-TW": "換把太快, 恐來不及",
+    en: "Position shift too fast",
+    ja: "ポジション移動が速すぎる",
+  },
+  "issue.short.W_VIOLIN_POSITION_JUMP_DIFFICULT": {
+    "zh-TW": "換把偏難 (時間緊)",
+    en: "Position shift tight",
+    ja: "ポジション移動の余裕が少ない",
+  },
+  "E_VIOLIN_POSITION_JUMP_TOO_FAST": {
+    "zh-TW": "此處換把可能太快, 一般演奏者恐來不及到位",
+    en: "Position shift here may be too fast to reach in time",
+    ja: "ここでのポジション移動は速すぎて間に合わない可能性があります",
+  },
+  "W_VIOLIN_POSITION_JUMP_DIFFICULT": {
+    "zh-TW": "此處換把時間較緊, 偏難但可行",
+    en: "Position shift here is tight but feasible",
+    ja: "ここでのポジション移動は余裕が少なく、やや難しいですが可能です",
+  },
+  "issue.audit.button": {
+    "zh-TW": "可演奏性稽核",
+    en: "Playability audit",
+    ja: "演奏可能性チェック",
+  },
+  "issue.audit.running": {
+    "zh-TW": "稽核中…",
+    en: "Auditing…",
+    ja: "チェック中…",
+  },
+  "issue.audit.hint": {
+    "zh-TW": "對弦樂聲部跑把位序列模擬, 找出換把太快/偏難處 (唯讀, 不改譜)",
+    en: "Simulates left-hand position shifts on string parts to flag "
+      + "too-fast / difficult changes (read-only)",
+    ja: "弦楽器パートのポジション移動をシミュレートし、速すぎる／難しい箇所を"
+      + "検出します (読み取り専用)",
+  },
+  "issue.audit.found": {
+    "zh-TW": "找到 {count} 處把位問題 (顯示最難的)",
+    en: "Found {count} position issues (showing the hardest)",
+    ja: "{count} 件のポジション問題を検出 (難しい順に表示)",
+  },
+  "issue.audit.clean": {
+    "zh-TW": "未發現把位問題 ✓",
+    en: "No position issues found ✓",
+    ja: "ポジション問題は見つかりませんでした ✓",
+  },
+  "issue.audit.failed": {
+    "zh-TW": "稽核失敗",
+    en: "Audit failed",
+    ja: "チェックに失敗しました",
+  },
   // 0.1.32 老師評語層
   "explanation.title": {
     "zh-TW": "改編說明",

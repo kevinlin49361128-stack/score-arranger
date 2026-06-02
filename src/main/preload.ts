@@ -256,6 +256,8 @@ const api = {
       ipcRenderer.invoke("engine:computeDifficulty"),
     computeQuality: () =>
       ipcRenderer.invoke("engine:computeQuality"),
+    auditPlayability: () =>
+      ipcRenderer.invoke("engine:auditPlayability"),
     listNavigation: () =>
       ipcRenderer.invoke("engine:listNavigation"),
     getMeasureFingering: (measure: number) =>

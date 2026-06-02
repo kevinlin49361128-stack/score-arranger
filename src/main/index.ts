@@ -18,6 +18,7 @@ import {
   enrichRange,
   computeDifficulty,
   computeQuality,
+  auditPlayability,
   exportTargetMidi,
   levelRange,
   listNavigation,
@@ -514,6 +515,10 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "engine:computeQuality",
     async () => safeCall(() => computeQuality()),
+  );
+  ipcMain.handle(
+    "engine:auditPlayability",
+    async () => safeCall(() => auditPlayability()),
   );
   ipcMain.handle(
     "engine:listNavigation",

@@ -2461,6 +2461,33 @@ def _method_export_target_midi(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_audit_playability(params: dict[str, Any]) -> dict:
+    """B4 (opt-in): 對改編譜弦樂聲部跑把位序列模擬, 回傳把位跳躍問題。
+
+    唯讀 — 不改譜、不驅動 repair (避免 churn, 見 playability_audit 註解),
+    結果只供問題面板顯示, 由使用者主動觸發。
+    """
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+    from core.playability_audit import audit_string_positions
+    target = sess.current_arrangement.target_score
+    tempo = target.default_tempo_bpm or 120.0
+    issues = audit_string_positions(target, tempo_bpm=tempo)
+    total = len(issues)
+    # 只回傳最難的前 N 處, 避免問題面板被數百筆灌爆; count 仍報全數。
+    issues.sort(key=lambda i: i.result.difficulty_score, reverse=True)
+    issues = issues[:40]
+    return {
+        # DynamicIssue 與 LocatedIssue 欄位結構相容 → 共用 _serialize_issues
+        "issues": _serialize_issues(issues),  # type: ignore[arg-type]
+        "count": total,
+        "shown": len(issues),
+        "tempo_bpm": tempo,
+    }
+
+
 def _method_to_midi(params: dict[str, Any]) -> dict:
     """匯出當前 arrangement.target_score 為 base64 MIDI 字串。
 
@@ -2956,6 +2983,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "redo": _method_redo,
     "history_status": _method_history_status,
     "to_midi": _method_to_midi,
+    "audit_playability": _method_audit_playability,
     "to_source_midi": _method_to_source_midi,
     "save_project": _method_save_project,
     "load_project": _method_load_project,

@@ -258,6 +258,13 @@ declare global {
           IpcResponse<Record<string, DifficultyEntry>>
         >;
         computeQuality: () => Promise<IpcResponse<QualityReport>>;
+        auditPlayability: () => Promise<
+          IpcResponse<{
+            issues: ArrangementIssue[];
+            count: number;
+            tempo_bpm: number;
+          }>
+        >;
         listNavigation: () => Promise<IpcResponse<NavigationResult>>;
         getMeasureFingering: (measure: number) => Promise<
           IpcResponse<MeasureFingeringResult>

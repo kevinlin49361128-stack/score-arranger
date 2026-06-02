@@ -681,6 +681,11 @@ export async function computeQuality(): Promise<unknown> {
   return client.call("compute_quality", {});
 }
 
+// B4: opt-in 可演奏性稽核 (弦樂把位序列模擬) — 唯讀, 不改譜
+export async function auditPlayability(): Promise<unknown> {
+  return client.call("audit_playability", {});
+}
+
 export async function listNavigation(): Promise<unknown> {
   return client.call("list_navigation", {});
 }

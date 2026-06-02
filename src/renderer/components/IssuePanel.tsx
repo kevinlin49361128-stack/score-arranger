@@ -83,6 +83,9 @@ const ISSUE_SHORT_LABEL_CODES = new Set<string>([
   "W_UNRESOLVED_CHORD7TH",
   "E_FRETTED_POSITION_JUMP_TOO_FAST",
   "W_FRETTED_POSITION_JUMP_DIFFICULT",
+  // B4: 弓弦把位序列模擬 (可演奏性稽核)
+  "E_VIOLIN_POSITION_JUMP_TOO_FAST",
+  "W_VIOLIN_POSITION_JUMP_DIFFICULT",
 ]);
 
 function shortLabel(code: string): string {
@@ -183,6 +186,16 @@ export function IssuePanel() {
     new Set(["error", "warning"]),
   );
   const [busyIssueKey, setBusyIssueKey] = useState<string | null>(null);
+  // B4: opt-in 可演奏性稽核 — 弦樂把位序列模擬結果 (本地 state, 不污染
+  // 共享的 arrangementIssues, 避免影響熱圖/小節高亮等其他用途)。
+  const [auditIssues, setAuditIssues] = useState<UnifiedIssue[]>([]);
+  const [auditing, setAuditing] = useState(false);
+  const [auditMsg, setAuditMsg] = useState<string | null>(null);
+  // 重新改編 → 清掉舊稽核結果 (避免顯示過期把位問題)
+  useEffect(() => {
+    setAuditIssues([]);
+    setAuditMsg(null);
+  }, [arrangement]);
   /** 預覽中的原始 musicxml 備份 — 用 ref 避免 closure 抓到過時值 */
   const previewBackupRef = useRef<string | null>(null);
   /** 每次 hover 啟動 preview 取得一個 token, 回來時若 token 不再是最新就忽略 */
@@ -238,6 +251,29 @@ export function IssuePanel() {
     }
   };
 
+  // B4: 觸發可演奏性稽核 (唯讀, 不改譜) — 結果放本地 auditIssues
+  const handleAudit = async () => {
+    setAuditing(true);
+    setAuditMsg(null);
+    try {
+      const res = await window.scoreArranger.engine.auditPlayability();
+      if (res.ok && res.data) {
+        setAuditIssues(res.data.issues.map(fromArrangementIssue));
+        setAuditMsg(
+          res.data.count === 0
+            ? t("issue.audit.clean")
+            : t("issue.audit.found", { count: String(res.data.count) }),
+        );
+      } else {
+        setAuditMsg(res.error ?? t("issue.audit.failed"));
+      }
+    } catch (e) {
+      setAuditMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAuditing(false);
+    }
+  };
+
   // 整合來源
   const issues: UnifiedIssue[] = [];
   const canApply = arrangementIssues.length > 0;
@@ -252,10 +288,54 @@ export function IssuePanel() {
     }
   }
 
-  if (!analysis && arrangementIssues.length === 0) {
+  // B4: 把稽核結果併入顯示 (本地 state, 不進 arrangementIssues)
+  issues.push(...auditIssues);
+
+  // B4: 可演奏性稽核觸發列 (有 arrangement 才顯示)
+  const auditBar = arrangement ? (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "6px 10px",
+        borderBottom: "1px solid var(--border-light)",
+      }}
+    >
+      <button
+        type="button"
+        onClick={handleAudit}
+        disabled={auditing}
+        title={t("issue.audit.hint")}
+        style={{
+          fontSize: 11,
+          padding: "3px 10px",
+          borderRadius: 4,
+          border: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          color: "var(--fg-secondary)",
+          cursor: auditing ? "default" : "pointer",
+        }}
+      >
+        {auditing ? t("issue.audit.running") : t("issue.audit.button")}
+      </button>
+      {auditMsg && (
+        <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+          {auditMsg}
+        </span>
+      )}
+    </div>
+  ) : null;
+
+  if (
+    !analysis && arrangementIssues.length === 0 && auditIssues.length === 0
+  ) {
     return (
-      <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
-        {t("issue.emptyState")}
+      <div style={{ overflow: "auto", height: "100%" }}>
+        {auditBar}
+        <div style={{ padding: 16, color: "var(--fg-tertiary)" }}>
+          {t("issue.emptyState")}
+        </div>
       </div>
     );
   }
@@ -375,6 +455,7 @@ export function IssuePanel() {
   return (
     <div style={{ overflow: "auto", height: "100%" }}>
       <AssignmentsPanel />
+      {auditBar}
       {repair && (
         <RepairTimeline
           timeline={repair.timeline ?? []}
