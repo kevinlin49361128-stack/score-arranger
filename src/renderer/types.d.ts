@@ -273,6 +273,14 @@ declare global {
             can_redo: boolean;
           }>
         >;
+        applyFiguration: () => Promise<
+          IpcResponse<{
+            target_musicxml: string | null;
+            changes: number;
+            can_undo: boolean;
+            can_redo: boolean;
+          }>
+        >;
         listNavigation: () => Promise<IpcResponse<NavigationResult>>;
         getMeasureFingering: (measure: number) => Promise<
           IpcResponse<MeasureFingeringResult>

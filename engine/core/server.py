@@ -2526,6 +2526,43 @@ def _method_apply_bowing(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_apply_figuration(params: dict[str, Any]) -> dict:
+    """B2 (opt-in, 保守): 弦樂長塊狀和弦 → 分解和弦 (broken chord)。支援 undo。
+
+    只動 ≥ 二分音符的塊狀和弦 (弦樂本就難持續按住整個和弦), 不碰旋律 / 短
+    和弦。沒有變更時不佔 undo 格。
+    """
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+    import copy as _copy
+    from core.figuration import apply_figuration
+    target = sess.current_arrangement.target_score
+    snapshot = _copy.deepcopy(target)
+    changes = apply_figuration(target)
+    if changes == 0:
+        return {
+            "target_musicxml": None,
+            "changes": 0,
+            "can_undo": len(sess.history) > 0,
+            "can_redo": len(sess.redo_stack) > 0,
+        }
+    new_history = list(sess.history)
+    new_history.append(snapshot)
+    if len(new_history) > _HISTORY_LIMIT:
+        new_history = new_history[-_HISTORY_LIMIT:]
+    sess.history = new_history
+    sess.redo_stack = []
+    new_xml = write_musicxml_string(target)
+    return {
+        "target_musicxml": new_xml,
+        "changes": changes,
+        "can_undo": len(sess.history) > 0,
+        "can_redo": len(sess.redo_stack) > 0,
+    }
+
+
 def _method_to_midi(params: dict[str, Any]) -> dict:
     """匯出當前 arrangement.target_score 為 base64 MIDI 字串。
 
@@ -3023,6 +3060,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "to_midi": _method_to_midi,
     "audit_playability": _method_audit_playability,
     "apply_bowing": _method_apply_bowing,
+    "apply_figuration": _method_apply_figuration,
     "to_source_midi": _method_to_source_midi,
     "save_project": _method_save_project,
     "load_project": _method_load_project,

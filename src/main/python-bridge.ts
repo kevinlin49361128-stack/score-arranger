@@ -691,6 +691,11 @@ export async function applyBowing(): Promise<unknown> {
   return client.call("apply_bowing", {});
 }
 
+// B2: opt-in 慣用音型 (長塊狀和弦 → 分解和弦) — 改譜, 支援 undo
+export async function applyFiguration(): Promise<unknown> {
+  return client.call("apply_figuration", {});
+}
+
 export async function listNavigation(): Promise<unknown> {
   return client.call("list_navigation", {});
 }

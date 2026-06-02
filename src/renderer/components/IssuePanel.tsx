@@ -193,6 +193,8 @@ export function IssuePanel() {
   const [auditMsg, setAuditMsg] = useState<string | null>(null);
   // B3: 建議弓法/圓滑線 (opt-in, 改譜+undo) — 共用上方訊息列
   const [bowing, setBowing] = useState(false);
+  // B2: 慣用音型 (opt-in, 保守, 改譜+undo)
+  const [figurating, setFigurating] = useState(false);
   // 重新改編 → 清掉舊稽核結果 (避免顯示過期把位問題)
   useEffect(() => {
     setAuditIssues([]);
@@ -302,6 +304,32 @@ export function IssuePanel() {
     }
   };
 
+  // B2: 套用慣用音型 (長塊狀和弦 → 分解和弦; 改譜 + undo)
+  const handleFiguration = async () => {
+    setFigurating(true);
+    setAuditMsg(null);
+    try {
+      const res = await window.scoreArranger.engine.applyFiguration();
+      if (res.ok && res.data) {
+        if (res.data.target_musicxml) {
+          setTargetMusicXML(res.data.target_musicxml);
+          setHistoryFlags(res.data.can_undo, res.data.can_redo);
+        }
+        setAuditMsg(
+          res.data.changes === 0
+            ? t("issue.figuration.none")
+            : t("issue.figuration.done", { count: String(res.data.changes) }),
+        );
+      } else {
+        setAuditMsg(res.error ?? t("issue.figuration.failed"));
+      }
+    } catch (e) {
+      setAuditMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setFigurating(false);
+    }
+  };
+
   // 整合來源
   const issues: UnifiedIssue[] = [];
   const canApply = arrangementIssues.length > 0;
@@ -363,6 +391,25 @@ export function IssuePanel() {
         }}
       >
         {bowing ? t("issue.bowing.running") : t("issue.bowing.button")}
+      </button>
+      <button
+        type="button"
+        onClick={handleFiguration}
+        disabled={figurating}
+        title={t("issue.figuration.hint")}
+        style={{
+          fontSize: 11,
+          padding: "3px 10px",
+          borderRadius: 4,
+          border: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          color: "var(--fg-secondary)",
+          cursor: figurating ? "default" : "pointer",
+        }}
+      >
+        {figurating
+          ? t("issue.figuration.running")
+          : t("issue.figuration.button")}
       </button>
       {auditMsg && (
         <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>

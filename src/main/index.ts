@@ -20,6 +20,7 @@ import {
   computeQuality,
   auditPlayability,
   applyBowing,
+  applyFiguration,
   exportTargetMidi,
   levelRange,
   listNavigation,
@@ -524,6 +525,10 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     "engine:applyBowing",
     async () => safeCall(() => applyBowing()),
+  );
+  ipcMain.handle(
+    "engine:applyFiguration",
+    async () => safeCall(() => applyFiguration()),
   );
   ipcMain.handle(
     "engine:listNavigation",

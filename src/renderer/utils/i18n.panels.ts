@@ -401,6 +401,39 @@ export const PANEL_STRINGS: BiDict = {
     en: "Failed to add bowing",
     ja: "運弓の追加に失敗しました",
   },
+  "issue.figuration.button": {
+    "zh-TW": "慣用音型(分解和弦)",
+    en: "Idiomatic figuration",
+    ja: "慣用音型(分散和音)",
+  },
+  "issue.figuration.running": {
+    "zh-TW": "套用中…",
+    en: "Applying…",
+    ja: "適用中…",
+  },
+  "issue.figuration.hint": {
+    "zh-TW": "把弦樂「長音塊狀和弦」(≥二分音符) 轉成分解和弦 (arpeggio)。"
+      + "弦樂本就難持續按住和弦, 拆開更慣用也更好彈。保守、可復原 (Cmd+Z)",
+    en: "Breaks sustained string block chords (≥ half note) into arpeggios "
+      + "— more idiomatic and playable for strings. Conservative; undoable",
+    ja: "弦楽器の長い塊状和音 (≥二分音符) を分散和音に分解します。弦楽器では"
+      + "和音を持続しにくいため、分解する方が慣用的で弾きやすい。控えめ・取消可",
+  },
+  "issue.figuration.done": {
+    "zh-TW": "已把 {count} 個長和弦轉成分解和弦 (可 Cmd+Z 復原)",
+    en: "Broke {count} sustained chords into arpeggios (Cmd+Z to undo)",
+    ja: "{count} 個の持続和音を分散和音にしました (Cmd+Z で取り消し)",
+  },
+  "issue.figuration.none": {
+    "zh-TW": "沒有可轉換的長塊狀和弦 (弦樂聲部無長和弦)",
+    en: "No long block chords to break (no sustained string chords)",
+    ja: "分解対象の長い塊状和音はありません",
+  },
+  "issue.figuration.failed": {
+    "zh-TW": "慣用音型套用失敗",
+    en: "Failed to apply figuration",
+    ja: "慣用音型の適用に失敗しました",
+  },
   // 0.1.32 老師評語層
   "explanation.title": {
     "zh-TW": "改編說明",
