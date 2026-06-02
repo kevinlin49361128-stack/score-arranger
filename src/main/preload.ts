@@ -258,6 +258,8 @@ const api = {
       ipcRenderer.invoke("engine:computeQuality"),
     auditPlayability: () =>
       ipcRenderer.invoke("engine:auditPlayability"),
+    applyBowing: () =>
+      ipcRenderer.invoke("engine:applyBowing"),
     listNavigation: () =>
       ipcRenderer.invoke("engine:listNavigation"),
     getMeasureFingering: (measure: number) =>

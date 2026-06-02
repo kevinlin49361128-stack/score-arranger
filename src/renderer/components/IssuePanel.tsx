@@ -191,6 +191,8 @@ export function IssuePanel() {
   const [auditIssues, setAuditIssues] = useState<UnifiedIssue[]>([]);
   const [auditing, setAuditing] = useState(false);
   const [auditMsg, setAuditMsg] = useState<string | null>(null);
+  // B3: 建議弓法/圓滑線 (opt-in, 改譜+undo) — 共用上方訊息列
+  const [bowing, setBowing] = useState(false);
   // 重新改編 → 清掉舊稽核結果 (避免顯示過期把位問題)
   useEffect(() => {
     setAuditIssues([]);
@@ -274,6 +276,32 @@ export function IssuePanel() {
     }
   };
 
+  // B3: 套用建議弓法/圓滑線 (改譜 + undo) — 更新 target xml + 歷史旗標
+  const handleBowing = async () => {
+    setBowing(true);
+    setAuditMsg(null);
+    try {
+      const res = await window.scoreArranger.engine.applyBowing();
+      if (res.ok && res.data) {
+        if (res.data.target_musicxml) {
+          setTargetMusicXML(res.data.target_musicxml);
+          setHistoryFlags(res.data.can_undo, res.data.can_redo);
+        }
+        setAuditMsg(
+          res.data.changes === 0
+            ? t("issue.bowing.none")
+            : t("issue.bowing.done", { count: String(res.data.changes) }),
+        );
+      } else {
+        setAuditMsg(res.error ?? t("issue.bowing.failed"));
+      }
+    } catch (e) {
+      setAuditMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBowing(false);
+    }
+  };
+
   // 整合來源
   const issues: UnifiedIssue[] = [];
   const canApply = arrangementIssues.length > 0;
@@ -318,6 +346,23 @@ export function IssuePanel() {
         }}
       >
         {auditing ? t("issue.audit.running") : t("issue.audit.button")}
+      </button>
+      <button
+        type="button"
+        onClick={handleBowing}
+        disabled={bowing}
+        title={t("issue.bowing.hint")}
+        style={{
+          fontSize: 11,
+          padding: "3px 10px",
+          borderRadius: 4,
+          border: "1px solid var(--border)",
+          background: "var(--bg-secondary)",
+          color: "var(--fg-secondary)",
+          cursor: bowing ? "default" : "pointer",
+        }}
+      >
+        {bowing ? t("issue.bowing.running") : t("issue.bowing.button")}
       </button>
       {auditMsg && (
         <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>

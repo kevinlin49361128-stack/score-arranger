@@ -368,6 +368,39 @@ export const PANEL_STRINGS: BiDict = {
     en: "Audit failed",
     ja: "チェックに失敗しました",
   },
+  "issue.bowing.button": {
+    "zh-TW": "建議弓法/圓滑線",
+    en: "Suggest bowing/slurs",
+    ja: "運弓・スラーを提案",
+  },
+  "issue.bowing.running": {
+    "zh-TW": "加上中…",
+    en: "Applying…",
+    ja: "適用中…",
+  },
+  "issue.bowing.hint": {
+    "zh-TW": "對弦樂聲部加上選擇性弓法 (強拍下弓) 與圓滑線 (快速級進連弓)。"
+      + "保守不滿譜, 可復原 (Cmd+Z)",
+    en: "Adds selective bowing (down-bow on strong beats) and slurs "
+      + "(fast stepwise runs) to string parts. Conservative; undoable",
+    ja: "弦楽器パートに選択的な運弓 (強拍はダウンボウ) とスラー (速い順次進行) "
+      + "を付与します。控えめ・取り消し可能",
+  },
+  "issue.bowing.done": {
+    "zh-TW": "已加上 {count} 處弓法/圓滑線 (可 Cmd+Z 復原)",
+    en: "Added bowing/slurs at {count} spots (Cmd+Z to undo)",
+    ja: "{count} 箇所に運弓・スラーを追加しました (Cmd+Z で取り消し)",
+  },
+  "issue.bowing.none": {
+    "zh-TW": "沒有可加的弓法/圓滑線 (已標或無弦樂聲部)",
+    en: "Nothing to add (already marked or no string parts)",
+    ja: "追加対象なし (既に付与済み、または弦楽器パートなし)",
+  },
+  "issue.bowing.failed": {
+    "zh-TW": "加弓法失敗",
+    en: "Failed to add bowing",
+    ja: "運弓の追加に失敗しました",
+  },
   // 0.1.32 老師評語層
   "explanation.title": {
     "zh-TW": "改編說明",
