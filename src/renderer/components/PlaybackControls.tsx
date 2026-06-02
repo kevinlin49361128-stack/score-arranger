@@ -12,6 +12,11 @@ import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
+import {
+  setHumanizeStrings,
+  setUseSamples,
+  usePlaybackPrefs,
+} from "../stores/playbackPrefsStore";
 import { logDrill } from "../stores/practiceLogStore";
 import {
   loadPracticeSession,
@@ -314,16 +319,10 @@ export function PlaybackControls(
   const requestedLoop = useSessionStore((s) => s.requestedLoop);
 
   const [state, setState] = useState<PlayState>("idle");
-  const [useSamples, setUseSamples] = useState(true);
-  // A3: 弦樂自然化 (humanize) — vibrato 漂移 + unison 微離調. 預設關, 純疊加
-  // 在現有音訊引擎上 (不動架構), 使用者一個開關控制, 聽不慣可關。
-  const [humanizeStrings, setHumanizeStrings] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem("sa.humanizeStrings") === "1";
-    } catch {
-      return false;
-    }
-  });
+  // 播放音色偏好 (取樣 / 弦樂自然化) — 全域共享 store, 三個播放器同步;
+  // 開關 UI 收在工具列 ⚙ 設定 (見 Toolbar)。setUseSamples / setHumanizeStrings
+  // 由 store 提供 (見 import)。
+  const { useSamples, humanizeStrings } = usePlaybackPrefs();
   const humanizeRef = useRef(humanizeStrings);
   /** 範圍循環: loopStart/End 為 measure number (1-based), null = 不 loop */
   const [loopStart, setLoopStart] = useState<number | null>(null);
@@ -537,14 +536,9 @@ export function PlaybackControls(
     };
   }, []);
 
-  // A3: humanize 切換 → 同步 ref + 持久化 + 即時套用 vibrato 漂移 (可 live 開關)
+  // humanize 切換 (來自共享 store) → 同步 ref + 即時套用 vibrato 漂移
   useEffect(() => {
     humanizeRef.current = humanizeStrings;
-    try {
-      localStorage.setItem("sa.humanizeStrings", humanizeStrings ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
     setVibratoHumanize(
       stringVibratoRef.current,
       vibDepthLfoRef,

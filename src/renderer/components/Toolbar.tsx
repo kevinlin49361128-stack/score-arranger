@@ -41,6 +41,11 @@ import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
 import {
+  setHumanizeStrings,
+  setUseSamples,
+  usePlaybackPrefs,
+} from "../stores/playbackPrefsStore";
+import {
   MelodyRoutingPanel,
   type MelodyRoutingEntry,
 } from "./MelodyRoutingPanel";
@@ -170,6 +175,7 @@ export function Toolbar() {
     setStyleAddendum(active?.llm_addendum ?? "");
   }, [stylePreset, stylePresets, setStyleAddendum]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const playbackPrefs = usePlaybackPrefs();
   const settingsRef = useRef<HTMLDivElement>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [llmSettingsOpen, setLlmSettingsOpen] = useState(false);
@@ -1452,6 +1458,16 @@ export function Toolbar() {
                 );
                 setSettingsOpen(false);
               }}
+            />
+            <MenuRow
+              label={tr("playback.samples.label")}
+              icon={playbackPrefs.useSamples ? "☑" : "☐"}
+              onClick={() => setUseSamples(!playbackPrefs.useSamples)}
+            />
+            <MenuRow
+              label={tr("playback.humanize.label")}
+              icon={playbackPrefs.humanizeStrings ? "☑" : "☐"}
+              onClick={() => setHumanizeStrings(!playbackPrefs.humanizeStrings)}
             />
             <div
               style={{
