@@ -558,6 +558,16 @@ export const IO_STRINGS: BiDict = {
     en: "Samples",
     ja: "サンプル",
   },
+  "playback.humanize.label": {
+    "zh-TW": "弦樂自然化",
+    en: "Humanize strings",
+    ja: "弦楽器を自然化",
+  },
+  "playback.humanize.hint": {
+    "zh-TW": "弦樂加上輕微的 vibrato 漂移與齊奏微離調, 減少機械感 (僅影響播放)",
+    en: "Adds subtle vibrato drift and unison detune to strings for a less mechanical sound (playback only)",
+    ja: "弦楽器に微妙なビブラートの揺らぎとユニゾンのデチューンを加え, 機械的な響きを和らげます (再生のみ)",
+  },
   "playback.loop.hint": {
     "zh-TW": "勾選後, 播放至「到」小節時自動跳回「從」小節",
     en: "When checked, jumps back to the From measure on reaching the To measure",

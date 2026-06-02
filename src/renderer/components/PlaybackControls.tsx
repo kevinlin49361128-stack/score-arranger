@@ -247,6 +247,52 @@ interface PlaybackControlsProps {
   syncBoth?: boolean;
 }
 
+// A3 弦樂自然化: 在共享 vibrato 節點上疊 / 撤 慢速漂移 LFO。depth 與 rate
+// 各自獨立漂移 → 去掉「整排弦樂同一個機械抖動」的破綻。module-level (穩定)
+// 以免進 effect 依賴。撤除時還原 0.1.54 的固定值 (5.5Hz / depth 0.025)。
+function setVibratoHumanize(
+  vib: Tone.Vibrato | null,
+  depthLfo: { current: Tone.LFO | null },
+  rateLfo: { current: Tone.LFO | null },
+  on: boolean,
+): void {
+  if (!vib) return;
+  // 防禦: humanize 是錦上添花的疊加, 任何 Tone API 不符都不該弄壞播放
+  try {
+    if (on) {
+      if (!depthLfo.current) {
+        const d = new Tone.LFO({
+          frequency: 0.18, min: 0.018, max: 0.045, type: "sine",
+        });
+        d.connect(vib.depth);
+        d.start();
+        depthLfo.current = d;
+      }
+      if (!rateLfo.current) {
+        const r = new Tone.LFO({
+          frequency: 0.12, min: 4.8, max: 6.4, type: "triangle",
+        });
+        r.connect(vib.frequency);
+        r.start();
+        rateLfo.current = r;
+      }
+    } else {
+      depthLfo.current?.dispose();
+      depthLfo.current = null;
+      rateLfo.current?.dispose();
+      rateLfo.current = null;
+      vib.depth.value = 0.025;
+      vib.frequency.value = 5.5;
+    }
+  } catch {
+    /* humanize 套用失敗 → 退回固定 vibrato, 不影響播放 */
+  }
+}
+
+// A3: unison 微離調的 cents 表 — 同樂器同音同時發聲的第 2+ 聲部各偏一點,
+// 去掉完全同相位的「假齊奏」。值小 (±5~12 cents), 像真實合奏的細微音準差。
+const UNISON_DETUNE_CENTS = [0, 7, -6, 12, -11, 5];
+
 export function PlaybackControls(
   {
     side = "target", compact = false, syncBoth = false,
@@ -269,6 +315,16 @@ export function PlaybackControls(
 
   const [state, setState] = useState<PlayState>("idle");
   const [useSamples, setUseSamples] = useState(true);
+  // A3: 弦樂自然化 (humanize) — vibrato 漂移 + unison 微離調. 預設關, 純疊加
+  // 在現有音訊引擎上 (不動架構), 使用者一個開關控制, 聽不慣可關。
+  const [humanizeStrings, setHumanizeStrings] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("sa.humanizeStrings") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const humanizeRef = useRef(humanizeStrings);
   /** 範圍循環: loopStart/End 為 measure number (1-based), null = 不 loop */
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
@@ -391,6 +447,9 @@ export function PlaybackControls(
   const harpsichordFallbackRef = useRef<PolyPluckSynth | null>(null);
   const fallbackRef = useRef<Tone.PolySynth | null>(null);
   const violinFallbackRef = useRef<Tone.PolySynth | null>(null);
+  // A3: 弦樂自然化的 vibrato 漂移 LFO — humanize 開啟時才建立 (疊在共享 vibrato 上)
+  const vibDepthLfoRef = useRef<Tone.LFO | null>(null);
+  const vibRateLfoRef = useRef<Tone.LFO | null>(null);
   /** 全局 reverb — 讓所有樂器有些空間感, 不再像乾的合成 sample. */
   const reverbRef = useRef<Tone.Reverb | null>(null);
   /** 0.1.61: master brickwall limiter — 接在 reverb 之後、destination 之前.
@@ -469,10 +528,30 @@ export function PlaybackControls(
       violinFallbackRef.current = null;
       reverbRef.current = null;
       limiterRef.current = null;
+      vibDepthLfoRef.current?.dispose();
+      vibDepthLfoRef.current = null;
+      vibRateLfoRef.current?.dispose();
+      vibRateLfoRef.current = null;
       stringVibratoRef.current = null;
       metronomeVoiceRef.current = null;
     };
   }, []);
+
+  // A3: humanize 切換 → 同步 ref + 持久化 + 即時套用 vibrato 漂移 (可 live 開關)
+  useEffect(() => {
+    humanizeRef.current = humanizeStrings;
+    try {
+      localStorage.setItem("sa.humanizeStrings", humanizeStrings ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+    setVibratoHumanize(
+      stringVibratoRef.current,
+      vibDepthLfoRef,
+      vibRateLfoRef,
+      humanizeStrings,
+    );
+  }, [humanizeStrings]);
 
   // 載入樂器
   const ensureInstruments = async (): Promise<InstrumentRouter> => {
@@ -506,6 +585,10 @@ export function PlaybackControls(
       stringVibratoRef.current.connect(bus);
     }
     const stringVib = stringVibratoRef.current;
+    // A3: humanize 已開 (持久化) → vibrato 建立後立即套上漂移
+    setVibratoHumanize(
+      stringVib, vibDepthLfoRef, vibRateLfoRef, humanizeRef.current,
+    );
 
     // Fallback synth (純合成,通用)
     if (!fallbackRef.current) {
@@ -1112,18 +1195,36 @@ export function PlaybackControls(
       }
 
       let lastTime = 0;
+      // A3: unison 微離調 — 跨 track 累計「同樂器同音同時」出現序, 第 2+ 個偏一點
+      const unisonSeen = new Map<string, number>();
       midi.tracks.forEach((track, trackIdx) => {
         // mute: 此 track 在 mutedTracks 內 → 整段跳過排程 (連 lastTime 都不算)
         if (mutedTracks.has(trackIdx)) return;
         if (handMutedSet.has(trackIdx)) return;
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
+        const isBowedString = key === "violin" || key === "cello";
         for (const note of track.notes) {
           const noteTime = note.time * stretch + countInOffset;
           const noteDur = note.duration * stretch;
+          // A3: humanize 開 + 弓弦 → 同音齊奏的第 2+ 聲部微離調 (去假齊奏)
+          let trigPitch: string | number = note.name;
+          if (humanizeRef.current && isBowedString) {
+            const uk = `${key}|${note.midi}|${Math.round(note.time * 1000)}`;
+            const rank = unisonSeen.get(uk) ?? 0;
+            unisonSeen.set(uk, rank + 1);
+            const cents =
+              UNISON_DETUNE_CENTS[
+                Math.min(rank, UNISON_DETUNE_CENTS.length - 1)
+              ];
+            if (cents !== 0) {
+              trigPitch =
+                Tone.Frequency(note.name).toFrequency() * 2 ** (cents / 1200);
+            }
+          }
           const id = Tone.Transport.schedule((time) => {
             instrument.triggerAttackRelease(
-              note.name,
+              trigPitch,
               noteDur,
               time,
               note.velocity,
@@ -1552,6 +1653,28 @@ export function PlaybackControls(
             disabled={state !== "idle"}
           />
           {t("playback.samples.label")}
+        </label>
+      )}
+
+      {!compact && (
+        <label
+          title={t("playback.humanize.hint")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 11,
+            color: "var(--fg-muted)",
+            marginLeft: 4,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={humanizeStrings}
+            onChange={(e) => setHumanizeStrings(e.target.checked)}
+            disabled={state !== "idle"}
+          />
+          {t("playback.humanize.label")}
         </label>
       )}
 
