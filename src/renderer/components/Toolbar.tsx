@@ -51,7 +51,10 @@ import {
 } from "./MelodyRoutingPanel";
 import { RepertoireDialog } from "./RepertoireDialog";
 import { ZoomControls } from "./ZoomControls";
-import { useSessionStore } from "../stores/sessionStore";
+import {
+  type ArrangementVariant,
+  useSessionStore,
+} from "../stores/sessionStore";
 import {
   getLocale,
   onLocaleChange,
@@ -428,11 +431,16 @@ export function Toolbar() {
       const practice = loadPracticeSession(sourcePath) ?? undefined;
       // slice 4a: 把這首曲的排練筆記也收進 .sarr (換機器開專案也保留)。
       const rehearsalNotes = getRehearsalNotes(sourcePath);
+      // slice 4b: 把 active tab 的 A/B 版本一併收進 .sarr。
+      const sess = useSessionStore.getState();
+      const variants =
+        sess.tabs.find((t) => t.id === sess.activeTabId)?.variants ?? [];
       const res = await window.scoreArranger.engine.saveProject(
         path,
         sourcePath,
         practice as Record<string, unknown> | undefined,
         rehearsalNotes.length ? rehearsalNotes : undefined,
+        variants.length ? variants : undefined,
       );
       if (!res.ok) {
         setError(res.error ?? tr("toolbar.error.saveFailed"));
@@ -466,6 +474,12 @@ export function Toolbar() {
             res.data.source_path,
             res.data.rehearsal_notes as RehearsalNote[],
           );
+        }
+        // slice 4b: 專案帶的 A/B 版本掛回 active tab。
+        if (res.data.variants?.length) {
+          useSessionStore
+            .getState()
+            .setActiveTabVariants(res.data.variants as ArrangementVariant[]);
         }
         setSourcePath(res.data.source_path);
         if (res.data.source_path) {

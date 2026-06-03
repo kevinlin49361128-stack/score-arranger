@@ -51,6 +51,7 @@ def migrate_v1_to_v2(data: dict[str, Any]) -> dict[str, Any]:
         "layouts": {},
         "practice": {},
         "rehearsal_notes": [],
+        "variants": [],
     }
 
 
@@ -74,8 +75,12 @@ def make_project_v2(
     layouts: dict[str, Any] | None = None,
     practice: dict[str, Any] | None = None,
     rehearsal_notes: list[Any] | None = None,
+    variants: list[Any] | None = None,
 ) -> dict[str, Any]:
-    """組一個 v2 envelope (給未來 save_project v2 / 前端 project state 用)。"""
+    """組一個 v2 envelope (給未來 save_project v2 / 前端 project state 用)。
+
+    variants: A/B 版本快照 (前端 ArrangementVariant[], 含完整 target XML), 不透明帶過。
+    """
     return {
         "format": PROJECT_FORMAT,
         "version": PROJECT_VERSION_V2,
@@ -85,4 +90,5 @@ def make_project_v2(
         "layouts": layouts or {},
         "practice": practice or {},
         "rehearsal_notes": rehearsal_notes or [],
+        "variants": variants or [],
     }

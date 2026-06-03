@@ -42,6 +42,7 @@ def test_migrate_v1_to_v2_keeps_all_data():
     # v2 新增的收斂位 (開空集, 後續 slice 填)
     assert v2["layouts"] == {} and v2["practice"] == {}
     assert v2["rehearsal_notes"] == []
+    assert v2["variants"] == []
 
 
 def test_coerce_v1_migrates():

@@ -501,10 +501,11 @@ function registerIpcHandlers(): void {
       sourcePath: string,
       practice?: Record<string, unknown>,
       rehearsalNotes?: unknown[],
+      variants?: unknown[],
     ) => {
       requireApprovedPath(path);
       return safeCall(() =>
-        saveProject(path, sourcePath, practice, rehearsalNotes),
+        saveProject(path, sourcePath, practice, rehearsalNotes, variants),
       );
     },
   );

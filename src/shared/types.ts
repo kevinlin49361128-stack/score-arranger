@@ -317,6 +317,8 @@ export interface LoadProjectResult {
   practice?: Record<string, unknown>;
   /** slice 4a: 專案存的排練筆記, 載入後寫回 rehearsalNotesStore */
   rehearsal_notes?: unknown[];
+  /** slice 4b: 專案存的 A/B 版本快照, 載入後寫回 active tab */
+  variants?: unknown[];
 }
 
 // ============================================================================

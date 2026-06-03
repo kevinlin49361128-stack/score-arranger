@@ -655,12 +655,14 @@ export async function saveProject(
   sourcePath: string,
   practice?: Record<string, unknown>,
   rehearsalNotes?: unknown[],
+  variants?: unknown[],
 ): Promise<unknown> {
   return client.call("save_project", {
     path,
     source_path: sourcePath,
     practice: practice ?? {},
     rehearsal_notes: rehearsalNotes ?? [],
+    variants: variants ?? [],
   });
 }
 

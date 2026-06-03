@@ -553,6 +553,51 @@ class TestApplySuggestion:
         assert resp["ok"], resp.get("error")
         assert resp["data"]["rehearsal_notes"] == notes
 
+    def test_save_load_carries_variants(self, tmp_path):
+        """slice 4b: A/B 版本 (variants) 跟著 .sarr 存讀 (不透明帶過)。"""
+        import core.server as srv
+        from music21 import corpus
+
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import violin_piano_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.parser import parse_stream
+
+        ir = parse_stream(corpus.parse("bach/bwv66.6"))
+        tag_all_sections(ir)
+        srv._CURRENT_ARRANGEMENT = run_arrange(ir, violin_piano_ensemble())
+
+        variants = [
+            {
+                "name": "版本 A",
+                "targetMusicXML": "<score-partwise>...A...</score-partwise>",
+                "createdAt": 100,
+                "note": "和聲多",
+                "quality": {"melody": 1.0, "harmony": 0.9, "playability": 0.95},
+            },
+            {
+                "name": "版本 B",
+                "targetMusicXML": "<score-partwise>...B...</score-partwise>",
+                "createdAt": 200,
+            },
+        ]
+        proj_path = tmp_path / "p.sarr"
+        handle_request({
+            "id": "sv", "method": "save_project",
+            "params": {
+                "path": str(proj_path),
+                "source_path": "corpus:bach/bwv66.6",
+                "variants": variants,
+            },
+        })
+        srv._CURRENT_ARRANGEMENT = None
+        resp = handle_request({
+            "id": "ld", "method": "load_project",
+            "params": {"path": str(proj_path)},
+        })
+        assert resp["ok"], resp.get("error")
+        assert resp["data"]["variants"] == variants
+
     def test_close_session_clears_state(self):
         """close_session 應釋放具名 session 的 state"""
         import core.server as srv

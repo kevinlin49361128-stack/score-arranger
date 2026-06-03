@@ -2025,6 +2025,8 @@ def _method_save_project(params: dict[str, Any]) -> dict:
         active_arrangement_id=arrangement.arrangement_id,
         practice=params.get("practice") or {},
         rehearsal_notes=params.get("rehearsal_notes") or [],
+        # slice 4b: A/B 版本快照 (前端 tab variants), 不透明帶過。
+        variants=params.get("variants") or [],
     )
     Path(output_path).write_text(
         json.dumps(project, ensure_ascii=False, indent=2),
@@ -2128,6 +2130,8 @@ def _method_load_project(params: dict[str, Any]) -> dict:
         "practice": project.get("practice") or {},
         # slice 4a: 排練筆記回吐, 前端寫回 rehearsalNotesStore。
         "rehearsal_notes": project.get("rehearsal_notes") or [],
+        # slice 4b: A/B 版本回吐, 前端寫回 active tab。
+        "variants": project.get("variants") or [],
     }
 
 

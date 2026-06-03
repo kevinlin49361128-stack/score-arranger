@@ -158,15 +158,21 @@ interface PersistedTab {
   id: string;
   label: string;
   sourcePath: string | null;
+  /** slice 4b: A/B 版本要持久化 (含完整 XML; 大但使用者工作產出, 不能換曲就忘) */
+  variants?: ArrangementVariant[];
 }
 
 function saveTabsToStorage(tabs: TabSnapshot[], activeId: string | null): void {
   if (typeof window === "undefined") return;
   try {
+    // slice 4b: 把 variants 一併持久化 (修舊 bug: 原本漏存 → 換曲/重開就忘)。
+    // sourceMusicXML/targetMusicXML 仍刻意不存 (大且可 lazy 重載); variants 是
+    // 使用者明確存下的 A/B 版本, 必須留。localStorage 滿了由外層 try/catch 吞掉。
     const compact: PersistedTab[] = tabs.map((t) => ({
       id: t.id,
       label: t.label,
       sourcePath: t.sourcePath,
+      variants: t.variants,
     }));
     window.localStorage?.setItem(
       TABS_STORAGE_KEY,
@@ -196,6 +202,7 @@ function loadTabsFromStorage(): {
         sourcePath: p.sourcePath,
         sourceMusicXML: null, // lazy-load on switch
         targetMusicXML: null,
+        variants: p.variants, // slice 4b: 還原 A/B 版本
       })),
       activeId: parsed.activeId,
     };
@@ -401,6 +408,8 @@ interface SessionState {
   saveVariant: (name?: string, note?: string) => void;
   loadVariant: (variantIndex: number) => void;
   deleteVariant: (variantIndex: number) => void;
+  /** slice 4b: 載入 .sarr 時還原 active tab 的 A/B 版本 */
+  setActiveTabVariants: (variants: ArrangementVariant[]) => void;
   /** 用於 A/B Diff 模式: 目前要對比的 variant index (相對於 active tab) */
   compareVariantIndex: number | null;
   setCompareVariantIndex: (idx: number | null) => void;
@@ -692,6 +701,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }),
       };
     });
+    // slice 4b: variants 是使用者工作產出 → 立即持久化 (修舊 bug: 原本只改記憶體)。
+    saveTabsToStorage(get().tabs, get().activeTabId);
   },
   /** 載入指定變體 (覆蓋目前的 targetMusicXML) */
   loadVariant: (variantIndex) => {
@@ -717,6 +728,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         ? null
         : s.compareVariantIndex,
     }));
+    saveTabsToStorage(get().tabs, get().activeTabId);
+  },
+  /** slice 4b: 載入 .sarr 時把專案帶的 A/B 版本掛到 active tab (取代既有) + 持久化。 */
+  setActiveTabVariants: (variants) => {
+    set((s) => ({
+      tabs: s.tabs.map((t) =>
+        t.id === s.activeTabId ? { ...t, variants } : t,
+      ),
+    }));
+    saveTabsToStorage(get().tabs, get().activeTabId);
   },
   compareVariantIndex: null,
   setCompareVariantIndex: (idx) => set({ compareVariantIndex: idx }),

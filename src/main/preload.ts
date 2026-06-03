@@ -251,6 +251,7 @@ const api = {
       sourcePath: string,
       practice?: Record<string, unknown>,
       rehearsalNotes?: unknown[],
+      variants?: unknown[],
     ) =>
       ipcRenderer.invoke(
         "engine:saveProject",
@@ -258,6 +259,7 @@ const api = {
         sourcePath,
         practice,
         rehearsalNotes,
+        variants,
       ),
     loadProject: (path: string) =>
       ipcRenderer.invoke("engine:loadProject", path),

@@ -244,6 +244,7 @@ declare global {
           sourcePath: string,
           practice?: Record<string, unknown>,
           rehearsalNotes?: unknown[],
+          variants?: unknown[],
         ) => Promise<IpcResponse<SaveProjectResult>>;
         loadProject: (
           path: string,
