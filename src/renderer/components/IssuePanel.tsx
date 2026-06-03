@@ -88,7 +88,7 @@ const ISSUE_SHORT_LABEL_CODES = new Set<string>([
   "W_VIOLIN_POSITION_JUMP_DIFFICULT",
 ]);
 
-function shortLabel(code: string): string {
+export function shortLabel(code: string): string {
   return ISSUE_SHORT_LABEL_CODES.has(code) ? t(`issue.short.${code}`) : code;
 }
 
@@ -109,7 +109,7 @@ const SUGGESTION_LABEL_CODES = new Set<string>([
 ]);
 
 /** suggestion code → 人類標籤; 未列出者 fallback 到 code。 */
-function suggestionLabel(code: string): string {
+export function suggestionLabel(code: string): string {
   return SUGGESTION_LABEL_CODES.has(code)
     ? t(`issue.suggestion.${code}`)
     : code;

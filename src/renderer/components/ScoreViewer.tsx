@@ -54,6 +54,29 @@ interface ScoreViewerProps {
   diffMeasures?: Set<number>;
   /** 編輯套用後要閃光的小節範圍 — 變動小節閃光特效 (target panel 用) */
   editFlash?: { start: number; end: number; tick: number } | null;
+  /** 0.1.90: 行內 issue 標記 — 在問題小節掛 ⚠, 點開玻璃氣泡帶 Quick Fix */
+  issueMarkers?: IssueMarker[];
+  /** Quick Fix 按下 — 帶齊 engine.applySuggestion 所需參數, 由父層套用 */
+  onApplyFix?: (fix: IssueFix) => void;
+}
+
+/** 一個就地可套的修復 — 已帶齊 engine.applySuggestion 參數 (無歧義) */
+export interface IssueFix {
+  label: string;
+  partId: string;
+  measure: number;
+  voiceId: number | null;
+  eventIndex: number | null;
+  code: string;
+}
+
+/** 某小節的問題標記 (可含多個 fix) */
+export interface IssueMarker {
+  measure: number;
+  severity: "error" | "warning" | "info";
+  /** 問題的人類標籤 (父層用 i18n 解析好再傳, ScoreViewer 不碰 i18n) */
+  label: string;
+  fixes: IssueFix[];
 }
 
 interface FlashBox {
@@ -96,10 +119,16 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       diffMeasures,
       editFlash,
       isAutoFitReference,
+      issueMarkers,
+      onApplyFix,
     },
     forwardedRef,
   ) {
     useLocale();
+    /** 0.1.90: 哪個小節的 issue 氣泡開著 (null = 全關) */
+    const [openIssueMeasure, setOpenIssueMeasure] = useState<number | null>(
+      null,
+    );
     const containerRef = useRef<HTMLDivElement>(null);
     const osmdContainerRef = useRef<HTMLDivElement>(null);
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
@@ -605,9 +634,9 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       setOverlayBoxes(out);
     };
 
-    // 當 OSMD 重渲、zoom 改變、或 measureDifficulty/diffMeasures 改變時, 重算 box
+    // 當 OSMD 重渲、zoom 改變、或 measureDifficulty/diffMeasures/issueMarkers 改變時, 重算 box
     useEffect(() => {
-      if (!measureDifficulty && !diffMeasures) {
+      if (!measureDifficulty && !diffMeasures && !issueMarkers?.length) {
         setOverlayBoxes([]);
         return;
       }
@@ -615,7 +644,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       const t = window.setTimeout(recomputeOverlayBoxes, 50);
       return () => window.clearTimeout(t);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [measureDifficulty, diffMeasures, musicXmlContent, zoom]);
+    }, [measureDifficulty, diffMeasures, issueMarkers, musicXmlContent, zoom]);
 
     /** 取得 measure 在 OSMD content 內的 bounding box (像素座標) */
     const getMeasureBox = (measureNumber: number): FlashBox | null => {
@@ -1265,6 +1294,144 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                     : undefined
                 }
               />
+            );
+          })}
+          {/* 0.1.90: 行內 issue 標記 + 玻璃 Quick Fix 氣泡 —
+              重用 overlayBoxes 座標 (隨譜面捲動), 點 ⚠ 開氣泡就地修。 */}
+          {(issueMarkers ?? []).map((mk) => {
+            const box = overlayBoxes.find((b) => b.measure === mk.measure);
+            if (!box) return null;
+            const pinColor =
+              mk.severity === "error"
+                ? "var(--error-fg)"
+                : mk.severity === "warning"
+                  ? "var(--warning-fg)"
+                  : "var(--info-fg)";
+            const open = openIssueMeasure === mk.measure;
+            return (
+              <div key={`issue-${mk.measure}`}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenIssueMeasure(open ? null : mk.measure)
+                  }
+                  title={mk.label}
+                  style={{
+                    position: "absolute",
+                    left: box.left + box.width - 11,
+                    top: box.top - 11,
+                    width: 22,
+                    height: 22,
+                    borderRadius: "50%",
+                    border: "none",
+                    background: pinColor,
+                    color: "#1a1510",
+                    fontSize: 12,
+                    lineHeight: "22px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    pointerEvents: "auto",
+                    boxShadow: "var(--elev-1)",
+                    zIndex: 6,
+                  }}
+                >
+                  {mk.severity === "info" ? "i" : "!"}
+                </button>
+                {open && (
+                  <div
+                    className="sa-glass"
+                    style={{
+                      position: "absolute",
+                      left: Math.max(4, box.left + box.width - 8),
+                      top: box.top + box.height + 8,
+                      width: 244,
+                      borderRadius: "var(--r-m)",
+                      padding: 13,
+                      pointerEvents: "auto",
+                      zIndex: 7,
+                      animation: "popin .2s var(--ease-spring)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 7,
+                        marginBottom: 9,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 9,
+                          height: 9,
+                          borderRadius: "50%",
+                          background: pinColor,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 13,
+                          color: "var(--fg-primary)",
+                          flex: 1,
+                        }}
+                      >
+                        {mk.label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setOpenIssueMeasure(null)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          color: "var(--fg-muted)",
+                          cursor: "pointer",
+                          fontSize: 14,
+                          lineHeight: 1,
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {mk.fixes.length > 0 ? (
+                      <div
+                        style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
+                      >
+                        {mk.fixes.map((fix, fi) => (
+                          <button
+                            type="button"
+                            key={`${mk.measure}-fix-${fi}`}
+                            onClick={() => {
+                              onApplyFix?.(fix);
+                              setOpenIssueMeasure(null);
+                            }}
+                            className="sa-lift"
+                            style={{
+                              fontSize: 12,
+                              padding: "5px 11px",
+                              borderRadius: "var(--r-s)",
+                              border: "1px solid var(--glass-border)",
+                              background: "var(--bg-hover)",
+                              color: "var(--accent)",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {fix.label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <span
+                        style={{ fontSize: 12, color: "var(--fg-muted)" }}
+                      >
+                        {mk.label}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
           </div>

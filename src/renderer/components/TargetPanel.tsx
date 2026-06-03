@@ -15,8 +15,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSessionStore } from "../stores/sessionStore";
 import { toSoundingPitchXML } from "../utils/displayPitch";
 import { t as tr, useLocale } from "../utils/i18n";
+import { recordApply } from "../utils/preferences";
+import { shortLabel, suggestionLabel } from "./IssuePanel";
 import { PlaybackControls } from "./PlaybackControls";
-import { ScoreViewer } from "./ScoreViewer";
+import { type IssueFix, type IssueMarker, ScoreViewer } from "./ScoreViewer";
 
 interface TargetPanelProps {
   onMeasureClick: (m: number, hint?: { approxPitch?: number }) => void;
@@ -42,7 +44,79 @@ export function TargetPanel({
     editFlash,
     displayPitchMode,
     setDisplayPitchMode,
+    arrangementIssues,
+    setTargetMusicXML,
+    setArrangementIssues,
+    setHistoryFlags,
+    setError,
+    setLoading,
   } = useSessionStore();
+
+  // 0.1.90: 行內 issue 標記 — 把改編問題彙整成「每小節一個 ⚠」, 帶 Quick Fix。
+  // 一個小節可能多個問題; 取最高 severity 當標籤, fixes 收齊該小節所有可套修復。
+  const issueMarkers = useMemo<IssueMarker[]>(() => {
+    if (!arrangementIssues?.length) return [];
+    const rank = { error: 3, warning: 2, info: 1 } as const;
+    const byMeasure = new Map<number, IssueMarker>();
+    for (const iss of arrangementIssues) {
+      const fixes: IssueFix[] =
+        iss.voice_id != null && iss.event_index != null
+          ? (iss.suggestions ?? []).map((s) => ({
+              label: suggestionLabel(s.code),
+              partId: iss.part_id,
+              measure: iss.measure,
+              voiceId: iss.voice_id,
+              eventIndex: iss.event_index,
+              code: s.code,
+            }))
+          : [];
+      const prev = byMeasure.get(iss.measure);
+      if (!prev) {
+        byMeasure.set(iss.measure, {
+          measure: iss.measure,
+          severity: iss.severity,
+          label: shortLabel(iss.code),
+          fixes,
+        });
+      } else {
+        if (rank[iss.severity] > rank[prev.severity]) {
+          prev.severity = iss.severity;
+          prev.label = shortLabel(iss.code);
+        }
+        prev.fixes.push(...fixes);
+      }
+    }
+    return [...byMeasure.values()];
+  }, [arrangementIssues]);
+
+  const handleApplyFix = async (fix: IssueFix): Promise<void> => {
+    if (fix.voiceId == null || fix.eventIndex == null) return;
+    setLoading(true, tr("issue.applying", { code: fix.code }));
+    try {
+      const res = await window.scoreArranger.engine.applySuggestion(
+        fix.partId,
+        fix.measure,
+        fix.voiceId,
+        fix.eventIndex,
+        fix.code,
+      );
+      if (res.ok && res.data) {
+        if (res.data.target_musicxml) {
+          setTargetMusicXML(res.data.target_musicxml);
+        }
+        setArrangementIssues(res.data.issues);
+        setHistoryFlags(res.data.can_undo, res.data.can_redo);
+        setError(null);
+        recordApply(fix.code);
+      } else {
+        setError(res.error ?? tr("issue.applyFailed"));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 0.1.55 移調樂器: 切到實音時把 written pitch + <transpose> 轉成
   // sounding pitch (剝 <transpose>). 預設 written 直接用原 XML, 無成本.
@@ -183,6 +257,8 @@ export function TargetPanel({
           diffMeasures={diffMeasures}
           editFlash={editFlash}
           isAutoFitReference={!!targetMusicXML}
+          issueMarkers={issueMarkers}
+          onApplyFix={handleApplyFix}
         />
       </div>
     </div>
