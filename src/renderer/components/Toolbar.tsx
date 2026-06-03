@@ -65,8 +65,8 @@ import {
 import {
   loadPracticeSession,
   type PracticeSessionSettings,
-  savePracticeSession,
 } from "../utils/practiceSession";
+import { updatePracticeSettings } from "../stores/practiceSettingsStore";
 
 // 編制 → i18n key (label 於 render 時用 tr() 查, locale 切換才會更新)
 const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
@@ -417,6 +417,9 @@ export function Toolbar() {
     try {
       // Track①: 把這首曲的練習設定 (loop/速度/節拍器) 一起存進 .sarr,
       // 讓專案自帶練習設定, 不再只活在本機 localStorage。
+      // 存檔讀「完整」設定要走 localStorage 權威值 (store 快取只保證
+      // 經 store 寫入的 loop/速度欄位; countIn/節拍器音色由 App 級 C3 hook
+      // 直寫, 不一定在快取裡)。
       const practice = loadPracticeSession(sourcePath) ?? undefined;
       const res = await window.scoreArranger.engine.saveProject(
         path,
@@ -444,7 +447,7 @@ export function Toolbar() {
         // Track①: 專案帶的練習設定先寫回 localStorage, 待 setSourcePath
         // 觸發 PlaybackControls 的還原 effect (依 sourcePath) 時就讀得到。
         if (res.data.practice && res.data.source_path) {
-          savePracticeSession(
+          updatePracticeSettings(
             res.data.source_path,
             res.data.practice as PracticeSessionSettings,
           );

@@ -68,6 +68,15 @@ export function updatePracticeSettings(
 }
 
 /**
+ * 命令式讀取某曲設定 (給 effect 內用, 不訂閱)。回傳的是快取參照, 勿直接 mutate。
+ */
+export function getPracticeSettings(
+  songId: string | null | undefined,
+): PracticeSessionSettings {
+  return songId ? snapshotFor(songId) : EMPTY;
+}
+
+/**
  * 外部 (e.g. load_project 寫回 localStorage 後) 已改動該曲設定 → 讓 store
  * 丟掉快取重讀, 下次 snapshot 拿到新值並通知訂閱者。
  */

@@ -19,9 +19,9 @@ import {
 } from "../stores/playbackPrefsStore";
 import { logDrill } from "../stores/practiceLogStore";
 import {
-  loadPracticeSession,
-  savePracticeSession,
-} from "../utils/practiceSession";
+  getPracticeSettings,
+  updatePracticeSettings,
+} from "../stores/practiceSettingsStore";
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
 import { MetronomeVoice } from "../utils/metronomeSounds";
@@ -452,14 +452,15 @@ export function PlaybackControls(
   // 換曲 (sourcePath 變) → 恢復該曲存過的值; 沒存過 → 重設為預設 (不沿用上一
   // 首 — 否則 piece A 的 loop 範圍會套到 measure 數不同的 piece B)。與 C3
   // hook (countInBars / metronomeSoundId / handFocus) 各寫各欄位,
-  // savePracticeSession 會 merge 同一把 key, 不互相覆寫。
+  // 不互相覆寫。Track① slice 2b: 讀寫改走 practiceSettingsStore (響應式單一
+  // 來源), 底層仍是同一份 per-song localStorage。
   const loopRateLoadedRef = useRef<string | null>(null);
   const loopRateSkipSaveRef = useRef(false);
   useEffect(() => {
     if (loopRateLoadedRef.current === sourcePath) return;
     loopRateLoadedRef.current = sourcePath;
     loopRateSkipSaveRef.current = true; // 這一輪值可能還是上一首的, 不存
-    const saved = sourcePath ? loadPracticeSession(sourcePath) : null;
+    const saved = sourcePath ? getPracticeSettings(sourcePath) : null;
     setLoopStart(saved?.loopStart ?? null);
     setLoopEnd(saved?.loopEnd ?? null);
     setLoopEnabled(saved?.loopEnabled ?? false);
@@ -474,7 +475,7 @@ export function PlaybackControls(
       loopRateSkipSaveRef.current = false;
       return;
     }
-    savePracticeSession(sourcePath, {
+    updatePracticeSettings(sourcePath, {
       loopStart,
       loopEnd,
       loopEnabled,
