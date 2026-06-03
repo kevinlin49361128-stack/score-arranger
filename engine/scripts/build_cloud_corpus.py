@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""build_cloud_corpus — music21 corpus 曲目 → 線上 corpus-v1 manifest + assets。
+"""build_cloud_corpus — 多來源 → 線上 corpus-v1 manifest + assets。
 
-B1 線上曲庫的擴充管線。把 music21 內建 corpus 的曲目 (本批: 弦樂四重奏樂章)
-匯出成獨立 MusicXML、用引擎自家 parser 驗證可解析、算 sha256/bytes/measures、
-生成 catalog.json 的 manifest entry, 合併進現有 catalog.json。
+B1 線上曲庫的擴充管線。兩種來源:
+  1. music21 內建 corpus (corpus.parse) — 弦樂四重奏樂章。
+  2. Humdrum `.krn` GitHub repo (craigsapp / josquin-research-project) — 下載
+     .krn → music21 解析 → 匯出 MusicXML。標題/作曲家直接讀 .krn 自帶的
+     `!!!OTL`/`!!!COM` reference record (權威, 不必硬編)。
 
-為何走線上而非 bundle 進 DMG:
-  弦四是 4 部、多樂章, 檔案比聖詠大; 線上層隨需下載 + LRU 快取, 不增肥安裝檔。
+每首都用引擎自家 parser 驗證可解析、算 sha256/bytes/measures、生成 catalog.json
+manifest entry, 合併進現有 catalog.json (跳過已存在的 corpus_path, 不重做)。
 
-為何不用 OpenScore/StringQuartets repo:
-  該 repo 存 .mscx (MuseScore 原生格式, 需 MuseScore CLI 轉檔) 且每檔是整首
-  ~10MB 多樂章, 超過線上單檔上限也不利渲染。music21 corpus 的弦四是逐樂章、
-  乾淨 MusicXML、music21 原生解析 —— 乾淨得多。授權: music21 corpus 與既有
-  41 個 bundle 樣本同源 (PD 樂曲 + 學術編碼), NOTICE §3 已涵蓋。
+為何走線上而非 bundle: 多為多部 / 大檔, 線上層隨需下載 + LRU 快取, 不增肥 DMG。
+授權: music21 corpus 與 Humdrum 編碼皆 PD 樂曲 + 學術編碼, NOTICE §3 已涵蓋
+(CCARH / craigsapp / Josquin Research Project, 非商業可自由散佈)。
 
 用法:
   cd engine && .venv/bin/python3 scripts/build_cloud_corpus.py
@@ -26,10 +26,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
-# 讓 `core.*` import 得到 (用引擎自家 parser 驗證)
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 OWNER = "kevinlin49361128-stack"
@@ -43,66 +44,77 @@ CORPUS_DIR = Path(__file__).parent.parent / "corpus"
 CATALOG = CORPUS_DIR / "catalog.json"
 DIST = CORPUS_DIR / "dist"
 
-# 渲染防護: 樂章超過此小節數就跳過 (避免大譜 freeze; 教學上也太長)
-MAX_MEASURES = 480
+MAX_MEASURES = 480  # 大譜防護: 超過就跳過 (避免 OSMD freeze + 教學上太長)
 
-# (m21_path, slug, title, composer, dates, year, henle, tags)
-# 全為弦樂四重奏樂章 — form="Quartet", ensemble="String Quartet",
-# instruments=["strings"], era="Classical"。
-QUARTETS: list[tuple[str, str, str, str, str, int, int, list[str]]] = [
-    # ─── Beethoven (1770-1827) ───────────────────────────────────
+# ── 來源 1: music21 corpus 弦樂四重奏 (m21_path, slug, title, dates, year, henle, tags) ──
+QUARTETS: list[tuple[str, str, str, str, int, int, list[str]]] = [
     ("beethoven/opus18no1/movement1", "beethoven_op18no1_mvt1",
      "String Quartet No.1 in F major, Op.18 No.1 — I. Allegro con brio",
-     "Ludwig van Beethoven", "1770-1827", 1799, 6, ["ensemble", "expression"]),
+     "1770-1827", 1799, 6, ["ensemble", "expression"]),
     ("beethoven/opus18no1/movement2", "beethoven_op18no1_mvt2",
      "String Quartet No.1 in F major, Op.18 No.1 — "
-     "II. Adagio affettuoso ed appassionato",
-     "Ludwig van Beethoven", "1770-1827", 1799, 6, ["ensemble", "legato"]),
+     "II. Adagio affettuoso ed appassionato", "1770-1827", 1799, 6,
+     ["ensemble", "legato"]),
     ("beethoven/opus59no1/movement1", "beethoven_op59no1_mvt1",
      "String Quartet No.7 in F major, Op.59 No.1 'Razumovsky' — I. Allegro",
-     "Ludwig van Beethoven", "1770-1827", 1806, 8, ["ensemble", "expression"]),
-    ("beethoven/opus59no2/movement1", "beethoven_op59no2_mvt1",
-     "String Quartet No.8 in E minor, Op.59 No.2 'Razumovsky' — I. Allegro",
-     "Ludwig van Beethoven", "1770-1827", 1806, 8, ["ensemble", "expression"]),
-    ("beethoven/opus59no2/movement2", "beethoven_op59no2_mvt2",
-     "String Quartet No.8 in E minor, Op.59 No.2 'Razumovsky' — "
-     "II. Molto Adagio",
-     "Ludwig van Beethoven", "1770-1827", 1806, 8, ["ensemble", "legato"]),
+     "1770-1827", 1806, 8, ["ensemble", "expression"]),
     ("beethoven/opus59no3/movement1", "beethoven_op59no3_mvt1",
      "String Quartet No.9 in C major, Op.59 No.3 'Razumovsky' — "
-     "I. Introduzione: Andante con moto - Allegro vivace",
-     "Ludwig van Beethoven", "1770-1827", 1806, 8, ["ensemble"]),
+     "I. Introduzione: Andante con moto - Allegro vivace", "1770-1827", 1806,
+     8, ["ensemble"]),
     ("beethoven/opus59no3/movement4", "beethoven_op59no3_mvt4",
      "String Quartet No.9 in C major, Op.59 No.3 'Razumovsky' — "
-     "IV. Allegro molto",
-     "Ludwig van Beethoven", "1770-1827", 1806, 9, ["ensemble", "counterpoint"]),
-
-    # ─── Mozart (1756-1791) ──────────────────────────────────────
+     "IV. Allegro molto", "1770-1827", 1806, 9, ["ensemble", "counterpoint"]),
     ("mozart/k155/movement1", "mozart_k155_mvt1",
-     "String Quartet No.2 in D major, K.155 — I. Allegro",
-     "Wolfgang Amadeus Mozart", "1756-1791", 1772, 5, ["ensemble"]),
+     "String Quartet No.2 in D major, K.155 — I. Allegro", "1756-1791", 1772,
+     5, ["ensemble"]),
     ("mozart/k156/movement1", "mozart_k156_mvt1",
-     "String Quartet No.3 in G major, K.156 — I. Presto",
-     "Wolfgang Amadeus Mozart", "1756-1791", 1772, 5, ["ensemble"]),
+     "String Quartet No.3 in G major, K.156 — I. Presto", "1756-1791", 1772,
+     5, ["ensemble"]),
     ("mozart/k458/movement1", "mozart_k458_mvt1",
      "String Quartet No.17 in B-flat major, K.458 'The Hunt' — "
-     "I. Allegro vivace assai",
-     "Wolfgang Amadeus Mozart", "1756-1791", 1784, 6, ["ensemble", "expression"]),
+     "I. Allegro vivace assai", "1756-1791", 1784, 6, ["ensemble", "expression"]),
     ("mozart/k458/movement4", "mozart_k458_mvt4",
      "String Quartet No.17 in B-flat major, K.458 'The Hunt' — "
-     "IV. Allegro assai",
-     "Wolfgang Amadeus Mozart", "1756-1791", 1784, 6, ["ensemble"]),
-
-    # ─── Haydn (1732-1809) ───────────────────────────────────────
+     "IV. Allegro assai", "1756-1791", 1784, 6, ["ensemble"]),
     ("haydn/opus74no1/movement1", "haydn_op74no1_mvt1",
      "String Quartet in C major, Op.74 No.1 — I. Allegro moderato",
-     "Joseph Haydn", "1732-1809", 1793, 6, ["ensemble"]),
+     "1732-1809", 1793, 6, ["ensemble"]),
     ("haydn/opus74no1/movement4", "haydn_op74no1_mvt4",
-     "String Quartet in C major, Op.74 No.1 — IV. Vivace",
-     "Joseph Haydn", "1732-1809", 1793, 6, ["ensemble"]),
+     "String Quartet in C major, Op.74 No.1 — IV. Vivace", "1732-1809", 1793,
+     6, ["ensemble"]),
     ("haydn/opus1no1/movement1", "haydn_op1no1_mvt1",
      "String Quartet in B-flat major, Op.1 No.1 'La chasse' — I. Presto",
-     "Joseph Haydn", "1732-1809", 1762, 5, ["ensemble"]),
+     "1732-1809", 1762, 5, ["ensemble"]),
+]
+QUARTET_META = dict(
+    composer="(from list)", era="Classical", form="Quartet",
+    ensemble="String Quartet", instruments=["strings"],
+)
+
+# ── 來源 2: Humdrum .krn repos ──
+# 每個 source: repo / subdir / limit / 顯示用 metadata。標題+作曲家從 .krn 讀。
+KRN_SOURCES = [
+    dict(key="bsq", repo="craigsapp/beethoven-string-quartets", subdir="kern",
+         limit=999, composer_dates="1770-1827", era="Classical", form="Quartet",
+         ensemble="String Quartet", instruments=["strings"], year=1800,
+         henle=7, tags=["ensemble"], popular_tags=[]),
+    dict(key="scarlatti", repo="craigsapp/scarlatti-keyboard-sonatas",
+         subdir="kern", limit=999, composer_dates="1685-1757", era="Baroque",
+         form="Sonata", ensemble="Piano Solo", instruments=["piano"], year=1740,
+         henle=4, tags=["scales"], popular_tags=["amateur_pianist"]),
+    dict(key="mazurka", repo="craigsapp/chopin-mazurkas", subdir="kern",
+         limit=999, composer_dates="1810-1849", era="Romantic", form="Mazurka",
+         ensemble="Piano Solo", instruments=["piano"], year=1840, henle=5,
+         tags=["expression", "rhythm"], popular_tags=[]),
+    dict(key="joplin", repo="craigsapp/joplin", subdir="kern", limit=999,
+         composer_dates="1868-1917", era="Romantic", form="Rag",
+         ensemble="Piano Solo", instruments=["piano"], year=1902, henle=4,
+         tags=["rhythm", "staccato"], popular_tags=["popular"]),
+    dict(key="josquin", repo="josquin-research-project/Jos", subdir="",
+         limit=50, composer_dates="c.1450-1521", era="Renaissance", form="Mass",
+         ensemble="SATB", instruments=["voice"], year=1500, henle=None,
+         tags=["counterpoint"], popular_tags=[]),
 ]
 
 
@@ -110,97 +122,171 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def build_entry(
-    m21_path: str, slug: str, title: str, composer: str, dates: str,
-    year: int, henle: int, tags: list[str],
+def norm_composer(name: str) -> str:
+    """'Beethoven, Ludwig van' → 'Ludwig van Beethoven'; 無逗號原樣回傳。"""
+    if ", " in name:
+        last, first = name.split(", ", 1)
+        return f"{first} {last}"
+    return name
+
+
+def slugify(stem: str) -> str:
+    out = "".join(c if c.isalnum() else "_" for c in stem.lower())
+    while "__" in out:
+        out = out.replace("__", "_")
+    return out.strip("_")
+
+
+def gh_download_urls(repo: str, subdir: str, limit: int) -> list[tuple[str, str]]:
+    """回傳 [(filename, download_url)] (只取 .krn)。"""
+    path = f"contents/{subdir}" if subdir else "contents"
+    out = subprocess.run(
+        ["gh", "api", f"repos/{repo}/{path}", "--paginate",
+         "--jq", '.[]|select(.name|endswith(".krn"))|[.name,.download_url]|@tsv'],
+        capture_output=True, text=True,
+    )
+    rows = []
+    for line in out.stdout.splitlines():
+        if "\t" in line:
+            name, url = line.split("\t", 1)
+            rows.append((name, url))
+    return rows[:limit]
+
+
+def _validate_and_entry(
+    out: Path, asset_name: str, slug: str, title: str, composer: str,
+    src: dict,
 ) -> dict | None:
-    """匯出 + 驗證一首, 回傳 manifest entry dict (失敗回 None)。"""
-    import music21  # noqa: PLC0415 — script-only
-
+    """共用: 引擎驗證 + 組 entry。out 須已寫好 musicxml。"""
     from core.parser import parse_musicxml  # noqa: PLC0415
-
-    asset_name = f"cloud_{slug}.musicxml"
-    out = DIST / asset_name
-    try:
-        score = music21.corpus.parse(m21_path)
-        score.write("musicxml", fp=str(out))
-    except Exception as e:  # noqa: BLE001
-        print(f"✗ {slug}: 匯出失敗 {type(e).__name__}: {e}")
-        return None
 
     data = out.read_bytes()
     if len(data) < 500:
-        print(f"✗ {slug}: 檔案過小 {len(data)}B")
         out.unlink(missing_ok=True)
         return None
-
-    # 用引擎自家 parser 驗證可解析 (與 app 線上載入走同一條 parse 路徑)
     try:
         ir = parse_musicxml(str(out))
         n_parts = len(ir.parts)
         n_meas = len(ir.parts[0].measures) if n_parts else 0
     except Exception as e:  # noqa: BLE001
-        print(f"✗ {slug}: 引擎解析失敗 {type(e).__name__}: {e}")
+        print(f"  ✗ {slug}: 引擎解析失敗 {type(e).__name__}")
+        out.unlink(missing_ok=True)
+        return None
+    if n_parts < 1 or n_meas < 4 or n_meas > MAX_MEASURES:
+        print(f"  ⊘ {slug}: {n_parts}p/{n_meas}m 出界, 跳過")
         out.unlink(missing_ok=True)
         return None
 
-    if n_parts < 3:
-        print(f"✗ {slug}: 聲部數異常 ({n_parts}p) — 非四重奏?")
-        out.unlink(missing_ok=True)
-        return None
-    if n_meas > MAX_MEASURES:
-        print(f"⊘ {slug}: {n_meas}m > {MAX_MEASURES} 上限 — 跳過 (大譜防護)")
-        out.unlink(missing_ok=True)
-        return None
-
-    flag = " ⚠大" if n_meas > 300 else ""
-    print(f"✓ {slug}: {n_parts}p / {n_meas}m ({len(data)//1024}KB){flag}")
-    return {
-        "corpus_path": f"cloud/{slug}",
-        "title": title,
-        "composer": composer,
-        "composer_dates": dates,
-        "era": "Classical",
-        "form": "Quartet",
-        "ensemble": "String Quartet",
-        "instruments": ["strings"],
-        "year": year,
-        "measures": n_meas,
-        "henle_level": henle,
-        "tags": tags,
-        "popular_tags": [],
-        "url": f"{RELEASE_BASE}/{asset_name}",
-        "sha256": sha256_hex(data),
+    entry = {
+        "corpus_path": f"cloud/{slug}", "title": title, "composer": composer,
+        "composer_dates": src["composer_dates"], "era": src["era"],
+        "form": src["form"], "ensemble": src["ensemble"],
+        "instruments": src["instruments"], "year": src["year"],
+        "measures": n_meas, "tags": src["tags"],
+        "popular_tags": src.get("popular_tags", []),
+        "url": f"{RELEASE_BASE}/{asset_name}", "sha256": sha256_hex(data),
         "bytes": len(data),
     }
+    if src.get("henle") is not None:
+        entry["henle_level"] = src["henle"]
+    print(f"  ✓ {slug}: {n_parts}p/{n_meas}m — {title[:50]}")
+    return entry
+
+
+def process_krn(src: dict, have: set[str]) -> list[dict]:
+    import music21  # noqa: PLC0415
+
+    entries: list[dict] = []
+    urls = gh_download_urls(src["repo"], src["subdir"], src["limit"])
+    print(f"\n── {src['key']} ({src['repo']}): {len(urls)} 檔 ──")
+    with tempfile.TemporaryDirectory() as td:
+        for name, url in urls:
+            stem = name[:-4] if name.endswith(".krn") else name
+            slug = f"{src['key']}_{slugify(stem)}"
+            if f"cloud/{slug}" in have:
+                continue
+            krn = Path(td) / name
+            r = subprocess.run(["curl", "-sL", url, "-o", str(krn)],
+                               capture_output=True)
+            if r.returncode != 0 or not krn.exists():
+                continue
+            asset_name = f"cloud_{slug}.musicxml"
+            out = DIST / asset_name
+            try:
+                score = music21.converter.parse(str(krn))
+                md = score.metadata
+                base = (md.title if md and md.title else stem)
+                mvt = (md.movementName if md and md.movementName else "")
+                title = f"{base} — {mvt}" if mvt and mvt not in base else base
+                composer = norm_composer(
+                    md.composer if md and md.composer else src.get("composer", "")
+                )
+                score.write("musicxml", fp=str(out))
+            except Exception as e:  # noqa: BLE001
+                print(f"  ✗ {slug}: 匯出失敗 {type(e).__name__}")
+                out.unlink(missing_ok=True)
+                continue
+            entry = _validate_and_entry(out, asset_name, slug, title, composer, src)
+            if entry:
+                entries.append(entry)
+                have.add(entry["corpus_path"])
+    return entries
+
+
+def process_quartets(have: set[str]) -> list[dict]:
+    import music21  # noqa: PLC0415
+
+    entries: list[dict] = []
+    print("\n── music21 quartets ──")
+    for m21_path, slug, title, dates, year, henle, tags in QUARTETS:
+        if f"cloud/{slug}" in have:
+            continue
+        asset_name = f"cloud_{slug}.musicxml"
+        out = DIST / asset_name
+        try:
+            score = music21.corpus.parse(m21_path)
+            composer = norm_composer(
+                score.metadata.composer if score.metadata
+                and score.metadata.composer else ""
+            )
+            score.write("musicxml", fp=str(out))
+        except Exception as e:  # noqa: BLE001
+            print(f"  ✗ {slug}: 匯出失敗 {type(e).__name__}")
+            continue
+        src = {**QUARTET_META, "composer_dates": dates, "year": year,
+               "henle": henle, "tags": tags, "popular_tags": []}
+        entry = _validate_and_entry(out, asset_name, slug, title, composer, src)
+        if entry:
+            entries.append(entry)
+            have.add(entry["corpus_path"])
+    return entries
 
 
 def main() -> int:
     DIST.mkdir(parents=True, exist_ok=True)
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
-    by_path: dict[str, dict] = {e["corpus_path"]: e for e in catalog["entries"]}
+    by_path = {e["corpus_path"]: e for e in catalog["entries"]}
+    have = set(by_path)
+    before = len(have)
 
-    added = 0
-    for row in QUARTETS:
-        entry = build_entry(*row)
-        if entry is None:
-            continue
-        is_new = entry["corpus_path"] not in by_path
-        by_path[entry["corpus_path"]] = entry
-        added += int(is_new)
+    new_entries = process_quartets(have)
+    for src in KRN_SOURCES:
+        new_entries += process_krn(src, have)
 
+    for e in new_entries:
+        by_path[e["corpus_path"]] = e
     catalog["entries"] = sorted(by_path.values(), key=lambda e: e["corpus_path"])
     CATALOG.write_text(
         json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
-    quartets = [e for e in catalog["entries"] if e.get("form") == "Quartet"]
     print(f"\n=== Summary ===")
-    print(f"新增 {added} 首; manifest 共 {len(catalog['entries'])} 首 "
-          f"(其中弦四 {len(quartets)})")
-    print(f"catalog → {CATALOG}")
-    print(f"assets  → {DIST}/cloud_*.musicxml")
+    print(f"新增 {len(new_entries)} 首 (catalog {before} → {len(catalog['entries'])})")
+    by_form: dict[str, int] = {}
+    for e in catalog["entries"]:
+        by_form[e.get("form", "?")] = by_form.get(e.get("form", "?"), 0) + 1
+    print("form 分布:", by_form)
     return 0
 
 
