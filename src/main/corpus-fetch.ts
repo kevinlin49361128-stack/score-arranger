@@ -79,6 +79,15 @@ function manifestDiskPath(): string {
   return join(cacheDir(), "_catalog.json");
 }
 
+/** 快取裡屬於曲庫的下載檔 (排除 _catalog.json 等); 與 extFromUrl 支援的格式一致。 */
+function isCorpusFile(name: string): boolean {
+  return (
+    name.endsWith(".mxl") ||
+    name.endsWith(".musicxml") ||
+    name.endsWith(".xml")
+  );
+}
+
 /** 從下載 URL 推副檔名 — 引擎用副檔名選 parser, 必須與內容一致。 */
 function extFromUrl(url: string): string {
   const u = url.toLowerCase();
@@ -165,7 +174,7 @@ function pruneCache(): void {
   try {
     const dir = cacheDir();
     const files = readdirSync(dir)
-      .filter((f) => f.endsWith(".mxl"))
+      .filter(isCorpusFile)
       .map((f) => {
         const p = join(dir, f);
         const st = statSync(p);
@@ -232,7 +241,7 @@ export function clearCache(): number {
   try {
     const dir = cacheDir();
     for (const f of readdirSync(dir)) {
-      if (!f.endsWith(".mxl")) continue;
+      if (!isCorpusFile(f)) continue;
       const p = join(dir, f);
       try {
         freed += statSync(p).size;

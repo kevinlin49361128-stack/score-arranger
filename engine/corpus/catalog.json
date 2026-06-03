@@ -1,0 +1,379 @@
+{
+  "version": "1",
+  "entries": [
+    {
+      "corpus_path": "cloud/bach_bwv267",
+      "title": "Wo soll ich fliehen hin (BWV 267)",
+      "composer": "Johann Sebastian Bach",
+      "composer_dates": "1685-1750",
+      "era": "Baroque",
+      "form": "Chorale",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1725,
+      "henle_level": 4,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_bach_bwv267.musicxml",
+      "sha256": "72035f7124c81aec0dea168409e38463c0743268fa805711e8187cfc2b9bb6d5",
+      "bytes": 126878
+    },
+    {
+      "corpus_path": "cloud/bach_chorale_016",
+      "title": "Bach Chorale Collection No.16",
+      "composer": "Johann Sebastian Bach",
+      "composer_dates": "1685-1750",
+      "era": "Baroque",
+      "form": "Chorale",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1730,
+      "henle_level": 4,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_bach_chorale_016.musicxml",
+      "sha256": "324aa82912bb07f1a54919160b563aa1473e7ab6e0e4faf1fa364d5ecf9529a1",
+      "bytes": 110863
+    },
+    {
+      "corpus_path": "cloud/beethoven_op18no1_mvt1",
+      "title": "String Quartet No.1 in F major, Op.18 No.1 — I. Allegro con brio",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1799,
+      "measures": 313,
+      "henle_level": 6,
+      "tags": [
+        "ensemble",
+        "expression"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_op18no1_mvt1.musicxml",
+      "sha256": "116fe5ebc0557e080acb022cfe3e6f53865ab9bc08c1b5e5102d4aa80be91f5e",
+      "bytes": 1590180
+    },
+    {
+      "corpus_path": "cloud/beethoven_op18no1_mvt2",
+      "title": "String Quartet No.1 in F major, Op.18 No.1 — II. Adagio affettuoso ed appassionato",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1799,
+      "measures": 110,
+      "henle_level": 6,
+      "tags": [
+        "ensemble",
+        "legato"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_op18no1_mvt2.musicxml",
+      "sha256": "dcaf06778d7110aa8b3a47330d6dfa289d53f310ada2d269f407a6a22171438d",
+      "bytes": 1065173
+    },
+    {
+      "corpus_path": "cloud/beethoven_op59no1_mvt1",
+      "title": "String Quartet No.7 in F major, Op.59 No.1 'Razumovsky' — I. Allegro",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1806,
+      "measures": 400,
+      "henle_level": 8,
+      "tags": [
+        "ensemble",
+        "expression"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_op59no1_mvt1.musicxml",
+      "sha256": "075fb8d67b998cd1a4be63e0f3acb358c7030efed571bad663c9a6b4abf35c85",
+      "bytes": 2462979
+    },
+    {
+      "corpus_path": "cloud/beethoven_op59no3_mvt1",
+      "title": "String Quartet No.9 in C major, Op.59 No.3 'Razumovsky' — I. Introduzione: Andante con moto - Allegro vivace",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1806,
+      "measures": 270,
+      "henle_level": 8,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_op59no3_mvt1.musicxml",
+      "sha256": "f5ea4c68f8203e9b44f26759489d4883e3bf852d988f41c9c527890729145dc1",
+      "bytes": 1942420
+    },
+    {
+      "corpus_path": "cloud/beethoven_op59no3_mvt4",
+      "title": "String Quartet No.9 in C major, Op.59 No.3 'Razumovsky' — IV. Allegro molto",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1806,
+      "measures": 429,
+      "henle_level": 9,
+      "tags": [
+        "ensemble",
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_op59no3_mvt4.musicxml",
+      "sha256": "6287ae6eb51f8bf8adb176b6607a95dadf18ab71514cd599bb9054119abf2055",
+      "bytes": 2547338
+    },
+    {
+      "corpus_path": "cloud/beethoven_sonata_07_1",
+      "title": "Piano Sonata No.7 Op.10/3 — I. Presto",
+      "composer": "Ludwig van Beethoven",
+      "composer_dates": "1770-1827",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1798,
+      "henle_level": 6,
+      "tags": [
+        "expression"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_beethoven_sonata_07_1.musicxml",
+      "sha256": "1eeae3759e69fcf5cfab2ee9b7a8666aff0b3121ac168bd673f48a22187ed4d0",
+      "bytes": 1117391
+    },
+    {
+      "corpus_path": "cloud/chopin_prelude_28_04",
+      "title": "Prelude Op.28 No.4 in E minor",
+      "composer": "Frédéric Chopin",
+      "composer_dates": "1810-1849",
+      "era": "Romantic",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1839,
+      "henle_level": 3,
+      "tags": [
+        "expression"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_chopin_prelude_28_04.musicxml",
+      "sha256": "528a3417461c2bcec7277cbbe31998ba4256202d3b8907c236414ac9e1d5c153",
+      "bytes": 152924
+    },
+    {
+      "corpus_path": "cloud/haydn_op1no1_mvt1",
+      "title": "String Quartet in B-flat major, Op.1 No.1 'La chasse' — I. Presto",
+      "composer": "Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1762,
+      "measures": 66,
+      "henle_level": 5,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_haydn_op1no1_mvt1.musicxml",
+      "sha256": "f96636b44d401411d6eef739a59e4091fca2546f799825cf3298a85cd705b992",
+      "bytes": 389286
+    },
+    {
+      "corpus_path": "cloud/haydn_op74no1_mvt1",
+      "title": "String Quartet in C major, Op.74 No.1 — I. Allegro moderato",
+      "composer": "Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1793,
+      "measures": 155,
+      "henle_level": 6,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_haydn_op74no1_mvt1.musicxml",
+      "sha256": "20aa53e4cea758cb70611ae89630449b9399674c921121b260ce7d648f058ad3",
+      "bytes": 1056703
+    },
+    {
+      "corpus_path": "cloud/haydn_op74no1_mvt4",
+      "title": "String Quartet in C major, Op.74 No.1 — IV. Vivace",
+      "composer": "Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1793,
+      "measures": 287,
+      "henle_level": 6,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_haydn_op74no1_mvt4.musicxml",
+      "sha256": "2e923db83a070140977c240966a126c036b29a9a38ea6ad779a0677f7508543e",
+      "bytes": 1403218
+    },
+    {
+      "corpus_path": "cloud/mozart_k155_mvt1",
+      "title": "String Quartet No.2 in D major, K.155 — I. Allegro",
+      "composer": "Wolfgang Amadeus Mozart",
+      "composer_dates": "1756-1791",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1772,
+      "measures": 119,
+      "henle_level": 5,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_mozart_k155_mvt1.musicxml",
+      "sha256": "6aa81a78690f0fd1248db3465a17709f121583f1cfee58254f56374884ecb436",
+      "bytes": 795080
+    },
+    {
+      "corpus_path": "cloud/mozart_k156_mvt1",
+      "title": "String Quartet No.3 in G major, K.156 — I. Presto",
+      "composer": "Wolfgang Amadeus Mozart",
+      "composer_dates": "1756-1791",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1772,
+      "measures": 180,
+      "henle_level": 5,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_mozart_k156_mvt1.musicxml",
+      "sha256": "db5223c54621cf53bfbaf50c68727bfaaf6e9beba33616c136c2aa54fc4faa52",
+      "bytes": 547017
+    },
+    {
+      "corpus_path": "cloud/mozart_k458_mvt1",
+      "title": "String Quartet No.17 in B-flat major, K.458 'The Hunt' — I. Allegro vivace assai",
+      "composer": "Wolfgang Amadeus Mozart",
+      "composer_dates": "1756-1791",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1784,
+      "measures": 283,
+      "henle_level": 6,
+      "tags": [
+        "ensemble",
+        "expression"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_mozart_k458_mvt1.musicxml",
+      "sha256": "4ec1ea11819530e83c8f5031be9da56fdb5f745cb1e2f7e3ce93cbe832ce693f",
+      "bytes": 1606337
+    },
+    {
+      "corpus_path": "cloud/mozart_k458_mvt4",
+      "title": "String Quartet No.17 in B-flat major, K.458 'The Hunt' — IV. Allegro assai",
+      "composer": "Wolfgang Amadeus Mozart",
+      "composer_dates": "1756-1791",
+      "era": "Classical",
+      "form": "Quartet",
+      "ensemble": "String Quartet",
+      "instruments": [
+        "strings"
+      ],
+      "year": 1784,
+      "measures": 335,
+      "henle_level": 6,
+      "tags": [
+        "ensemble"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_mozart_k458_mvt4.musicxml",
+      "sha256": "a0a759bf4314c7c12cff5e13b39b9e7857678ee9740a0f47b53a43baf1af4964",
+      "bytes": 1328756
+    },
+    {
+      "corpus_path": "cloud/mozart_sonata_05_1",
+      "title": "Piano Sonata No.5 K.283 — I. Allegro",
+      "composer": "Wolfgang Amadeus Mozart",
+      "composer_dates": "1756-1791",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1775,
+      "henle_level": 5,
+      "tags": [
+        "scales"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_mozart_sonata_05_1.musicxml",
+      "sha256": "fdcd70e83886b3629bd3a029713d581ad218e5f31999edfa102c547fa474777d",
+      "bytes": 609494
+    }
+  ]
+}
