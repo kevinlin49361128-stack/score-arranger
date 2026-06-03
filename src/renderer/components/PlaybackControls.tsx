@@ -339,6 +339,11 @@ export function PlaybackControls(
   const [metronomeEnabled, setMetronomeEnabled] = useState<boolean>(false);
   /** 聲部 mute — set of track index. 在 handlePlay scheduling 時跳過. */
   const [mutedTracks, setMutedTracks] = useState<Set<number>>(new Set());
+  /** 聲部音量重平衡 — track index → 增益(dB). 排程時把 velocity ×10^(dB/20).
+   *  只影響播放 (不動譜); 縮編後和聲過響打斷樂句時把和聲聲部調低。 */
+  const [trackGains, setTrackGains] = useState<Record<number, number>>({});
+  /** 聲部 solo — 非空時只有集合內的 track 出聲 (其餘靜音)。 */
+  const [soloTracks, setSoloTracks] = useState<Set<number>>(new Set());
   /** 上一次播放 MIDI 的 track 列表 — 提供 mute popover 用 */
   const [knownTracks, setKnownTracks] = useState<
     { idx: number; name: string }[]
@@ -349,8 +354,73 @@ export function PlaybackControls(
   // ref: smoke test 0.1.16 發現的 bug.
   useEffect(() => {
     setMutedTracks(new Set());
+    setTrackGains({});
+    setSoloTracks(new Set());
     setKnownTracks([]);
   }, [arrangement, sourceMusicXML]);
+
+  // 自動平衡: 依各聲部的「功能」算預設音量 (旋律 0 / 和聲 −, 靠壓低和聲拉開層次),
+  // 修「縮編後和聲過響打斷樂句」。track→player 用名稱比對, 對不上就留 0 dB (手動補)。
+  const applyAutoBalance = (
+    preset: "melodyFirst" | "chamber" | "flat",
+  ): void => {
+    if (preset === "flat" || !arrangement) {
+      setTrackGains({});
+      return;
+    }
+    const TABLE: Record<string, Record<string, number>> = {
+      melodyFirst: {
+        melody: 0, counter: -4, bass: -2, harmony: -8, ornament: -6, pedal: -10,
+      },
+      chamber: {
+        melody: 0, counter: -2, bass: -1, harmony: -4, ornament: -3, pedal: -6,
+      },
+    };
+    const table = TABLE[preset];
+    const PRIORITY = [
+      "melody", "counter", "bass", "harmony", "ornament", "pedal",
+    ];
+    const classify = (fn: string): string => {
+      const f = (fn || "").toLowerCase();
+      if (f.includes("counter")) return "counter";
+      if (f.includes("melod")) return "melody";
+      if (f.includes("bass")) return "bass";
+      if (f.includes("pedal")) return "pedal";
+      if (f.includes("ornament")) return "ornament";
+      return "harmony"; // harmony_fill / accompaniment / 其餘內聲部
+    };
+    const playerClass: Record<string, string> = {};
+    for (const a of arrangement.assignments) {
+      const pid = a.target.split("/")[0];
+      const cls = classify(a.function);
+      const prev = playerClass[pid];
+      if (!prev || PRIORITY.indexOf(cls) < PRIORITY.indexOf(prev)) {
+        playerClass[pid] = cls;
+      }
+    }
+    const norm = (s: string) =>
+      (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const gains: Record<number, number> = {};
+    for (const tr of knownTracks) {
+      const tn = norm(tr.name);
+      let cls: string | undefined;
+      for (const p of arrangement.players) {
+        const pid = norm(p.player_id);
+        const pdn = norm(p.display_name);
+        if (
+          (pid && tn.includes(pid)) ||
+          (pdn && tn.includes(pdn)) ||
+          (pdn && tn.length >= 3 && pdn.includes(tn))
+        ) {
+          cls = playerClass[p.player_id];
+          if (cls) break;
+        }
+      }
+      const g = cls ? (table[cls] ?? 0) : 0;
+      if (g !== 0) gains[tr.idx] = g;
+    }
+    setTrackGains(gains);
+  };
   /** mute popover 開關 */
   const [muteOpen, setMuteOpen] = useState(false);
   const muteRef = useRef<HTMLDivElement>(null);
@@ -1089,6 +1159,17 @@ export function PlaybackControls(
         });
       }
 
+      // 聲部音量重平衡 + solo (只影響播放). solo 非空 → 只放 solo 的 track。
+      const soloActive = soloTracks.size > 0;
+      const trackPlayable = (idx: number): boolean =>
+        !mutedTracks.has(idx) && !handMutedSet.has(idx) &&
+        (!soloActive || soloTracks.has(idx));
+      // dB → 線性增益, velocity 上限 1 (Tone). 主要靠「壓低和聲」拉開層次。
+      const velGain = (idx: number): number => {
+        const db = trackGains[idx] ?? 0;
+        return db === 0 ? 1 : 10 ** (db / 20);
+      };
+
       // 0.1.64 F3: 選段漸進加速 — 取代正常排程, 每圈重排區段並提速。
       // 每一圈用 per-pass restart (Transport pause→cancel→position 0→重排→start),
       // 所以可逐圈換 rate; 走 measureNumberOffset 讓游標顯示真實小節號。
@@ -1131,7 +1212,8 @@ export function PlaybackControls(
           );
           let last = 0;
           midi.tracks.forEach((track, ti) => {
-            if (mutedTracks.has(ti) || handMutedSet.has(ti)) return;
+            if (!trackPlayable(ti)) return;
+            const gain = velGain(ti);
             const instrument = router.get(router.routeTrack(ti, track.name));
             for (const note of track.notes) {
               if (note.time < regionStartSec || note.time >= regionEndSec) {
@@ -1139,10 +1221,9 @@ export function PlaybackControls(
               }
               const nt = (note.time - regionStartSec) * st;
               const nd = note.duration * st;
+              const vel = Math.min(1, note.velocity * gain);
               const id = Tone.Transport.schedule((time) => {
-                instrument.triggerAttackRelease(
-                  note.name, nd, time, note.velocity,
-                );
+                instrument.triggerAttackRelease(note.name, nd, time, vel);
               }, nt);
               scheduledIdsRef.current.push(id);
               if (nt + nd > last) last = nt + nd;
@@ -1192,9 +1273,9 @@ export function PlaybackControls(
       // A3: unison 微離調 — 跨 track 累計「同樂器同音同時」出現序, 第 2+ 個偏一點
       const unisonSeen = new Map<string, number>();
       midi.tracks.forEach((track, trackIdx) => {
-        // mute: 此 track 在 mutedTracks 內 → 整段跳過排程 (連 lastTime 都不算)
-        if (mutedTracks.has(trackIdx)) return;
-        if (handMutedSet.has(trackIdx)) return;
+        // mute/solo: 跳過不該出聲的 track (連 lastTime 都不算)
+        if (!trackPlayable(trackIdx)) return;
+        const gain = velGain(trackIdx);
         const key = router.routeTrack(trackIdx, track.name);
         const instrument = router.get(key);
         const isBowedString = key === "violin" || key === "cello";
@@ -1216,13 +1297,9 @@ export function PlaybackControls(
                 Tone.Frequency(note.name).toFrequency() * 2 ** (cents / 1200);
             }
           }
+          const playVel = Math.min(1, note.velocity * gain);
           const id = Tone.Transport.schedule((time) => {
-            instrument.triggerAttackRelease(
-              trigPitch,
-              noteDur,
-              time,
-              note.velocity,
-            );
+            instrument.triggerAttackRelease(trigPitch, noteDur, time, playVel);
           }, noteTime);
           scheduledIdsRef.current.push(id);
           if (noteTime + noteDur > lastTime) {
@@ -1543,8 +1620,8 @@ export function PlaybackControls(
               position: "absolute",
               top: "calc(100% + 4px)",
               right: 0,
-              minWidth: 180,
-              maxHeight: 280,
+              minWidth: 300,
+              maxHeight: 320,
               overflowY: "auto",
               background: "var(--bg-panel)",
               border: "1px solid var(--border)",
@@ -1563,11 +1640,16 @@ export function PlaybackControls(
               justifyContent: "space-between",
               alignItems: "center",
             }}>
-              <span>{t("playback.mute.heading")}</span>
-              {mutedTracks.size > 0 && (
+              <span>{t("playback.balance.heading")}</span>
+              {(mutedTracks.size > 0 || soloTracks.size > 0
+                || Object.keys(trackGains).length > 0) && (
                 <button
                   type="button"
-                  onClick={() => setMutedTracks(new Set())}
+                  onClick={() => {
+                    setMutedTracks(new Set());
+                    setSoloTracks(new Set());
+                    setTrackGains({});
+                  }}
                   style={{
                     fontSize: 10,
                     padding: "1px 6px",
@@ -1582,6 +1664,33 @@ export function PlaybackControls(
                 </button>
               )}
             </div>
+            {/* 自動平衡: 依聲部功能算預設音量 (旋律浮出 / 和聲退後) */}
+            <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+              {([
+                ["melodyFirst", t("playback.balance.melodyFirst")],
+                ["chamber", t("playback.balance.chamber")],
+                ["flat", t("playback.balance.flat")],
+              ] as const).map(([preset, label]) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => applyAutoBalance(preset)}
+                  title={t("playback.balance.autoHint")}
+                  style={{
+                    flex: 1,
+                    fontSize: 10,
+                    padding: "3px 4px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    background: "var(--bg-tertiary)",
+                    color: "var(--fg-secondary)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             {knownTracks.length === 0 ? (
               <div style={{ color: "var(--fg-tertiary)", fontSize: 11 }}>
                 {t("playback.mute.empty")}
@@ -1589,24 +1698,25 @@ export function PlaybackControls(
             ) : (
               knownTracks.map((tr) => {
                 const muted = mutedTracks.has(tr.idx);
+                const solo = soloTracks.has(tr.idx);
+                const gain = trackGains[tr.idx] ?? 0;
                 return (
-                  <label
+                  <div
                     key={tr.idx}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
                       padding: "3px 0",
-                      cursor: "pointer",
                       color: muted
                         ? "var(--fg-tertiary)"
                         : "var(--fg-primary)",
-                      textDecoration: muted ? "line-through" : "none",
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={!muted}
+                      title={t("playback.mute.title")}
                       onChange={(e) => {
                         setMutedTracks((prev) => {
                           const next = new Set(prev);
@@ -1616,8 +1726,79 @@ export function PlaybackControls(
                         });
                       }}
                     />
-                    {tr.name}
-                  </label>
+                    <span
+                      title={tr.name}
+                      style={{
+                        flex: 1,
+                        minWidth: 56,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        textDecoration: muted ? "line-through" : "none",
+                      }}
+                    >
+                      {tr.name}
+                    </span>
+                    <input
+                      type="range"
+                      min={-24}
+                      max={6}
+                      step={1}
+                      value={gain}
+                      disabled={muted}
+                      title={t("playback.balance.volume")}
+                      onChange={(e) => {
+                        const v = Number(e.target.value);
+                        setTrackGains((prev) => {
+                          const next = { ...prev };
+                          if (v === 0) delete next[tr.idx];
+                          else next[tr.idx] = v;
+                          return next;
+                        });
+                      }}
+                      style={{ width: 78 }}
+                    />
+                    <span
+                      style={{
+                        width: 40,
+                        textAlign: "right",
+                        fontSize: 10,
+                        fontVariantNumeric: "tabular-nums",
+                        color: gain !== 0
+                          ? "var(--accent)"
+                          : "var(--fg-tertiary)",
+                      }}
+                    >
+                      {gain > 0 ? `+${gain}` : gain} dB
+                    </span>
+                    <button
+                      type="button"
+                      title={t("playback.balance.solo")}
+                      onClick={() => {
+                        setSoloTracks((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(tr.idx)) next.delete(tr.idx);
+                          else next.add(tr.idx);
+                          return next;
+                        });
+                      }}
+                      style={{
+                        width: 20,
+                        height: 18,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        border: "1px solid var(--border)",
+                        borderRadius: 3,
+                        cursor: "pointer",
+                        background: solo ? "var(--accent)" : "transparent",
+                        color: solo
+                          ? "var(--accent-fg)"
+                          : "var(--fg-tertiary)",
+                      }}
+                    >
+                      S
+                    </button>
+                  </div>
                 );
               })
             )}

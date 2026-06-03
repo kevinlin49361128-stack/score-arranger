@@ -488,6 +488,42 @@ export const IO_STRINGS: BiDict = {
     en: "(Press ▶ once to populate the track list)",
     ja: "(▶ を一度押すとトラック一覧が表示されます)",
   },
+  // 聲部音量重平衡 (混音台) — 只影響播放
+  "playback.balance.heading": {
+    "zh-TW": "聲部平衡 (音量 / 靜音 / 獨奏)",
+    en: "Voice balance (volume / mute / solo)",
+    ja: "声部バランス (音量 / ミュート / ソロ)",
+  },
+  "playback.balance.melodyFirst": {
+    "zh-TW": "旋律優先",
+    en: "Melody first",
+    ja: "旋律優先",
+  },
+  "playback.balance.chamber": {
+    "zh-TW": "室內樂",
+    en: "Chamber",
+    ja: "室内楽",
+  },
+  "playback.balance.flat": {
+    "zh-TW": "重設",
+    en: "Reset",
+    ja: "リセット",
+  },
+  "playback.balance.autoHint": {
+    "zh-TW": "依聲部功能自動算音量: 旋律保持, 和聲/內聲部調低, 修縮編後和聲打斷樂句。下次播放生效。",
+    en: "Auto-set volumes by voice role: keep melody, lower harmony/inner voices. Applies on next playback.",
+    ja: "声部の役割で自動調整: 旋律を保ち、和声/内声部を下げる。次の再生から有効。",
+  },
+  "playback.balance.volume": {
+    "zh-TW": "音量 (dB, 只影響播放)",
+    en: "Volume (dB, playback only)",
+    ja: "音量 (dB、再生のみ)",
+  },
+  "playback.balance.solo": {
+    "zh-TW": "獨奏 (只放這個聲部)",
+    en: "Solo (play only this part)",
+    ja: "ソロ (この声部のみ)",
+  },
   // 0.1.54 D: metronome
   "playback.metronome.title": {
     "zh-TW": "節拍器 — 開啟後播放時跟著拍子打點 (每拍木魚聲)",
