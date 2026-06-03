@@ -369,6 +369,21 @@
          按鈕 (fx-pulse) 動畫優先, 不衝突。讓每次點擊都有實體感。 */
       button { transition: transform .12s var(--ease-spring); }
       button:not(:disabled):active { transform: scale(0.965); }
+
+      /* === 0.1.90 S3: 方向性修復 ghost — 移八度後 ↑/↓ 自小節升/降淡出 ===
+         輕量版「音符移位」暗示: 不追真實音符座標, 只給方向感。 */
+      @keyframes fx-fixghost-up {
+        0%   { opacity: 0; transform: translateY(8px) scale(0.7); }
+        30%  { opacity: 1; }
+        100% { opacity: 0; transform: translateY(-22px) scale(1.05); }
+      }
+      @keyframes fx-fixghost-down {
+        0%   { opacity: 0; transform: translateY(-8px) scale(0.7); }
+        30%  { opacity: 1; }
+        100% { opacity: 0; transform: translateY(22px) scale(1.05); }
+      }
+      .fx-fixghost-up { animation: fx-fixghost-up 0.85s var(--ease-smooth) forwards; }
+      .fx-fixghost-down { animation: fx-fixghost-down 0.85s var(--ease-smooth) forwards; }
     </style>
   </head>
   <body>

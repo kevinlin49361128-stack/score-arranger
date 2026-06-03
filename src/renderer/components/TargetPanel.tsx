@@ -89,6 +89,13 @@ export function TargetPanel({
     return [...byMeasure.values()];
   }, [arrangementIssues]);
 
+  // 0.1.90 S3: 套用「移八度」類 fix 後, 觸發方向性 ghost 提示。
+  const [fixGhost, setFixGhost] = useState<{
+    measure: number;
+    direction: "up" | "down";
+    tick: number;
+  } | null>(null);
+
   const handleApplyFix = async (fix: IssueFix): Promise<void> => {
     if (fix.voiceId == null || fix.eventIndex == null) return;
     setLoading(true, tr("issue.applying", { code: fix.code }));
@@ -108,6 +115,20 @@ export function TargetPanel({
         setHistoryFlags(res.data.can_undo, res.data.can_redo);
         setError(null);
         recordApply(fix.code);
+        // S3: 移八度類 fix → 在該小節放方向性 ghost
+        const dir =
+          fix.code === "S_OCTAVE_UP"
+            ? "up"
+            : fix.code === "S_OCTAVE_DOWN"
+              ? "down"
+              : null;
+        if (dir) {
+          setFixGhost((p) => ({
+            measure: fix.measure,
+            direction: dir,
+            tick: (p?.tick ?? 0) + 1,
+          }));
+        }
       } else {
         setError(res.error ?? tr("issue.applyFailed"));
       }
@@ -259,6 +280,7 @@ export function TargetPanel({
           isAutoFitReference={!!targetMusicXML}
           issueMarkers={issueMarkers}
           onApplyFix={handleApplyFix}
+          fixGhost={fixGhost}
         />
       </div>
     </div>

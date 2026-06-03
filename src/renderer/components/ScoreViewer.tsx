@@ -58,6 +58,8 @@ interface ScoreViewerProps {
   issueMarkers?: IssueMarker[];
   /** Quick Fix 按下 — 帶齊 engine.applySuggestion 所需參數, 由父層套用 */
   onApplyFix?: (fix: IssueFix) => void;
+  /** 0.1.90 S3: 套用方向性修復 (移八度) 後, 在該小節放一個 ↑/↓ ghost 提示 */
+  fixGhost?: { measure: number; direction: "up" | "down"; tick: number } | null;
 }
 
 /** 一個就地可套的修復 — 已帶齊 engine.applySuggestion 參數 (無歧義) */
@@ -121,6 +123,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       isAutoFitReference,
       issueMarkers,
       onApplyFix,
+      fixGhost,
     },
     forwardedRef,
   ) {
@@ -129,6 +132,11 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const [openIssueMeasure, setOpenIssueMeasure] = useState<number | null>(
       null,
     );
+    /** 0.1.90 S3: 方向性修復 ghost (移八度後 ↑/↓ 光暈) */
+    const [fixGhostBox, setFixGhostBox] = useState<
+      (FlashBox & { direction: "up" | "down" }) | null
+    >(null);
+    const fixGhostTimerRef = useRef<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const osmdContainerRef = useRef<HTMLDivElement>(null);
     const osmdRef = useRef<OpenSheetMusicDisplay | null>(null);
@@ -750,6 +758,33 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editFlash?.tick]);
 
+    // 0.1.90 S3: 方向性修復 ghost — fixGhost.tick 遞增時, 在該小節中央放
+    // ↑/↓ 光暈 (移八度的方向暗示)。同樣延遲等 OSMD 重繪後再算 box。
+    useEffect(() => {
+      if (!fixGhost?.tick) return;
+      const dir = fixGhost.direction;
+      const measure = fixGhost.measure;
+      let cancelled = false;
+      const computeId = window.setTimeout(() => {
+        if (cancelled) return;
+        const box = getMeasureBox(measure);
+        if (!box) return;
+        setFixGhostBox({ ...box, direction: dir });
+        if (fixGhostTimerRef.current != null) {
+          window.clearTimeout(fixGhostTimerRef.current);
+        }
+        fixGhostTimerRef.current = window.setTimeout(() => {
+          setFixGhostBox(null);
+          fixGhostTimerRef.current = null;
+        }, 850);
+      }, 240);
+      return () => {
+        cancelled = true;
+        window.clearTimeout(computeId);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fixGhost?.tick]);
+
     // 改編完成揭示 — musicXmlContent 由無→有時, 播一次淡入 + 微上滑。
     // 0.1.45 B3: 內容由 A→B 變動時 (不是由無→有), 播 crossfade.
     // 兩種揭示互斥, 用同一個 ref / state 但帶模式判別.
@@ -1207,6 +1242,33 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
               }}
             />
           ))}
+          {/* 0.1.90 S3: 方向性修復 ghost — ↑/↓ 光暈自小節中央升/降淡出 */}
+          {fixGhostBox && (
+            <div
+              className={
+                fixGhostBox.direction === "up"
+                  ? "fx-fixghost-up"
+                  : "fx-fixghost-down"
+              }
+              style={{
+                position: "absolute",
+                left: fixGhostBox.left + fixGhostBox.width / 2 - 15,
+                top: fixGhostBox.top + fixGhostBox.height / 2 - 15,
+                width: 30,
+                height: 30,
+                pointerEvents: "none",
+                zIndex: 8,
+                color: "var(--accent)",
+                fontSize: 24,
+                fontWeight: 700,
+                textAlign: "center",
+                lineHeight: "30px",
+                textShadow: "0 1px 4px rgba(0,0,0,.35)",
+              }}
+            >
+              {fixGhostBox.direction === "up" ? "↑" : "↓"}
+            </div>
+          )}
           {/* 持久選取小節高亮 (點 issue / 點小節) */}
           {selectedBox && (
             <div
