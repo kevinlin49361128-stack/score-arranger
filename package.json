@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "lint": "biome lint src",
     "lint:fix": "biome lint --write src",
+    "gen:rpc-types": "engine/.venv/bin/python3 engine/scripts/gen_rpc_types.py",
     "freeze-engine": "bash engine/freeze.sh",
     "dist:mac": "npm run build && npm run freeze-engine && electron-builder --mac",
     "dist:mac:unsigned": "npm run build && npm run freeze-engine && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --config.dmg.sign=false"
