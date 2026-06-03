@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { loadPracticeSession } from "../utils/practiceSession";
 import {
   refreshPracticeSettings,
+  updateMixer,
   updatePracticeSettings,
 } from "./practiceSettingsStore";
 
@@ -54,6 +55,24 @@ describe("practiceSettingsStore", () => {
   it("null songId 不寫入也不丟錯", () => {
     expect(() => updatePracticeSettings(null, { loopStart: 9 })).not.toThrow();
     expect(mem.size).toBe(0);
+  });
+
+  it("updateMixer 依 side 合併, 不覆寫另一 side", () => {
+    updateMixer(SONG, "target", { muted: [1], gains: { 2: -4 } });
+    updateMixer(SONG, "source", { muted: [0] });
+    const m = loadPracticeSession(SONG)?.mixer;
+    expect(m?.target).toMatchObject({ muted: [1], gains: { 2: -4 } });
+    expect(m?.source).toMatchObject({ muted: [0] });
+  });
+
+  it("updateMixer 不動 loop/速度等其他練習欄位", () => {
+    updatePracticeSettings(SONG, { loopStart: 4, playbackRate: 0.75 });
+    updateMixer(SONG, "target", { muted: [2] });
+    expect(loadPracticeSession(SONG)).toMatchObject({
+      loopStart: 4,
+      playbackRate: 0.75,
+      mixer: { target: { muted: [2] } },
+    });
   });
 
   it("refresh 後重讀 localStorage 的外部改動", () => {

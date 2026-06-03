@@ -21,6 +21,7 @@ import { useSyncExternalStore } from "react";
 
 import {
   loadPracticeSession,
+  type MixerSettings,
   type PracticeSessionSettings,
   savePracticeSession,
 } from "../utils/practiceSession";
@@ -65,6 +66,21 @@ export function updatePracticeSettings(
   cache.set(songId, next);
   savePracticeSession(songId, patch);
   emit();
+}
+
+/**
+ * 更新某曲某 side (source/target) 的混音, 不覆寫另一 side。
+ * 混音是巢狀欄位, updatePracticeSettings 的淺合併會整包換掉 mixer,
+ * 故先把另一 side 帶上再寫。
+ */
+export function updateMixer(
+  songId: string | null | undefined,
+  side: string,
+  state: MixerSettings,
+): void {
+  if (!songId) return;
+  const mixer = { ...(snapshotFor(songId).mixer ?? {}), [side]: state };
+  updatePracticeSettings(songId, { mixer });
 }
 
 /**

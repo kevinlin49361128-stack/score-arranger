@@ -13,6 +13,16 @@
  */
 import type { MetronomeSoundId } from "./metronomeSounds";
 
+/** 0.1.87 slice 3: 單一播放器的混音狀態 (track index → 設定)。 */
+export interface MixerSettings {
+  /** track index → 增益 dB (省略 = 0 dB) */
+  gains?: Record<number, number>;
+  /** 靜音的 track index */
+  muted?: number[];
+  /** 獨奏的 track index (非空 = 只有這些出聲) */
+  solo?: number[];
+}
+
 export interface PracticeSessionSettings {
   /** 練習速度倍率 (1.0 = 原速; PlaybackControls 的 ♩=BPM 選擇器內部值) */
   playbackRate?: number;
@@ -30,6 +40,9 @@ export interface PracticeSessionSettings {
   loopAccelEnabled?: boolean;
   loopAccelStep?: number;
   loopAccelMax?: number;
+  /** 0.1.87 slice 3: 每聲部混音 — 依播放器 side (source/target) 分開存,
+   *  換曲還原。track index 對映以「同一首 = 同一改編 = 同 index」為前提。 */
+  mixer?: Record<string, MixerSettings>;
 }
 
 const KEY_PREFIX = "sa-practice-v1:";

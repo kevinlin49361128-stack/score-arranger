@@ -20,6 +20,7 @@ import {
 import { logDrill } from "../stores/practiceLogStore";
 import {
   getPracticeSettings,
+  updateMixer,
   updatePracticeSettings,
 } from "../stores/practiceSettingsStore";
 import { t, useLocale } from "../utils/i18n";
@@ -348,16 +349,34 @@ export function PlaybackControls(
   const [knownTracks, setKnownTracks] = useState<
     { idx: number; name: string }[]
   >([]);
-  // arrangement / sourceMusicXML 換了 → 重設 mute (track index 對映可能完全變了)
-  // 不重設的話, 舊 arrangement 的 mute(3) 會殘留到新 arrangement 上, 而新譜
-  // 的 track-3 可能根本不是同一個樂器, 變成「不知為何某個聲部沒聲音」。
-  // ref: smoke test 0.1.16 發現的 bug.
+  // arrangement / sourceMusicXML 換了 → 還原該曲此 side 存過的混音 (沒存過 = 空)。
+  // 0.1.87 slice 3: 改「清空」為「還原」。per-song+side keying 確保不會把別首的
+  // mute(3) 殘留到本首 (新譜 track-3 可能是別的樂器 — 0.1.16 #181 的精神保留)。
+  const mixerSkipSaveRef = useRef(false);
   useEffect(() => {
-    setMutedTracks(new Set());
-    setTrackGains({});
-    setSoloTracks(new Set());
+    const m = sourcePath
+      ? getPracticeSettings(sourcePath).mixer?.[side]
+      : undefined;
+    setMutedTracks(new Set(m?.muted ?? []));
+    setTrackGains(m?.gains ?? {});
+    setSoloTracks(new Set(m?.solo ?? []));
     setKnownTracks([]);
+    mixerSkipSaveRef.current = true; // 這輪是還原值, 別馬上回存
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arrangement, sourceMusicXML]);
+  // 混音改動 → 存進該曲此 side (slice 1 已讓整份 practiceSession 跟著 .sarr 走)。
+  useEffect(() => {
+    if (mixerSkipSaveRef.current) {
+      mixerSkipSaveRef.current = false;
+      return;
+    }
+    if (!sourcePath) return;
+    updateMixer(sourcePath, side, {
+      gains: trackGains,
+      muted: [...mutedTracks],
+      solo: [...soloTracks],
+    });
+  }, [mutedTracks, trackGains, soloTracks, sourcePath, side]);
 
   // 自動平衡: 依各聲部的「功能」算預設音量 (旋律 0 / 和聲 −, 靠壓低和聲拉開層次),
   // 修「縮編後和聲過響打斷樂句」。track→player 用名稱比對, 對不上就留 0 dB (手動補)。
