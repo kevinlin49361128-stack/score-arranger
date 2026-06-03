@@ -238,3 +238,34 @@ class TestPdfToMusicXML:
         out = pdf_to_musicxml(str(sample), output_dir=str(tmp_path))
         assert Path(out).exists()
         assert out.endswith((".mxl", ".xml"))
+
+
+class TestJvmHeapAndManagedTemp:
+    """C1 JVM heap env + C4 受控暫存清理 (大檔 PDF 支援)。"""
+
+    def test_heap_mb_clamped(self):
+        from core.omr.audiveris import _audiveris_heap_mb
+        assert 2048 <= _audiveris_heap_mb() <= 4096
+
+    def test_env_sets_xmx_when_unset(self, monkeypatch):
+        from core.omr.audiveris import _audiveris_env
+        monkeypatch.delenv("JAVA_OPTS", raising=False)
+        monkeypatch.delenv("_JAVA_OPTIONS", raising=False)
+        assert "-Xmx" in _audiveris_env()["_JAVA_OPTIONS"]
+
+    def test_env_respects_user_xmx(self, monkeypatch):
+        from core.omr.audiveris import _audiveris_env
+        monkeypatch.setenv("JAVA_OPTS", "-Xmx9g")
+        monkeypatch.delenv("_JAVA_OPTIONS", raising=False)
+        # 使用者已自設 -Xmx → 不再塞 _JAVA_OPTIONS 覆寫
+        assert "-Xmx" not in _audiveris_env().get("_JAVA_OPTIONS", "")
+
+    def test_managed_dir_prunes_to_keep(self, monkeypatch, tmp_path):
+        import core.omr.audiveris as a
+        monkeypatch.setattr("tempfile.gettempdir", lambda: str(tmp_path))
+        monkeypatch.setattr(a, "_OMR_KEEP", 3)
+        made = [a._new_managed_omr_dir() for _ in range(6)]
+        root = tmp_path / a._OMR_TMP_ROOT
+        remaining = [p for p in root.iterdir() if p.is_dir()]
+        assert len(remaining) <= 3          # /tmp 漏盤上限 = _OMR_KEEP
+        assert made[-1].exists()            # 最新一份保留 (caller 還要用)

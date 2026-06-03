@@ -2,11 +2,13 @@
  * Preload script — 以 contextBridge 暴露安全的 API 給 renderer
  */
 
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 const api = {
   openScoreDialog: (): Promise<string | null> =>
     ipcRenderer.invoke("dialog:openScore"),
+  /** B5 拖放匯入 — 從 drop 的 File 取本地路徑 (Electron 32+ 改用 webUtils)。 */
+  getDroppedPath: (file: File): string => webUtils.getPathForFile(file),
   saveProjectDialog: (): Promise<string | null> =>
     ipcRenderer.invoke("dialog:saveProject"),
   openProjectDialog: (): Promise<string | null> =>
@@ -276,6 +278,19 @@ const api = {
       ipcRenderer.invoke("engine:transcribe", path, mapping),
     toSourceMidi: (path?: string) =>
       ipcRenderer.invoke("engine:toSourceMidi", path),
+  },
+
+  /**
+   * B1 線上曲庫層 — 雲端曲目隨需下載 (主程序下載/快取, 引擎只讀本地檔)。
+   */
+  corpus: {
+    /** 遠端 manifest 的曲目 metadata (離線時回空陣列, 不報錯)。 */
+    listRemote: () => ipcRenderer.invoke("corpus:listRemote"),
+    /** 下載 (或命中快取) 一首雲端曲, 回傳本地 .mxl 路徑。 */
+    resolve: (corpusPath: string) =>
+      ipcRenderer.invoke("corpus:resolve", corpusPath),
+    /** 清空已下載的雲端曲快取, 回傳釋放位元組數。 */
+    clearCache: () => ipcRenderer.invoke("corpus:clearCache"),
   },
 
   /**

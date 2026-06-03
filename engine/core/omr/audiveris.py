@@ -197,6 +197,64 @@ def _find_export(search_dir: Path) -> Optional[Path]:
     return None
 
 
+def _audiveris_heap_mb() -> int:
+    """Audiveris JVM 最大堆 (MB) — 依系統實體記憶體推算 (C1)。
+
+    大型 / 多頁掃描譜 OMR 是記憶體大戶; Audiveris 預設堆 (~512MB) 正是
+    大檔 OOM 的主因。取實體記憶體一半, 夾在 2GB–4GB 之間 (留餘裕給 OS
+    與本體, 不致反吃 swap)。
+    """
+    try:
+        total_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+        total_mb = int(total_bytes // (1024 * 1024))
+    except (ValueError, OSError, AttributeError):
+        total_mb = 8192  # 取不到時保守當 8GB
+    return max(2048, min(4096, total_mb // 2))
+
+
+def _audiveris_env() -> dict[str, str]:
+    """Audiveris 子程序環境 — 拉高 JVM 堆上限 (C1)。
+
+    用 _JAVA_OPTIONS: 不論 Audiveris 由 homebrew script 還是 .app 原生
+    launcher 啟動, JVM 都會吃此變數 (JAVA_OPTS 僅 gradle script 吃)。
+    使用者已自設 -Xmx (JAVA_OPTS 或 _JAVA_OPTIONS) 則尊重不覆寫。
+    """
+    env = dict(os.environ)
+    has_xmx = "-Xmx" in env.get("JAVA_OPTS", "") or \
+        "-Xmx" in env.get("_JAVA_OPTIONS", "")
+    if not has_xmx:
+        prev = env.get("_JAVA_OPTIONS", "")
+        env["_JAVA_OPTIONS"] = f"{prev} -Xmx{_audiveris_heap_mb()}m".strip()
+    return env
+
+
+_OMR_TMP_ROOT = "score_arranger_omr"
+_OMR_KEEP = 3  # 保留最近幾次 OMR 產出, 其餘清掉 (C4 防 /tmp 漏盤)
+
+
+def _new_managed_omr_dir() -> Path:
+    """在受控的 OMR 暫存根下開唯一子目錄, 並清掉過舊的 (C4)。
+
+    OMR 是兩階段 (此函式回傳路徑 → caller 之後才載入內容), 故無法在此就刪;
+    改為「下次跑時清掉更早的」, 把 /tmp 漏盤上限壓在 _OMR_KEEP 份
+    (每份約 50–200MB)。最近的 _OMR_KEEP 份保留, 確保上一次結果若仍在
+    載入也不會被砍。
+    """
+    root = Path(tempfile.gettempdir()) / _OMR_TMP_ROOT
+    root.mkdir(parents=True, exist_ok=True)
+    try:
+        existing = sorted(
+            (p for p in root.iterdir() if p.is_dir()),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        for old in existing[_OMR_KEEP - 1:]:  # 留位置給這次
+            shutil.rmtree(old, ignore_errors=True)
+    except OSError:
+        pass
+    return Path(tempfile.mkdtemp(prefix="omr_", dir=str(root)))
+
+
 def pdf_to_musicxml(
     pdf_path: str,
     output_dir: Optional[str] = None,
@@ -230,8 +288,7 @@ def pdf_to_musicxml(
         )
     assert status.audiveris_path is not None
 
-    out_dir = Path(output_dir) if output_dir else Path(tempfile.mkdtemp(
-        prefix="audiveris_"))
+    out_dir = Path(output_dir) if output_dir else _new_managed_omr_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Audiveris 5.x CLI:
@@ -247,6 +304,7 @@ def pdf_to_musicxml(
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=timeout_sec,
+            env=_audiveris_env(),
         )
     except subprocess.TimeoutExpired as e:
         raise AudiverisError(
@@ -302,6 +360,7 @@ def pdf_to_musicxml(
             retry_result = subprocess.run(
                 retry_cmd, capture_output=True, text=True,
                 timeout=timeout_sec,
+                env=_audiveris_env(),
             )
         except (subprocess.TimeoutExpired, OSError):
             retry_result = None

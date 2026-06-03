@@ -102,6 +102,8 @@ export interface RepertoireEntry {
   tags: TeachingTag[];
   /** 大眾用途 (婚禮 / 業餘小提琴 / 廣為人知). 與 tags 正交. */
   popular_tags?: PopularTag[];
+  /** B1: true = 雲端曲 (需下載), 非綁定核心。由遠端 manifest 合併進來時標記。 */
+  remote?: boolean;
 }
 
 // ============================================================================

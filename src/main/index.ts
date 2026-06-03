@@ -6,6 +6,7 @@ import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
 import { mkdirSync, readFileSync, realpathSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { clearCache, listRemote, resolveRemote } from "./corpus-fetch";
 import {
   analyzeScore,
   applyEditOps,
@@ -478,6 +479,13 @@ function registerIpcHandlers(): void {
   ipcMain.handle("engine:historyStatus", async () =>
     safeCall(() => historyStatus()));
   ipcMain.handle("engine:toMidi", async () => safeCall(() => toMidi()));
+  // B1 線上曲庫層 — 主程序下載/快取, 引擎不碰網路
+  ipcMain.handle("corpus:listRemote", async () =>
+    safeCall(() => listRemote()));
+  ipcMain.handle("corpus:resolve", async (_evt, corpusPath: string) =>
+    safeCall(() => resolveRemote(corpusPath)));
+  ipcMain.handle("corpus:clearCache", async () =>
+    safeCall(async () => clearCache()));
   ipcMain.handle(
     "engine:toSourceMidi",
     async (_evt, path?: string) => safeCall(() => toSourceMidi(path)),

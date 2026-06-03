@@ -26,10 +26,13 @@ Phase 2 範圍 (留 TODO):
 from __future__ import annotations
 
 import copy
+import hashlib
 import os
+import pickle
 import sys
 from collections import OrderedDict
 from fractions import Fraction
+from pathlib import Path
 from typing import Any, Literal, Optional, TypeVar, cast
 
 from music21 import (
@@ -143,6 +146,91 @@ def clear_parse_cache() -> None:
     _IR_CACHE.clear()
 
 
+# ─── B4: 持久解析快取 (依檔案內容 hash, 跨 session 重用) ──────────────────────
+# 大檔 (匯入譜 / OMR 結果 / 大型改編) 重開不必重新 parse。把 IR pickle 存磁碟,
+# 依內容 sha256 當 key — 與路徑/mtime 無關, 複製/搬移後仍命中。
+# 不相容 (IR 改版 / Python 升級) → 載入失敗時當 miss + 刪除, 不致命。
+# 安全: 只載入本程式自己寫的快取檔; cache dir 為使用者私有, 與既有信任模型一致。
+_PARSE_CACHE_VERSION = 1  # IR 結構變動 → +1 使舊快取自然失效
+_PARSE_CACHE_BYTES_CAP = 200 * 1024 * 1024  # 200MB, 超過依 mtime LRU 淘汰
+_DISK_CACHE_DIR: Optional[Path] = None  # 測試可覆寫
+
+
+def _disk_cache_dir() -> Path:
+    d = _DISK_CACHE_DIR or (Path.home() / ".cache" / "score-arranger" / "parse")
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _resolve_to_file(path: str) -> Optional[str]:
+    """path (含 corpus:) → 實際檔案路徑; 無法解析回 None。"""
+    if path.startswith("corpus:"):
+        from core.samples import resolve as resolve_sample
+        p = resolve_sample(path[len("corpus:"):])
+        return str(p) if p is not None else None
+    return path if os.path.isfile(path) else None
+
+
+def _content_cache_key(file_path: str) -> Optional[str]:
+    """檔案內容 sha256 + 版本 → 磁碟快取 key。讀不到回 None。"""
+    try:
+        h = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return f"v{_PARSE_CACHE_VERSION}_{h.hexdigest()}"
+    except OSError:
+        return None
+
+
+def _disk_cache_get(key: str) -> Optional[Score]:
+    p = _disk_cache_dir() / f"{key}.pkl"
+    try:
+        with open(p, "rb") as f:
+            obj = pickle.load(f)
+        os.utime(p, None)  # touch → LRU 保新
+        return obj if isinstance(obj, Score) else None
+    except FileNotFoundError:
+        return None
+    except Exception:
+        try:
+            p.unlink()  # 損毀 / 不相容 → 刪掉當 miss
+        except OSError:
+            pass
+        return None
+
+
+def _disk_cache_put(key: str, ir: Score) -> None:
+    try:
+        p = _disk_cache_dir() / f"{key}.pkl"
+        tmp = p.with_suffix(".pkl.tmp")
+        with open(tmp, "wb") as f:
+            pickle.dump(ir, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp, p)  # atomic
+        _prune_disk_cache()
+    except Exception:
+        pass  # 快取寫入失敗不致命
+
+
+def _prune_disk_cache() -> None:
+    try:
+        files = [(f, f.stat()) for f in _disk_cache_dir().glob("*.pkl")]
+        total = sum(st.st_size for _, st in files)
+        if total <= _PARSE_CACHE_BYTES_CAP:
+            return
+        files.sort(key=lambda x: x[1].st_mtime)  # 最舊先刪
+        for f, st in files:
+            if total <= _PARSE_CACHE_BYTES_CAP:
+                break
+            try:
+                f.unlink()
+                total -= st.st_size
+            except OSError:
+                pass
+    except Exception:
+        pass
+
+
 # ============================================================================
 # Public API
 # ============================================================================
@@ -197,6 +285,15 @@ def parse_musicxml(path: str) -> Score:
     cached = _cache_get(_IR_CACHE, key)
     if cached is not None:
         return copy.deepcopy(cached)
+    # B4: 持久磁碟快取 — 依檔案內容 hash, 跨 session 重用 (大檔重開省 parse)。
+    file_path = _resolve_to_file(path)
+    disk_key = _content_cache_key(file_path) if file_path else None
+    if disk_key is not None:
+        hit = _disk_cache_get(disk_key)
+        if hit is not None:
+            hit.metadata["source_path"] = path  # 對齊當前路徑
+            _cache_put(_IR_CACHE, key, hit)
+            return copy.deepcopy(hit)
     ir = parse_stream(load_m21(path))
     # 補回 music21 import 時丟掉的記譜元素 (hairpin / ornament)。
     try:
@@ -206,6 +303,8 @@ def parse_musicxml(path: str) -> Score:
         pass  # 補充解析失敗不影響主解析
     # 留下原始路徑 — 之後 continuo / figured-bass 解析需要回讀 <figure>。
     ir.metadata.setdefault("source_path", path)
+    if disk_key is not None:
+        _disk_cache_put(disk_key, ir)
     _cache_put(_IR_CACHE, key, ir)
     return copy.deepcopy(ir)
 

@@ -601,15 +601,20 @@ export function Toolbar() {
     }
   };
 
-  const handleImport = async () => {
-    const path = await window.scoreArranger.openScoreDialog();
-    if (!path) return;
+  /** 從已確定的路徑匯入 (拖放 / 對話框共用); PDF 先打預防針。 */
+  const importPath = async (path: string) => {
     // PDF: 先打預防針 —— OMR 辨識本質上不穩定, 讓使用者匯入前心裡有底
     if (path.toLowerCase().endsWith(".pdf")) {
       setPdfWarning({ pendingPdfPath: path });
       return;
     }
     await runImport(path);
+  };
+
+  const handleImport = async () => {
+    const path = await window.scoreArranger.openScoreDialog();
+    if (!path) return;
+    await importPath(path);
   };
 
   // 空狀態功能按鈕 — ScoreViewer 用 CustomEvent 呼叫, 避免雙向耦合
@@ -620,6 +625,16 @@ export function Toolbar() {
       window.removeEventListener("sa:request-open-score", handler);
     };
   }, [handleImport]);
+
+  // B5: 拖放匯入 — App.tsx 取得拖放檔案路徑後派此事件 (PDF 仍走預防針)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const path = (e as CustomEvent<{ path: string }>).detail?.path;
+      if (path) void importPath(path);
+    };
+    window.addEventListener("sa:import-path", handler);
+    return () => window.removeEventListener("sa:import-path", handler);
+  }, [importPath]);
 
   // 0.1.47 C3: 「今日推薦」卡片點擊 → 直接載入 corpus, 不開 RepertoireDialog
   useEffect(() => {

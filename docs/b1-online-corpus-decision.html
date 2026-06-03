@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B1 線上曲庫層 — 變更確認</title>
+<style>
+  :root{
+    --bg:#f6f4ef;--card:#fffdf8;--ink:#2c2a26;--muted:#6f6a61;--line:#e4ddd0;
+    --accent:#3a6e63;--rec:#2f7d5b;--recbg:#e9f5ee;--warn:#b8862f;
+    --s:#3a7d5b;--m:#b8862f;--l:#b05540;
+    --shadow:0 1px 3px rgba(60,50,30,.08),0 6px 24px rgba(60,50,30,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    line-height:1.62;padding:0 0 110px}
+  header{padding:38px 24px 16px;max-width:880px;margin:0 auto}
+  h1{font-size:25px;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:14.5px;margin:0}
+  main{max-width:880px;margin:0 auto;padding:0 24px}
+  h2{font-size:18px;margin:30px 0 8px;display:flex;align-items:center;gap:9px}
+  .num{background:var(--accent);color:#fff;width:24px;height:24px;border-radius:7px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+  .flow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);font-size:13.8px}
+  .flow .step{display:flex;gap:10px;align-items:flex-start;margin:7px 0}
+  .flow .step b{color:var(--accent)}
+  .flow .arrow{color:var(--muted);text-align:center;font-size:12px;margin:1px 0}
+  .files{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:620px){.files{grid-template-columns:1fr}}
+  .fbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;box-shadow:var(--shadow)}
+  .fbox h4{margin:0 0 6px;font-size:13.5px}
+  .fbox.touch h4{color:var(--l)} .fbox.keep h4{color:var(--s)}
+  .fbox ul{margin:0;padding-left:16px;font-size:12.8px;color:var(--muted)}
+  .fbox li{margin:3px 0}
+  code{background:#efe9dd;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 16px;
+    margin:9px 0;box-shadow:var(--shadow);display:flex;gap:12px;align-items:flex-start;transition:.15s}
+  .card.sel{border-color:var(--rec);box-shadow:0 0 0 2px var(--recbg),var(--shadow)}
+  .card.rec{background:linear-gradient(0deg,#fffdf8,#fdfaf0)}
+  .card input{margin-top:3px;width:17px;height:17px;accent-color:var(--rec);cursor:pointer;flex:none}
+  .card .t{font-weight:650;font-size:14.5px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .rec-tag{color:var(--rec);font-weight:700;font-size:12px}
+  .eff{font-size:10.5px;font-weight:700;color:#fff;border-radius:6px;padding:1px 7px}
+  .eff.S{background:var(--s)}.eff.M{background:var(--m)}.eff.L{background:var(--l)}
+  .desc{font-size:13px;color:#494540;margin:5px 0 0}
+  .decgrp{margin:14px 0 4px}
+  .decgrp .lbl{font-size:13.5px;font-weight:650;color:var(--ink);margin:0 0 2px}
+  .decgrp .hint{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+  .base{background:var(--recbg);border:1px solid #cfe6d8;border-radius:12px;padding:13px 16px;font-size:13.3px}
+  .base h3{margin:0 0 6px;font-size:14.5px;color:var(--rec)}
+  .base ul{margin:0;padding-left:18px} .base li{margin:4px 0;color:#3a5a4c}
+  footer{position:fixed;bottom:0;left:0;right:0;background:rgba(246,244,239,.96);
+    backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 24px}
+  .fwrap{max-width:880px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  button{font:inherit;font-weight:650;font-size:14px;border:none;border-radius:10px;padding:9px 17px;cursor:pointer}
+  .copy{background:var(--accent);color:#fff}.reset{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .toast{position:fixed;left:50%;bottom:74px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:9px 18px;border-radius:99px;font-size:13px;opacity:0;transition:.25s;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .legend{font-size:11.5px;color:var(--muted);margin:5px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>B1 線上曲庫層 — 變更確認</h1>
+  <p class="sub">一句話：把曲庫拆成「<b>綁定核心 329 首（離線保底）</b> + <b>線上擴充包（隨需下載、本地快取）</b>」，從此<b>加曲不用發新版</b>。下面是會動到什麼、加上 4 個要你拍板的選擇。</p>
+  <p class="legend">難度 <span class="eff S">S</span><span class="eff M">M</span><span class="eff L">L</span>　🎯 = 我的建議</p>
+</header>
+
+<main>
+  <h2><span class="num">1</span> 資料流（下載一首雲端曲）</h2>
+  <div class="flow">
+    <div class="step">① 使用者在曲目庫點一首「雲端」曲 <b>(corpus:openscore/xxx)</b></div>
+    <div class="arrow">↓</div>
+    <div class="step">② <b>主程序 (Electron)</b> 查 manifest 取得 URL + sha256</div>
+    <div class="arrow">↓</div>
+    <div class="step">③ 下載 .mxl → <b>驗 sha256</b> → 存 <code>userData/corpus_cache/&lt;id&gt;.mxl</code></div>
+    <div class="arrow">↓</div>
+    <div class="step">④ 回傳<b>本地檔路徑</b>給 renderer → 引擎照常 <code>parse(本地檔)</code></div>
+    <div class="arrow">↓</div>
+    <div class="step">⑤ 第二次點同一首 → 命中快取，<b>離線也能開</b></div>
+  </div>
+
+  <h2><span class="num">2</span> 會動到 / 不動的檔案</h2>
+  <div class="files">
+    <div class="fbox touch">
+      <h4>會新增 / 改動</h4>
+      <ul>
+        <li><b>主程序</b>：新 <code>corpus-fetch.ts</code>（抓 manifest、下載、驗 hash、快取、LRU 清理）+ 新 IPC <code>corpus:resolve / listRemote / onProgress</code></li>
+        <li><b>preload.ts</b>：暴露上述 IPC</li>
+        <li><b>renderer</b>：曲目庫合併遠端 manifest、「雲端 / 需下載」徽章、下載進度 UI</li>
+        <li><b>host</b>：上傳 <code>catalog.json</code> + 一批 .mxl</li>
+      </ul>
+    </div>
+    <div class="fbox keep">
+      <h4>不動（重要）</h4>
+      <ul>
+        <li><b>引擎 (Python)</b>：保持<b>離線、只讀檔</b> —— 不碰網路（安全邊界乾淨）</li>
+        <li>既有 <b>329 首綁定曲</b> + <code>corpus:</code> 解析照舊</li>
+        <li>既有匯入 / 改編 / 播放流程</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="num">3</span> 要你拍板的 4 個選擇</h2>
+
+  <div class="decgrp">
+    <p class="lbl">D1 — host 放哪？</p>
+    <p class="hint">manifest + .mxl 檔案的存放與下載來源。</p>
+    <label class="card rec" data-d="D1" data-id="D1a"><input type="radio" name="D1">
+      <div><div class="t">GitHub Releases assets（專屬 <code>corpus-v1</code> release） <span class="rec-tag">🎯</span> <span class="eff S">S</span></div>
+      <p class="desc">免費、CDN backed、已在工具鏈（gh CLI）。曲庫 release 獨立於 app release 成長 —— 正中 B1 目標。數百個小 .mxl（每個 10–100KB）對 GitHub fair-use 完全無壓力。</p></div></label>
+    <label class="card" data-d="D1" data-id="D1b"><input type="radio" name="D1">
+      <div><div class="t">GitHub Pages（website repo 底下） <span class="eff S">S</span></div>
+      <p class="desc">也免費、已部署。但 Pages 有軟性容量 / 流量限制，不適合堆大量二進位。</p></div></label>
+    <label class="card" data-d="D1" data-id="D1c"><input type="radio" name="D1">
+      <div><div class="t">Vercel / 物件儲存 (S3·R2) <span class="eff M">M</span></div>
+      <p class="desc">最能擴展，但多一層 infra / 可能有成本；現階段殺雞用牛刀。</p></div></label>
+  </div>
+
+  <div class="decgrp">
+    <p class="lbl">D2 — 誰負責下載？</p>
+    <p class="hint">關係到安全邊界。</p>
+    <label class="card rec" data-d="D2" data-id="D2a"><input type="radio" name="D2">
+      <div><div class="t">主程序 (Electron) 下載 → 引擎只讀本地檔 <span class="rec-tag">🎯</span></div>
+      <p class="desc">引擎維持零網路、只讀檔；下載 / 驗證 / 快取集中在已有安全模型的主程序（CSP、navigation guard）。強烈建議。</p></div></label>
+    <label class="card" data-d="D2" data-id="D2b"><input type="radio" name="D2">
+      <div><div class="t">引擎 (Python) 自己下載</div>
+      <p class="desc">少一層 IPC，但破壞「引擎離線」的乾淨邊界、要在 Python 端重做 HTTPS / 驗證 / 沙箱。不建議。</p></div></label>
+  </div>
+
+  <div class="decgrp">
+    <p class="lbl">D3 — 本地快取上限？</p>
+    <p class="hint">下載過的曲存在 <code>userData/corpus_cache</code>，超過上限用 LRU 淘汰。</p>
+    <label class="card rec" data-d="D3" data-id="D3a"><input type="radio" name="D3">
+      <div><div class="t">上限 ~500MB，LRU 淘汰 <span class="rec-tag">🎯</span></div>
+      <p class="desc">.mxl 很小，500MB 可存上千首；淘汰最久沒開的。離線保底靠綁定核心，淘汰了再連線重抓即可。</p></div></label>
+    <label class="card" data-d="D3" data-id="D3b"><input type="radio" name="D3">
+      <div><div class="t">不設上限（全留）</div>
+      <p class="desc">.mxl 小，短期沒事；但長期會無上限長大。</p></div></label>
+    <label class="card" data-d="D3" data-id="D3c"><input type="radio" name="D3">
+      <div><div class="t">使用者可在設定裡管理 / 清快取 <span class="eff S">S</span></div>
+      <p class="desc">加一個「清除已下載曲庫」按鈕（可疊在 500MB LRU 之上）。</p></div></label>
+  </div>
+
+  <div class="decgrp">
+    <p class="lbl">D4 — manifest 跟 .mxl 放一起還是分離？</p>
+    <label class="card rec" data-d="D4" data-id="D4a"><input type="radio" name="D4">
+      <div><div class="t"><code>catalog.json</code> 跟 .mxl 一起放同個 Release <span class="rec-tag">🎯</span>
+      <p class="desc">單一來源、好維護；更新曲庫 = 上傳資產到同一個 release。</p></div></label>
+    <label class="card" data-d="D4" data-id="D4b"><input type="radio" name="D4">
+      <div><div class="t">manifest 放 website、.mxl 放 Release</div>
+      <p class="desc">manifest 改動可走網站部署（即時），但兩處要對齊版本。</p></div></label>
+  </div>
+
+  <h2><span class="num">4</span> 保證基線（必做，非選項）</h2>
+  <div class="base">
+    <h3>不管上面怎麼選，這些一定做：</h3>
+    <ul>
+      <li><b>離線保底</b>：綁定 329 首永遠可離線用；雲端曲離線時顯示但灰掉（「需連線」），下載失敗優雅降級。</li>
+      <li><b>完整性 + 安全</b>：只走 HTTPS、固定 allowlist origin；每檔下載後驗 sha256；單檔大小上限（防惡意巨檔）。</li>
+      <li><b>不破壞現況</b>：引擎不動、既有曲與流程不變；純加法。</li>
+    </ul>
+  </div>
+</main>
+
+<div class="toast" id="toast">已複製確認摘要</div>
+<footer>
+  <div class="fwrap">
+    <div style="font-size:13px;color:var(--muted)">已選 <b id="n">0</b>/4</div>
+    <div>
+      <button class="reset" onclick="resetAll()">清除</button>
+      <button class="copy" onclick="copySummary()">複製確認摘要</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const KEY="sa_b1_decision_v1";
+  const groups=["D1","D2","D3","D4"];
+  const cards=[...document.querySelectorAll('.card')];
+  function txt(c){return c.querySelector('.t').textContent.replace(/🎯/g,'').replace(/\s+/g,' ').trim();}
+  function save(){const s={};groups.forEach(g=>{const c=document.querySelector('.card[data-d="'+g+'"] input:checked');if(c)s[g]=c.closest('.card').dataset.id;});localStorage.setItem(KEY,JSON.stringify(s));}
+  function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"{}");Object.values(s).forEach(id=>{const c=document.querySelector('.card[data-id="'+id+'"]');if(c)c.querySelector('input').checked=true;});}catch(e){}}
+  function refresh(){let n=0;cards.forEach(c=>{const on=c.querySelector('input').checked;c.classList.toggle('sel',on);});groups.forEach(g=>{if(document.querySelector('.card[data-d="'+g+'"] input:checked'))n++;});document.getElementById('n').textContent=n;}
+  cards.forEach(c=>c.querySelector('input').addEventListener('change',()=>{refresh();save();}));
+  function resetAll(){cards.forEach(c=>c.querySelector('input').checked=false);refresh();save();}
+  function copySummary(){
+    let out="【B1 線上曲庫層 — 我確認的選擇】\n";
+    const names={D1:"host",D2:"誰下載",D3:"快取上限",D4:"manifest 位置"};
+    groups.forEach(g=>{const c=document.querySelector('.card[data-d="'+g+'"] input:checked');out+="\n"+names[g]+"："+(c?txt(c.closest('.card')):"（未選，用你的 🎯 建議）");});
+    out+="\n\n（OK 就照這個開 B1）";
+    navigator.clipboard.writeText(out).then(()=>{const t=document.getElementById('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1500);});
+  }
+  load();refresh();
+</script>
+</body>
+</html>

@@ -664,6 +664,11 @@ export const SHELL_STRINGS: BiDict = {
   "app.panel.sourceLabel.default": {
     "zh-TW": "原始樂譜", en: "Source score", ja: "元の楽譜",
   },
+  "app.drop.hint": {
+    "zh-TW": "放開以匯入樂譜（MusicXML / MIDI / PDF / 音訊…）",
+    en: "Drop to import a score (MusicXML / MIDI / PDF / audio…)",
+    ja: "ドロップして楽譜を取り込み（MusicXML / MIDI / PDF / 音声…）",
+  },
   "app.panel.sourceTitle": { "zh-TW": "原譜", en: "Source", ja: "原譜" },
   "app.panel.targetTitle": {
     "zh-TW": "改編譜", en: "Arrangement", ja: "アレンジ譜",

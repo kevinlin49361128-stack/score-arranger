@@ -81,6 +81,43 @@ export default function App() {
     return () => window.clearTimeout(t);
   }, [showHeatmap, targetMusicXML]);
 
+  // B5: 全域拖放匯入 — 拖樂譜檔到視窗任一處即可匯入 (走 Toolbar 統一 router)
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => {
+    const onOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+      setDragging(true);
+    };
+    const onLeave = (e: DragEvent) => {
+      if (!e.relatedTarget) setDragging(false); // 離開視窗才收掉提示
+    };
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      try {
+        const path = window.scoreArranger.getDroppedPath(file);
+        if (path) {
+          window.dispatchEvent(
+            new CustomEvent("sa:import-path", { detail: { path } }),
+          );
+        }
+      } catch {
+        /* 取不到路徑 → 忽略 */
+      }
+    };
+    window.addEventListener("dragover", onOver);
+    window.addEventListener("dragleave", onLeave);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragover", onOver);
+      window.removeEventListener("dragleave", onLeave);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, []);
+
   // 合併所有 parts: 同一 measure 的最大值, 作為熱圖整體分數
   const measureDifficulty = useMemo(() => {
     if (!showHeatmap) return undefined;
@@ -342,6 +379,21 @@ export default function App() {
       )}
 
       <LoadingOverlay />
+
+      {dragging && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(58,110,99,0.16)",
+            border: "3px dashed var(--accent, #3a6e63)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            pointerEvents: "none",
+            fontSize: 22, fontWeight: 700, color: "var(--fg-primary)",
+          }}
+        >
+          {tr("app.drop.hint")}
+        </div>
+      )}
 
       {/* 譜面區 + 資訊欄 — flexDirection 依 infoPanelPos 在欄/列間切換 */}
       <div

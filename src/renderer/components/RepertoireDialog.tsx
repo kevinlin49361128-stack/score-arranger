@@ -52,10 +52,38 @@ export function RepertoireDialog({ onClose }: Props) {
 
   const composerList = useMemo(() => listComposers(), []);
 
+  // ─── B1: 合併雲端曲庫 (遠端 manifest); 同 corpus_path 以綁定核心優先 ──────
+  const [remoteEntries, setRemoteEntries] = useState<RepertoireEntry[]>([]);
+  useEffect(() => {
+    let alive = true;
+    window.scoreArranger.corpus.listRemote().then((res) => {
+      if (!alive || !res.ok || !res.data) return;
+      setRemoteEntries(
+        res.data.map((e) => ({
+          ...(e as unknown as RepertoireEntry),
+          remote: true,
+        })),
+      );
+    }).catch(() => {
+      /* 離線 → 無雲端曲, 不影響綁定核心 */
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const allEntries = useMemo(() => {
+    if (remoteEntries.length === 0) return REPERTOIRE;
+    const have = new Set(REPERTOIRE.map((e) => e.corpus_path));
+    return [
+      ...REPERTOIRE,
+      ...remoteEntries.filter((e) => !have.has(e.corpus_path)),
+    ];
+  }, [remoteEntries]);
+
   // ─── 套用篩選 ─────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return REPERTOIRE.filter((e) => {
+    return allEntries.filter((e) => {
       if (eras.size && !eras.has(e.era)) return false;
       if (ensembles.size && !ensembles.has(e.ensemble)) return false;
       if (forms.size && !forms.has(e.form)) return false;
@@ -73,7 +101,10 @@ export function RepertoireDialog({ onClose }: Props) {
       }
       return true;
     });
-  }, [eras, ensembles, forms, composers, tags, gradeMin, gradeMax, search]);
+  }, [
+    allEntries, eras, ensembles, forms, composers, tags,
+    gradeMin, gradeMax, search,
+  ]);
 
   const activeFilterCount =
     eras.size + ensembles.size + forms.size + composers.size + tags.size
@@ -109,10 +140,21 @@ export function RepertoireDialog({ onClose }: Props) {
     setArrangement(null);
     setTargetMusicXML(null);
 
-    const virtualPath = `corpus:${entry.corpus_path}`;
     if (!activeTabId && tabs.length === 0) newTab();
     setLoading(true, t("preset.loading", { name: entry.title }));
     try {
+      // B1: 雲端曲先讓主程序下載/快取成本地檔再載入; 綁定曲走 corpus: 解析
+      let virtualPath: string;
+      if (entry.remote) {
+        const r = await window.scoreArranger.corpus.resolve(entry.corpus_path);
+        if (!r.ok || !r.data) {
+          setError(r.error ?? t("preset.error.loadFailed"));
+          return;
+        }
+        virtualPath = r.data;
+      } else {
+        virtualPath = `corpus:${entry.corpus_path}`;
+      }
       const res = await window.scoreArranger.engine.toMusicXML(virtualPath);
       if (res.ok && res.data) {
         setSourcePath(virtualPath);
@@ -423,6 +465,14 @@ function EntryRow(
         >
           {entry.title}
         </strong>
+        {entry.remote && (
+          <span
+            style={badgeStyle("rgba(58,110,99,0.18)", "rgb(58,110,99)")}
+            title={t("preset.badge.cloud.title")}
+          >
+            ☁
+          </span>
+        )}
         {/* A4 編制 icon — 16px SVG */}
         <svg
           width="18" height="18" viewBox="0 0 16 16"

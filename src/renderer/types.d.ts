@@ -25,6 +25,8 @@ declare global {
   interface Window {
     scoreArranger: {
       openScoreDialog: () => Promise<string | null>;
+      /** B5 拖放匯入 — 從 drop 的 File 取本地路徑 */
+      getDroppedPath: (file: File) => string;
       saveProjectDialog: () => Promise<string | null>;
       openProjectDialog: () => Promise<string | null>;
       exportFileDialog: (
@@ -304,6 +306,27 @@ declare global {
         toSourceMidi: (
           path?: string,
         ) => Promise<IpcResponse<MidiResult>>;
+      };
+      // B1 線上曲庫層 — 雲端曲目隨需下載
+      corpus: {
+        listRemote: () => Promise<IpcResponse<Array<{
+          corpus_path: string;
+          title: string;
+          composer: string;
+          composer_dates: string;
+          era: string;
+          form: string;
+          ensemble: string;
+          instruments: string[];
+          year: number;
+          measures?: number;
+          grade?: number;
+          henle_level?: number;
+          tags: string[];
+          popular_tags?: string[];
+        }>>>;
+        resolve: (corpusPath: string) => Promise<IpcResponse<string>>;
+        clearCache: () => Promise<IpcResponse<number>>;
       };
     };
   }

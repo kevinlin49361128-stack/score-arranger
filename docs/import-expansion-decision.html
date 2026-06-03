@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Arranger — 匯入 / 曲庫擴充決策</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#fffdf8; --ink:#2c2a26; --muted:#6f6a61;
+    --line:#e4ddd0; --accent:#9a6a3a; --accent2:#3a6e63;
+    --rec:#2f7d5b; --recbg:#e9f5ee; --s:#3a7d5b; --m:#b8862f; --l:#b05540;
+    --shadow:0 1px 3px rgba(60,50,30,.08),0 6px 24px rgba(60,50,30,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    line-height:1.62;padding:0 0 120px}
+  header{padding:40px 24px 22px;max-width:920px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:14.5px;margin:0}
+  .facts{max-width:920px;margin:14px auto 0;padding:0 24px}
+  .facts details{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 16px;box-shadow:var(--shadow)}
+  .facts summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent)}
+  .facts ul{margin:10px 0 4px;padding-left:18px;font-size:13.5px;color:var(--muted)}
+  .facts li{margin:4px 0}
+  main{max-width:920px;margin:0 auto;padding:0 24px}
+  .area{margin:30px 0 8px}
+  .area h2{font-size:19px;margin:0 0 2px;display:flex;align-items:center;gap:9px}
+  .area .q{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;color:#fff;letter-spacing:.4px}
+  .chip.area-a{background:var(--accent)} .chip.area-b{background:var(--accent2)} .chip.area-c{background:#7a5aa0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 17px 14px;
+    margin:11px 0;box-shadow:var(--shadow);display:flex;gap:13px;align-items:flex-start;
+    transition:border-color .15s,box-shadow .15s,transform .05s}
+  .card:hover{border-color:#d2c6b0}
+  .card.sel{border-color:var(--rec);box-shadow:0 0 0 2px var(--recbg),var(--shadow)}
+  .card.rec{background:linear-gradient(0deg,#fffdf8,#fdfaf0)}
+  .card input{margin-top:4px;width:18px;height:18px;accent-color:var(--rec);cursor:pointer;flex:none}
+  .card .body{flex:1;min-width:0}
+  .card .t{font-weight:650;font-size:15.5px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .card .t .id{color:var(--muted);font-weight:700;font-size:12.5px}
+  .rec-tag{color:var(--rec);font-weight:700;font-size:12.5px}
+  .eff{font-size:11px;font-weight:700;color:#fff;border-radius:6px;padding:1px 7px}
+  .eff.S{background:var(--s)} .eff.M{background:var(--m)} .eff.L{background:var(--l)}
+  .desc{font-size:13.7px;color:#494540;margin:6px 0 0}
+  .pc{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 0;font-size:12.7px}
+  .pc .pro::before{content:"＋ ";color:var(--s);font-weight:700}
+  .pc .con::before{content:"− ";color:var(--l);font-weight:700}
+  .pc .pro,.pc .con{flex:1;min-width:220px;color:var(--muted)}
+  .note{font-size:12.5px;color:var(--accent);margin:7px 0 0;font-style:italic}
+  footer{position:fixed;bottom:0;left:0;right:0;background:rgba(246,244,239,.96);
+    backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:13px 24px}
+  .fwrap{max-width:920px;margin:0 auto;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+  .count{font-size:13px;color:var(--muted)}
+  .count b{color:var(--ink)}
+  button{font:inherit;font-weight:650;font-size:14px;border:none;border-radius:10px;padding:10px 18px;cursor:pointer}
+  .copy{background:var(--accent);color:#fff} .copy:active{transform:translateY(1px)}
+  .reset{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:9px 18px;border-radius:99px;font-size:13px;opacity:0;
+    transition:.25s;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .legend{font-size:12px;color:var(--muted);margin:6px 0 0}
+  .legend .eff{margin:0 2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>匯入 / 曲庫擴充 — 決策文件</h1>
+  <p class="sub">三個方向：曲庫來源、匯入架構、PDF 大檔。勾選你要的，底部「複製決策摘要」貼回給我即可開工。🎯 = 我的建議。</p>
+  <p class="legend">難度：<span class="eff S">S</span>小 <span class="eff M">M</span>中 <span class="eff L">L</span>大</p>
+</header>
+
+<div class="facts">
+  <details>
+    <summary>現況事實（點開）</summary>
+    <ul>
+      <li><b>曲庫</b>：329 首<b>全部綁進 binary</b>（凍結時 music21 corpus 壞掉的 workaround）。加一首 = 放 .mxl + 改 <code>samples.py</code> + <code>repertoireCatalog.ts</code>，<b>必須發新版才看得到</b>。</li>
+      <li><b>來源</b>：music21/KernScores（Bach 聖詠、四重奏、Scarlatti、Beethoven 奏鳴曲、Chopin）、OpenScore Lieder 56 首(CC0)、9 首業餘 PD。</li>
+      <li><b>匯入</b>：music21 統一解析 + 4 格 LRU 快取。<b>grace-note bug</b>（<code>ChordEvent.duration=0</code>）害幾首 OpenScore 被排除。PDF / audio 各自獨立 method，無統一路由。</li>
+      <li><b>PDF OMR</b>：Audiveris 子程序，<b>JVM heap 未設</b>（預設 ~512MB → 大譜 OOM 主因）、阻塞式、<b>無進度 / 取消</b>、temp 不自動清、JSON-RPC stdout 上限 256MB。Audiveris 已有 <code>-sheets</code> 分頁重試。</li>
+    </ul>
+  </details>
+</div>
+
+<main>
+
+  <!-- AREA A -->
+  <section class="area">
+    <h2><span class="chip area-a">A</span> 曲庫來源擴充</h2>
+    <p class="q">還能從哪些<b>免費 / 公共領域</b>來源拉譜？（可複選，全走現有 .mxl 管線）</p>
+
+    <label class="card rec" data-id="A1">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">A1</span> CPDL 合唱公共領域庫 <span class="rec-tag">🎯</span> <span class="eff M">M</span></div>
+        <p class="desc">海量 SATB / 合唱 MusicXML，全免費。正中本 app「聖詠 / 合唱教學」定位，跟現有 370 首 Bach 聖詠路線一致。</p>
+        <div class="pc"><span class="pro">數量龐大、授權乾淨、跟現有 SATB 重分配引擎天作之合</span><span class="con">品質參差，要篩；部分檔案編碼不一致需驗證</span></div>
+      </div>
+    </label>
+
+    <label class="card rec" data-id="A2">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">A2</span> 更多 OpenScore（String Quartets 專案 + 加碼 Lieder） <span class="rec-tag">🎯</span> <span class="eff S">S</span></div>
+        <p class="desc">同一個來源、同一個 .mxl 管線，已驗證過（Lieder 56 首）。String Quartets 專案直接補弦樂四重奏曲目，CC0。</p>
+        <div class="pc"><span class="pro">最低摩擦、CC0 全清、已知管線能吃</span><span class="con">grace-note bug 不修的話仍會漏掉一些（見 B3）</span></div>
+      </div>
+    </label>
+
+    <label class="card" data-id="A3">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">A3</span> Mutopia Project <span class="eff M">M</span></div>
+        <p class="desc">純 PD 名曲，提供 MusicXML / Lilypond / MIDI。古典 + 巴洛克補強。</p>
+        <div class="pc"><span class="pro">PD 無授權風險、格式齊全</span><span class="con">部分只有 Lilypond，要 .ly→MusicXML roundtrip（會掉資訊）</span></div>
+      </div>
+    </label>
+
+    <label class="card" data-id="A4">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">A4</span> 加碼 KernScores（Humdrum） <span class="eff S">S</span></div>
+        <p class="desc">已是現有來源（Bach/Beethoven/Chopin）。可再拉 Joplin、聖詩、民謠等，難度光譜往「業餘友善」延伸。</p>
+        <div class="pc"><span class="pro">來源已串通、難度親民</span><span class="con">仍是 grace-note bug 高風險區（Humdrum 多裝飾音）</span></div>
+      </div>
+    </label>
+  </section>
+
+  <!-- AREA B -->
+  <section class="area">
+    <h2><span class="chip area-b">B</span> 匯入架構優化</h2>
+    <p class="q">把匯入端的地基打穩 + 解除「加曲必發版」的天花板。</p>
+
+    <label class="card rec" data-id="B1">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">B1</span> 線上曲庫 / 隨需下載層 <span class="rec-tag">🎯 戰略主菜</span> <span class="eff L">L</span></div>
+        <p class="desc">把曲庫從 binary 解耦：遠端 manifest（放 GitHub Pages / Vercel）列出可下載的 .mxl，首次使用時抓 + 本地快取。<b>加曲不用發新版</b>，binary 也瘦身。</p>
+        <div class="pc"><span class="pro">曲庫成長與發版脫鉤、binary 變小、可隨時上架新曲 / 活動曲單</span><span class="con">多了線上依賴與 CDN/host；要做快取與離線降級。建議「核心仍綁 + 擴充包線上」混合制保住離線</span></div>
+        <p class="note">這條一次解掉 A 區所有來源的「怎麼鋪貨」問題 —— A 區是「拉什麼」，B1 是「怎麼送到使用者」。</p>
+      </div>
+    </label>
+
+    <label class="card rec" data-id="B2">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">B2</span> grace-note 解析強健化 <span class="rec-tag">🎯 速贏</span> <span class="eff S">S</span></div>
+        <p class="desc">修 <code>ChordEvent.duration=0</code> 那個 bug（改成「復原」而非「跳過」）。直接解鎖目前被排除的 OpenScore / Humdrum 曲目。</p>
+        <div class="pc"><span class="pro">小改動、立刻多出可用曲目、降低未來匯入失敗率</span><span class="con">幾乎沒有；要補裝飾音 round-trip 測試</span></div>
+      </div>
+    </label>
+
+    <label class="card rec" data-id="B3">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">B3</span> 統一匯入路由器 <span class="rec-tag">🎯</span> <span class="eff M">M</span></div>
+        <p class="desc">一個 <code>import_file(path)</code> 用副檔名 + magic bytes 嗅探格式，分流到 MusicXML / MIDI / Kern / ABC / PDF / audio，錯誤訊息統一。取代現在散落的 <code>_method_parse</code> / <code>_pdf</code> / <code>_audio</code>。</p>
+        <div class="pc"><span class="pro">未來加格式 / 加線上來源只插一處、錯誤體驗一致</span><span class="con">要重接 IPC 與前端 dialog filter</span></div>
+      </div>
+    </label>
+
+    <label class="card" data-id="B4">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">B4</span> 持久化內容雜湊快取 <span class="eff M">M</span></div>
+        <p class="desc">把現在 4 格記憶體 LRU 換成「依檔案內容 hash 的磁碟快取」，解析一次跨 session 重用。大譜 / 大 PDF 重開特別有感。</p>
+        <div class="pc"><span class="pro">重開零成本、配合大檔策略</span><span class="con">要管快取目錄大小 / 失效</span></div>
+      </div>
+    </label>
+
+    <label class="card" data-id="B5">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">B5</span> 匯入 UX：拖放 + 最近檔案 + 從 URL 匯入 <span class="eff S">S</span></div>
+        <p class="desc">目前只有檔案對話框。加拖放、最近開啟、貼 URL 直接抓譜（接 B1 線上層後尤其順）。</p>
+        <div class="pc"><span class="pro">日常體驗明顯變順</span><span class="con">URL 匯入要過安全白名單（已有 navigation guard 可參考）</span></div>
+      </div>
+    </label>
+  </section>
+
+  <!-- AREA C -->
+  <section class="area">
+    <h2><span class="chip area-c">C</span> PDF 大檔支援</h2>
+    <p class="q">讓 50–100 頁 / 上百 MB 的 PDF 也跑得動，順便補上現在缺的進度 / 取消。</p>
+
+    <label class="card rec" data-id="C1">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">C1</span> 拉高 Audiveris JVM heap <span class="rec-tag">🎯 速贏</span> <span class="eff S">S</span></div>
+        <p class="desc">子程序加 <code>JAVA_OPTS=-Xmx2g~4g</code>（先看系統 RAM）。<b>大譜 OOM 的頭號主因</b>就是 heap 沒設；這條最便宜、直接解一大半中型 PDF。</p>
+        <div class="pc"><span class="pro">幾行改動、立刻把可處理頁數拉高一截</span><span class="con">仍有上限；要偵測可用記憶體免得反吃 swap</span></div>
+      </div>
+    </label>
+
+    <label class="card rec" data-id="C2">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">C2</span> 分頁 chunk OMR + 拼接 <span class="rec-tag">🎯 根治</span> <span class="eff L">L</span></div>
+        <p class="desc">把 PDF 切頁段（<code>-sheets 1-10</code>…）逐段 OMR 再把 MusicXML 拼回。<b>頁數上限基本消失</b>，還順帶撐起進度 / 部分結果 / 取消。重用 Audiveris 既有 <code>-sheets</code>。</p>
+        <div class="pc"><span class="pro">大檔不再 OOM、可邊跑邊出結果</span><span class="con">跨段拼接小節 / 聲部編號是真功夫；段邊界要對齊（跟 timeline 那題同源思路）</span></div>
+      </div>
+    </label>
+
+    <label class="card rec" data-id="C3">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">C3</span> 背景作業 + 進度串流 + 取消 <span class="rec-tag">🎯</span> <span class="eff M">M</span></div>
+        <p class="desc">把阻塞式 IPC 改成背景任務，新增 <code>omr_status()</code> 輪詢（<code>{pages_done,total}</code>）。Audiveris 逐頁寫輸出 → 進度可觀測。使用者能看進度、能取消（現在只能強制關 app）。</p>
+        <div class="pc"><span class="pro">大檔等待不再像當機、能中斷</span><span class="con">要做任務狀態管理；跟 C2 一起做最划算</span></div>
+      </div>
+    </label>
+
+    <label class="card" data-id="C4">
+      <input type="checkbox">
+      <div class="body">
+        <div class="t"><span class="id">C4</span> temp 自動清理 + 256MB 緩衝檢查 <span class="eff S">S</span></div>
+        <p class="desc">OMR 的 <code>.omr</code> 暫存（50–200MB）現在<b>不自動清</b>會漏盤；大譜 IR 序列化也可能撞 256MB stdout 上限。補上清理 + 超限明確報錯（而非悶死引擎）。</p>
+        <div class="pc"><span class="pro">防漏盤、防大檔悶死</span><span class="con">幾乎沒有，純衛生</span></div>
+      </div>
+    </label>
+  </section>
+
+</main>
+
+<div class="toast" id="toast">已複製決策摘要</div>
+<footer>
+  <div class="fwrap">
+    <div class="count">已選 <b id="n">0</b> 項　<span id="recnote" style="color:var(--rec)"></span></div>
+    <div>
+      <button class="reset" onclick="resetAll()">清除</button>
+      <button class="copy" onclick="copySummary()">複製決策摘要</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const KEY="sa_import_decision_v1";
+  const cards=[...document.querySelectorAll('.card')];
+  const titles={};
+  cards.forEach(c=>{titles[c.dataset.id]=c.querySelector('.t').textContent.replace(/🎯.*?( |$)/g,'').replace(/\s+/g,' ').trim();});
+  function save(){const s=cards.filter(c=>c.querySelector('input').checked).map(c=>c.dataset.id);localStorage.setItem(KEY,JSON.stringify(s));}
+  function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"[]");cards.forEach(c=>{if(s.includes(c.dataset.id))c.querySelector('input').checked=true;});}catch(e){}}
+  function refresh(){let n=0;cards.forEach(c=>{const on=c.querySelector('input').checked;c.classList.toggle('sel',on);if(on)n++;});
+    document.getElementById('n').textContent=n;
+    const recs=['A1','A2','B1','B2','B3','C1','C2','C3'];
+    const got=cards.filter(c=>c.querySelector('input').checked&&recs.includes(c.dataset.id)).length;
+    document.getElementById('recnote').textContent=got===recs.length?'（已含全部建議 🎯）':'';
+  }
+  cards.forEach(c=>c.querySelector('input').addEventListener('change',()=>{refresh();save();}));
+  function resetAll(){cards.forEach(c=>c.querySelector('input').checked=false);refresh();save();}
+  function copySummary(){
+    const picked=cards.filter(c=>c.querySelector('input').checked).map(c=>c.dataset.id);
+    const byArea={A:[],B:[],C:[]};
+    picked.forEach(id=>byArea[id[0]].push(id+' '+titles[id]));
+    let out="【匯入/曲庫擴充 — 我選的方向】\n";
+    out+="\nA 曲庫來源："+(byArea.A.length?'\n  - '+byArea.A.join('\n  - '):'（不做）');
+    out+="\nB 匯入架構："+(byArea.B.length?'\n  - '+byArea.B.join('\n  - '):'（不做）');
+    out+="\nC PDF 大檔："+(byArea.C.length?'\n  - '+byArea.C.join('\n  - '):'（不做）');
+    out+="\n\n（請依此開工，或我們再討論優先序）";
+    navigator.clipboard.writeText(out).then(()=>{const t=document.getElementById('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1600);});
+  }
+  load();refresh();
+</script>
+</body>
+</html>

@@ -135,6 +135,15 @@ export const LIBRARY_STRINGS: BiDict = {
       "非常に大きいファイル — 読み込みに数十秒かかることがあり、"
       + "ribbon/autofit は自動的にオフになります",
   },
+  "preset.badge.cloud.title": {
+    "zh-TW": "雲端曲目 — 第一次開啟會自動下載並快取, 之後可離線使用",
+    en:
+      "Cloud repertoire — downloaded and cached on first open, "
+      + "then available offline",
+    ja:
+      "クラウド曲 — 初回に自動ダウンロードしてキャッシュ、"
+      + "以降はオフラインでも使えます",
+  },
   "preset.badge.l": { "zh-TW": "L", en: "L", ja: "L" },
   "preset.badge.l.title": {
     "zh-TW": "較大 — 第一次載入可能花 10–30 秒",
