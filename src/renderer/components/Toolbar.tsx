@@ -67,6 +67,11 @@ import {
   type PracticeSessionSettings,
 } from "../utils/practiceSession";
 import { updatePracticeSettings } from "../stores/practiceSettingsStore";
+import {
+  getRehearsalNotes,
+  importRehearsalNotes,
+  type RehearsalNote,
+} from "../stores/rehearsalNotesStore";
 
 // 編制 → i18n key (label 於 render 時用 tr() 查, locale 切換才會更新)
 const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
@@ -421,10 +426,13 @@ export function Toolbar() {
       // 經 store 寫入的 loop/速度欄位; countIn/節拍器音色由 App 級 C3 hook
       // 直寫, 不一定在快取裡)。
       const practice = loadPracticeSession(sourcePath) ?? undefined;
+      // slice 4a: 把這首曲的排練筆記也收進 .sarr (換機器開專案也保留)。
+      const rehearsalNotes = getRehearsalNotes(sourcePath);
       const res = await window.scoreArranger.engine.saveProject(
         path,
         sourcePath,
         practice as Record<string, unknown> | undefined,
+        rehearsalNotes.length ? rehearsalNotes : undefined,
       );
       if (!res.ok) {
         setError(res.error ?? tr("toolbar.error.saveFailed"));
@@ -450,6 +458,13 @@ export function Toolbar() {
           updatePracticeSettings(
             res.data.source_path,
             res.data.practice as PracticeSessionSettings,
+          );
+        }
+        // slice 4a: 專案帶的排練筆記寫回 store (依 mark 合併, 不刪既有)。
+        if (res.data.rehearsal_notes && res.data.source_path) {
+          importRehearsalNotes(
+            res.data.source_path,
+            res.data.rehearsal_notes as RehearsalNote[],
           );
         }
         setSourcePath(res.data.source_path);

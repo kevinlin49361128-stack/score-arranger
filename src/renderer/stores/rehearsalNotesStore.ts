@@ -127,3 +127,43 @@ export function clearRehearsalNotes(score_id: string): void {
   save(_cache);
   notify();
 }
+
+/**
+ * 命令式取某 score 的所有筆記 (給 effect / save 用, 不訂閱)。
+ * 與 useRehearsalNotes 同邏輯但非 hook —— Phase B slice 4a: 存 .sarr 時取整批。
+ */
+export function getRehearsalNotes(score_id: string | null): RehearsalNote[] {
+  if (!score_id) return [];
+  const map = _cache[score_id] ?? {};
+  return Object.values(map).sort((a, b) => a.measure - b.measure);
+}
+
+/**
+ * Phase B slice 4a: load_project 把 .sarr 帶的排練筆記寫回 store。
+ * 依 mark_id 合併 (專案的筆記為權威, 覆蓋同 mark; 不刪該曲其他既有筆記),
+ * 換機器開專案也保留筆記。空陣列 = 無筆記, 不動。
+ */
+export function importRehearsalNotes(
+  score_id: string | null,
+  notes: readonly RehearsalNote[] | undefined,
+): void {
+  if (!score_id || !notes || notes.length === 0) return;
+  const next = { ..._cache };
+  next[score_id] = { ...(next[score_id] ?? {}) };
+  for (const n of notes) {
+    // 拒收無 mark / 空筆記的垃圾條目 ("" 也是 string, 故額外擋 falsy)。
+    if (!n || typeof n.mark_id !== "string" || !n.mark_id || !n.notes?.trim()) {
+      continue;
+    }
+    next[score_id][n.mark_id] = {
+      score_id,
+      mark_id: n.mark_id,
+      measure: typeof n.measure === "number" ? n.measure : 0,
+      notes: n.notes,
+      updated_at: typeof n.updated_at === "number" ? n.updated_at : Date.now(),
+    };
+  }
+  _cache = next;
+  save(_cache);
+  notify();
+}

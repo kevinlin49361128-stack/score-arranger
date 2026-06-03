@@ -2016,6 +2016,7 @@ def _method_save_project(params: dict[str, Any]) -> dict:
     }
     # Phase C Track①: 練習設定 (loop/速度/節拍器/混音) 跟著專案存 —
     # 前端傳 practiceSession dict, 收進 v2 practice slot (不傳則維持空)。
+    # Phase B slice 4a: 排練筆記 (rehearsal_notes) 同樣收進專案, 換機器開也保留。
     project = make_project_v2(
         sources=[
             {"source_id": arrangement.source_id, "path": source_path, "ir": None},
@@ -2023,6 +2024,7 @@ def _method_save_project(params: dict[str, Any]) -> dict:
         arrangements=[arr_dict],
         active_arrangement_id=arrangement.arrangement_id,
         practice=params.get("practice") or {},
+        rehearsal_notes=params.get("rehearsal_notes") or [],
     )
     Path(output_path).write_text(
         json.dumps(project, ensure_ascii=False, indent=2),
@@ -2124,6 +2126,8 @@ def _method_load_project(params: dict[str, Any]) -> dict:
         "issues": _serialize_issues(new_issues),
         # Track①: 把專案存的練習設定回吐, 前端寫回 localStorage 供 PlaybackControls 還原。
         "practice": project.get("practice") or {},
+        # slice 4a: 排練筆記回吐, 前端寫回 rehearsalNotesStore。
+        "rehearsal_notes": project.get("rehearsal_notes") or [],
     }
 
 

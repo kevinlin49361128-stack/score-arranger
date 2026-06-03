@@ -315,6 +315,8 @@ export interface LoadProjectResult {
   issues: ArrangementIssue[];
   /** Track①: 專案存的練習設定 (loop/速度/混音), 載入後寫回 localStorage 供還原 */
   practice?: Record<string, unknown>;
+  /** slice 4a: 專案存的排練筆記, 載入後寫回 rehearsalNotesStore */
+  rehearsal_notes?: unknown[];
 }
 
 // ============================================================================

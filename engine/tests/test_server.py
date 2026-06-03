@@ -506,6 +506,53 @@ class TestApplySuggestion:
         assert resp["ok"], resp.get("error")
         assert resp["data"]["practice"] == practice
 
+    def test_save_load_carries_rehearsal_notes(self, tmp_path):
+        """slice 4a: 排練筆記 (rehearsal_notes) 跟著 .sarr 存讀。"""
+        import core.server as srv
+        from music21 import corpus
+
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import violin_piano_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.parser import parse_stream
+
+        ir = parse_stream(corpus.parse("bach/bwv66.6"))
+        tag_all_sections(ir)
+        srv._CURRENT_ARRANGEMENT = run_arrange(ir, violin_piano_ensemble())
+
+        notes = [
+            {
+                "score_id": "corpus:bach/bwv66.6",
+                "mark_id": "A",
+                "measure": 5,
+                "notes": "銅管太大聲",
+                "updated_at": 111,
+            },
+            {
+                "score_id": "corpus:bach/bwv66.6",
+                "mark_id": "B",
+                "measure": 9,
+                "notes": "大提琴 cresc.",
+                "updated_at": 222,
+            },
+        ]
+        proj_path = tmp_path / "p.sarr"
+        handle_request({
+            "id": "sv", "method": "save_project",
+            "params": {
+                "path": str(proj_path),
+                "source_path": "corpus:bach/bwv66.6",
+                "rehearsal_notes": notes,
+            },
+        })
+        srv._CURRENT_ARRANGEMENT = None
+        resp = handle_request({
+            "id": "ld", "method": "load_project",
+            "params": {"path": str(proj_path)},
+        })
+        assert resp["ok"], resp.get("error")
+        assert resp["data"]["rehearsal_notes"] == notes
+
     def test_close_session_clears_state(self):
         """close_session 應釋放具名 session 的 state"""
         import core.server as srv

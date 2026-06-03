@@ -500,9 +500,12 @@ function registerIpcHandlers(): void {
       path: string,
       sourcePath: string,
       practice?: Record<string, unknown>,
+      rehearsalNotes?: unknown[],
     ) => {
       requireApprovedPath(path);
-      return safeCall(() => saveProject(path, sourcePath, practice));
+      return safeCall(() =>
+        saveProject(path, sourcePath, practice, rehearsalNotes),
+      );
     },
   );
   ipcMain.handle("engine:loadProject", async (_evt, path: string) =>

@@ -247,9 +247,18 @@ const api = {
     scoreClock: (path?: string) =>
       ipcRenderer.invoke("engine:scoreClock", path),
     saveProject: (
-      path: string, sourcePath: string, practice?: Record<string, unknown>,
+      path: string,
+      sourcePath: string,
+      practice?: Record<string, unknown>,
+      rehearsalNotes?: unknown[],
     ) =>
-      ipcRenderer.invoke("engine:saveProject", path, sourcePath, practice),
+      ipcRenderer.invoke(
+        "engine:saveProject",
+        path,
+        sourcePath,
+        practice,
+        rehearsalNotes,
+      ),
     loadProject: (path: string) =>
       ipcRenderer.invoke("engine:loadProject", path),
     exportTargetMusicXML: (path: string) =>
