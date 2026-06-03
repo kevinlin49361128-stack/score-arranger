@@ -44,11 +44,23 @@ _ACCENT_BOOST = 22      # accent: 當下 dynamic 基準 + 22 (相對, 非絕對)
 _MARCATO_BOOST = 34     # marcato (strong accent): 更強
 _MAX_VELOCITY = 127
 
+# ── A2+: 內聲部樂句內 velocity 平滑 ──────────────────────────────────────
+# 縮編 (管弦樂→小編制) 後, 和聲/內聲部若在樂句內有突兀的 dynamic 跳動, 一把樂器
+# 的 f 會跟旋律同響度而「打斷樂句」。把這些內聲部在「樂句內」(以呼吸記號分段) 的
+# velocity 拉向該樂句中位, 平滑成連續襯底。只動內聲部、只影響播放、不碰旋律/低音。
+_SMOOTH_STRENGTH = 0.55  # 0=不動, 1=完全等於樂句中位
+_SMOOTH_MIN_SEG = 3      # 樂句少於這麼多音不平滑 (沒有「樂句內對比」可言)
 
-def apply_playback_expression(m21_score: Any) -> None:
+
+def apply_playback_expression(
+    m21_score: Any, smooth_part_indices: "set[int] | None" = None,
+) -> None:
     """就地調整 music21 stream 的發聲時值與 velocity 供 MIDI 播放。
 
     只應作用於 to_midi 建立的拋棄式 stream; 不要傳記譜匯出用的 stream。
+
+    smooth_part_indices: 這些 part index 的內聲部會做「樂句內 velocity 平滑」
+      (見 _smooth_inner_voice)。None / 空 → 不平滑 (向後相容)。
     """
     from music21 import chord as m21_chord
     from music21 import dynamics as m21_dynamics
@@ -68,6 +80,49 @@ def apply_playback_expression(m21_score: Any) -> None:
                 base_vel = _DYNAMIC_VELOCITY.get(el.value, base_vel)
                 continue
             _shape_note(el, base_vel)
+
+    # 內聲部樂句內平滑 (在 velocity 算好之後, 只動指定的 part)
+    if smooth_part_indices:
+        for idx in smooth_part_indices:
+            if 0 <= idx < len(parts):
+                _smooth_inner_voice(parts[idx])
+
+
+def _smooth_inner_voice(stream: Any) -> None:
+    """把內聲部「樂句內」的 velocity 拉向樂句中位, 去掉突兀的 dynamic 跳動。
+
+    以呼吸記號 (BreathMark) 切樂句; 樂句間保留對比 (各自的中位), 只壓樂句內的
+    outlier。樂句太短 (< _SMOOTH_MIN_SEG) 不動 (沒有可言的「樂句內對比」)。
+    """
+    from statistics import median
+
+    from music21 import chord as m21_chord
+    from music21 import note as m21_note
+
+    seg: list[Any] = []
+
+    def flush() -> None:
+        if len(seg) < _SMOOTH_MIN_SEG:
+            return
+        med = median([_get_velocity(n) for n in seg])
+        for n in seg:
+            v = _get_velocity(n)
+            new = round(v * (1 - _SMOOTH_STRENGTH) + med * _SMOOTH_STRENGTH)
+            _set_velocity(n, max(1, min(_MAX_VELOCITY, int(new))))
+
+    for el in stream.recurse().getElementsByClass(
+        (m21_note.Note, m21_chord.Chord),
+    ):
+        seg.append(el)
+        if "BreathMark" in {type(a).__name__ for a in el.articulations}:
+            flush()
+            seg = []
+    flush()
+
+
+def _get_velocity(n: Any) -> int:
+    v = getattr(getattr(n, "volume", None), "velocity", None)
+    return int(v) if v is not None else _DEFAULT_VELOCITY
 
 
 def _shape_note(n: Any, base_vel: int) -> None:

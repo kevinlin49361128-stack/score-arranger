@@ -2563,6 +2563,30 @@ def _method_apply_figuration(params: dict[str, Any]) -> dict:
     }
 
 
+def _inner_voice_indices(score: Score) -> "set[int]":
+    """回傳「主要功能為內聲部 (和聲/踏板/裝飾)」的 part index 集。
+
+    供 to_midi 對這些聲部做樂句內 velocity 平滑 (修縮編後和聲打斷樂句)。
+    主要功能 = function_tags 中出現最多的; 無標記則不列入 (保守不平滑)。
+    """
+    from collections import Counter
+
+    inner = {
+        VoiceFunction.HARMONY_FILL,
+        VoiceFunction.PEDAL,
+        VoiceFunction.ORNAMENTAL,
+    }
+    out: set[int] = set()
+    for i, part in enumerate(score.parts):
+        tags = list(getattr(part, "function_tags", {}).values())
+        if not tags:
+            continue
+        most = Counter(tags).most_common(1)[0][0]
+        if most in inner:
+            out.add(i)
+    return out
+
+
 def _method_to_midi(params: dict[str, Any]) -> dict:
     """匯出當前 arrangement.target_score 為 base64 MIDI 字串。
 
@@ -2580,8 +2604,10 @@ def _method_to_midi(params: dict[str, Any]) -> dict:
 
     from core.ir_to_music21 import ir_to_music21
     from core.performance import apply_playback_expression
-    m21 = ir_to_music21(sess.current_arrangement.target_score)
-    apply_playback_expression(m21)  # A1: staccato/呼吸/重音 → 可聽 (僅播放)
+    target = sess.current_arrangement.target_score
+    m21 = ir_to_music21(target)
+    # A1 表情 + A2+ 內聲部樂句內平滑 (修縮編後和聲打斷樂句; 僅播放, 不碰旋律/低音)
+    apply_playback_expression(m21, smooth_part_indices=_inner_voice_indices(target))
 
     # Track name 給前端 PlaybackControls (1) 路由音色 (用 instrument_id 比對),
     # (2) 顯示給使用者 (mute popover). 為了同時滿足兩者, 寫成

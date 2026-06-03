@@ -130,3 +130,70 @@ def test_chord_velocity_set_on_subnotes_and_duration_shaped():
     assert float(c.quarterLength) == pytest.approx(2.0)
     for sub in c.notes:  # 子音 velocity 也要設到, 匯出才生效
         assert sub.volume.velocity == _DYNAMIC_VELOCITY["f"] + _MARCATO_BOOST
+
+
+def test_smooth_inner_voice_pulls_phrase_outlier_to_median():
+    """A2+: 內聲部樂句內突兀的 ff → 平滑後拉向樂句中位 (velocity 降低)。
+
+    只有傳了 smooth_part_indices 才平滑; 不傳維持原 velocity (向後相容)。
+    """
+    dyns = {0: "p", 3: "ff", 4: "p"}
+    events = [
+        NoteEvent(
+            pitch=Pitch(midi_number=60, spelling="C4"),
+            duration=Fraction(1, 2), onset=Fraction(i, 2),
+            dynamic=dyns.get(i),
+        )
+        for i in range(6)
+    ]
+    measure = Measure(
+        number=1, voices={1: Voice(voice_id=1, events=events)},
+        time_signature=(4, 4),
+    )
+    part = Part(
+        part_id="viola_1", name_display="Viola",
+        instrument_id="viola", measures=[measure],
+    )
+
+    # 不平滑: ff 音維持 104
+    m21_a = ir_to_music21(Score(parts=[part]))
+    apply_playback_expression(m21_a)
+    vels_a = [n.volume.velocity for n in m21_a.recurse().notes]
+    assert vels_a[3] == _DYNAMIC_VELOCITY["ff"]
+
+    # 平滑 (此 part 列入 smooth_part_indices): ff 拉向中位 (p), 介於 p 與 ff 之間
+    m21_b = ir_to_music21(Score(parts=[part]))
+    apply_playback_expression(m21_b, smooth_part_indices={0})
+    vels_b = [n.volume.velocity for n in m21_b.recurse().notes]
+    assert _DYNAMIC_VELOCITY["p"] < vels_b[3] < _DYNAMIC_VELOCITY["ff"]
+    assert vels_b[3] < vels_a[3]
+
+
+def test_smooth_inner_voice_respects_phrase_boundary():
+    """呼吸記號分樂句 — 樂句間對比保留 (各自中位, 不會被互相拉平)。"""
+    # 樂句1: 全 p (5 音); 呼吸; 樂句2: 全 f (5 音)。平滑後句1仍弱、句2仍強。
+    events = []
+    for i in range(10):
+        arts = ["breath"] if i == 4 else []
+        dyn = "p" if i == 0 else ("f" if i == 5 else None)
+        events.append(NoteEvent(
+            pitch=Pitch(midi_number=60, spelling="C4"),
+            duration=Fraction(1, 2), onset=Fraction(i, 2),
+            dynamic=dyn, articulations=arts,
+        ))
+    measures = [
+        Measure(number=1, voices={1: Voice(voice_id=1, events=events[:8])},
+                time_signature=(4, 4)),
+        Measure(number=2, voices={1: Voice(voice_id=1, events=events[8:])},
+                time_signature=(4, 4)),
+    ]
+    # 修 onset 讓第 2 小節從 0 起算
+    for j, ev in enumerate(events[8:]):
+        ev.onset = Fraction(j, 2)
+    part = Part(part_id="viola_1", name_display="Viola",
+                instrument_id="viola", measures=measures)
+    m21 = ir_to_music21(Score(parts=[part]))
+    apply_playback_expression(m21, smooth_part_indices={0})
+    vels = [n.volume.velocity for n in m21.recurse().notes]
+    # 句1 (前 5 音) 平均 仍明顯 < 句2 (後 5 音) — 樂句間對比沒被抹平
+    assert sum(vels[:5]) / 5 < sum(vels[5:]) / 5
