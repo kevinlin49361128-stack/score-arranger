@@ -645,6 +645,11 @@ export async function toMidi(): Promise<unknown> {
   return client.call("to_midi", {});
 }
 
+// 架構改造 Phase A: 統一時間模型 ScoreClock/TimeMap。path 給 source 譜, 否則 target。
+export async function scoreClock(path?: string): Promise<unknown> {
+  return client.call("score_clock", path ? { path } : {});
+}
+
 export async function saveProject(
   path: string,
   sourcePath: string,

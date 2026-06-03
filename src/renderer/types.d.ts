@@ -234,6 +234,11 @@ declare global {
         redo: () => Promise<IpcResponse<UndoRedoResult>>;
         historyStatus: () => Promise<IpcResponse<HistoryStatus>>;
         toMidi: () => Promise<IpcResponse<MidiResult>>;
+        scoreClock: (
+          path?: string,
+        ) => Promise<IpcResponse<
+          import("./generated/rpc-types").ScoreClockRes
+        >>;
         saveProject: (
           path: string,
           sourcePath: string,

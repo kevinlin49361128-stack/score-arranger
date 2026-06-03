@@ -44,6 +44,7 @@ import {
   suggestTransposition,
   tagFunctions,
   toMidi,
+  scoreClock,
   toMusicXML,
   toSourceMidi,
   transcribe,
@@ -479,6 +480,8 @@ function registerIpcHandlers(): void {
   ipcMain.handle("engine:historyStatus", async () =>
     safeCall(() => historyStatus()));
   ipcMain.handle("engine:toMidi", async () => safeCall(() => toMidi()));
+  ipcMain.handle("engine:scoreClock", async (_evt, path?: string) =>
+    safeCall(() => scoreClock(path)));
   // B1 線上曲庫層 — 主程序下載/快取, 引擎不碰網路
   ipcMain.handle("corpus:listRemote", async (_evt, force?: boolean) =>
     safeCall(() => listRemote(!!force)));

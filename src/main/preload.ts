@@ -244,6 +244,8 @@ const api = {
     redo: () => ipcRenderer.invoke("engine:redo"),
     historyStatus: () => ipcRenderer.invoke("engine:historyStatus"),
     toMidi: () => ipcRenderer.invoke("engine:toMidi"),
+    scoreClock: (path?: string) =>
+      ipcRenderer.invoke("engine:scoreClock", path),
     saveProject: (path: string, sourcePath: string) =>
       ipcRenderer.invoke("engine:saveProject", path, sourcePath),
     loadProject: (path: string) =>
