@@ -97,6 +97,8 @@ SAMPLE_CORPUS_IDS: list[str] = [
     "ciconia/quod_jactatur",
     "palestrina/Kyrie",
     "palestrina/Agnus",
+    "monteverdi/madrigal_3_1",
+    "monteverdi/madrigal_5_1",
     # 巴洛克補充
     "cpebach/h186",
     # 浪漫補充 (美 / 夏威夷)
@@ -240,6 +242,8 @@ SAMPLE_CORPUS_IDS: list[str] = [
     # Joplin rags (2 首補充)
     "joplin_entertainer",
     "joplin_solace",
+    # American lead sheet / parlor song 補充 (music21 corpus → MusicXML)
+    "foster/brown_hair",
     # Mozart 鋼琴奏鳴曲 mvt 1 (16 首 — 缺 K.545 已有 / K.310 parser 不認 grace)
     "mozart_sonata_01_1",
     "mozart_sonata_02_1",
@@ -428,6 +432,9 @@ _COMPOSER = {
     "boccherini": "Boccherini",
     # 0.1.55 大提琴 / 鋼琴 / 大鍵琴 / 管樂補曲
     "liszt": "Liszt",
+    # 0.1.64 曲庫擴充
+    "monteverdi": "Monteverdi",
+    "foster": "Stephen Foster",
 }
 
 
