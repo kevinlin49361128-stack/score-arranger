@@ -1,0 +1,6634 @@
+[
+  {
+    "corpus_path": "bach/bwv66.6",
+    "title": "Christ, unser Herr, zum Jordan kam (BWV 66.6)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 10,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv7.7",
+    "title": "Christ, unser Herr (BWV 7.7)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1724,
+    "measures": 19,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv57.8",
+    "title": "Selig ist der Mann (BWV 57.8)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1725,
+    "measures": 13,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv4.8",
+    "title": "Christ lag in Todesbanden (BWV 4.8)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1707,
+    "measures": 14,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv227.7",
+    "title": "Jesu, meine Freude (BWV 227.7)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1723,
+    "measures": 13,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv281",
+    "title": "Christus, der ist mein Leben (BWV 281)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1736,
+    "measures": 9,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv344",
+    "title": "Hilf, Herr Jesu, laß gelingen (BWV 344)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 24,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1.6",
+    "title": "Wie schön leuchtet (BWV 1.6, 5 parts)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "Other",
+    "instruments": [
+      "voice",
+      "mixed"
+    ],
+    "year": 1725,
+    "measures": 21,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "corelli/opus3no1/1grave",
+    "title": "Trio Sonata Op.3 No.1 — Grave",
+    "composer": "Arcangelo Corelli",
+    "composer_dates": "1653-1713",
+    "era": "Baroque",
+    "form": "Trio Sonata",
+    "ensemble": "Trio Sonata",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1689,
+    "measures": 19,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "ensemble"
+    ],
+    "popular_tags": [
+      "amateur_violinist"
+    ]
+  },
+  {
+    "corpus_path": "handel/rinaldo/Lascia_chio_pianga",
+    "title": "Lascia ch'io pianga (from Rinaldo)",
+    "composer": "George Frideric Handel",
+    "composer_dates": "1685-1759",
+    "era": "Baroque",
+    "form": "Aria",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1711,
+    "measures": 54,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "popular",
+      "wedding"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k80/movement1",
+    "title": "String Quartet K.80 mvt.1 (Adagio)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1770,
+    "measures": 67,
+    "henle_level": 3,
+    "tags": [
+      "ensemble",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k80/movement2",
+    "title": "String Quartet K.80 mvt.2 (Allegro)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1770,
+    "measures": 84,
+    "henle_level": 4,
+    "tags": [
+      "scales",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k80/movement3",
+    "title": "String Quartet K.80 mvt.3 (Menuetto)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1770,
+    "measures": 52,
+    "henle_level": 3,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k80/movement4",
+    "title": "String Quartet K.80 mvt.4 (Rondeau)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1770,
+    "measures": 71,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k155/movement1",
+    "title": "String Quartet K.155 mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "henle_level": 4,
+    "tags": [
+      "scales",
+      "ensemble"
+    ],
+    "popular_tags": [
+      "amateur_violinist"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k155/movement2",
+    "title": "String Quartet K.155 mvt.2",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "ensemble"
+    ],
+    "popular_tags": [
+      "amateur_violinist"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k155/movement3",
+    "title": "String Quartet K.155 mvt.3",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "measures": 103,
+    "henle_level": 4,
+    "tags": [
+      "scales",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k156/movement1",
+    "title": "String Quartet K.156 mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "measures": 180,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k156/movement2",
+    "title": "String Quartet K.156 mvt.2",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "measures": 37,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k156/movement3",
+    "title": "String Quartet K.156 mvt.3",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "measures": 62,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k156/movement4",
+    "title": "String Quartet K.156 mvt.4",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1772,
+    "measures": 24,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k458/movement1",
+    "title": "String Quartet K.458 \"Hunt\" mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1784,
+    "measures": 283,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k458/movement2",
+    "title": "String Quartet K.458 \"Hunt\" mvt.2",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1784,
+    "measures": 63,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k458/movement3",
+    "title": "String Quartet K.458 \"Hunt\" mvt.3",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1784,
+    "measures": 53,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k458/movement4",
+    "title": "String Quartet K.458 \"Hunt\" mvt.4",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1784,
+    "measures": 335,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k545/movement1_exposition",
+    "title": "Piano Sonata K.545 mvt.1 (Exposition)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1788,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus1no1/movement1",
+    "title": "String Quartet Op.1 No.1 mvt.1",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1762,
+    "measures": 66,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus1no1/movement2",
+    "title": "String Quartet Op.1 No.1 mvt.2",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1762,
+    "measures": 62,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus74no1/movement1",
+    "title": "String Quartet Op.74 No.1 mvt.1",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1793,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus74no1/movement2",
+    "title": "String Quartet Op.74 No.1 mvt.2",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1793,
+    "measures": 174,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus74no1/movement3",
+    "title": "String Quartet Op.74 No.1 mvt.3",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1793,
+    "measures": 113,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "haydn/opus74no1/movement4",
+    "title": "String Quartet Op.74 No.1 mvt.4",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1793,
+    "measures": 287,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus18no1/movement1",
+    "title": "String Quartet Op.18 No.1 mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1800,
+    "measures": 313,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus18no1/movement2",
+    "title": "String Quartet Op.18 No.1 mvt.2",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1800,
+    "measures": 110,
+    "henle_level": 7,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus18no1/movement3",
+    "title": "String Quartet Op.18 No.1 mvt.3",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1800,
+    "measures": 145,
+    "henle_level": 7,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus18no1/movement4",
+    "title": "String Quartet Op.18 No.1 mvt.4",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1800,
+    "henle_level": 7,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus59no1/movement1",
+    "title": "String Quartet Op.59 No.1 \"Razumovsky\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1806,
+    "henle_level": 8,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/opus132",
+    "title": "String Quartet Op.132 (Late, A minor)",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1825,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "chopin/mazurka06-2",
+    "title": "Mazurka Op.6 No.2",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "joplin/maple_leaf_rag",
+    "title": "Maple Leaf Rag",
+    "composer": "Scott Joplin",
+    "composer_dates": "1868-1917",
+    "era": "Romantic",
+    "form": "Rag",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1899,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "staccato"
+    ]
+  },
+  {
+    "corpus_path": "schubert/Lindenbaum",
+    "title": "Der Lindenbaum (from Winterreise)",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "schumann_clara/opus17/movement3",
+    "title": "Piano Trio Op.17 mvt.3 (Clara Schumann)",
+    "composer": "Clara Schumann",
+    "composer_dates": "1819-1896",
+    "era": "Romantic",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "piano"
+    ],
+    "year": 1846,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "schumann_robert/dichterliebe_no2",
+    "title": "Dichterliebe No.2 (Aus meinen Tränen)",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "schumann_robert/opus48no2",
+    "title": "Op.48 No.2 (Schumann)",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 18,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "verdi/laDonnaEMobile",
+    "title": "La donna è mobile (from Rigoletto)",
+    "composer": "Giuseppe Verdi",
+    "composer_dates": "1813-1901",
+    "era": "Romantic",
+    "form": "Opera",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1851,
+    "measures": 35,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/beethoven_op48_1_bitten",
+    "title": "6 Lieder Op.48 No.1 — Bitten",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1803,
+    "measures": 46,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/beethoven_op48_2_liebe",
+    "title": "6 Lieder Op.48 No.2 — Die Liebe des Nächsten",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1803,
+    "measures": 30,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/beethoven_op48_3_tode",
+    "title": "6 Lieder Op.48 No.3 — Vom Tode",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1803,
+    "measures": 49,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/beethoven_op48_4_ehre",
+    "title": "6 Lieder Op.48 No.4 — Die Ehre Gottes aus der Natur",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1803,
+    "measures": 43,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/beethoven_op52_3_ruhe",
+    "title": "8 Lieder Op.52 No.3 — Das Liedchen von der Ruhe",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1805,
+    "measures": 44,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d795_1_wandern",
+    "title": "Schöne Müllerin No.1 — Das Wandern",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1823,
+    "measures": 20,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "rhythm",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d795_2_wohin",
+    "title": "Schöne Müllerin No.2 — Wohin?",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1823,
+    "measures": 81,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d795_20_wiegenlied",
+    "title": "Schöne Müllerin No.20 — Des Baches Wiegenlied",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1823,
+    "measures": 26,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op39_5_mondnacht",
+    "title": "Liederkreis Op.39 No.5 — Mondnacht",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 68,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op48_1_mai",
+    "title": "Dichterliebe No.1 — Im wunderschönen Monat Mai",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 27,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op48_7_grolle",
+    "title": "Dichterliebe No.7 — Ich grolle nicht",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 36,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_1_seitich",
+    "title": "Frauenliebe No.1 — Seit ich ihn gesehen",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 36,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/brahms_op43_1_ewigeliebe",
+    "title": "4 Songs Op.43 No.1 — Von ewiger Liebe",
+    "composer": "Johannes Brahms",
+    "composer_dates": "1833-1897",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1864,
+    "measures": 121,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv269",
+    "title": "Aus meines Herzens Grunde (BWV 269)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1725,
+    "measures": 24,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv347",
+    "title": "Ich dank' dir, lieber Herre (BWV 347)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1735,
+    "measures": 16,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv267",
+    "title": "Ein Lämmlein geht und trägt die Schuld (BWV 267)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1735,
+    "measures": 20,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv17.7",
+    "title": "Nun lob', mein' Seel', den Herren (BWV 17.7)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1726,
+    "measures": 42,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv40.8",
+    "title": "Freuet euch, ihr Christen alle (BWV 40.8)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1723,
+    "measures": 20,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv38.6",
+    "title": "Aus tiefer Not schrei' ich zu dir (BWV 38.6)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1724,
+    "measures": 13,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv33.6",
+    "title": "Allein zu dir, Herr Jesu Christ (BWV 33.6)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1724,
+    "measures": 20,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv277",
+    "title": "Christ lag in Todesbanden (BWV 277, alt.)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1735,
+    "measures": 14,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv178.7",
+    "title": "Was Gott tut, das ist wohlgetan (BWV 178.7)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1724,
+    "measures": 15,
+    "grade": 4,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv32.6",
+    "title": "Mein Gott, öffne mir die Pforten (BWV 32.6)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1726,
+    "measures": 13,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "ciconia/quod_jactatur",
+    "title": "Quod Jactatur (Ciconia)",
+    "composer": "Johannes Ciconia",
+    "composer_dates": "1370-1412",
+    "era": "Renaissance",
+    "form": "Motet",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1410,
+    "measures": 35,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "palestrina/Kyrie",
+    "title": "Kyrie (from Missa Papae Marcelli)",
+    "composer": "Giovanni Pierluigi da Palestrina",
+    "composer_dates": "1525-1594",
+    "era": "Renaissance",
+    "form": "Mass",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1562,
+    "measures": 21,
+    "henle_level": 5,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "palestrina/Agnus",
+    "title": "Agnus Dei (Palestrina, 5 voices)",
+    "composer": "Giovanni Pierluigi da Palestrina",
+    "composer_dates": "1525-1594",
+    "era": "Renaissance",
+    "form": "Mass",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1565,
+    "measures": 45,
+    "henle_level": 5,
+    "tags": [
+      "counterpoint",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "monteverdi/madrigal_3_1",
+    "title": "Madrigal Book III No.1",
+    "composer": "Claudio Monteverdi",
+    "composer_dates": "1567-1643",
+    "era": "Renaissance",
+    "form": "Madrigal",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1592,
+    "measures": 102,
+    "henle_level": 5,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "monteverdi/madrigal_5_1",
+    "title": "Madrigal Book V No.1",
+    "composer": "Claudio Monteverdi",
+    "composer_dates": "1567-1643",
+    "era": "Baroque",
+    "form": "Madrigal",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1605,
+    "measures": 67,
+    "henle_level": 6,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "cpebach/h186",
+    "title": "Solfeggietto-style Piece (H.186)",
+    "composer": "Carl Philipp Emanuel Bach",
+    "composer_dates": "1714-1788",
+    "era": "Baroque",
+    "form": "Galant",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1770,
+    "measures": 32,
+    "grade": 5,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "beach/prayer_of_a_tired_child",
+    "title": "Prayer of a Tired Child",
+    "composer": "Amy Beach",
+    "composer_dates": "1867-1944",
+    "era": "Romantic",
+    "form": "Hymn",
+    "ensemble": "Other",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1922,
+    "measures": 31,
+    "grade": 4,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "foster/brown_hair",
+    "title": "Jeanie with the Light Brown Hair",
+    "composer": "Stephen Foster",
+    "composer_dates": "1826-1864",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1854,
+    "measures": 35,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "popular",
+      "beginner_friendly"
+    ]
+  },
+  {
+    "corpus_path": "liliuokalani/aloha_oe",
+    "title": "Aloha 'Oe",
+    "composer": "Lili'uokalani",
+    "composer_dates": "1838-1917",
+    "era": "Romantic",
+    "form": "Hymn",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1878,
+    "measures": 23,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "schoenberg/opus19/movement2",
+    "title": "6 Little Piano Pieces Op.19 No.2",
+    "composer": "Arnold Schoenberg",
+    "composer_dates": "1874-1951",
+    "era": "Modern",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1911,
+    "measures": 9,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "schoenberg/opus19/movement6",
+    "title": "6 Little Piano Pieces Op.19 No.6 (in memoriam Mahler)",
+    "composer": "Arnold Schoenberg",
+    "composer_dates": "1874-1951",
+    "era": "Modern",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1911,
+    "measures": 10,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "webern/webern_dormi_jesu_op_16_no_2",
+    "title": "Dormi Jesu, Op.16 No.2",
+    "composer": "Anton Webern",
+    "composer_dates": "1883-1945",
+    "era": "Modern",
+    "form": "12-Tone",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1924,
+    "measures": 13,
+    "grade": 8,
+    "henle_level": 8,
+    "tags": [
+      "counterpoint",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/brahms_op49_4_wiegenlied",
+    "title": "Wiegenlied Op.49 No.4 (Lullaby)",
+    "composer": "Johannes Brahms",
+    "composer_dates": "1833-1897",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1868,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/brahms_op43_2_mainacht",
+    "title": "Die Mainacht Op.43 No.2",
+    "composer": "Johannes Brahms",
+    "composer_dates": "1833-1897",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1864,
+    "grade": 7,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/brahms_op121_3_otod",
+    "title": "4 Serious Songs Op.121 No.3 — O Tod, wie bitter bist du",
+    "composer": "Johannes Brahms",
+    "composer_dates": "1833-1897",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1896,
+    "grade": 8,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_op3_3_heidenroeslein",
+    "title": "Heidenröslein D.257",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1815,
+    "grade": 3,
+    "henle_level": 2,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d839_ave_maria",
+    "title": "Ave Maria D.839 (Ellens Gesang III)",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1825,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "popular",
+      "wedding",
+      "amateur_violinist"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_op59_3_dubist",
+    "title": "Du bist die Ruh D.776",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1823,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_op59_4_lachen",
+    "title": "Lachen und Weinen D.777",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1823,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op39_3_waldes",
+    "title": "Liederkreis Op.39 No.3 — Waldesgespräch",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op39_12_fruhling",
+    "title": "Liederkreis Op.39 No.12 — Frühlingsnacht",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "rhythm",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op48_13_traum",
+    "title": "Dichterliebe No.13 — Ich hab' im Traum geweinet",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_2_herrlichste",
+    "title": "Frauenliebe No.2 — Er, der Herrlichste von allen",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "grade": 7,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/mahler_kinder_1_sonn",
+    "title": "Kindertotenlieder No.1 — Nun will die Sonn' so hell aufgeh'n",
+    "composer": "Gustav Mahler",
+    "composer_dates": "1860-1911",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1904,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/mahler_kinder_4_oft",
+    "title": "Kindertotenlieder No.4 — Oft denk' ich, sie sind nur ausgegangen",
+    "composer": "Gustav Mahler",
+    "composer_dates": "1860-1911",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1904,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/mahler_gesellen_2_gieng",
+    "title": "Lieder eines fahrenden Gesellen No.2 — Gieng heut morgen",
+    "composer": "Gustav Mahler",
+    "composer_dates": "1860-1911",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1885,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/mahler_gesellen_4_augen",
+    "title": "Lieder eines fahrenden Gesellen No.4 — Die zwei blauen Augen",
+    "composer": "Gustav Mahler",
+    "composer_dates": "1860-1911",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1885,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/wolf_morike_12_verbor",
+    "title": "Mörike-Lieder No.12 — Verborgenheit",
+    "composer": "Hugo Wolf",
+    "composer_dates": "1860-1903",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/wolf_morike_9_nimmer",
+    "title": "Mörike-Lieder No.9 — Nimmersatte Liebe",
+    "composer": "Hugo Wolf",
+    "composer_dates": "1860-1903",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/strauss_op27_2_caecilie",
+    "title": "4 Lieder Op.27 No.2 — Cäcilie",
+    "composer": "Richard Strauss",
+    "composer_dates": "1864-1949",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1894,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/strauss_op27_3_heimliche",
+    "title": "4 Lieder Op.27 No.3 — Heimliche Aufforderung",
+    "composer": "Richard Strauss",
+    "composer_dates": "1864-1949",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1894,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/strauss_op27_4_morgen",
+    "title": "4 Lieder Op.27 No.4 — Morgen!",
+    "composer": "Richard Strauss",
+    "composer_dates": "1864-1949",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1894,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/faure_op27_1_chanson",
+    "title": "Chanson d'amour Op.27 No.1",
+    "composer": "Gabriel Fauré",
+    "composer_dates": "1845-1924",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1882,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/debussy_ariettes_2_ilpleure",
+    "title": "Ariettes Oubliées No.2 — Il pleure dans mon coeur",
+    "composer": "Claude Debussy",
+    "composer_dates": "1862-1918",
+    "era": "Modern",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/debussy_bilitis_1_flute",
+    "title": "Trois Chansons de Bilitis No.1 — La flûte de Pan",
+    "composer": "Claude Debussy",
+    "composer_dates": "1862-1918",
+    "era": "Modern",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1897,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/berlioz_nuits_1_villanelle",
+    "title": "Les nuits d'été Op.7 No.1 — Villanelle",
+    "composer": "Hector Berlioz",
+    "composer_dates": "1803-1869",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1841,
+    "grade": 7,
+    "henle_level": 5,
+    "tags": [
+      "rhythm",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "trecento/PMFC_04-Cara mi donna",
+    "title": "Cara mi donna (Trecento Italian Madrigal)",
+    "composer": "Anonymous (Trecento)",
+    "composer_dates": "c.1350",
+    "era": "Renaissance",
+    "form": "Madrigal",
+    "ensemble": "Other",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1350,
+    "measures": 55,
+    "henle_level": 5,
+    "tags": [
+      "counterpoint",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_01",
+    "title": "Two-Part Invention No.1 (BWV 772)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_02",
+    "title": "Two-Part Invention No.2 (BWV 773)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_03",
+    "title": "Two-Part Invention No.3 (BWV 774)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_04",
+    "title": "Two-Part Invention No.4 (BWV 775)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_05",
+    "title": "Two-Part Invention No.5 (BWV 776)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_06",
+    "title": "Two-Part Invention No.6 (BWV 777)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_07",
+    "title": "Two-Part Invention No.7 (BWV 778)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_08",
+    "title": "Two-Part Invention No.8 (BWV 779)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_09",
+    "title": "Two-Part Invention No.9 (BWV 780)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_10",
+    "title": "Two-Part Invention No.10 (BWV 781)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_11",
+    "title": "Two-Part Invention No.11 (BWV 782)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_12",
+    "title": "Two-Part Invention No.12 (BWV 783)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_13",
+    "title": "Two-Part Invention No.13 (BWV 784)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_14",
+    "title": "Two-Part Invention No.14 (BWV 785)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_invention_15",
+    "title": "Two-Part Invention No.15 (BWV 786)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1723,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_01_1",
+    "title": "String Quartet No.1 Op.18 No.1 in F major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1800,
+    "measures": 0,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_02_1",
+    "title": "String Quartet No.2 Op.18 No.2 in G major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1802,
+    "measures": 0,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_03_1",
+    "title": "String Quartet No.3 Op.18 No.3 in D major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1804,
+    "measures": 0,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_04_1",
+    "title": "String Quartet No.4 Op.18 No.4 in C minor mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1806,
+    "measures": 0,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_05_1",
+    "title": "String Quartet No.5 Op.18 No.5 in A major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1808,
+    "measures": 0,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_07_1",
+    "title": "String Quartet No.7 Op.59 No.1 \"Razumovsky 1\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1812,
+    "measures": 0,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_08_1",
+    "title": "String Quartet No.8 Op.59 No.2 \"Razumovsky 2\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1814,
+    "measures": 0,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_09_1",
+    "title": "String Quartet No.9 Op.59 No.3 \"Razumovsky 3\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1816,
+    "measures": 0,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_10_1",
+    "title": "String Quartet No.10 Op.74 \"Harp\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1818,
+    "measures": 0,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_11_1",
+    "title": "String Quartet No.11 Op.95 \"Serioso\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1820,
+    "measures": 0,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_12_1",
+    "title": "String Quartet No.12 Op.127 (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1822,
+    "measures": 0,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_13_1",
+    "title": "String Quartet No.13 Op.130 (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1824,
+    "measures": 0,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_14_1",
+    "title": "String Quartet No.14 Op.131 in C♯ minor (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1826,
+    "measures": 0,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_15_1",
+    "title": "String Quartet No.15 Op.132 in A minor (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_quartet_16_1",
+    "title": "String Quartet No.16 Op.135 (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Quartet",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1830,
+    "measures": 0,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_01_1",
+    "title": "Piano Sonata No.1 Op.2 No.1 in F minor mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1796,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_02_1",
+    "title": "Piano Sonata No.2 Op.2 No.2 in A major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1797,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_03_1",
+    "title": "Piano Sonata No.3 Op.2 No.3 in C major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1798,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_04_1",
+    "title": "Piano Sonata No.4 Op.7 in E♭ major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1799,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_05_1",
+    "title": "Piano Sonata No.5 Op.10 No.1 in C minor mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1800,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_06_1",
+    "title": "Piano Sonata No.6 Op.10 No.2 in F major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1801,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_07_1",
+    "title": "Piano Sonata No.7 Op.10 No.3 in D major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1802,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_08_1",
+    "title": "Piano Sonata No.8 Op.13 \"Pathétique\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1803,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_09_1",
+    "title": "Piano Sonata No.9 Op.14 No.1 in E major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1804,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_10_1",
+    "title": "Piano Sonata No.10 Op.14 No.2 in G major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1805,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_11_1",
+    "title": "Piano Sonata No.11 Op.22 in B♭ major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1806,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_12_1",
+    "title": "Piano Sonata No.12 Op.26 \"Funeral March\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1807,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_13_1",
+    "title": "Piano Sonata No.13 Op.27 No.1 quasi una fantasia mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1808,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_14_1",
+    "title": "Piano Sonata No.14 Op.27 No.2 \"Moonlight\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1809,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_15_1",
+    "title": "Piano Sonata No.15 Op.28 \"Pastoral\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1810,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_16_1",
+    "title": "Piano Sonata No.16 Op.31 No.1 in G major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1811,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_17_1",
+    "title": "Piano Sonata No.17 Op.31 No.2 \"Tempest\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1812,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_18_1",
+    "title": "Piano Sonata No.18 Op.31 No.3 in E♭ major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1813,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_19_1",
+    "title": "Piano Sonata No.19 Op.49 No.1 (easy) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1814,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_20_1",
+    "title": "Piano Sonata No.20 Op.49 No.2 (easy) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1815,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_21_1",
+    "title": "Piano Sonata No.21 Op.53 \"Waldstein\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1816,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_22_1",
+    "title": "Piano Sonata No.22 Op.54 in F major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1817,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_23_1",
+    "title": "Piano Sonata No.23 Op.57 \"Appassionata\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1818,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 8,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_24_1",
+    "title": "Piano Sonata No.24 Op.78 in F♯ major mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1819,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_25_1",
+    "title": "Piano Sonata No.25 Op.79 in G major (easy) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1820,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_26_1",
+    "title": "Piano Sonata No.26 Op.81a \"Les Adieux\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1821,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_27_1",
+    "title": "Piano Sonata No.27 Op.90 in E minor mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1822,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_28_1",
+    "title": "Piano Sonata No.28 Op.101 in A major (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1823,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_29_1",
+    "title": "Piano Sonata No.29 Op.106 \"Hammerklavier\" mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1824,
+    "measures": 0,
+    "grade": 9,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_30_1",
+    "title": "Piano Sonata No.30 Op.109 in E major (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1825,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 8,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_31_1",
+    "title": "Piano Sonata No.31 Op.110 in A♭ major (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1826,
+    "measures": 0,
+    "grade": 8,
+    "henle_level": 8,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "beethoven_sonata_32_1",
+    "title": "Piano Sonata No.32 Op.111 in C minor (late) mvt.1",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 9,
+    "henle_level": 9,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_07_1",
+    "title": "Mazurka Op.7 No.1 in B♭ major",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_07_2",
+    "title": "Mazurka Op.7 No.2 in A minor",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_17_4",
+    "title": "Mazurka Op.17 No.4 in A minor",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_24_2",
+    "title": "Mazurka Op.24 No.2 in C major",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_33_2",
+    "title": "Mazurka Op.33 No.2 in D major",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_67_4",
+    "title": "Mazurka Op.67 No.4 in A minor",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_mazurka_68_4",
+    "title": "Mazurka Op.68 No.4 in F minor",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Mazurka",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_01",
+    "title": "Prelude Op.28 No.1",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_02",
+    "title": "Prelude Op.28 No.2",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_03",
+    "title": "Prelude Op.28 No.3",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_04",
+    "title": "Prelude Op.28 No.4",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_05",
+    "title": "Prelude Op.28 No.5",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_06",
+    "title": "Prelude Op.28 No.6",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_07",
+    "title": "Prelude Op.28 No.7",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_08",
+    "title": "Prelude Op.28 No.8",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_09",
+    "title": "Prelude Op.28 No.9",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_10",
+    "title": "Prelude Op.28 No.10",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_11",
+    "title": "Prelude Op.28 No.11",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_12",
+    "title": "Prelude Op.28 No.12",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_13",
+    "title": "Prelude Op.28 No.13",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_14",
+    "title": "Prelude Op.28 No.14",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_15",
+    "title": "Prelude Op.28 No.15",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_16",
+    "title": "Prelude Op.28 No.16",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_17",
+    "title": "Prelude Op.28 No.17",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_18",
+    "title": "Prelude Op.28 No.18",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_19",
+    "title": "Prelude Op.28 No.19",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_20",
+    "title": "Prelude Op.28 No.20",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_22",
+    "title": "Prelude Op.28 No.22",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_23",
+    "title": "Prelude Op.28 No.23",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "chopin_prelude_28_24",
+    "title": "Prelude Op.28 No.24",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "haydn_sonata_37_1",
+    "title": "Piano Sonata Hob.XVI/37 in D major mvt.1",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1780,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "haydn_sonata_50_1",
+    "title": "Piano Sonata Hob.XVI/50 in C major mvt.1",
+    "composer": "Joseph Haydn",
+    "composer_dates": "1732-1809",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1780,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "joplin_entertainer",
+    "title": "The Entertainer",
+    "composer": "Scott Joplin",
+    "composer_dates": "1868-1917",
+    "era": "Romantic",
+    "form": "Rag",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1902,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "staccato"
+    ]
+  },
+  {
+    "corpus_path": "joplin_solace",
+    "title": "Solace (A Mexican Serenade)",
+    "composer": "Scott Joplin",
+    "composer_dates": "1868-1917",
+    "era": "Romantic",
+    "form": "Rag",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1902,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "staccato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_01_1",
+    "title": "Piano Sonata K.279 in C major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1775,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_02_1",
+    "title": "Piano Sonata K.280 in F major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1776,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_04_1",
+    "title": "Piano Sonata K.282 in E♭ major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1778,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_05_1",
+    "title": "Piano Sonata K.283 in G major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1779,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_06_1",
+    "title": "Piano Sonata K.284 in D major \"Dürnitz\" mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1780,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_07_1",
+    "title": "Piano Sonata K.309 in C major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1781,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_08_1",
+    "title": "Piano Sonata K.310 in A minor mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1782,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_09_1",
+    "title": "Piano Sonata K.311 in D major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1783,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_10_1",
+    "title": "Piano Sonata K.330 in C major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1784,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_12_1",
+    "title": "Piano Sonata K.332 in F major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1786,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_13_1",
+    "title": "Piano Sonata K.333 in B♭ major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1787,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_14_1",
+    "title": "Piano Sonata K.457 in C minor mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1788,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_15_1",
+    "title": "Piano Sonata K.533/494 in F major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1789,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "mozart_sonata_17_1",
+    "title": "Piano Sonata K.570 in B♭ major mvt.1",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1791,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K001",
+    "title": "Keyboard Sonata K.1 (d minor)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K055",
+    "title": "Keyboard Sonata K.55 (G major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K084",
+    "title": "Keyboard Sonata K.84 (c minor)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K113",
+    "title": "Keyboard Sonata K.113 (A major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K139",
+    "title": "Keyboard Sonata K.139 (c minor)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K165",
+    "title": "Keyboard Sonata K.165 (C major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K238",
+    "title": "Keyboard Sonata K.238 (f minor)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K330",
+    "title": "Keyboard Sonata K.330 (C major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K384",
+    "title": "Keyboard Sonata K.384 (C major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K406",
+    "title": "Keyboard Sonata K.406 (C major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K491",
+    "title": "Keyboard Sonata K.491 (D major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K502",
+    "title": "Keyboard Sonata K.502 (C major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "scarlatti_K534",
+    "title": "Keyboard Sonata K.534 (D major)",
+    "composer": "Domenico Scarlatti",
+    "composer_dates": "1685-1757",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1738,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "staccato",
+      "scales"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_001",
+    "title": "4-Part Chorale BWV chor001",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_008",
+    "title": "4-Part Chorale BWV chor008",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_016",
+    "title": "4-Part Chorale BWV chor016",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_024",
+    "title": "4-Part Chorale BWV chor024",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_032",
+    "title": "4-Part Chorale BWV chor032",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_040",
+    "title": "4-Part Chorale BWV chor040",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_048",
+    "title": "4-Part Chorale BWV chor048",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_056",
+    "title": "4-Part Chorale BWV chor056",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_064",
+    "title": "4-Part Chorale BWV chor064",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_072",
+    "title": "4-Part Chorale BWV chor072",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_080",
+    "title": "4-Part Chorale BWV chor080",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_088",
+    "title": "4-Part Chorale BWV chor088",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_096",
+    "title": "4-Part Chorale BWV chor096",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_104",
+    "title": "4-Part Chorale BWV chor104",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_112",
+    "title": "4-Part Chorale BWV chor112",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_120",
+    "title": "4-Part Chorale BWV chor120",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_128",
+    "title": "4-Part Chorale BWV chor128",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_136",
+    "title": "4-Part Chorale BWV chor136",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_144",
+    "title": "4-Part Chorale BWV chor144",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_152",
+    "title": "4-Part Chorale BWV chor152",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_160",
+    "title": "4-Part Chorale BWV chor160",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_168",
+    "title": "4-Part Chorale BWV chor168",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_176",
+    "title": "4-Part Chorale BWV chor176",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_184",
+    "title": "4-Part Chorale BWV chor184",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_192",
+    "title": "4-Part Chorale BWV chor192",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_200",
+    "title": "4-Part Chorale BWV chor200",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_208",
+    "title": "4-Part Chorale BWV chor208",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_216",
+    "title": "4-Part Chorale BWV chor216",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_224",
+    "title": "4-Part Chorale BWV chor224",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_232",
+    "title": "4-Part Chorale BWV chor232",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_240",
+    "title": "4-Part Chorale BWV chor240",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_248",
+    "title": "4-Part Chorale BWV chor248",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_256",
+    "title": "4-Part Chorale BWV chor256",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_264",
+    "title": "4-Part Chorale BWV chor264",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_272",
+    "title": "4-Part Chorale BWV chor272",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_280",
+    "title": "4-Part Chorale BWV chor280",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_288",
+    "title": "4-Part Chorale BWV chor288",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_296",
+    "title": "4-Part Chorale BWV chor296",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_304",
+    "title": "4-Part Chorale BWV chor304",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_312",
+    "title": "4-Part Chorale BWV chor312",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_320",
+    "title": "4-Part Chorale BWV chor320",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_328",
+    "title": "4-Part Chorale BWV chor328",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_336",
+    "title": "4-Part Chorale BWV chor336",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_344",
+    "title": "4-Part Chorale BWV chor344",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_352",
+    "title": "4-Part Chorale BWV chor352",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_360",
+    "title": "4-Part Chorale BWV chor360",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_365",
+    "title": "4-Part Chorale BWV chor365",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_367",
+    "title": "4-Part Chorale BWV chor367",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_369",
+    "title": "4-Part Chorale BWV chor369",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach_chorale_371",
+    "title": "4-Part Chorale BWV chor371",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Chorale",
+    "ensemble": "SATB",
+    "instruments": [
+      "voice"
+    ],
+    "year": 1740,
+    "measures": 0,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "counterpoint",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_01_liebesbotschaft",
+    "title": "Schwanengesang D.957 No.1 Liebesbotschaft",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_04_staendchen",
+    "title": "Schwanengesang D.957 No.4 Ständchen",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_05_aufenthalt",
+    "title": "Schwanengesang D.957 No.5 Aufenthalt",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_07_abschied",
+    "title": "Schwanengesang D.957 No.7 Abschied",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_09_ihrbild",
+    "title": "Schwanengesang D.957 No.9 Ihr Bild",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_11_diestadt",
+    "title": "Schwanengesang D.957 No.11 Die Stadt",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_13_doppelganger",
+    "title": "Schwanengesang D.957 No.13 Der Doppelgänger",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d957_14_taubenpost",
+    "title": "Schwanengesang D.957 No.14 Die Taubenpost",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1828,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_01_gutenacht",
+    "title": "Winterreise D.911 No.1 Gute Nacht",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_05_lindenbaum",
+    "title": "Winterreise D.911 No.5 Der Lindenbaum",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_11_fruhlingstraum",
+    "title": "Winterreise D.911 No.11 Frühlingstraum",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_13_diepost",
+    "title": "Winterreise D.911 No.13 Die Post",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "rhythm"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_15_diekraehe",
+    "title": "Winterreise D.911 No.15 Die Krähe",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schubert_d911_24_leiermann",
+    "title": "Winterreise D.911 No.24 Der Leiermann",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_3_fassen",
+    "title": "Frauenliebe und Leben Op.42 No.3 Ich kann's nicht fassen",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_4_ring",
+    "title": "Frauenliebe und Leben Op.42 No.4 Du Ring an meinem Finger",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 0,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_5_helft",
+    "title": "Frauenliebe und Leben Op.42 No.5 Helft mir, ihr Schwestern",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/schumann_op42_8_schmerz",
+    "title": "Frauenliebe und Leben Op.42 No.8 Nun hast du mir den ersten Schmerz",
+    "composer": "Robert Schumann",
+    "composer_dates": "1810-1856",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1840,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/berlioz_nuits_2_spectre",
+    "title": "Les nuits d'été Op.7 No.2 Le spectre de la rose",
+    "composer": "Hector Berlioz",
+    "composer_dates": "1803-1869",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1841,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/berlioz_nuits_4_absence",
+    "title": "Les nuits d'été Op.7 No.4 Absence",
+    "composer": "Hector Berlioz",
+    "composer_dates": "1803-1869",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1841,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/mahler_wunderhorn_7_rhein",
+    "title": "Des Knaben Wunderhorn No.7 Rheinlegendchen",
+    "composer": "Gustav Mahler",
+    "composer_dates": "1860-1911",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1893,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/wolf_eichendorff_3_verschwiegene",
+    "title": "Eichendorff-Lieder No.3 Verschwiegene Liebe",
+    "composer": "Hugo Wolf",
+    "composer_dates": "1860-1903",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression",
+      "legato"
+    ]
+  },
+  {
+    "corpus_path": "openscore/wolf_eichendorff_12_heimweh",
+    "title": "Eichendorff-Lieder No.12 Heimweh",
+    "composer": "Hugo Wolf",
+    "composer_dates": "1860-1903",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "measures": 0,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "openscore/wolf_eichendorff_18_erwartung",
+    "title": "Eichendorff-Lieder No.18 Erwartung",
+    "composer": "Hugo Wolf",
+    "composer_dates": "1860-1903",
+    "era": "Romantic",
+    "form": "Lied",
+    "ensemble": "Voice + Piano",
+    "instruments": [
+      "voice",
+      "piano"
+    ],
+    "year": 1888,
+    "measures": 0,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "expression"
+    ]
+  },
+  {
+    "corpus_path": "pachelbel/canon_d",
+    "title": "Canon in D",
+    "composer": "Johann Pachelbel",
+    "composer_dates": "1653-1706",
+    "era": "Baroque",
+    "form": "Character Piece",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1680,
+    "measures": 102,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "ensemble",
+      "legato"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "vivaldi/rv269_spring_1",
+    "title": "Four Seasons — Spring, Mvt 1 (RV 269)",
+    "composer": "Antonio Vivaldi",
+    "composer_dates": "1678-1741",
+    "era": "Baroque",
+    "form": "Character Piece",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1721,
+    "measures": 83,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "ensemble",
+      "rhythm"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1068_2_air",
+    "title": "Air on the G String (BWV 1068 mvt 2)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Character Piece",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1731,
+    "measures": 37,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_1_prelude",
+    "title": "Cello Suite No.1 Prelude (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 42,
+    "grade": 5,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "scales"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv_anh114_minuet_g",
+    "title": "Minuet in G (BWV Anh. 114)",
+    "composer": "Christian Petzold (attr. J.S. Bach)",
+    "composer_dates": "1677-1733",
+    "era": "Baroque",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1725,
+    "measures": 32,
+    "grade": 2,
+    "henle_level": 1,
+    "tags": [
+      "legato",
+      "rhythm"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "beginner_friendly"
+    ]
+  },
+  {
+    "corpus_path": "boccherini/minuet_g275",
+    "title": "Minuet from String Quintet Op.11 No.5 (G.275)",
+    "composer": "Luigi Boccherini",
+    "composer_dates": "1743-1805",
+    "era": "Classical",
+    "form": "Character Piece",
+    "ensemble": "String Quartet",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1771,
+    "measures": 118,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "ensemble",
+      "staccato"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "mendelssohn/wedding_march",
+    "title": "Wedding March (A Midsummer Night's Dream, Op.61)",
+    "composer": "Felix Mendelssohn",
+    "composer_dates": "1809-1847",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "piano"
+    ],
+    "year": 1842,
+    "measures": 53,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "rhythm",
+      "ensemble"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "massenet/meditation_thais",
+    "title": "Méditation from Thaïs",
+    "composer": "Jules Massenet",
+    "composer_dates": "1842-1912",
+    "era": "Romantic",
+    "form": "Aria",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "piano"
+    ],
+    "year": 1894,
+    "measures": 71,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression",
+      "shifts"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "elgar/salut_damour_op12",
+    "title": "Salut d'Amour, Op.12",
+    "composer": "Edward Elgar",
+    "composer_dates": "1857-1934",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "piano"
+    ],
+    "year": 1888,
+    "measures": 100,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_violinist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_2_allemande",
+    "title": "Cello Suite No.1 mvt.2 Allemande (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 35,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "scales"
+    ],
+    "popular_tags": [
+      "amateur_cellist"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_3_courante",
+    "title": "Cello Suite No.1 mvt.3 Courante (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 41,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "scales",
+      "rhythm"
+    ],
+    "popular_tags": [
+      "amateur_cellist"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_4_sarabande",
+    "title": "Cello Suite No.1 mvt.4 Sarabande (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 17,
+    "grade": 5,
+    "henle_level": 4,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_cellist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_5_menuet1",
+    "title": "Cello Suite No.1 mvt.5 Menuet I (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 25,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "rhythm",
+      "staccato"
+    ],
+    "popular_tags": [
+      "amateur_cellist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_6_menuet2",
+    "title": "Cello Suite No.1 mvt.6 Menuet II (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 25,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "rhythm",
+      "legato"
+    ],
+    "popular_tags": [
+      "amateur_cellist"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1007_7_gigue",
+    "title": "Cello Suite No.1 mvt.7 Gigue (BWV 1007)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings"
+    ],
+    "year": 1720,
+    "measures": 37,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "rhythm",
+      "scales"
+    ],
+    "popular_tags": [
+      "amateur_cellist"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1047_1_allegro",
+    "title": "Brandenburg Concerto No.2 mvt.1 Allegro (BWV 1047)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "mixed"
+    ],
+    "year": 1721,
+    "measures": 119,
+    "henle_level": 7,
+    "tags": [
+      "ensemble",
+      "counterpoint"
+    ],
+    "popular_tags": [
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1047_2_andante",
+    "title": "Brandenburg Concerto No.2 mvt.2 Andante (BWV 1047)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "mixed"
+    ],
+    "year": 1721,
+    "measures": 65,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "ensemble"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv1047_3_allegro_assai",
+    "title": "Brandenburg Concerto No.2 mvt.3 Allegro assai (BWV 1047)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "mixed"
+    ],
+    "year": 1721,
+    "measures": 139,
+    "henle_level": 8,
+    "tags": [
+      "counterpoint",
+      "rhythm"
+    ],
+    "popular_tags": [
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "bach/bwv846_wtc1_1_prelude",
+    "title": "WTC Book I Prelude No.1 in C (BWV 846)",
+    "composer": "Johann Sebastian Bach",
+    "composer_dates": "1685-1750",
+    "era": "Baroque",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1722,
+    "measures": 34,
+    "grade": 4,
+    "henle_level": 3,
+    "tags": [
+      "legato",
+      "scales"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "amateur_harpsichordist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "schubert/d899_3_impromptu_gflat",
+    "title": "Impromptu Op.90 No.3 in G-flat (D.899)",
+    "composer": "Franz Schubert",
+    "composer_dates": "1797-1828",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1827,
+    "measures": 86,
+    "grade": 8,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "chopin/nocturne_op9_no2",
+    "title": "Nocturne Op.9 No.2 in E-flat",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1832,
+    "measures": 38,
+    "grade": 7,
+    "henle_level": 6,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "chopin/prelude_op28_no4_full",
+    "title": "Prelude Op.28 No.4 in E minor (full ed.)",
+    "composer": "Frédéric Chopin",
+    "composer_dates": "1810-1849",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1839,
+    "measures": 26,
+    "grade": 6,
+    "henle_level": 5,
+    "tags": [
+      "legato",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "liszt/liebestraum_3",
+    "title": "Liebestraum No.3 in A-flat (S.541 No.3)",
+    "composer": "Franz Liszt",
+    "composer_dates": "1811-1886",
+    "era": "Romantic",
+    "form": "Character Piece",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1850,
+    "measures": 88,
+    "grade": 8,
+    "henle_level": 7,
+    "tags": [
+      "legato",
+      "expression",
+      "shifts"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "wedding",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "mozart/k545_movement1_full",
+    "title": "Piano Sonata K.545 mvt.1 Allegro (full)",
+    "composer": "Wolfgang Amadeus Mozart",
+    "composer_dates": "1756-1791",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Piano Solo",
+    "instruments": [
+      "piano"
+    ],
+    "year": 1788,
+    "measures": 73,
+    "grade": 5,
+    "henle_level": 3,
+    "tags": [
+      "scales",
+      "staccato"
+    ],
+    "popular_tags": [
+      "amateur_pianist",
+      "popular"
+    ]
+  },
+  {
+    "corpus_path": "beethoven/op5_no2_full",
+    "title": "Cello Sonata Op.5 No.2 in G minor (full)",
+    "composer": "Ludwig van Beethoven",
+    "composer_dates": "1770-1827",
+    "era": "Classical",
+    "form": "Sonata",
+    "ensemble": "Other",
+    "instruments": [
+      "strings",
+      "piano"
+    ],
+    "year": 1796,
+    "measures": 488,
+    "henle_level": 7,
+    "tags": [
+      "ensemble",
+      "expression"
+    ],
+    "popular_tags": [
+      "amateur_cellist"
+    ]
+  }
+]
