@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Arranger — A+B 路線分析（決策）</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#181b22; --panel2:#1f2330; --ink:#e8eaf0; --mut:#9aa3b2;
+    --line:#2a2f3a; --accent:#c8a24a; --accent2:#7fb6a6; --warn:#d98c5f; --good:#6fae7a;
+    --bad:#c96d6d; --pick:#2b3447;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 -apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 24px 120px}
+  h1{font-size:25px;margin:0 0 6px;letter-spacing:.5px}
+  .sub{color:var(--mut);margin:0 0 26px}
+  h2{font-size:18px;margin:34px 0 12px;border-left:3px solid var(--accent);padding-left:10px}
+  .insight{background:linear-gradient(135deg,#1d2330,#181b22);border:1px solid var(--line);
+    border-radius:14px;padding:18px 20px;margin:8px 0 4px}
+  .insight b{color:var(--accent2)}
+  .cards{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+    cursor:pointer;transition:.18s;position:relative}
+  .card:hover{border-color:#3a4150;transform:translateY(-1px)}
+  .card.sel{border-color:var(--accent);background:var(--pick);box-shadow:0 0 0 1px var(--accent) inset}
+  .card h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .rec{font-size:11px;background:var(--accent);color:#1a1206;border-radius:20px;padding:2px 9px;font-weight:700}
+  .card .why{color:var(--mut);font-size:13.5px;margin:8px 0 0}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .tag{font-size:11.5px;border:1px solid var(--line);border-radius:7px;padding:3px 9px;color:var(--mut)}
+  .tag.r-hi{color:var(--bad);border-color:#5a3a3a}
+  .tag.r-md{color:var(--warn);border-color:#5a4a3a}
+  .tag.r-lo{color:var(--good);border-color:#3a5a44}
+  .tag.v{color:var(--accent2);border-color:#3a5550}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--mut);font-weight:600}
+  td b{color:var(--ink)}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .d-hi{background:var(--bad)} .d-md{background:var(--warn)} .d-lo{background:var(--good)}
+  .note{color:var(--mut);font-size:13px;margin-top:10px}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#12151c;border-top:1px solid var(--line);
+    padding:14px 24px;display:flex;gap:12px;align-items:center;justify-content:center}
+  button{background:var(--accent);color:#1a1206;border:0;border-radius:10px;padding:11px 20px;
+    font-weight:700;font-size:14px;cursor:pointer}
+  button.ghost{background:transparent;color:var(--mut);border:1px solid var(--line)}
+  .picked{color:var(--accent2);font-size:13px}
+  small{color:var(--mut)}
+  .k{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>A + B 都做 — 怎麼安排（分析）</h1>
+  <p class="sub">架構 epic 核心已完成並發布於 0.1.86。你說 A（配對拆巨獸）+ B（使用者價值）都想做 — 這份分析的結論是：兩者不必當兩件事。</p>
+
+  <div class="insight">
+    💡 <b>關鍵發現</b>：1991 行的 <span class="k">PlaybackControls</span> 裡，握著 <code>loopStart/End/Accel</code>、<code>metronome</code>、<code>trackGains/mute/solo</code> 這些 state ——
+    <b>正是 Phase B 想存進 .sarr 的「練習設定」</b>。所以「拆 PlaybackControls」(A) 抽出這些 state 的同時，順勢就能做出「每首曲的練習設定跟著專案存」(B 的真實使用者功能)。
+    <b>A 和 B 在這隻巨獸上自然合流成一條 track。</b>
+  </div>
+
+  <h2>三條可選路線（勾一個）</h2>
+  <div class="cards" id="cards">
+    <div class="card" data-id="track1">
+      <h3>① PlaybackControls 重構 → 練習設定持久化 <span class="rec">🎯 推薦</span></h3>
+      <div class="why">一隻巨獸同時兌現 A+B：把 1991 行的 loop/節拍器/混音 state 抽成獨立 store/hook（A 的 craft），抽出來的 state 順手存進 v2 .sarr 的 <code>practice</code> slot + 載入還原（B 的使用者功能：「練習段、速度、節拍器、混音」跟著曲子存）。分階段拆：先抽 state → 再接持久化 → 最後瘦身 JSX。我能用 computer-use 自驗播放，行為敏感處你把關。</div>
+      <div class="tags"><span class="tag r-hi">風險 高（碰播放路徑）</span><span class="tag">工 大（分 3-4 slice）</span><span class="tag v">A+B 一起拿</span><span class="tag v">user value：練習設定持久化</span></div>
+    </div>
+    <div class="card" data-id="track2">
+      <h3>② session 模組化（純 A）</h3>
+      <div class="why">拆 server.py 的 session 子系統，解鎖 53 個 method 的 group 化，server.py 3069 行可望降到 ~1500。但這隻巨獸<b>零使用者價值</b>，且要遷移 51 處測試對 <code>srv._CURRENT_ARRANGEMENT</code> 的直接引用 + 引 state-holder。純內部地基。</div>
+      <div class="tags"><span class="tag r-md">風險 中大（51 處測試 + 行為敏感）</span><span class="tag">工 中大</span><span class="tag">user value：無</span></div>
+    </div>
+    <div class="card" data-id="track3">
+      <h3>③ 純 B，不碰巨獸</h3>
+      <div class="why">直接做使用者價值：曲庫再擴張 / UX 打磨 / 某新功能。優點是零重構風險。缺點：最自然的 B 功能「練習設定持久化」卡在 PlaybackControls 後面做不了；曲庫已 532 首，邊際遞減；UX 打磨需先界定具體痛點。</div>
+      <div class="tags"><span class="tag r-lo">風險 低</span><span class="tag">工 小～中</span><span class="tag v">user value：視項目而定</span></div>
+    </div>
+  </div>
+
+  <h2>三隻「待辦巨獸 / 選項」對照</h2>
+  <table>
+    <tr><th>項目</th><th>性質</th><th>風險</th><th>使用者價值</th><th>解鎖了什麼</th></tr>
+    <tr>
+      <td><b>PlaybackControls</b><br><small>1991 行</small></td><td>A（前端）</td>
+      <td><span class="dot d-hi"></span>高 — 播放路徑，歷史 bug 最多</td>
+      <td><b>高</b> — 練習設定持久化</td>
+      <td>Phase B slice 4 + 整體可維護性</td>
+    </tr>
+    <tr>
+      <td><b>session 子系統</b><br><small>server.py ~200 行核心</small></td><td>A（引擎）</td>
+      <td><span class="dot d-md"></span>中大 — 51 處測試遷移</td>
+      <td>無</td>
+      <td>53 methods 的 group 化（純內部）</td>
+    </tr>
+    <tr>
+      <td><b>曲庫 / UX / 功能</b></td><td>B</td>
+      <td><span class="dot d-lo"></span>低</td>
+      <td>視項目</td>
+      <td>—（獨立小任務）</td>
+    </tr>
+  </table>
+
+  <h2>我的建議排序（給「AB 都做」）</h2>
+  <div class="insight" style="border-color:#3a5550">
+    <b>1. 先跑 Track ①</b>（PlaybackControls → 練習持久化）：一石二鳥，A 的 craft + B 的 user value 同一條線拿到。<br>
+    <b>2. session 模組化（Track ②）排最後、甚至可不做</b>：純內部、零使用者價值，等真的需要再評估——別為拆而拆。<br>
+    <b>3. 純 B 小項（曲庫/UX）當穿插</b>：低風險，可丟 sub-agent 或在 Track ① 的驗證空檔做。
+    <p class="note">反方論點：① 碰最脆的播放路徑，若你近期會大量用播放/練習功能，重構期間可能短暫不穩——所以我會<b>分 slice、每步 in-app 自驗</b>，且每個 slice 都能獨立 ship/回滾，不一次掀掉。若你想先求穩，可先做一兩個低風險純 B 暖身，再進 ①。</p>
+  </div>
+
+  <div class="picked" id="picked">尚未選擇</div>
+</div>
+
+<div class="bar">
+  <button id="copy">複製決策摘要</button>
+  <button class="ghost" id="reset">清除</button>
+  <span class="picked" id="barpick"></span>
+</div>
+
+<script>
+  const KEY="sa_ab_track_decision";
+  const cards=document.getElementById("cards");
+  const labels={track1:"① PlaybackControls 重構 → 練習設定持久化（A+B 合流，推薦）",
+    track2:"② session 模組化（純 A，內部地基）",
+    track3:"③ 純 B，不碰巨獸"};
+  let sel=localStorage.getItem(KEY)||"";
+  function render(){
+    [...cards.children].forEach(c=>c.classList.toggle("sel",c.dataset.id===sel));
+    const t=sel?("已選：「"+labels[sel]+"」"):"尚未選擇";
+    document.getElementById("picked").textContent=t;
+    document.getElementById("barpick").textContent=sel?("已選 "+sel.replace("track","Track ")):"";
+  }
+  cards.addEventListener("click",e=>{const c=e.target.closest(".card");if(!c)return;
+    sel=c.dataset.id;localStorage.setItem(KEY,sel);render();});
+  document.getElementById("copy").addEventListener("click",()=>{
+    const t=sel?labels[sel]:"（尚未選擇）";
+    const msg="【A+B 路線決策】\n選擇："+t+"\n\n"+
+      (sel==="track1"?"請開始 Track ①：分 slice 拆 PlaybackControls，把 loop/節拍器/混音 state 抽成 store，並接上 v2 .sarr 練習設定持久化。每 slice in-app 自驗。":
+       sel==="track2"?"請開始 Track ②：server.py session 子系統模組化（含 51 處測試遷移）。":
+       sel==="track3"?"請開始 Track ③：純 B 使用者價值（待指定具體項目：曲庫/UX/功能）。":
+       "請先在文件上勾選一條路線。");
+    navigator.clipboard.writeText(msg).then(()=>{
+      const b=document.getElementById("copy");const o=b.textContent;b.textContent="✓ 已複製";setTimeout(()=>b.textContent=o,1400);});
+  });
+  document.getElementById("reset").addEventListener("click",()=>{sel="";localStorage.removeItem(KEY);render();});
+  render();
+</script>
+</body>
+</html>
