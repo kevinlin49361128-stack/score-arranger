@@ -62,6 +62,11 @@ import {
   getStrategyPreference,
   recordUndoIfRecent,
 } from "../utils/preferences";
+import {
+  loadPracticeSession,
+  type PracticeSessionSettings,
+  savePracticeSession,
+} from "../utils/practiceSession";
 
 // 編制 → i18n key (label 於 render 時用 tr() 查, locale 切換才會更新)
 const ENSEMBLE_LABEL_KEYS: Record<string, string> = {
@@ -410,9 +415,13 @@ export function Toolbar() {
     if (!path) return;
     setLoading(true, tr("toolbar.loading.saveProject"));
     try {
+      // Track①: 把這首曲的練習設定 (loop/速度/節拍器) 一起存進 .sarr,
+      // 讓專案自帶練習設定, 不再只活在本機 localStorage。
+      const practice = loadPracticeSession(sourcePath) ?? undefined;
       const res = await window.scoreArranger.engine.saveProject(
         path,
         sourcePath,
+        practice as Record<string, unknown> | undefined,
       );
       if (!res.ok) {
         setError(res.error ?? tr("toolbar.error.saveFailed"));
@@ -432,6 +441,14 @@ export function Toolbar() {
       const res = await window.scoreArranger.engine.loadProject(path);
       if (res.ok && res.data) {
         setError(null);
+        // Track①: 專案帶的練習設定先寫回 localStorage, 待 setSourcePath
+        // 觸發 PlaybackControls 的還原 effect (依 sourcePath) 時就讀得到。
+        if (res.data.practice && res.data.source_path) {
+          savePracticeSession(
+            res.data.source_path,
+            res.data.practice as PracticeSessionSettings,
+          );
+        }
         setSourcePath(res.data.source_path);
         if (res.data.source_path) {
           const xmlRes = await window.scoreArranger.engine.toMusicXML(

@@ -653,10 +653,12 @@ export async function scoreClock(path?: string): Promise<unknown> {
 export async function saveProject(
   path: string,
   sourcePath: string,
+  practice?: Record<string, unknown>,
 ): Promise<unknown> {
   return client.call("save_project", {
     path,
     source_path: sourcePath,
+    practice: practice ?? {},
   });
 }
 

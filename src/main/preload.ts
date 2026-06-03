@@ -246,8 +246,10 @@ const api = {
     toMidi: () => ipcRenderer.invoke("engine:toMidi"),
     scoreClock: (path?: string) =>
       ipcRenderer.invoke("engine:scoreClock", path),
-    saveProject: (path: string, sourcePath: string) =>
-      ipcRenderer.invoke("engine:saveProject", path, sourcePath),
+    saveProject: (
+      path: string, sourcePath: string, practice?: Record<string, unknown>,
+    ) =>
+      ipcRenderer.invoke("engine:saveProject", path, sourcePath, practice),
     loadProject: (path: string) =>
       ipcRenderer.invoke("engine:loadProject", path),
     exportTargetMusicXML: (path: string) =>

@@ -242,6 +242,7 @@ declare global {
         saveProject: (
           path: string,
           sourcePath: string,
+          practice?: Record<string, unknown>,
         ) => Promise<IpcResponse<SaveProjectResult>>;
         loadProject: (
           path: string,

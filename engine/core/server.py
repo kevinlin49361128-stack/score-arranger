@@ -2014,12 +2014,15 @@ def _method_save_project(params: dict[str, Any]) -> dict:
         ],
         "target_score": to_dict(arrangement.target_score),
     }
+    # Phase C Track①: 練習設定 (loop/速度/節拍器/混音) 跟著專案存 —
+    # 前端傳 practiceSession dict, 收進 v2 practice slot (不傳則維持空)。
     project = make_project_v2(
         sources=[
             {"source_id": arrangement.source_id, "path": source_path, "ir": None},
         ],
         arrangements=[arr_dict],
         active_arrangement_id=arrangement.arrangement_id,
+        practice=params.get("practice") or {},
     )
     Path(output_path).write_text(
         json.dumps(project, ensure_ascii=False, indent=2),
@@ -2119,6 +2122,8 @@ def _method_load_project(params: dict[str, Any]) -> dict:
         },
         "target_musicxml": target_xml,
         "issues": _serialize_issues(new_issues),
+        # Track①: 把專案存的練習設定回吐, 前端寫回 localStorage 供 PlaybackControls 還原。
+        "practice": project.get("practice") or {},
     }
 
 
