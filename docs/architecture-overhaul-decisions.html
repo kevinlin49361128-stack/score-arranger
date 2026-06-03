@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Arranger — 大刀闊斧改造決策</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d2129; --bd:#2a2f3a;
+    --fg:#e6e8ec; --fg2:#a8aebb; --fg3:#727a8a;
+    --accent:#7c5cff; --accent2:#54d2a0; --warn:#e0a23b; --danger:#e06a5b;
+    --hi:rgba(124,92,255,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:15px/1.6 -apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 120px;}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:.5px}
+  .sub{color:var(--fg3);font-size:13px;margin-bottom:24px}
+  .frame{background:linear-gradient(180deg,#1a1d26,#171a21);border:1px solid var(--bd);
+    border-left:3px solid var(--accent);border-radius:10px;padding:16px 18px;margin:0 0 26px}
+  .frame h3{margin:0 0 8px;font-size:15px;color:var(--accent)}
+  .frame p{margin:6px 0;color:var(--fg2);font-size:14px}
+  .frame b{color:var(--fg)}
+  .sec-h{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--fg3);
+    margin:30px 0 12px;border-bottom:1px solid var(--bd);padding-bottom:6px}
+  .grid{display:flex;flex-direction:column;gap:12px}
+  .card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;
+    padding:14px 16px;cursor:pointer;transition:.12s;position:relative}
+  .card:hover{border-color:#3a4150;background:var(--panel2)}
+  .card.on{border-color:var(--accent);background:var(--hi)}
+  .card .top{display:flex;align-items:flex-start;gap:10px}
+  .chk{width:20px;height:20px;border:1.5px solid var(--fg3);border-radius:5px;flex:0 0 auto;
+    margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:13px;color:transparent}
+  .card.on .chk{border-color:var(--accent);background:var(--accent);color:#fff}
+  .ttl{font-size:16px;font-weight:600;flex:1}
+  .tier{font-size:12px;white-space:nowrap}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 6px 30px}
+  .b{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--bd);color:var(--fg2)}
+  .b.eS{color:#9fd}.b.eM{color:#ffd58a}.b.eL{color:#ff9d8a}
+  .b.rL{border-color:#2c5}.b.rM{border-color:#a83}.b.rH{border-color:#a44}
+  .body{margin:6px 0 0 30px;color:var(--fg2);font-size:13.5px}
+  .body .lbl{color:var(--fg3);font-weight:600;font-size:12px}
+  .body .me{color:var(--accent2)}
+  .body .con{color:var(--warn)}
+  .dep{font-size:12px;color:var(--fg3);margin-top:4px}
+  .routes{display:flex;flex-direction:column;gap:10px}
+  .route{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;cursor:pointer}
+  .route.on{border-color:var(--accent2);background:rgba(84,210,160,.10)}
+  .route .rt{font-weight:600;font-size:15px;display:flex;gap:8px;align-items:center}
+  .route .rd{color:var(--fg2);font-size:13px;margin-top:4px}
+  .pill{font-size:11px;padding:1px 7px;border-radius:10px;background:#222733;color:var(--fg2);border:1px solid var(--bd)}
+  .bar{position:fixed;bottom:0;left:0;right:0;background:rgba(15,17,21,.96);
+    border-top:1px solid var(--bd);padding:14px 24px;display:flex;gap:14px;align-items:center;backdrop-filter:blur(8px)}
+  .bar .count{color:var(--fg2);font-size:13px;flex:1}
+  button.act{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:10px 18px;
+    font-size:14px;font-weight:600;cursor:pointer}
+  button.ghost{background:transparent;color:var(--fg2);border:1px solid var(--bd);border-radius:8px;
+    padding:10px 14px;font-size:13px;cursor:pointer}
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--accent2);
+    color:#06231a;padding:8px 16px;border-radius:8px;font-weight:600;opacity:0;transition:.2s;pointer-events:none}
+  .toast.show{opacity:1}
+  code{background:#222733;padding:1px 5px;border-radius:4px;font-size:12px;color:#cdd3df}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Score Arranger — 大刀闊斧改造決策</h1>
+  <div class="sub">內部架構/品質重構評估 · 2026-06-03 · 勾選要納入的項目 + 選路線 → 底部複製決策摘要</div>
+
+  <div class="frame">
+    <h3>⚖ 一個誠實的策略框架（先讀）</h3>
+    <p>這 7 項<b>除了 #1 ScoreClock 之外，全是內部架構投資 —— 零新使用者價值</b>（修 bug 不算新功能）。
+       它是「<b>打地基 / 把專案做成可長期維護的精品</b>」的賭注，合理；但跟「先驗證使用者 / 往網頁觸及走」是<b>相反路線</b>。</p>
+    <p>所以這份文件的<b>前提決策</b>是：你確認現在要走<b>內部地基</b>這條，而不是<b>對外觸及</b>（網頁版/引擎可移植化）那條。
+       唯一兩邊都對的是 <b>#1 ScoreClock</b>（同時修真實 bug + 鋪地基）→ 無論你選哪條，它都該先做。</p>
+    <p class="dep">（對外觸及那條的評估見上一輪對話；本文件聚焦你提的內部改造路線。）</p>
+  </div>
+
+  <div class="sec-h">七個改造選項（點卡片勾選 · 🎯 = 我建議納入）</div>
+  <div class="grid" id="opts"></div>
+
+  <div class="sec-h">排序 / 路線（單選）</div>
+  <div class="routes" id="routes"></div>
+
+</div>
+
+<div class="bar">
+  <span class="count" id="count"></span>
+  <button class="ghost" onclick="reset()">重設為建議</button>
+  <button class="act" onclick="copySummary()">複製決策摘要</button>
+</div>
+<div class="toast" id="toast">已複製決策摘要</div>
+
+<script>
+const OPTS = [
+  {
+    id:"scoreclock", title:"#1 統一 ScoreClock / TimeMap", tier:"🎯🎯🎯 最高",
+    on:true, effort:"工 中–大", eClass:"eL", risk:"險 中", rClass:"rM",
+    leverage:"把「小節號 → 絕對拍點 → MIDI tick/秒 → OSMD cursor」做成單一時間模型。一次修弱起/不完全小節、變拍、變速、loop、count-in、游標同步、MIDI 對齊、節拍器各自推時間的老問題。",
+    me:"我的評註：唯一兼修真實使用者 bug（弱起播放對不齊就是本 session 一開始那個）+ 鋪地基的項目。<b>無論走哪條路線都該第一個做</b>。它也是 #5 播放重構的地基 —— 先有 clock 再抽 PlaybackEngine，否則重構兩次。",
+    con:"反方：動到最易回歸的播放核心；遷移期可能短暫弄壞。緩解 = 建好 TimeMap 後逐一遷移消費端（先 cursor → MIDI → 節拍器 → loop），不要一次替換。",
+    dep:"相依：無（地基）。啟用 #5。"
+  },
+  {
+    id:"rpc", title:"#3 硬化前後端 API 契約（schema-first RPC）", tier:"🎯🎯 建議提前",
+    on:true, effort:"工 中", eClass:"eM", risk:"險 低", rClass:"rL",
+    leverage:"python-bridge 很多回傳仍是 unknown、server.py 是大型 method registry。用 schema-first（pydantic/dataclass → 生成 TS 型別）讓 renderer/main/engine 三層共享契約、可測。",
+    me:"我的評註：<b>我建議從你排的 Phase D 提前到鷹架階段</b>。理由：ScoreClock + Project v2 + server 拆分若沒有型別契約，等於日後再重構一次。先鋪<b>薄薄一層</b>（codegen + 只遷移你會碰到的 method），讓 B/C 蓋在型別上。",
+    con:"反方：不漂亮、容易半途而廢。守則：method-by-method 漸進遷移，別大爆炸。",
+    dep:"相依：搭 #4 server 拆分 + #6 patch model。"
+  },
+  {
+    id:"project", title:"#2 .sarr 升級成真正 Project Schema v2", tier:"🎯🎯",
+    on:true, effort:"工 中", eClass:"eM", risk:"險 中", rClass:"rM",
+    leverage:"現在 .sarr 主要存 arrangement + target_score，載入時不完整還原 source IR。升級成 Project = sources + arrangements + layouts + practiceSettings + rehearsalNotes + variants + activeState，讓專案檔 / tab session / localStorage / Python session 不再分裂。",
+    me:"我的評註：高價值（移除一整類「狀態不同步」bug —— 本 session 就踩到 mutedTracks 重置、manifest 過時）。做在 ScoreClock 之後（Phase B）。",
+    con:"反方：要做<b>版本化 schema + 既有 .sarr 遷移</b>，否則使用者舊檔開不了。",
+    dep:"相依：受惠於 #3（型別）。"
+  },
+  {
+    id:"playback", title:"#5 重構播放 / 練習 UI（PlaybackControls 拆分）", tier:"🎯 接在 #1 後",
+    on:true, effort:"工 大", eClass:"eL", risk:"險 高", rClass:"rH",
+    leverage:"PlaybackControls ~1991 行混了 Tone 播放/節拍器/loop/音量/取樣/練習速度/持久化。抽成 PlaybackEngine / MetronomeEngine / PracticeSessionStore / PlaybackPanel。",
+    me:"我的評註：<b>跟 #1 合併成一個工程</b> —— 在新的 TimeMap 上抽 PlaybackEngine，不要在舊的糾纏上重構。先 #1 再 #5。",
+    con:"反方：<b>全 7 項回歸風險最高</b>（播放是這 codebase 最常出包的區，task 史一堆 cursor/scroll 修補）。播放現在能動。",
+    dep:"相依：必須在 #1 之後。"
+  },
+  {
+    id:"server", title:"#4 拆 server.py 成服務層", tier:"🎯 邊做邊拆",
+    on:true, effort:"工 中", eClass:"eM", risk:"險 低–中", rClass:"rM",
+    leverage:"server.py ~3156 行承載 session/project/import/arrange/edit/export/practice 所有 RPC。拆成各 service，加功能不再都碰同一顆大石頭。",
+    me:"我的評註：同意，但用<b>「碰到哪塊拆哪塊」</b>而非一次大爆炸。API 名稱不必改，只拆內部。搭 #3 型別一起做最安全。",
+    con:"反方：純內部、無使用者價值；大面積搬動有風險。",
+    dep:"相依：搭 #3 先做更安全。"
+  },
+  {
+    id:"repertoire", title:"#7 曲庫治理 → manifest 管線", tier:"🎯 side quest（已半成品）",
+    on:true, effort:"工 小–中", eClass:"eS", risk:"險 低", rClass:"rL",
+    leverage:"repertoireCatalog.ts ~3377 行；大宗曲庫不該全塞 TS。改走 JSON manifest（來源/授權/composer dates/hash/難度/tags/解析狀態）。",
+    me:"我的評註：<b>本 session 已做了一半</b> —— 線上 corpus-v1 的 catalog.json + build_cloud_corpus.py 就是這個管線。剩的只是把<b>綁定曲庫</b>也遷到同一模型。低風險、可獨立、能丟給 sub-agent。<b>我不把它算「大」改造</b>，是 side quest。",
+    con:"反方：TS catalog 現在能動，低急迫。",
+    dep:"相依：無。可任何時候並行。"
+  },
+  {
+    id:"patch", title:"#6 修復/改編核心 → operation/patch 模型", tier:"⚠️ 條件式 · 放最後",
+    on:false, effort:"工 大", eClass:"eL", risk:"險 高", rClass:"rH",
+    leverage:"repair.py 目前候選策略 + deepcopy + 回滾。改成輸出可比較的 EditOperation/Patch + transaction，讓 undo / LLM edit / manual edit / repair 走同一條路，品質評估也能在 patch 層做。",
+    me:"我的評註：<b>我把它從你的清單降為條件式、放最後</b>。理由：這動到<b>專案唯一的護城河</b>（帶約束分配 + 定向修復）。deepcopy+回滾雖醜但<b>正確</b>。只在 patch model 能解一個你<b>具體要的</b>東西時才做（例如 LLM-edit + undo 真的要統一），別為了優雅重構能動的音樂核心。",
+    con:"反方：為純粹度重寫音樂核心 = 最危險的事；一個 regression 可能讓改編品質倒退而難察覺。",
+    dep:"相依：受惠於 #3（typed ops）。建議所有其他項穩定後再評估。"
+  },
+];
+
+const ROUTES = [
+  {
+    id:"kevin", title:"你的原路線 A→E", rec:false,
+    desc:"A: ScoreClock → B: Project v2 → C: 拆 PlaybackControls + server.py → D: RPC schema-first + repair patch → E: 曲庫 manifest。清晰、漸進。"
+  },
+  {
+    id:"tuned", title:"我微調的路線（🎯 建議）", rec:true,
+    desc:"Phase 0(薄): schema-first 鷹架(#3 一部分) → A: ScoreClock(#1) → B: Project v2(#2) → C: 在新 clock 上拆 PlaybackControls(#5) + 碰到就拆 server.py(#4) → 末: repair patch(#6) 條件式評估。#7 曲庫 manifest 全程可並行 side quest。差別 = #3 提前當鷹架、#6 降為條件式最後、#7 不佔主線。"
+  },
+  {
+    id:"minimal", title:"極簡：只做 #1 + #7", rec:false,
+    desc:"只做 ScoreClock（修真實 bug + 鋪地基）+ 曲庫 manifest（半成品收尾）。其餘暫不動。若你其實偏向「先別大改、把痛點解掉就好」選這個 —— 風險最低、最快見效。"
+  },
+  {
+    id:"reach", title:"改走對外觸及（不做這 7 項主線）", rec:false,
+    desc:"若你重估後覺得目標是「要有人用」而非地基：先做網頁版（雲端引擎 + 現有 React UI），這 7 項裡只先做 #1（它在哪條路都對）。內部重構等網頁版證明有人用再投。"
+  },
+];
+
+const KEY="sa_overhaul_decision_v1";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
+let state = load();
+if(!state.opts){ state = {opts:Object.fromEntries(OPTS.map(o=>[o.id,o.on])), route:"tuned"}; }
+
+function render(){
+  const box=document.getElementById("opts"); box.innerHTML="";
+  OPTS.forEach(o=>{
+    const on=!!state.opts[o.id];
+    const el=document.createElement("div");
+    el.className="card"+(on?" on":"");
+    el.onclick=()=>{state.opts[o.id]=!state.opts[o.id];save(state);render()};
+    el.innerHTML=`
+      <div class="top">
+        <div class="chk">✓</div>
+        <div class="ttl">${o.title}</div>
+        <div class="tier">${o.tier}</div>
+      </div>
+      <div class="badges">
+        <span class="b ${o.eClass}">${o.effort}</span>
+        <span class="b ${o.rClass}">${o.risk}</span>
+      </div>
+      <div class="body">
+        <div><span class="lbl">槓桿 </span>${o.leverage}</div>
+        <div style="margin-top:5px"><span class="me">${o.me}</span></div>
+        <div style="margin-top:5px"><span class="con">${o.con}</span></div>
+        <div class="dep">${o.dep}</div>
+      </div>`;
+    box.appendChild(el);
+  });
+  const rb=document.getElementById("routes"); rb.innerHTML="";
+  ROUTES.forEach(r=>{
+    const on=state.route===r.id;
+    const el=document.createElement("div");
+    el.className="route"+(on?" on":"");
+    el.onclick=()=>{state.route=r.id;save(state);render()};
+    el.innerHTML=`<div class="rt">${on?"●":"○"} ${r.title} ${r.rec?'<span class="pill">🎯 建議</span>':''}</div>
+      <div class="rd">${r.desc}</div>`;
+    rb.appendChild(el);
+  });
+  const n=Object.values(state.opts).filter(Boolean).length;
+  document.getElementById("count").textContent=`已選 ${n} / ${OPTS.length} 項 · 路線：${(ROUTES.find(r=>r.id===state.route)||{}).title||"—"}`;
+}
+function reset(){ state={opts:Object.fromEntries(OPTS.map(o=>[o.id,o.on])), route:"tuned"}; save(state); render(); }
+function copySummary(){
+  const picked=OPTS.filter(o=>state.opts[o.id]);
+  const route=ROUTES.find(r=>r.id===state.route)||{};
+  let s=`【Score Arranger — 大刀闊斧改造決策】\n`;
+  s+=`路線: ${route.title}\n${route.desc}\n\n納入項目 (${picked.length}):\n`;
+  picked.forEach(o=>{ s+=`- ${o.title}  [${o.effort} / ${o.risk}]\n`; });
+  const dropped=OPTS.filter(o=>!state.opts[o.id]);
+  if(dropped.length){ s+=`\n暫不納入:\n`; dropped.forEach(o=>{s+=`- ${o.title}\n`}); }
+  s+=`\n關鍵共識: #1 ScoreClock 無論哪條路都先做; #6 repair patch 動到護城河→條件式放最後; #7 曲庫 manifest 已半成品=side quest。`;
+  navigator.clipboard.writeText(s).then(()=>{
+    const t=document.getElementById("toast");t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600);
+  });
+}
+render();
+</script>
+</body>
+</html>
