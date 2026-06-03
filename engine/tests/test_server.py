@@ -425,6 +425,44 @@ class TestApplySuggestion:
         # 載入後 _CURRENT_ARRANGEMENT 應被還原
         assert srv._CURRENT_ARRANGEMENT is not None
 
+    def test_load_project_v2_envelope(self, tmp_path):
+        """load_project 也能吃 v2 envelope (新格式), 不只 v0.1.0。"""
+        import json
+
+        import core.server as srv
+        from music21 import corpus
+
+        from core.analyzer.function import tag_all_sections
+        from core.arrangement_model import violin_piano_ensemble
+        from core.arranger import arrange as run_arrange
+        from core.parser import parse_stream
+        from core.project_schema import coerce_to_v2
+
+        ir = parse_stream(corpus.parse("bach/bwv66.6"))
+        tag_all_sections(ir)
+        srv._CURRENT_ARRANGEMENT = run_arrange(ir, violin_piano_ensemble())
+
+        # 先存 v1, 再遷成 v2 寫回 — 確保 v2 讀路徑吃真實資料。
+        v1_path = tmp_path / "v1.sarr"
+        handle_request({
+            "id": "sv", "method": "save_project",
+            "params": {"path": str(v1_path), "source_path": "corpus:bach/bwv66.6"},
+        })
+        v2 = coerce_to_v2(json.loads(v1_path.read_text(encoding="utf-8")))
+        assert v2["version"] == "2"
+        v2_path = tmp_path / "v2.sarr"
+        v2_path.write_text(json.dumps(v2, ensure_ascii=False), encoding="utf-8")
+
+        srv._CURRENT_ARRANGEMENT = None
+        resp = handle_request({
+            "id": "ld", "method": "load_project",
+            "params": {"path": str(v2_path)},
+        })
+        assert resp["ok"], resp.get("error")
+        assert resp["data"]["source_path"] == "corpus:bach/bwv66.6"
+        assert "<?xml" in resp["data"]["target_musicxml"]
+        assert srv._CURRENT_ARRANGEMENT is not None
+
     def test_close_session_clears_state(self):
         """close_session 應釋放具名 session 的 state"""
         import core.server as srv

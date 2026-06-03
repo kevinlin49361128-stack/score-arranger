@@ -2179,17 +2179,16 @@ def _method_load_project(params: dict[str, Any]) -> dict:
 
     input_path = params["path"]
     raw = Path(input_path).read_text(encoding="utf-8")
-    project = json.loads(raw)
-
-    if project.get("format") != "score-arranger-project":
-        raise ValueError("不是有效的 .sarr 專案檔")
+    # Phase B: 統一走 v2 envelope — 舊 v0.1.0 .sarr 自動遷移, 永遠載得進。
+    from core.project_schema import coerce_to_v2
+    project = coerce_to_v2(json.loads(raw))
 
     from core.ir_serialize import from_dict
     from core.arrangement_model import Arrangement, Player, Assignment
     from core.ir import VoiceFunction
 
-    target_score = from_dict(project["target_score"])
-    arr_data = project["arrangement"]
+    arr_data = project["arrangements"][0]
+    target_score = from_dict(arr_data["target_score"])
     players = [
         Player(
             player_id=p["player_id"],
@@ -2235,7 +2234,9 @@ def _method_load_project(params: dict[str, Any]) -> dict:
     new_issues = collect_issues(target_score)
 
     return {
-        "source_path": project.get("source_path", ""),
+        "source_path": (
+            project["sources"][0]["path"] if project.get("sources") else ""
+        ),
         "arrangement": {
             "arrangement_id": arrangement.arrangement_id,
             "name": arrangement.name,
