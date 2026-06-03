@@ -903,7 +903,12 @@ export function Toolbar() {
       style={{
         display: "flex",
         alignItems: "center",
+        // 響應式安全網: 視窗窄到一列放不下時, 換行成兩列 (而非把按鈕推出
+        // 畫面點不到)。最大化時仍單列; 變窄才換行, 全部按鈕始終可點。
+        // (取代原本「收進 ⋯ 選單」的脆弱量測式收合 — 換行更穩、東西不藏。)
+        flexWrap: "wrap",
         gap: 4,
+        rowGap: 4,
         padding: "6px 10px",
         borderBottom: "1px solid var(--border)",
         background: "var(--bg-panel)",
