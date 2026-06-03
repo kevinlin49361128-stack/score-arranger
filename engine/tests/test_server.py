@@ -410,6 +410,13 @@ class TestApplySuggestion:
         assert proj_path.exists()
         assert save_resp["data"]["size_bytes"] > 100
 
+        # slice 3: save 應吐 v2 envelope (sources/arrangements/active), 不再是 v0.1.0
+        import json as _json
+        saved = _json.loads(proj_path.read_text(encoding="utf-8"))
+        assert saved["version"] == "2"
+        assert saved["sources"][0]["path"] == "corpus:bach/bwv66.6"
+        assert "target_score" in saved["arrangements"][0]
+
         # 清掉 state 模擬重新開 app
         srv._CURRENT_ARRANGEMENT = None
 

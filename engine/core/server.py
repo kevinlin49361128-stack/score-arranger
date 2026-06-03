@@ -2122,41 +2122,46 @@ def _method_save_project(params: dict[str, Any]) -> dict:
     output_path = params["path"]
     source_path = params.get("source_path", "")
 
+    # Phase B slice 3: 存成 v2 envelope。target_score 收進 arrangement,
+    # 與 migrate_v1_to_v2 / load_project 讀的形狀一致。舊 v1 檔仍可 load (coerce 遷移)。
+    from core.project_schema import make_project_v2
     arrangement = sess.current_arrangement
-    project = {
-        "format": "score-arranger-project",
-        "version": "0.1.0",
-        "source_path": source_path,
-        "arrangement": {
-            "arrangement_id": arrangement.arrangement_id,
-            "name": arrangement.name,
-            "source_id": arrangement.source_id,
-            "players": [
-                {
-                    "player_id": p.player_id,
-                    "display_name": p.display_name,
-                    "instruments": p.instruments,
-                    "primary_instrument": p.primary_instrument,
-                    "staves": p.staves,
-                }
-                for p in arrangement.players
-            ],
-            "assignments": [
-                {
-                    "assignment_id": a.assignment_id,
-                    "source_part_id": a.source_part_id,
-                    "target_player_id": a.target_player_id,
-                    "target_instrument": a.target_instrument,
-                    "target_staff": a.target_staff,
-                    "span": list(a.span),
-                    "function": a.function.value,
-                    "is_user_edited": a.is_user_edited,
-                }
-                for a in arrangement.assignments
-            ],
-        },
+    arr_dict = {
+        "arrangement_id": arrangement.arrangement_id,
+        "name": arrangement.name,
+        "source_id": arrangement.source_id,
+        "players": [
+            {
+                "player_id": p.player_id,
+                "display_name": p.display_name,
+                "instruments": p.instruments,
+                "primary_instrument": p.primary_instrument,
+                "staves": p.staves,
+            }
+            for p in arrangement.players
+        ],
+        "assignments": [
+            {
+                "assignment_id": a.assignment_id,
+                "source_part_id": a.source_part_id,
+                "target_player_id": a.target_player_id,
+                "target_instrument": a.target_instrument,
+                "target_staff": a.target_staff,
+                "span": list(a.span),
+                "function": a.function.value,
+                "is_user_edited": a.is_user_edited,
+            }
+            for a in arrangement.assignments
+        ],
         "target_score": to_dict(arrangement.target_score),
     }
+    project = make_project_v2(
+        sources=[
+            {"source_id": arrangement.source_id, "path": source_path, "ir": None},
+        ],
+        arrangements=[arr_dict],
+        active_arrangement_id=arrangement.arrangement_id,
+    )
     Path(output_path).write_text(
         json.dumps(project, ensure_ascii=False, indent=2),
         encoding="utf-8",
