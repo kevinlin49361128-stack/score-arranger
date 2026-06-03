@@ -115,6 +115,28 @@ KRN_SOURCES = [
          limit=50, composer_dates="c.1450-1521", era="Renaissance", form="Mass",
          ensemble="SATB", instruments=["voice"], year=1500, henle=None,
          tags=["counterpoint"], popular_tags=[]),
+    # ── batch 2 (繼續加) ──
+    dict(key="bps", repo="craigsapp/beethoven-piano-sonatas", subdir="kern",
+         limit=999, composer_dates="1770-1827", era="Classical", form="Sonata",
+         ensemble="Piano Solo", instruments=["piano"], year=1800, henle=7,
+         tags=["expression", "rhythm"], popular_tags=[]),
+    dict(key="mps", repo="craigsapp/mozart-piano-sonatas", subdir="kern",
+         limit=999, composer_dates="1756-1791", era="Classical", form="Sonata",
+         ensemble="Piano Solo", instruments=["piano"], year=1780, henle=5,
+         tags=["scales", "legato"], popular_tags=["amateur_pianist"]),
+    # 文藝復興: 補作曲家多樣性 (form 依標題 Missa→Mass 否則 Motet)。
+    dict(key="ock", repo="josquin-research-project/Ock", subdir="", limit=30,
+         composer_dates="c.1410-1497", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1470, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    dict(key="obr", repo="josquin-research-project/Obr", subdir="", limit=999,
+         composer_dates="c.1457-1505", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1490, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    dict(key="bus", repo="josquin-research-project/Bus", subdir="", limit=20,
+         composer_dates="c.1430-1492", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1470, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
 ]
 
 
@@ -226,7 +248,11 @@ def process_krn(src: dict, have: set[str]) -> list[dict]:
                 print(f"  ✗ {slug}: 匯出失敗 {type(e).__name__}")
                 out.unlink(missing_ok=True)
                 continue
-            entry = _validate_and_entry(out, asset_name, slug, title, composer, src)
+            eff = src
+            if src.get("dynamic_form"):
+                form = "Mass" if "missa" in title.lower() else "Motet"
+                eff = {**src, "form": form}
+            entry = _validate_and_entry(out, asset_name, slug, title, composer, eff)
             if entry:
                 entries.append(entry)
                 have.add(entry["corpus_path"])
