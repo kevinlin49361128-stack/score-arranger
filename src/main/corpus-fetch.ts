@@ -39,7 +39,7 @@ const ALLOWED_URL_PREFIX =
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 單檔上限 8MB (.mxl 一般 <200KB)
 const CACHE_CAP_BYTES = 500 * 1024 * 1024; // 500MB LRU
-const MANIFEST_TTL_MS = 6 * 60 * 60 * 1000; // manifest 記憶體快取 6h
+const MANIFEST_TTL_MS = 30 * 60 * 1000; // manifest 記憶體快取 30min (開曲庫會 force 抓最新)
 
 export interface RemoteCorpusEntry {
   corpus_path: string;
@@ -158,11 +158,11 @@ export async function getManifest(force = false): Promise<Manifest> {
 }
 
 /** 給 renderer 的清單 (去掉 url/sha256, 只留顯示用 metadata)。 */
-export async function listRemote(): Promise<
+export async function listRemote(force = false): Promise<
   Omit<RemoteCorpusEntry, "url" | "sha256" | "bytes">[]
 > {
   try {
-    const m = await getManifest();
+    const m = await getManifest(force);
     return m.entries.map(({ url: _u, sha256: _s, bytes: _b, ...rest }) => rest);
   } catch {
     return []; // 離線 / 無 manifest → 不顯示雲端曲, 不報錯

@@ -56,7 +56,8 @@ export function RepertoireDialog({ onClose }: Props) {
   const [remoteEntries, setRemoteEntries] = useState<RepertoireEntry[]>([]);
   useEffect(() => {
     let alive = true;
-    window.scoreArranger.corpus.listRemote().then((res) => {
+    // force=true: 每次開曲庫抓最新 manifest, 避免新增曲目要等記憶體快取過期才現身
+    window.scoreArranger.corpus.listRemote(true).then((res) => {
       if (!alive || !res.ok || !res.data) return;
       setRemoteEntries(
         res.data.map((e) => ({

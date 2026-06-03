@@ -284,8 +284,9 @@ const api = {
    * B1 線上曲庫層 — 雲端曲目隨需下載 (主程序下載/快取, 引擎只讀本地檔)。
    */
   corpus: {
-    /** 遠端 manifest 的曲目 metadata (離線時回空陣列, 不報錯)。 */
-    listRemote: () => ipcRenderer.invoke("corpus:listRemote"),
+    /** 遠端 manifest 的曲目 metadata (離線時回空陣列, 不報錯)。force=繞過快取抓最新。 */
+    listRemote: (force?: boolean) =>
+      ipcRenderer.invoke("corpus:listRemote", force),
     /** 下載 (或命中快取) 一首雲端曲, 回傳本地 .mxl 路徑。 */
     resolve: (corpusPath: string) =>
       ipcRenderer.invoke("corpus:resolve", corpusPath),

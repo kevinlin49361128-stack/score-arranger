@@ -480,8 +480,8 @@ function registerIpcHandlers(): void {
     safeCall(() => historyStatus()));
   ipcMain.handle("engine:toMidi", async () => safeCall(() => toMidi()));
   // B1 線上曲庫層 — 主程序下載/快取, 引擎不碰網路
-  ipcMain.handle("corpus:listRemote", async () =>
-    safeCall(() => listRemote()));
+  ipcMain.handle("corpus:listRemote", async (_evt, force?: boolean) =>
+    safeCall(() => listRemote(!!force)));
   ipcMain.handle("corpus:resolve", async (_evt, corpusPath: string) =>
     safeCall(() => resolveRemote(corpusPath)));
   ipcMain.handle("corpus:clearCache", async () =>

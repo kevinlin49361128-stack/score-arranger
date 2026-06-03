@@ -309,7 +309,7 @@ declare global {
       };
       // B1 線上曲庫層 — 雲端曲目隨需下載
       corpus: {
-        listRemote: () => Promise<IpcResponse<Array<{
+        listRemote: (force?: boolean) => Promise<IpcResponse<Array<{
           corpus_path: string;
           title: string;
           composer: string;
