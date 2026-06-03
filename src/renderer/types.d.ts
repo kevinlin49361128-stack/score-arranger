@@ -10,7 +10,6 @@ import type {
   ArrangementResult,
   EditEventResult,
   ExportFileResult,
-  HistoryStatus,
   IpcResponse,
   LoadProjectResult,
   MeasureEventsResult,
@@ -131,10 +130,9 @@ declare global {
         toMusicXML: (
           path: string, maxMeasures?: number, startMeasure?: number,
         ) => Promise<IpcResponse<string>>;
-        scoreInfo: (path: string) => Promise<IpcResponse<{
-          measure_count: number;
-          part_count: number;
-        }>>;
+        scoreInfo: (path: string) => Promise<IpcResponse<
+          import("./generated/rpc-types").ScoreInfoRes
+        >>;
         omrStatus: () => Promise<IpcResponse<{
           available: boolean;
           java_ok: boolean;
@@ -232,7 +230,9 @@ declare global {
           Promise<IpcResponse<ContinuoStatus>>;
         undo: () => Promise<IpcResponse<UndoRedoResult>>;
         redo: () => Promise<IpcResponse<UndoRedoResult>>;
-        historyStatus: () => Promise<IpcResponse<HistoryStatus>>;
+        historyStatus: () => Promise<IpcResponse<
+          import("./generated/rpc-types").HistoryStatusRes
+        >>;
         toMidi: () => Promise<IpcResponse<MidiResult>>;
         scoreClock: (
           path?: string,
