@@ -2563,6 +2563,27 @@ def _method_apply_figuration(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_score_clock(params: dict[str, Any]) -> dict:
+    """統一時間模型 ScoreClock/TimeMap (架構改造 Phase A)。
+
+    以 quarter 為基準, 每小節一個 entry (quarter_offset/second_offset/duration/
+    bpm/拍號), 前端拿來查「秒↔小節↔quarter」, 取代散落各處的 computeMeasureStarts。
+    優先序: path (source 播放) > target_score (改編譜) > source_score。
+    """
+    sess = _session(params)
+    from core.score_clock import build_score_clock, serialize_score_clock
+    arr = sess.current_arrangement
+    if params.get("path"):
+        score = parse_musicxml(params["path"])
+    elif arr is not None and arr.target_score is not None:
+        score = arr.target_score
+    elif arr is not None and arr.source_score is not None:
+        score = arr.source_score
+    else:
+        raise ValueError("尚無樂譜可建 ScoreClock")
+    return serialize_score_clock(build_score_clock(score))
+
+
 def _inner_voice_indices(score: Score) -> "set[int]":
     """回傳「主要功能為內聲部 (和聲/踏板/裝飾)」的 part index 集。
 
@@ -3084,6 +3105,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "redo": _method_redo,
     "history_status": _method_history_status,
     "to_midi": _method_to_midi,
+    "score_clock": _method_score_clock,
     "audit_playability": _method_audit_playability,
     "apply_bowing": _method_apply_bowing,
     "apply_figuration": _method_apply_figuration,

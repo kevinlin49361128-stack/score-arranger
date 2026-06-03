@@ -55,10 +55,43 @@ class ScoreInfoRes(TypedDict):
     part_count: int
 
 
+# ── score_clock (Phase A: 統一時間模型 ScoreClock/TimeMap) ─────────────────
+class ScoreClockReq(TypedDict, total=False):
+    session_id: str
+    path: str
+
+
+class TimeSig(TypedDict):
+    numerator: int
+    denominator: int
+
+
+class TimeMapEntry(TypedDict):
+    measure_number: int
+    is_pickup: bool
+    quarter_offset: float
+    duration_quarters: float
+    second_offset: float
+    tick_offset: int
+    bpm: float
+    numerator: int
+    denominator: int
+
+
+class ScoreClockRes(TypedDict):
+    ppq: int
+    default_bpm: float
+    default_time_signature: TimeSig
+    total_quarters: float
+    total_seconds: float
+    entries: list[TimeMapEntry]
+
+
 # method 名稱 → (Request TypedDict, Response TypedDict)。
 # 補新 method: 上面加 <Method>Req/<Method>Res, 這裡加一行, 重跑 codegen。
 CONTRACTS: dict[str, tuple[type, type]] = {
     "ping": (PingReq, PingRes),
     "history_status": (HistoryStatusReq, HistoryStatusRes),
     "score_info": (ScoreInfoReq, ScoreInfoRes),
+    "score_clock": (ScoreClockReq, ScoreClockRes),
 }

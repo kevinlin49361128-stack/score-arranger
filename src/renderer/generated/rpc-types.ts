@@ -29,10 +29,42 @@ export interface ScoreInfoRes {
   part_count: number;
 }
 
+export interface ScoreClockReq {
+  session_id?: string;
+  path?: string;
+}
+
+export interface ScoreClockRes {
+  ppq: number;
+  default_bpm: number;
+  default_time_signature: TimeSig;
+  total_quarters: number;
+  total_seconds: number;
+  entries: TimeMapEntry[];
+}
+
+export interface TimeSig {
+  numerator: number;
+  denominator: number;
+}
+
+export interface TimeMapEntry {
+  measure_number: number;
+  is_pickup: boolean;
+  quarter_offset: number;
+  duration_quarters: number;
+  second_offset: number;
+  tick_offset: number;
+  bpm: number;
+  numerator: number;
+  denominator: number;
+}
+
 export interface RpcContracts {
   ping: { req: PingReq; res: PingRes };
   history_status: { req: HistoryStatusReq; res: HistoryStatusRes };
   score_info: { req: ScoreInfoReq; res: ScoreInfoRes };
+  score_clock: { req: ScoreClockReq; res: ScoreClockRes };
 }
 
 export type RpcMethod = keyof RpcContracts;
