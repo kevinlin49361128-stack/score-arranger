@@ -424,18 +424,16 @@ export function NLEditDialog({ onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="fx-modal-card"
+        className="fx-modal-card sa-glass"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 580,
           maxHeight: "84vh",
-          background: "var(--bg-panel)",
-          borderRadius: 8,
-          border: "1px solid var(--border)",
+          // 0.1.90: 玻璃命令面板質感 (背景/邊框/陰影/blur 由 .sa-glass 提供)。
+          borderRadius: "var(--r-l)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
         }}
       >
         <header

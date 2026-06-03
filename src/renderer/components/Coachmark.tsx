@@ -113,8 +113,10 @@ export function Coachmark({
         padding: "12px 14px",
         background: "var(--accent)",
         color: "var(--accent-fg)",
-        borderRadius: 8,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+        // 0.1.90: 金色實底 coachmark 保留 (glass 不適合 accent 色面),
+        // 但統一用 elevation token 帶暖金光邊 + 軟化圓角。
+        borderRadius: "var(--r-m)",
+        boxShadow: "var(--elev-2)",
         fontSize: 13,
         lineHeight: 1.5,
         animation: "fx-modal-in 0.22s ease-out",

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Score Arranger — 視覺質感升級方向（決策文件）</title>
+<style>
+  :root {
+    /* 我提議的 premium 暖金古典 palette（沿用現有 accent，深化層次） */
+    --bg-0: #1a1714;          /* 最底層，比現有 dark 再暖一階 */
+    --bg-1: #232019;
+    --bg-2: #2c2820;
+    --glass: rgba(44, 40, 32, 0.62);
+    --glass-border: rgba(217, 170, 99, 0.18);
+    --fg-0: #f3efe6;
+    --fg-1: #cdc6b8;
+    --fg-2: #948c7c;
+    --gold: #d9aa63;
+    --gold-soft: #ecc890;
+    --gold-deep: #8c6210;
+    --line: rgba(217, 170, 99, 0.14);
+    --ok: #81c784;
+    --warn: #ffb74d;
+    --err: #ff8a80;
+    --r-s: 8px;
+    --r-m: 13px;
+    --r-l: 20px;
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --shadow-1: 0 1px 2px rgba(0,0,0,.3), 0 0 0 .5px rgba(217,170,99,.06);
+    --shadow-2: 0 4px 18px rgba(0,0,0,.38), 0 0 0 .5px rgba(217,170,99,.1);
+    --shadow-3: 0 14px 48px rgba(0,0,0,.5), 0 0 0 .5px rgba(217,170,99,.14);
+    font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(217,170,99,.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(140,98,16,.10), transparent 55%),
+      var(--bg-0);
+    color: var(--fg-1);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 120px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  header {
+    padding: 64px 0 36px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    color: var(--gold); font-size: 13px; letter-spacing: .18em;
+    text-transform: uppercase; font-weight: 600; margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Iowan Old Style", "Apple Garamond", "Songti TC", Georgia, serif;
+    font-size: 40px; line-height: 1.15; margin: 0 0 14px; color: var(--fg-0);
+    font-weight: 600; letter-spacing: -.01em;
+  }
+  .sub { color: var(--fg-2); font-size: 15px; max-width: 640px; }
+  h2 {
+    font-family: "Iowan Old Style", "Songti TC", Georgia, serif;
+    font-size: 26px; color: var(--fg-0); margin: 52px 0 6px; font-weight: 600;
+    letter-spacing: -.01em;
+  }
+  h2 .num { color: var(--gold); font-size: 17px; vertical-align: middle; margin-right: 10px; }
+  .lead { color: var(--fg-2); font-size: 14px; margin: 0 0 22px; }
+  p { font-size: 15px; }
+  strong { color: var(--fg-0); font-weight: 600; }
+  .gold { color: var(--gold-soft); }
+
+  /* glass card — 這就是我要在 app 裡做的玻璃質感 */
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(18px) saturate(1.3);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-l);
+    box-shadow: var(--shadow-2);
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--gold); font-weight: 600; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  td .t { color: var(--fg-0); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+  .tag.done { background: rgba(129,199,132,.16); color: var(--ok); }
+  .tag.gap  { background: rgba(255,138,128,.16); color: var(--err); }
+  .tag.part { background: rgba(255,183,77,.16); color: var(--warn); }
+
+  /* 美感 demo 區 */
+  .demos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  @media (max-width: 720px){ .demos { grid-template-columns: 1fr; } .demos2 { grid-template-columns:1fr!important;} }
+  .demo { padding: 20px; border-radius: var(--r-m); }
+  .demo h4 { margin: 0 0 12px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-2); font-weight: 700; }
+
+  .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { width: 56px; }
+  .sw .chip { height: 44px; border-radius: 10px; box-shadow: var(--shadow-1); }
+  .sw .lab { font-size: 10px; color: var(--fg-2); margin-top: 5px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  .elev { display: flex; gap: 18px; align-items: flex-end; padding: 8px 4px 18px; }
+  .elev .e { width: 70px; height: 54px; border-radius: var(--r-m); background: var(--bg-2); display: grid; place-items: center; font-size: 11px; color: var(--fg-2); }
+  .elev .e1 { box-shadow: var(--shadow-1); }
+  .elev .e2 { box-shadow: var(--shadow-2); }
+  .elev .e3 { box-shadow: var(--shadow-3); }
+
+  /* 玻璃 popover mock — 行內 issue 氣泡 */
+  .scoremock {
+    position: relative; height: 150px; border-radius: var(--r-m);
+    background:
+      repeating-linear-gradient(0deg, transparent 0 17px, rgba(255,255,255,.05) 17px 18px),
+      #f8f5ef;
+    overflow: hidden;
+  }
+  .scoremock .warnpin {
+    position: absolute; left: 38%; top: 38%; width: 22px; height: 22px;
+    border-radius: 50%; background: var(--warn); color: #3a2c00; display: grid;
+    place-items: center; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    animation: pin 2.2s var(--ease) infinite;
+  }
+  @keyframes pin { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-3px);} }
+  .pop {
+    position: absolute; left: 44%; top: 26%; width: 220px; padding: 14px;
+    border-radius: var(--r-m); color: var(--fg-0); font-size: 13px; z-index: 3;
+    animation: popin .26s var(--spring);
+  }
+  @keyframes popin { from { opacity:0; transform: translateY(6px) scale(.96);} to { opacity:1; transform: none;} }
+  .pop .ttl { font-weight: 600; margin-bottom: 6px; color: var(--warn); }
+  .pop .desc { color: var(--fg-1); font-size: 12px; margin-bottom: 11px; }
+  .qf { display: flex; gap: 7px; }
+  .qf button {
+    flex: 1; font-size: 12px; padding: 6px 0; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--glass-border); background: rgba(217,170,99,.14);
+    color: var(--gold-soft); font-weight: 600; transition: all .16s var(--ease);
+  }
+  .qf button:hover { background: var(--gold); color: #1a1510; transform: translateY(-1px); }
+
+  /* easing 對比 */
+  .ease-row { display: flex; align-items: center; gap: 14px; margin: 9px 0; }
+  .ease-row .name { width: 130px; font-size: 12px; color: var(--fg-2); }
+  .track { flex: 1; height: 30px; background: var(--bg-1); border-radius: 999px; position: relative; }
+  .ball { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 50%; background: var(--gold); }
+  .b1 { animation: run 2.4s linear infinite; }
+  .b2 { animation: run 2.4s var(--ease) infinite; }
+  .b3 { animation: run 2.4s var(--spring) infinite; }
+  @keyframes run { 0%{ left:4px;} 50%{ left: calc(100% - 26px);} 100%{ left:4px;} }
+
+  /* floating bar mock */
+  .barmock { padding: 26px; border-radius: var(--r-m); background: var(--bg-1); position: relative; height: 120px; }
+  .fbar {
+    position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; gap: 4px; align-items: center; padding: 8px 10px;
+  }
+  .fbar button { width: 34px; height: 34px; border-radius: 9px; border: none; background: transparent; color: var(--fg-1); cursor: pointer; font-size: 14px; transition: all .15s var(--ease); }
+  .fbar button:hover { background: rgba(217,170,99,.18); color: var(--gold-soft); }
+  .fbar .play { background: var(--gold); color: #1a1510; width: 38px; height: 38px; }
+  .fbar .sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+
+  /* slice 卡片 */
+  .slice {
+    padding: 20px 22px; border-radius: var(--r-m); margin: 13px 0;
+    background: var(--bg-1); border: 1px solid var(--line);
+    cursor: pointer; transition: all .18s var(--ease); position: relative;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .slice:hover { border-color: var(--glass-border); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .slice.on { border-color: var(--gold); background: linear-gradient(180deg, rgba(217,170,99,.08), transparent); }
+  .slice .box {
+    width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--fg-2);
+    flex-shrink: 0; margin-top: 2px; display: grid; place-items: center;
+    color: transparent; font-size: 15px; transition: all .18s var(--spring);
+  }
+  .slice.on .box { background: var(--gold); border-color: var(--gold); color: #1a1510; }
+  .slice .body { flex: 1; }
+  .slice .h { color: var(--fg-0); font-weight: 600; font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .slice .d { color: var(--fg-2); font-size: 13.5px; }
+  .rec { background: var(--gold); color: #1a1510; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+  .meta { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .meta span { font-size: 11px; padding: 3px 9px; border-radius: 6px; background: var(--bg-2); color: var(--fg-2); }
+  .meta .v { color: var(--ok); } .meta .e { color: var(--warn); } .meta .r { color: var(--err); }
+
+  .copybar {
+    position: fixed; left: 0; right: 0; bottom: 0; padding: 16px 24px;
+    background: var(--glass); backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border);
+    display: flex; justify-content: center; gap: 16px; align-items: center; z-index: 9;
+  }
+  .copybar .cnt { color: var(--fg-2); font-size: 13px; }
+  .copybar button {
+    background: var(--gold); color: #1a1510; border: none; padding: 11px 26px;
+    border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: all .16s var(--spring);
+  }
+  .copybar button:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .note { font-size: 13px; color: var(--fg-2); background: var(--bg-1); border-left: 3px solid var(--gold); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  ul { padding-left: 20px; } li { margin: 5px 0; font-size: 14.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">UI/UX · 視覺質感升級</p>
+    <h1>把「功能齊全」升級成<br>「拿在手上有質感」</h1>
+    <p class="sub">市場觀察 + 現況設計系統盤點 + 我的美感方向 + 可執行的 A-sprint 切片。這份文件本身就用我提議的視覺語言（暖金古典 + 玻璃層次）做 —— 你看到的就是我要落地的調性。</p>
+  </header>
+
+  <h2><span class="num">01</span>市場觀察：競品在做對什麼</h2>
+  <p class="lead">挑了同領域 5 個代表，萃取「給專業/古典客群」的共通設計法則。</p>
+  <table>
+    <tr><th>App</th><th>它做對的事</th><th>給我們的啟示</th></tr>
+    <tr><td><span class="t">Dorico</span></td><td>「預設就漂亮」—— 自動排版、跨平台一致，開箱即美。</td><td>預設美感 > 可調整性。使用者不該為了好看去調設定。</td></tr>
+    <tr><td><span class="t">MuseScore 4</span></td><td>面板可堆疊 + 分頁切換；明/暗/高對比主題 + accent 色自選；Inspector 重整為 Properties。</td><td>面板收斂成「分頁堆疊」；主題 + accent 是基本盤（我們已有暖金）。</td></tr>
+    <tr><td><span class="t">StaffPad</span></td><td>iPad-native 的 premium 觸感；動態/速度可用手勢「畫」出來。</td><td>直接操作（direct manipulation）+ 觸感回饋 = 高級感來源。</td></tr>
+    <tr><td><span class="t">Soundslice</span></td><td>細節工藝：滑音線微傾斜、刻意穿過譜線以利閱讀。</td><td>質感藏在「小到沒人會列為功能」的渲染細節裡。</td></tr>
+    <tr><td><span class="t">Sibelius</span></td><td>（反面教材）以「介面設計差、雜亂」聞名於工程圈。</td><td><strong class="gold">少即是多。</strong>把面板/按鈕藏起來，需要時才浮現。</td></tr>
+  </table>
+  <div class="note"><strong>一句話總結</strong>：古典/專業客群要的是 <strong>Dorico 的「預設美」+ Soundslice 的「細節工藝」+ 反 Sibelius 的「不雜亂」</strong>。我們的暖金紙感身分已經贏在起跑點 —— 跟一票冷色 IDE 風的記譜軟體區隔開了，要做的是「深化」不是「重來」。</div>
+
+  <h2><span class="num">02</span>現況盤點：我們其實已經很強</h2>
+  <p class="lead">先誠實講 —— 報告以為要大改的，多半已經做了。真正的缺口只有幾個。</p>
+  <table>
+    <tr><th>面向</th><th>現況</th><th>判定</th></tr>
+    <tr><td><span class="t">設計 token 系統</span></td><td>40+ 變數、明暗雙主題、暖金 accent、語意色（error/warn/ok）、面板分層、捲軸主題化。</td><td><span class="tag done">已扎實</span></td></tr>
+    <tr><td><span class="t">微動畫</span></td><td>啟動淡入、modal 進場、改編揭示、A↔B crossfade、套用脈動、coachmark 呼吸、游標脈動+ripple、小節閃光 —— 十幾條。</td><td><span class="tag done">已豐富</span></td></tr>
+    <tr><td><span class="t">版面 / 暗色</span></td><td>上下堆疊（預設）+ 橫向可切；資訊欄 bottom/side 可切；明暗主題。</td><td><span class="tag done">已做</span></td></tr>
+    <tr><td><span class="t">玻璃質感</span></td><td><code>--bg-panel-translucent</code> 有定義，但<strong>全 codebase 沒有任何 <code>backdrop-filter: blur</code></strong> —— 只是半透明、沒模糊。</td><td><span class="tag gap">缺口</span></td></tr>
+    <tr><td><span class="t">陰影 / 立體層次</span></td><td>陰影都是各元件臨時寫的，沒有統一 elevation scale。</td><td><span class="tag gap">缺口</span></td></tr>
+    <tr><td><span class="t">緩動曲線</span></td><td>幾乎全是 <code>ease-out</code> 0.15–0.35s，堪用但缺「彈性/spring」的高級觸感。</td><td><span class="tag part">可深化</span></td></tr>
+    <tr><td><span class="t">問題提示</span></td><td>Issue 面板 → 點 → 捲動 + 閃。沒有「行內氣泡 + Quick Fix」。</td><td><span class="tag gap">缺口</span></td></tr>
+  </table>
+
+  <h2><span class="num">03</span>我的美感方向（這就是調性）</h2>
+  <p class="lead">沿用你的暖金紙感身分，補上三件讓它「貴起來」的事：真玻璃、統一立體層次、彈性緩動。下面是實物 demo。</p>
+
+  <div class="demos">
+    <div class="demo glass">
+      <h4>① 真・玻璃質感（backdrop-filter: blur）</h4>
+      <p style="font-size:13px;color:var(--fg-1);margin:0">這張卡用的就是 <code>blur(18px) saturate(1.3)</code> + 暖金細邊 + 三層陰影。所有浮動面（popover / 對話框 / 混音台 / 浮動播放列）都套這層，背景的譜面會柔柔透出來 —— 空間層次立刻出來。</p>
+    </div>
+    <div class="demo" style="background:var(--bg-1)">
+      <h4>② 暖金 palette（深化版）</h4>
+      <div class="swatches">
+        <div class="sw"><div class="chip" style="background:var(--bg-0)"></div><div class="lab">bg-0</div></div>
+        <div class="sw"><div class="chip" style="background:var(--bg-2)"></div><div class="lab">bg-2</div></div>
+        <div class="sw"><div class="chip" style="background:var(--gold-deep)"></div><div class="lab">deep</div></div>
+        <div class="sw"><div class="chip" style="background:var(--gold)"></div><div class="lab">gold</div></div>
+        <div class="sw"><div class="chip" style="background:var(--gold-soft)"></div><div class="lab">soft</div></div>
+        <div class="sw"><div class="chip" style="background:var(--fg-0)"></div><div class="lab">fg-0</div></div>
+      </div>
+      <p style="font-size:12px;color:var(--fg-2);margin:14px 0 0">底色比現有 dark 再暖一階（往 #1a1714），更像羊皮紙夜讀的暖，而非冷色 IDE。</p>
+    </div>
+  </div>
+
+  <div class="demos demos2" style="grid-template-columns:1fr 1fr">
+    <div class="demo" style="background:var(--bg-1)">
+      <h4>③ 統一立體層次（elevation scale）</h4>
+      <div class="elev">
+        <div class="e e1">01</div><div class="e e2">02</div><div class="e e3">03</div>
+      </div>
+      <p style="font-size:12px;color:var(--fg-2);margin:0">三階陰影 token：01 貼面（卡片）、02 浮起（popover）、03 高浮（對話框）。每個都含一條 .5px 暖金光邊，取代各處亂寫的 box-shadow。</p>
+    </div>
+    <div class="demo" style="background:var(--bg-1)">
+      <h4>④ 彈性緩動對比（看球怎麼跑）</h4>
+      <div class="ease-row"><div class="name">現況 linear/ease</div><div class="track"><div class="ball b1"></div></div></div>
+      <div class="ease-row"><div class="name gold">refined ease</div><div class="track"><div class="ball b2"></div></div></div>
+      <div class="ease-row"><div class="name gold">spring（彈性）</div><div class="track"><div class="ball b3"></div></div></div>
+      <p style="font-size:12px;color:var(--fg-2);margin:8px 0 0">勾選框、套用回饋、popover 進場改用 spring，會有「Q 彈」的高級觸感。</p>
+    </div>
+  </div>
+
+  <div class="demos demos2" style="grid-template-columns:1fr 1fr">
+    <div class="demo" style="background:var(--bg-1)">
+      <h4>⑤ 行內 issue 氣泡（取代笨重面板）</h4>
+      <div class="scoremock">
+        <div class="warnpin">⚠</div>
+        <div class="pop glass">
+          <div class="ttl">⚠ 小提琴和弦不可彈</div>
+          <div class="desc">第 12 小節，四音超出相鄰弦。</div>
+          <div class="qf"><button>移八度</button><button>省略次要音</button></div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--fg-2);margin:10px 0 0">小節上掛 ⚠，hover 才浮出玻璃氣泡帶 Quick Fix。畫面平時乾淨，問題就地解決。<span class="gold">（這是 A-sprint 的主菜）</span></p>
+    </div>
+    <div class="demo" style="background:var(--bg-1)">
+      <h4>⑥ （選配）浮動播放列 mock</h4>
+      <div class="barmock">
+        <div class="fbar glass">
+          <button>⏮</button><button class="play">▶</button><button>⏹</button>
+          <div class="sep"></div><button>🎚</button><button>🔁</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--fg-2);margin:10px 0 0">玻璃浮動列。<strong style="color:var(--err)">但</strong>跟你刻意的「源/改編各自獨立播放器」設計衝突 —— 列入但不建議，除非重新想 AB 比較的互動。</p>
+    </div>
+  </div>
+
+  <h2><span class="num">04</span>A-Sprint：勾你要的（0.1.90 候選）</h2>
+  <p class="lead">點卡片切換。每項標了 價值 / 工 / 風險。🎯 = 我建議納入。</p>
+
+  <div class="slice on" data-id="tokens">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">基礎層：設計 token 化（glass / elevation / spring / radius）<span class="rec">🎯 地基</span></div>
+      <div class="d">在 index.html 加：玻璃 utility（真 blur）、三階 elevation、spring/refined 緩動、radius scale。純新增 CSS，零行為風險。後面每一項都站在這層上。</div>
+      <div class="meta"><span class="v">價值 高（解鎖其餘）</span><span class="e">工 小</span><span class="r">風險 極低</span></div>
+    </div>
+  </div>
+
+  <div class="slice on" data-id="glass">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">把玻璃 + 立體層次套到既有浮動面<span class="rec">🎯 高 CP</span></div>
+      <div class="d">混音台 popover、所有對話框、coachmark、NL 面板 → 改用玻璃 + elevation。視覺一致度 + premium 感立刻跳一階，改的是現成元件的容器樣式。</div>
+      <div class="meta"><span class="v">價值 高</span><span class="e">工 小–中</span><span class="r">風險 低</span></div>
+    </div>
+  </div>
+
+  <div class="slice on" data-id="inline">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">行內 issue 氣泡 + Quick Fix<span class="rec">🎯 主菜</span></div>
+      <div class="d">小節掛 ⚠ marker（重用既有 getMeasureBox bbox），hover 浮玻璃氣泡帶「移八度 / 省略音」等就地修。Issue 面板保留為總覽，但日常操作走氣泡 → 大幅減少雜亂（反 Sibelius）。</div>
+      <div class="meta"><span class="v">價值 高</span><span class="e">工 中</span><span class="r">風險 中（碰 ScoreViewer overlay）</span></div>
+    </div>
+  </div>
+
+  <div class="slice on" data-id="micro">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">微互動精修（hover/press 觸感 + 勾選 spring）</div>
+      <div class="d">按鈕 hover 微浮起、press 回彈、勾選框 spring、tab 切換底線滑動。全用新緩動 token，零邏輯改動，純「手感」升級。</div>
+      <div class="meta"><span class="v">價值 中</span><span class="e">工 小</span><span class="r">風險 極低</span></div>
+    </div>
+  </div>
+
+  <div class="slice" data-id="notemove">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">一鍵修復：音符平滑移位動畫</div>
+      <div class="d">套用 fix 時，音符從舊位置平滑滑到新位置（而非瞬切/閃光）。報告點名的「靈性」細節，但要追 OSMD 音符座標差，較脆。</div>
+      <div class="meta"><span class="v">價值 中</span><span class="e">工 中–大</span><span class="r">風險 中–高</span></div>
+    </div>
+  </div>
+
+  <div class="slice" data-id="floatbar">
+    <div class="box">✓</div>
+    <div class="body">
+      <div class="h">浮動播放列（重構三播放器）</div>
+      <div class="d">玻璃浮動列。但跟「源/改編獨立播放器」AB 設計衝突，要連帶重想互動。<strong style="color:var(--err)">不建議</strong>這輪做。</div>
+      <div class="meta"><span class="v">價值 中</span><span class="e">工 大</span><span class="r">風險 高（動既有設計）</span></div>
+    </div>
+  </div>
+
+  <div class="note">建議組合 = 上面 🎯 四項（tokens + glass + inline 氣泡 + micro）。地基 + 套用 + 主菜 + 手感，一個 0.1.90 build 收得完，且每一項都能 in-app 驗。notemove / floatbar 留待你看完效果再決定。</div>
+</div>
+
+<div class="copybar glass">
+  <span class="cnt" id="cnt">已選 4 項</span>
+  <button onclick="copySummary()">複製決策摘要</button>
+</div>
+
+<script>
+  const KEY = "sa-ui-polish-decision";
+  document.querySelectorAll(".slice").forEach(s => {
+    const id = s.dataset.id;
+    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (saved && typeof saved[id] === "boolean") s.classList.toggle("on", saved[id]);
+    s.addEventListener("click", () => { s.classList.toggle("on"); persist(); });
+  });
+  function persist() {
+    const state = {};
+    document.querySelectorAll(".slice").forEach(s => state[s.dataset.id] = s.classList.contains("on"));
+    localStorage.setItem(KEY, JSON.stringify(state));
+    const n = document.querySelectorAll(".slice.on").length;
+    document.getElementById("cnt").textContent = "已選 " + n + " 項";
+  }
+  function copySummary() {
+    const labels = {
+      tokens: "基礎層：設計 token 化 (glass/elevation/spring/radius)",
+      glass: "玻璃+立體層次套到既有浮動面 (混音台/對話框/coachmark/NL面板)",
+      inline: "行內 issue 氣泡 + Quick Fix",
+      micro: "微互動精修 (hover/press/勾選 spring)",
+      notemove: "一鍵修復音符平滑移位動畫",
+      floatbar: "浮動播放列 (重構三播放器)"
+    };
+    const chosen = [...document.querySelectorAll(".slice.on")].map(s => "✓ " + labels[s.dataset.id]);
+    const txt = "【Score Arranger UI 質感升級 — 決策】\n0.1.90 候選 sprint，選定：\n\n" + chosen.join("\n") +
+      "\n\n(地基 tokens + glass 套用 + inline 氣泡 + micro = 我的建議組合)";
+    navigator.clipboard.writeText(txt).then(() => {
+      const b = document.querySelector(".copybar button");
+      const o = b.textContent; b.textContent = "已複製 ✓";
+      setTimeout(() => b.textContent = o, 1600);
+    });
+  }
+  persist();
+</script>
+</body>
+</html>

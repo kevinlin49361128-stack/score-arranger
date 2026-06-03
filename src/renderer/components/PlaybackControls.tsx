@@ -1636,20 +1636,21 @@ export function PlaybackControls(
         </button>
         {muteOpen && (
           <div
+            className="sa-glass"
             style={{
               position: "absolute",
-              top: "calc(100% + 4px)",
+              top: "calc(100% + 6px)",
               right: 0,
               minWidth: 300,
               maxHeight: 320,
               overflowY: "auto",
-              background: "var(--bg-panel)",
-              border: "1px solid var(--border)",
-              borderRadius: 6,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-              padding: 8,
+              // 0.1.90: 玻璃質感由 .sa-glass 提供 (背景/邊框/陰影/blur);
+              // 此處不再 inline 設 background/border/boxShadow 以免蓋掉。
+              borderRadius: "var(--r-m)",
+              padding: 10,
               zIndex: 100,
               fontSize: 12,
+              animation: "popin .22s var(--ease-spring)",
             }}
           >
             <div style={{
