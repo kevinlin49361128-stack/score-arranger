@@ -8,7 +8,7 @@
  * - 其他: PolySynth 退路
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
@@ -19,6 +19,7 @@ import {
   usePlaybackPrefs,
   setUseSamples,
 } from "../stores/playbackPrefsStore";
+import { VuMeters, type VoiceEnv } from "./VuMeters";
 import { logDrill } from "../stores/practiceLogStore";
 import {
   getPracticeSettings,
@@ -353,6 +354,19 @@ export function PlaybackControls(
   const [knownTracks, setKnownTracks] = useState<
     { idx: number; name: string }[]
   >([]);
+  // VIZ-1 VU: 播放時烤好的 per-track velocity envelope (排程時建, ref 傳給 VuMeters).
+  const voiceEnvRef = useRef<VoiceEnv | null>(null);
+  // raw velocity → 有效電平 (混音增益 + mute/solo). useCallback 穩定身分,
+  // 讓 VuMeters 的 rAF effect 不會因父層 60fps 重繪而重啟。
+  const vuLevelFor = useCallback(
+    (idx: number, raw: number): number => {
+      if (mutedTracks.has(idx)) return 0;
+      if (soloTracks.size > 0 && !soloTracks.has(idx)) return 0;
+      const db = trackGains[idx] ?? 0;
+      return raw * (db === 0 ? 1 : 10 ** (db / 20));
+    },
+    [mutedTracks, soloTracks, trackGains],
+  );
   // arrangement / sourceMusicXML 換了 → 還原該曲此 side 存過的混音 (沒存過 = 空)。
   // 0.1.87 slice 3: 改「清空」為「還原」。per-song+side keying 確保不會把別首的
   // mute(3) 殘留到本首 (新譜 track-3 可能是別的樂器 — 0.1.16 #181 的精神保留)。
@@ -1345,6 +1359,28 @@ export function PlaybackControls(
       });
       totalDurationRef.current = lastTime;
 
+      // VIZ-1 VU: 烤 per-track velocity envelope (每 step 秒一格的 peak velocity)。
+      // rAF 只查表, 不重算。時間用「排程後的真實秒」= note.time*stretch+offset。
+      {
+        const step = 0.04;
+        const buckets = Math.max(1, Math.ceil(lastTime / step) + 2);
+        const env = new Map<number, Float32Array>();
+        midi.tracks.forEach((track, ti) => {
+          const arr = new Float32Array(buckets);
+          for (const note of track.notes) {
+            const s = note.time * stretch + countInOffset;
+            const e = s + note.duration * stretch;
+            const b0 = Math.max(0, Math.floor(s / step));
+            const b1 = Math.min(buckets - 1, Math.ceil(e / step));
+            for (let b = b0; b <= b1; b++) {
+              if (note.velocity > arr[b]) arr[b] = note.velocity;
+            }
+          }
+          env.set(ti, arr);
+        });
+        voiceEnvRef.current = { step, env };
+      }
+
       Tone.Transport.scheduleOnce(() => {
         cancelRaf();
         setState("idle");
@@ -1662,6 +1698,15 @@ export function PlaybackControls(
           </label>
         );
       })()}
+      {/* VIZ-1: 聲部即時音量表 — 首次播放後才有 track 列表 */}
+      {knownTracks.length > 0 && (
+        <VuMeters
+          tracks={knownTracks}
+          envRef={voiceEnvRef}
+          playing={state === "playing"}
+          levelFor={vuLevelFor}
+        />
+      )}
       {/* 0.1.54 D: 節拍器 toggle — 開啟時播放每拍打點 */}
       <button
         type="button"

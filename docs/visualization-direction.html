@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Score Arranger — 視覺化方向決策</title>
+<style>
+  :root {
+    --bg: #14110d; --panel: #1e1a14; --panel2: #262019; --border: #3a3128;
+    --fg: #ece4d6; --muted: #a99c87; --gold: #d9a441; --gold-dim: #8a6d2a;
+    --green: #5fae6b; --red: #c9655a; --blue: #6b9bd1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+    padding: 32px 20px 120px;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: .5px; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+  .intro {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 24px; font-size: 14px;
+  }
+  .intro b { color: var(--gold); }
+  .have {
+    color: var(--muted); font-size: 13px; margin: 8px 0 0; line-height: 1.7;
+  }
+  .have code {
+    background: var(--panel2); padding: 1px 6px; border-radius: 4px;
+    color: var(--fg); font-size: 12px;
+  }
+  h2 { font-size: 15px; color: var(--gold); margin: 28px 0 10px; letter-spacing: 1px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+    display: flex; gap: 14px; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .card:hover { border-color: var(--gold-dim); }
+  .card.sel { border-color: var(--gold); background: var(--panel2); }
+  .chk {
+    flex: 0 0 22px; height: 22px; margin-top: 2px; border-radius: 6px;
+    border: 2px solid var(--border); display: grid; place-items: center;
+    font-size: 14px; color: var(--bg); background: transparent;
+  }
+  .card.sel .chk { background: var(--gold); border-color: var(--gold); }
+  .body { flex: 1; }
+  .ttl { font-weight: 700; font-size: 15.5px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .rec { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .rec.go { background: rgba(95,174,107,.18); color: var(--green); border: 1px solid var(--green); }
+  .rec.mid { background: rgba(107,155,209,.15); color: var(--blue); border: 1px solid var(--blue); }
+  .rec.no { background: rgba(201,101,90,.15); color: var(--red); border: 1px solid var(--red); }
+  .eff { font-size: 11px; color: var(--muted); border: 1px solid var(--border); padding: 1px 7px; border-radius: 20px; }
+  .what { color: var(--fg); font-size: 13.5px; margin: 6px 0 0; }
+  .pc { font-size: 12.5px; margin: 7px 0 0; color: var(--muted); }
+  .pc .p { color: var(--green); } .pc .c { color: var(--red); }
+  .gap { color: var(--gold); font-size: 12.5px; margin-top: 5px; }
+  .bar {
+    position: fixed; bottom: 0; left: 0; right: 0; background: rgba(20,17,13,.96);
+    border-top: 1px solid var(--border); padding: 12px 20px; display: flex;
+    align-items: center; gap: 14px; justify-content: center; backdrop-filter: blur(8px);
+  }
+  .bar .n { color: var(--muted); font-size: 13px; }
+  button {
+    background: var(--gold); color: #1a1408; border: 0; border-radius: 8px;
+    padding: 9px 16px; font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .toast {
+    position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%);
+    background: var(--green); color: #08130a; padding: 8px 16px; border-radius: 8px;
+    font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>視覺化方向決策</h1>
+  <p class="sub">Score Arranger · 2026-06-04 · 點卡片勾選想做的，底部「複製決策摘要」回傳給我</p>
+
+  <div class="intro">
+    準則：新視覺化的門檻是「<b>樂譜看不到、但改編／教學真的需要</b>」。eye-candy（純好看、不 actionable）一律降級。
+    <p class="have">
+      <b style="color:var(--gold)">已有的視覺化（別重做）：</b>
+      <code>難度熱圖</code> <code>issue ⚠ 標記</code> <code>A/B diff 高亮</code>
+      <code>指板衝突模擬</code> <code>修復時間軸 scrubber</code> <code>品質雷達</code>
+      <code>主旋律路線時間軸</code> <code>練習進度</code>
+    </p>
+  </div>
+
+  <h2>🎯 建議 — 服務改編／教學的真實 gap</h2>
+
+  <div class="card" data-id="vu">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">聲部即時音量表 (per-voice VU)
+        <span class="rec go">🎯 建議</span><span class="eff">工程 S</span></div>
+      <p class="what">播放時每個聲部一條小音量條，即時跳動。</p>
+      <p class="gap">填補：耳朵聽到「低音太小聲」→ 眼睛也看得到是哪一軌 → 直接去既有混音台調。</p>
+      <p class="pc"><span class="p">＋</span> actionable、接既有混音台、教學上「平衡」具象化　<span class="c">－</span> 每樂器一個 AnalyserNode</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="tessitura">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">音域帶狀圖 (tessitura bands)
+        <span class="rec go">🎯 建議</span><span class="eff">工程 S–M</span></div>
+      <p class="what">每樂器一條橫帶：實際用到的音域 vs 舒適／可演奏音域，超出處標紅。</p>
+      <p class="gap">填補：可演奏性一眼看完（正是 issue panel 在逐一抓的東西），資料同源、不必重算。</p>
+      <p class="pc"><span class="p">＋</span> 直接服務可演奏性、跟引擎音域檢查同源　<span class="c">－</span> 要設計緊湊版面</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="harmony">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">即時和聲讀出 (播放中顯示和弦／羅馬數字)
+        <span class="rec go">🎯 建議</span><span class="eff">工程 M</span></div>
+      <p class="what">游標移動時，同步顯示當下和弦名 / 羅馬數字 / 級數。</p>
+      <p class="gap">填補：教學金礦——學生看著和聲走向學；接既有 A1b 羅馬數字分析，能力已在引擎裡。</p>
+      <p class="pc"><span class="p">＋</span> 教學價值高、複用既有和聲分析　<span class="c">－</span> 和聲分析要對齊播放時間軸</p>
+    </div>
+  </div>
+
+  <h2>🤔 較大賭注 / 中性 — 值得但要想清楚</h2>
+
+  <div class="card" data-id="pianoroll">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">鋼琴捲軸 / 音高-時間視圖 (piano-roll)
+        <span class="rec mid">🤔 大賭注</span><span class="eff">工程 L</span></div>
+      <p class="what">橫向「音高 × 時間」，所有聲部用顏色區分，跟播放游標同步。</p>
+      <p class="gap">填補：聲部交叉、音域重疊、織體密度——這些<b>樂譜不易一眼看出</b>，改編者真的需要。但工程最大。</p>
+      <p class="pc"><span class="p">＋</span> 補記譜的盲點、改編者真需求　<span class="c">－</span> 要從 IR 渲同步 canvas + 對齊游標，工程大</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="dynamics">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">力度／表情曲線 (dynamics curve)
+        <span class="rec mid">🤔 中性</span><span class="eff">工程 S–M</span></div>
+      <p class="what">疊在譜面或時間軸上的一條力度輪廓線，看 phrasing 起伏。</p>
+      <p class="pc"><span class="p">＋</span> 看表情輪廓　<span class="c">－</span> 價值中等、錦上添花，記譜已有強弱記號</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="density">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">織體密度時間軸 (texture density)
+        <span class="rec mid">🤔 中性</span><span class="eff">工程 S</span></div>
+      <p class="what">沿時間顯示「同時發聲幾個音」，看編配的疏密／留白。</p>
+      <p class="pc"><span class="p">＋</span> 看編配密度　<span class="c">－</span> 跟既有難度熱圖部分重疊</p>
+    </div>
+  </div>
+
+  <h2>❌ 不建議 — eye-candy，不服務工作</h2>
+
+  <div class="card" data-id="waveform">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">音訊波型 (waveform / 示波器)
+        <span class="rec no">❌ 不建議</span><span class="eff">工程 S</span></div>
+      <p class="what">master 輸出的即時波型動畫。</p>
+      <p class="pc"><span class="p">＋</span> 動感、demo 截圖吸睛　<span class="c">－</span> 合成音波型平淡、不 actionable、樂譜+游標已是更好的視覺、與「克制」美感衝突</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="spectrum">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">頻譜長條 (spectrum / FFT bars)
+        <span class="rec no">❌ 不建議</span><span class="eff">工程 S</span></div>
+      <p class="what">頻率長條跳動（同波型一類）。</p>
+      <p class="pc"><span class="c">－</span> 同波型，對改編工作零幫助</p>
+    </div>
+  </div>
+
+  <h2>🌊 連續流動視覺化 — 跟著播放游標捲動</h2>
+  <div class="intro" style="margin-bottom:14px">
+    <b style="color:var(--gold)">架構洞察：</b> 與其各做各的，先做一條 <b>播放時間軸流動條</b>（隨游標捲動的橫條），
+    每種連續視覺化都是它的一條 <b>lane</b>（可開關）。第一條做完，後面每加一條成本極低 —— 省力又不雜亂。
+    建議：<b>流動條 + 2-3 條有意義 lane</b> 就夠，再多是雜訊。
+  </div>
+
+  <div class="card" data-id="stripinfra">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">時間軸流動條 — 基礎元件 (prerequisite)
+        <span class="rec go">🎯 先做</span><span class="eff">工程 M</span></div>
+      <p class="what">隨播放游標捲動的橫條，可掛多條 lane。下面每個連續視覺化都跑在它上面。</p>
+      <p class="gap">填補：一次投資、後續每條連續 lane 都變便宜。先有它，下面才好加。</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="tension">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">和聲張力曲線 (tension curve)
+        <span class="rec go">🎯 建議</span><span class="eff">lane</span></div>
+      <p class="what">不協和度／調性張力沿時間起伏的曲線。</p>
+      <p class="gap">填補：看 cadence 的「張力→解決」、高潮在哪。接既有和聲分析，教學金礦。</p>
+      <p class="pc"><span class="p">＋</span> 教育價值高、複用和聲引擎　<span class="c">－</span> 偏欣賞而非修改編</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="keycolor">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">調性色彩流 (key / modulation color)
+        <span class="rec go">🎯 建議</span><span class="eff">lane</span></div>
+      <p class="what">調中心／轉調用流動色帶呈現 —— 整首的和聲旅程一條看完。</p>
+      <p class="gap">填補：轉調「看得見」。美又有意義（不是 eye-candy，色彩=調性資訊）。</p>
+      <p class="pc"><span class="p">＋</span> 美感+教育兼具、轉調具象化　<span class="c">－</span> 調性偵測準度依賴分析品質</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="posflow">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">弦樂把位流動 (string position flow)
+        <span class="rec go">🎯 弦樂</span><span class="eff">lane</span></div>
+      <p class="what">左手把位 (1st/3rd/5th…) 沿時間上下移動的軌跡。</p>
+      <p class="gap">填補：看換把在哪、把位跳動大不大。接既有指板模擬 + 指法 DP，弦樂教學超實用。</p>
+      <p class="pc"><span class="p">＋</span> 弦樂教學超實用、複用指法 DP　<span class="c">－</span> 只對弦樂 (niche)</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="contour">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">旋律輪廓 ribbon (melodic contour)
+        <span class="rec mid">🤔 中性</span><span class="eff">lane</span></div>
+      <p class="what">主旋律音高連續描成一條線，看旋律的拱形／走向。</p>
+      <p class="pc"><span class="p">＋</span> 看旋律形狀　<span class="c">－</span> 樂譜本身已表達音高，附加值中等</p>
+    </div>
+  </div>
+
+  <div class="card" data-id="energyflow">
+    <div class="chk">✓</div>
+    <div class="body">
+      <div class="ttl">織體能量流 (texture energy)
+        <span class="rec mid">🤔 中性</span><span class="eff">lane</span></div>
+      <p class="what">同時發聲音數／總能量沿時間的捲動面積圖，看疏密起伏。</p>
+      <p class="pc"><span class="p">＋</span> 看編配疏密　<span class="c">－</span> 跟既有難度熱圖部分重疊</p>
+    </div>
+  </div>
+
+  <div class="intro" style="margin-top:24px">
+    <b style="color:var(--gold)">我的一句話建議：</b> 先做 <b>聲部音量表 + 音域帶狀圖 + 即時和聲</b>（你已選）。
+    連續視覺化：先做 <b>流動條基礎元件</b>，再上 <b>和聲張力 + 調性色彩</b> 兩條 lane（弦樂線想推就加把位流動）。
+    鋼琴捲軸留作大賭注；波型／頻譜跳過。
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製決策摘要</div>
+<div class="bar">
+  <span class="n" id="count">已選 0 項</span>
+  <button class="ghost" onclick="clearAll()">清空</button>
+  <button onclick="copySummary()">複製決策摘要</button>
+</div>
+
+<script>
+  const KEY = "sa.vizDecision";
+  const titles = {
+    vu: "聲部即時音量表 (VU)", tessitura: "音域帶狀圖", harmony: "即時和聲讀出",
+    pianoroll: "鋼琴捲軸 piano-roll", dynamics: "力度/表情曲線",
+    density: "織體密度時間軸", waveform: "音訊波型", spectrum: "頻譜長條",
+    stripinfra: "時間軸流動條 (基礎元件)", tension: "和聲張力曲線",
+    keycolor: "調性色彩流", posflow: "弦樂把位流動",
+    contour: "旋律輪廓 ribbon", energyflow: "織體能量流",
+  };
+  const recs = {
+    vu: "🎯", tessitura: "🎯", harmony: "🎯", pianoroll: "🤔大賭注",
+    dynamics: "🤔", density: "🤔", waveform: "❌", spectrum: "❌",
+    stripinfra: "🎯先做", tension: "🎯", keycolor: "🎯", posflow: "🎯弦樂",
+    contour: "🤔", energyflow: "🤔",
+  };
+  let sel = new Set();
+  try { sel = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify([...sel])); } catch {} }
+  function render() {
+    document.querySelectorAll(".card").forEach((c) => {
+      c.classList.toggle("sel", sel.has(c.dataset.id));
+    });
+    document.getElementById("count").textContent = "已選 " + sel.size + " 項";
+  }
+  document.querySelectorAll(".card").forEach((c) => {
+    c.addEventListener("click", () => {
+      const id = c.dataset.id;
+      sel.has(id) ? sel.delete(id) : sel.add(id);
+      save(); render();
+    });
+  });
+  function clearAll() { sel.clear(); save(); render(); }
+  function copySummary() {
+    if (!sel.size) { flash("還沒選任何項目"); return; }
+    const lines = [...sel].map((id) => "- " + titles[id] + " (" + recs[id] + ")");
+    const txt = "視覺化決策 — 我想做這些:\n" + lines.join("\n");
+    navigator.clipboard.writeText(txt).then(() => flash("已複製決策摘要"));
+  }
+  function flash(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1600);
+  }
+  render();
+</script>
+</body>
+</html>
