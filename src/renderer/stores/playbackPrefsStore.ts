@@ -12,25 +12,41 @@ import { useSyncExternalStore } from "react";
 
 const KEY_HUMANIZE = "sa.humanizeStrings";
 const KEY_SAMPLES = "sa.useSamples";
+const KEY_TUNING = "sa.tuningHz";
+
+/** 調音基準 A4 合理範圍 — 低於 380 / 高於 470 已非音樂用途, 夾住防誤輸入。 */
+export const TUNING_MIN = 380;
+export const TUNING_MAX = 470;
+export const TUNING_DEFAULT = 440;
 
 export interface PlaybackPrefs {
   /** 用取樣音色 (vs 純合成退路). 預設 true。 */
   useSamples: boolean;
   /** 弦樂自然化: vibrato 漂移 + unison 微離調 (疊加層). 預設 false。 */
   humanizeStrings: boolean;
+  /** 調音基準 A4 (Hz). 440 = 標準; 415 = 巴洛克; 442 = 樂團/獨奏。預設 440。 */
+  tuningHz: number;
+}
+
+function clampTuning(hz: number): number {
+  if (!Number.isFinite(hz)) return TUNING_DEFAULT;
+  return Math.min(TUNING_MAX, Math.max(TUNING_MIN, hz));
 }
 
 function load(): PlaybackPrefs {
   let useSamples = true;
   let humanizeStrings = false;
+  let tuningHz = TUNING_DEFAULT;
   try {
     const s = localStorage.getItem(KEY_SAMPLES);
     useSamples = s === null ? true : s === "1";
     humanizeStrings = localStorage.getItem(KEY_HUMANIZE) === "1";
+    const tun = localStorage.getItem(KEY_TUNING);
+    if (tun !== null) tuningHz = clampTuning(parseFloat(tun));
   } catch {
     /* localStorage 不可用 → 用預設 */
   }
-  return { useSamples, humanizeStrings };
+  return { useSamples, humanizeStrings, tuningHz };
 }
 
 let state: PlaybackPrefs = load();
@@ -73,7 +89,24 @@ export function setHumanizeStrings(on: boolean): void {
   emit();
 }
 
+export function setTuningHz(hz: number): void {
+  const next = clampTuning(hz);
+  if (state.tuningHz === next) return;
+  state = { ...state, tuningHz: next };
+  try {
+    localStorage.setItem(KEY_TUNING, String(next));
+  } catch {
+    /* ignore */
+  }
+  emit();
+}
+
 /** React hook — 訂閱播放偏好, 任一播放器/設定改動 → 全部重繪。 */
 export function usePlaybackPrefs(): PlaybackPrefs {
   return useSyncExternalStore(subscribe, getSnapshot);
+}
+
+/** 非 React 讀取 (測試 / 排程時一次性取值)。 */
+export function getPlaybackPrefs(): PlaybackPrefs {
+  return state;
 }

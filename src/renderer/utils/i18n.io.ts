@@ -468,6 +468,23 @@ export const IO_STRINGS: BiDict = {
   "playback.rate.original": {
     "zh-TW": "原速", en: "orig", ja: "原速",
   },
+  "playback.tuning.title": {
+    "zh-TW": "調音基準 A4 — 播放音高基準頻率 (440=標準, 415=巴洛克, 442=樂團/獨奏)",
+    en: "Tuning reference A4 — playback pitch standard (440=std, 415=Baroque, 442=orchestra/solo)",
+    ja: "調律基準 A4 — 再生ピッチ基準 (440=標準, 415=バロック, 442=オケ/ソロ)",
+  },
+  "playback.tuning.standard": {
+    "zh-TW": "標準", en: "std", ja: "標準",
+  },
+  "playback.tuning.baroque": {
+    "zh-TW": "巴洛克", en: "Baroque", ja: "バロック",
+  },
+  "playback.tuning.classical": {
+    "zh-TW": "古典", en: "Classical", ja: "古典",
+  },
+  "playback.tuning.orchestra": {
+    "zh-TW": "樂團", en: "orch.", ja: "オケ",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",

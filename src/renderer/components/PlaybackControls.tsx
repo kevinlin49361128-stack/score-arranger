@@ -14,8 +14,10 @@ import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
 import {
   setHumanizeStrings,
-  setUseSamples,
+  setTuningHz,
+  TUNING_DEFAULT,
   usePlaybackPrefs,
+  setUseSamples,
 } from "../stores/playbackPrefsStore";
 import { logDrill } from "../stores/practiceLogStore";
 import {
@@ -323,8 +325,10 @@ export function PlaybackControls(
   // 播放音色偏好 (取樣 / 弦樂自然化) — 全域共享 store, 三個播放器同步;
   // 開關 UI 收在工具列 ⚙ 設定 (見 Toolbar)。setUseSamples / setHumanizeStrings
   // 由 store 提供 (見 import)。
-  const { useSamples, humanizeStrings } = usePlaybackPrefs();
+  const { useSamples, humanizeStrings, tuningHz } = usePlaybackPrefs();
   const humanizeRef = useRef(humanizeStrings);
+  // 調音基準 A4 — 排程時讀 ref 拿當下值 (播放中改不影響已排程音)。
+  const tuningHzRef = useRef(tuningHz);
   /** 範圍循環: loopStart/End 為 measure number (1-based), null = 不 loop */
   const [loopStart, setLoopStart] = useState<number | null>(null);
   const [loopEnd, setLoopEnd] = useState<number | null>(null);
@@ -636,6 +640,11 @@ export function PlaybackControls(
       humanizeStrings,
     );
   }, [humanizeStrings]);
+
+  // 調音基準 (來自共享 store) → 同步 ref。下次播放 / loop 回跳即生效。
+  useEffect(() => {
+    tuningHzRef.current = tuningHz;
+  }, [tuningHz]);
 
   // 載入樂器
   const ensureInstruments = async (): Promise<InstrumentRouter> => {
@@ -1290,6 +1299,12 @@ export function PlaybackControls(
       }
 
       let lastTime = 0;
+      // 調音基準 A4 → 全局微調 cents (440 = 0)。例: 415Hz ≈ -101 cents (巴洛克),
+      // 442Hz ≈ +8 cents。疊加進每音的 detune, 對所有樂器一致生效。
+      const tuningCents =
+        tuningHzRef.current === TUNING_DEFAULT
+          ? 0
+          : 1200 * Math.log2(tuningHzRef.current / TUNING_DEFAULT);
       // A3: unison 微離調 — 跨 track 累計「同樂器同音同時」出現序, 第 2+ 個偏一點
       const unisonSeen = new Map<string, number>();
       midi.tracks.forEach((track, trackIdx) => {
@@ -1302,20 +1317,21 @@ export function PlaybackControls(
         for (const note of track.notes) {
           const noteTime = note.time * stretch + countInOffset;
           const noteDur = note.duration * stretch;
-          // A3: humanize 開 + 弓弦 → 同音齊奏的第 2+ 聲部微離調 (去假齊奏)
+          // 調音基準 + (A3 humanize 開 + 弓弦) 同音齊奏第 2+ 聲部微離調 → 合併成單一 detune
           let trigPitch: string | number = note.name;
+          let detuneCents = tuningCents;
           if (humanizeRef.current && isBowedString) {
             const uk = `${key}|${note.midi}|${Math.round(note.time * 1000)}`;
             const rank = unisonSeen.get(uk) ?? 0;
             unisonSeen.set(uk, rank + 1);
-            const cents =
+            detuneCents +=
               UNISON_DETUNE_CENTS[
                 Math.min(rank, UNISON_DETUNE_CENTS.length - 1)
               ];
-            if (cents !== 0) {
-              trigPitch =
-                Tone.Frequency(note.name).toFrequency() * 2 ** (cents / 1200);
-            }
+          }
+          if (detuneCents !== 0) {
+            trigPitch =
+              Tone.Frequency(note.name).toFrequency() * 2 ** (detuneCents / 1200);
           }
           const playVel = Math.min(1, note.velocity * gain);
           const id = Tone.Transport.schedule((time) => {
@@ -1590,6 +1606,59 @@ export function PlaybackControls(
                 {bpmToTempoTerm(effBpm)}
               </span>
             )}
+          </label>
+        );
+      })()}
+      {/* 調音基準 A4 — 415 巴洛克 / 442 樂團獨奏 等。非 440 時高亮提示 (避免
+          「為什麼聽起來偏低」的困惑)。idle 才能改 (跟速度一致)。 */}
+      {(() => {
+        const TUNINGS: Array<[number, string]> = [
+          [415, t("playback.tuning.baroque")],
+          [430, t("playback.tuning.classical")],
+          [440, t("playback.tuning.standard")],
+          [442, t("playback.tuning.orchestra")],
+          [443, ""],
+          [444, ""],
+        ];
+        // 若 store 值不在預設清單 (理論上不會), 補進去免 select 空白
+        if (!TUNINGS.some(([hz]) => hz === tuningHz)) {
+          TUNINGS.push([tuningHz, ""]);
+          TUNINGS.sort((a, b) => a[0] - b[0]);
+        }
+        const nonStd = tuningHz !== TUNING_DEFAULT;
+        return (
+          <label
+            title={t("playback.tuning.title")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 3,
+              fontSize: 11,
+              color: nonStd ? "var(--accent)" : "var(--fg-muted)",
+              marginLeft: 6,
+            }}
+          >
+            <span aria-hidden style={{ fontWeight: 600 }}>A=</span>
+            <select
+              value={tuningHz}
+              onChange={(e) => setTuningHz(parseFloat(e.target.value))}
+              disabled={state !== "idle"}
+              style={{
+                fontSize: 11,
+                padding: "1px 3px",
+                border: `1px solid ${nonStd ? "var(--accent)" : "var(--border)"}`,
+                borderRadius: 3,
+                background: "var(--bg-panel)",
+                color: nonStd ? "var(--accent)" : "var(--fg-primary)",
+                fontWeight: nonStd ? 600 : 400,
+              }}
+            >
+              {TUNINGS.map(([hz, tag]) => (
+                <option key={hz} value={hz}>
+                  {hz}{tag ? ` ${tag}` : ""}
+                </option>
+              ))}
+            </select>
           </label>
         );
       })()}
