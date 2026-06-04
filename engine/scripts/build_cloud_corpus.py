@@ -25,7 +25,9 @@ manifest entry, 合併進現有 catalog.json (跳過已存在的 corpus_path, �
 from __future__ import annotations
 
 import hashlib
+import html
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -144,8 +146,43 @@ def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# Humdrum `.krn` reference records 常含 music21 不展開的標記 (`@{OTL}` 自我參照、
+# `<i>`/`<sup>` HTML 標籤、`&szlig;` HTML entity、latin-1↔utf-8 mojibake)。
+# 這些不清會直接漏進 catalog 標題 (見 2026-06-04 修正)。
+_MOJI = {
+    "Ã¡": "á", "Ã©": "é", "Ã­": "í", "Ã³": "ó", "Ãº": "ú", "Ã±": "ñ",
+    "Ã ": "à", "Ã¨": "è", "Ã¬": "ì", "Ã²": "ò", "Ã¹": "ù", "Ã¤": "ä",
+    "Ã«": "ë", "Ã¯": "ï", "Ã¶": "ö", "Ã¼": "ü", "ÃŸ": "ß", "Ã¢": "â",
+    "Ãª": "ê", "Ã®": "î", "Ã´": "ô", "Ã»": "û", "Ã§": "ç", "Ã‰": "É",
+    "Ã„": "Ä", "Ã–": "Ö", "Ãœ": "Ü",
+}
+_HUMDRUM_REF = [
+    re.compile(r",\s*mvmt\.\s*@\{OMV\}"),
+    re.compile(r",\s*@\{OTL\}(?:\s*\(<i>@\{OTP\}</i>\))?"),
+    re.compile(r",\s*@\{SCT1\}"),
+]
+
+
+def clean_text(s: str) -> str:
+    """去除 Humdrum/HTML/mojibake 雜訊, 回傳乾淨的人類可讀標題/作曲家。"""
+    if not s:
+        return s
+    for bad, good in _MOJI.items():
+        s = s.replace(bad, good)
+    for pat in _HUMDRUM_REF:
+        s = pat.sub("", s)
+    s = re.sub(r"@\{[^}]*\}", "", s)          # 任何殘留 @{...} token
+    s = html.unescape(s)                       # &szlig; → ß 等
+    s = re.sub(r"</?[A-Za-z][^>]*>", "", s)     # 去 <i> <sup> 等標籤
+    s = re.sub(r"\(\s*\)", "", s)               # token 拿掉後留下的空括號
+    s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s*,\s*(?=,|—|$)", "", s)      # 逗號緊接 , — 或結尾 → 多餘
+    return s.strip(" ,;")
+
+
 def norm_composer(name: str) -> str:
     """'Beethoven, Ludwig van' → 'Ludwig van Beethoven'; 無逗號原樣回傳。"""
+    name = clean_text(name)
     if ", " in name:
         last, first = name.split(", ", 1)
         return f"{first} {last}"
@@ -237,8 +274,8 @@ def process_krn(src: dict, have: set[str]) -> list[dict]:
             try:
                 score = music21.converter.parse(str(krn))
                 md = score.metadata
-                base = (md.title if md and md.title else stem)
-                mvt = (md.movementName if md and md.movementName else "")
+                base = clean_text(md.title if md and md.title else stem)
+                mvt = clean_text(md.movementName if md and md.movementName else "")
                 title = f"{base} — {mvt}" if mvt and mvt not in base else base
                 composer = norm_composer(
                     md.composer if md and md.composer else src.get("composer", "")

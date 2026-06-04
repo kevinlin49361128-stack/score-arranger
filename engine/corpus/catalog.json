@@ -1169,7 +1169,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata13_1",
-      "title": "Piano Sonata no. 13 in E-flat major — Andante, Allegro, Tempo 1<sup>o</sup> (Andante)",
+      "title": "Piano Sonata no. 13 in E-flat major — Andante, Allegro, Tempo 1o (Andante)",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1330,7 +1330,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata15_1",
-      "title": "Piano Sonata no. 15 in D major — Allegro, Adagio, Tempo 1<sup>o</sup>",
+      "title": "Piano Sonata no. 15 in D major — Allegro, Adagio, Tempo 1o",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1399,7 +1399,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata15_4",
-      "title": "Piano Sonata no. 15 in D major — Rondo: Allegro non troppo, PiÃ¹ All<sup>O</sup> quasi presto",
+      "title": "Piano Sonata no. 15 in D major — Rondo: Allegro non troppo, Più AllO quasi presto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1468,7 +1468,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata16_3",
-      "title": "Piano Sonata no. 16 in G major — Rondo: Allegretto, Adagio, Tempo 1<sup>0</sup>, Adagio, Tempo I<sup>0</sup>, Presto",
+      "title": "Piano Sonata no. 16 in G major — Rondo: Allegretto, Adagio, Tempo 10, Adagio, Tempo I0, Presto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1859,7 +1859,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata23_1",
-      "title": "Piano Sonata no. 23 in F minor — Allegro assai, Adagio, PiÃ¹ allegro",
+      "title": "Piano Sonata no. 23 in F minor — Allegro assai, Adagio, Più allegro",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -3120,7 +3120,7 @@
     },
     {
       "corpus_path": "cloud/bsq_quartet07_4",
-      "title": "String Quartet No. 7 in F Major, Op. 59, No. 1 — Allegro (Th&egrave;me russe)",
+      "title": "String Quartet No. 7 in F Major, Op. 59, No. 1 — Allegro (Thème russe)",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -4000,7 +4000,7 @@
     },
     {
       "corpus_path": "cloud/bsq_quartet16_4",
-      "title": "String Quartet No. 16 in F Major, Op. 135 — Grave ma non troppo tratto, Der schwer gefa&szlig;te Entschlu&szlig;",
+      "title": "String Quartet No. 16 in F Major, Op. 135 — Grave ma non troppo tratto, Der schwer gefaßte Entschluß",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -4190,7 +4190,7 @@
     },
     {
       "corpus_path": "cloud/bus_bus3001_acordes_moy",
-      "title": "Acord&eacute;s moy",
+      "title": "Acordés moy",
       "composer": "Antoine Busnoys",
       "composer_dates": "c.1430-1492",
       "era": "Renaissance",
@@ -4274,7 +4274,7 @@
     },
     {
       "corpus_path": "cloud/bus_bus3005_au_gre_de_mes_ieulx",
-      "title": "Au gr&eacute; de mes ieulx — Car le bien parfait",
+      "title": "Au gré de mes ieulx — Car le bien parfait",
       "composer": "Antoine Busnoys",
       "composer_dates": "c.1430-1492",
       "era": "Renaissance",
@@ -4316,7 +4316,7 @@
     },
     {
       "corpus_path": "cloud/bus_bus3007_au_povre_par_necessite",
-      "title": "Au povre par necessit&eacute;",
+      "title": "Au povre par necessité",
       "composer": "Antoine Busnoys",
       "composer_dates": "c.1430-1492",
       "era": "Renaissance",
@@ -6871,7 +6871,7 @@
     },
     {
       "corpus_path": "cloud/mazurka_mazurka07_3",
-      "title": "Mazurka in F Minor, Op. 7, No. 3 — Vivace,",
+      "title": "Mazurka in F Minor, Op. 7, No. 3 — Vivace",
       "composer": "Frederic Chopin",
       "composer_dates": "1810-1849",
       "era": "Romantic",
@@ -8039,7 +8039,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata01_1",
-      "title": "Piano Sonata No. 1 in C major, @{OTL}, K 279 (189d), mvmt. @{OMV} — Allegro.",
+      "title": "Piano Sonata No. 1 in C major, K 279 (189d) — Allegro.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8064,7 +8064,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata01_2",
-      "title": "Piano Sonata No. 1 in C major, @{OTL}, K 279 (189d), mvmt. @{OMV} — Andante",
+      "title": "Piano Sonata No. 1 in C major, K 279 (189d) — Andante",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8089,7 +8089,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata01_3",
-      "title": "Piano Sonata No. 1 in C major, @{OTL}, K 279 (189d), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 1 in C major, K 279 (189d) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8114,7 +8114,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata02_1",
-      "title": "Piano Sonata No. 2 in F major, @{OTL}, K 280 (189e), mvmt. @{OMV} — Allegro assai.",
+      "title": "Piano Sonata No. 2 in F major, K 280 (189e) — Allegro assai.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8139,7 +8139,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata02_2",
-      "title": "Piano Sonata No. 2 in F major, @{OTL}, K 280 (189e), mvmt. @{OMV} — Adagio.",
+      "title": "Piano Sonata No. 2 in F major, K 280 (189e) — Adagio.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8164,7 +8164,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata02_3",
-      "title": "Piano Sonata No. 2 in F major, @{OTL}, K 280 (189e), mvmt. @{OMV} — Presto.",
+      "title": "Piano Sonata No. 2 in F major, K 280 (189e) — Presto.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8189,7 +8189,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata03_1",
-      "title": "Piano Sonata No. 3 in B-flat major, @{OTL}, K 281 (189f), mvmt. @{OMV} — Allegro.",
+      "title": "Piano Sonata No. 3 in B-flat major, K 281 (189f) — Allegro.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8214,7 +8214,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata03_2",
-      "title": "Piano Sonata No. 3 in B-flat major, @{OTL}, K 281 (189f), mvmt. @{OMV} — Andante amoroso.",
+      "title": "Piano Sonata No. 3 in B-flat major, K 281 (189f) — Andante amoroso.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8239,7 +8239,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata03_3",
-      "title": "Piano Sonata No. 3 in B-flat major, @{OTL}, K 281 (189f), mvmt. @{OMV} — RONDO. Allegro.",
+      "title": "Piano Sonata No. 3 in B-flat major, K 281 (189f) — RONDO. Allegro.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8264,7 +8264,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata04_1",
-      "title": "Piano Sonata No. 4 in E-flat major, @{OTL}, K 282 (189g), mvmt. @{OMV} — Allegro.",
+      "title": "Piano Sonata No. 4 in E-flat major, K 282 (189g) — Allegro.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8289,7 +8289,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata04_2",
-      "title": "Piano Sonata No. 4 in E-flat major, @{OTL}, K 282 (189g), mvmt. @{OMV} — Menuetto I & II, Menuetto II",
+      "title": "Piano Sonata No. 4 in E-flat major, K 282 (189g) — Menuetto I & II, Menuetto II",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8314,7 +8314,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata04_3",
-      "title": "Piano Sonata No. 4 in E-flat major, @{OTL}, K 282 (189g), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 4 in E-flat major, K 282 (189g) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8339,7 +8339,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata05_1",
-      "title": "Piano Sonata No. 5 in G major, @{OTL}, K 283 (189h), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 5 in G major, K 283 (189h) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8364,7 +8364,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata05_2",
-      "title": "Piano Sonata No. 5 in G major, @{OTL}, K 283 (189h), mvmt. @{OMV} — Andante",
+      "title": "Piano Sonata No. 5 in G major, K 283 (189h) — Andante",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8389,7 +8389,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata05_3",
-      "title": "Piano Sonata No. 5 in G major, @{OTL}, K 283 (189h), mvmt. @{OMV} — Presto",
+      "title": "Piano Sonata No. 5 in G major, K 283 (189h) — Presto",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8414,7 +8414,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_1",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8439,7 +8439,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_2",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Rondeau en polonaise: Andante",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Rondeau en polonaise: Andante",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8464,7 +8464,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3a",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Thema",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Thema",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8489,7 +8489,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3b",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 1",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 1",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8514,7 +8514,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3c",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 2",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 2",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8539,7 +8539,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3d",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 3",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 3",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8564,7 +8564,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3e",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 4",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 4",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8589,7 +8589,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3f",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 5",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 5",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8614,7 +8614,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3g",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 6",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 6",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8639,7 +8639,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3h",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 7: Minore",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 7: Minore",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8664,7 +8664,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3i",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 8: Maggiore",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 8: Maggiore",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8689,7 +8689,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3j",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 9",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 9",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8714,7 +8714,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3k",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 10",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 10",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8739,7 +8739,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3l",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 11: Adagio cantabile",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 11: Adagio cantabile",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8764,7 +8764,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata06_3m",
-      "title": "Piano Sonata No. 6 in D major, @{OTL} (<i>@{OTP}</i>), K 284 (205b), mvmt. @{OMV} — Variation 12: Allegro",
+      "title": "Piano Sonata No. 6 in D major, K 284 (205b) — Variation 12: Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8789,7 +8789,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata07_1",
-      "title": "Piano Sonata No. 7 in C major, @{OTL}, K 309 (284b), mvmt. @{OMV} — Allegro con spirito",
+      "title": "Piano Sonata No. 7 in C major, K 309 (284b) — Allegro con spirito",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8814,7 +8814,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata07_2",
-      "title": "Piano Sonata No. 7 in C major, @{OTL}, K 309 (284b), mvmt. @{OMV} — Andante un poco adagio",
+      "title": "Piano Sonata No. 7 in C major, K 309 (284b) — Andante un poco adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8839,7 +8839,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata07_3",
-      "title": "Piano Sonata No. 7 in C major, @{OTL}, K 309 (284b), mvmt. @{OMV} — Rondo: Allegretto grazioso",
+      "title": "Piano Sonata No. 7 in C major, K 309 (284b) — Rondo: Allegretto grazioso",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8864,7 +8864,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata08_1",
-      "title": "Piano Sonata No. 8 in A minor, @{OTL}, K 310 (300d), mvmt. @{OMV} — Allegro maestoso",
+      "title": "Piano Sonata No. 8 in A minor, K 310 (300d) — Allegro maestoso",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8889,7 +8889,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata08_2",
-      "title": "Piano Sonata No. 8 in A minor, @{OTL}, K 310 (300d), mvmt. @{OMV} — Andante cantabile con espressione.",
+      "title": "Piano Sonata No. 8 in A minor, K 310 (300d) — Andante cantabile con espressione.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8914,7 +8914,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata08_3",
-      "title": "Piano Sonata No. 8 in A minor, @{OTL}, K 310 (300d), mvmt. @{OMV} — Presto.",
+      "title": "Piano Sonata No. 8 in A minor, K 310 (300d) — Presto.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8939,7 +8939,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata09_1",
-      "title": "Piano Sonata No. 9 in D major, @{OTL}, K 311 (284c), mvmt. @{OMV} — Allegro con spirito",
+      "title": "Piano Sonata No. 9 in D major, K 311 (284c) — Allegro con spirito",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8964,7 +8964,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata09_2",
-      "title": "Piano Sonata No. 9 in D major, @{OTL}, K 311 (284c), mvmt. @{OMV} — Andante con espressione",
+      "title": "Piano Sonata No. 9 in D major, K 311 (284c) — Andante con espressione",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -8989,7 +8989,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata09_3",
-      "title": "Piano Sonata No. 9 in D major, @{OTL}, K 311 (284c), mvmt. @{OMV} — Presto, Rondo: Allegro, Andante, Adagio",
+      "title": "Piano Sonata No. 9 in D major, K 311 (284c) — Presto, Rondo: Allegro, Andante, Adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9014,7 +9014,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata10_1",
-      "title": "Piano Sonata No. 10 in C major, @{OTL}, K 330 (300h), mvmt. @{OMV} — Allegro moderato",
+      "title": "Piano Sonata No. 10 in C major, K 330 (300h) — Allegro moderato",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9039,7 +9039,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata10_2",
-      "title": "Piano Sonata No. 10 in C major, @{OTL}, K 330 (300h), mvmt. @{OMV} — Andante cantabile",
+      "title": "Piano Sonata No. 10 in C major, K 330 (300h) — Andante cantabile",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9064,7 +9064,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata10_3",
-      "title": "Piano Sonata No. 10 in C major, @{OTL}, K 330 (300h), mvmt. @{OMV} — Allegretto",
+      "title": "Piano Sonata No. 10 in C major, K 330 (300h) — Allegretto",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9089,7 +9089,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1a",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Thema: Andante grazioso",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Thema: Andante grazioso",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9114,7 +9114,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1b",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — VAR.I.",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — VAR.I.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9139,7 +9139,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1c",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Variation II",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Variation II",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9164,7 +9164,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1d",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — VAR.III.",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — VAR.III.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9189,7 +9189,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1e",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — VAR.IV.",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — VAR.IV.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9214,7 +9214,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1f",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Variation V: Adagio",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Variation V: Adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9239,7 +9239,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_1g",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Variation VI: Allegro",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Variation VI: Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9264,7 +9264,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_2",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Menuetto and Trio, Trio.",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Menuetto and Trio, Trio.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9289,7 +9289,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata11_3",
-      "title": "Piano Sonata No. 11 in A major, @{OTL}, K 331 (300i), mvmt. @{OMV} — Alla Turca: Allegretto.",
+      "title": "Piano Sonata No. 11 in A major, K 331 (300i) — Alla Turca: Allegretto.",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9314,7 +9314,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata12_1",
-      "title": "Piano Sonata No. 12 in F major, @{OTL}, K 332 (300k), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 12 in F major, K 332 (300k) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9339,7 +9339,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata12_2",
-      "title": "Piano Sonata No. 12 in F major, @{OTL}, K 332 (300k), mvmt. @{OMV} — Adagio",
+      "title": "Piano Sonata No. 12 in F major, K 332 (300k) — Adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9364,7 +9364,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata12_3",
-      "title": "Piano Sonata No. 12 in F major, @{OTL}, K 332 (300k), mvmt. @{OMV} — Allegro assai",
+      "title": "Piano Sonata No. 12 in F major, K 332 (300k) — Allegro assai",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9389,7 +9389,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata13_1",
-      "title": "Piano Sonata No. 13 in B-flat major, @{OTL} (<i>@{OTP}</i>), K 333 (315c), mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 13 in B-flat major, K 333 (315c) — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9414,7 +9414,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata13_2",
-      "title": "Piano Sonata No. 13 in B-flat major, @{OTL} (<i>@{OTP}</i>), K 333 (315c), mvmt. @{OMV} — Andante cantabile",
+      "title": "Piano Sonata No. 13 in B-flat major, K 333 (315c) — Andante cantabile",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9439,7 +9439,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata13_3",
-      "title": "Piano Sonata No. 13 in B-flat major, @{OTL} (<i>@{OTP}</i>), K 333 (315c), mvmt. @{OMV} — Allegro grazioso",
+      "title": "Piano Sonata No. 13 in B-flat major, K 333 (315c) — Allegro grazioso",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9464,7 +9464,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata14_1",
-      "title": "Piano Sonata No. 14 in C minor, @{OTL}, K 457, mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 14 in C minor, K 457 — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9489,7 +9489,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata14_2",
-      "title": "Piano Sonata No. 14 in C minor, @{OTL}, K 457, mvmt. @{OMV} — Adagio",
+      "title": "Piano Sonata No. 14 in C minor, K 457 — Adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9514,7 +9514,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata14_3",
-      "title": "Piano Sonata No. 14 in C minor, @{OTL}, K 457, mvmt. @{OMV} — Molto allegro",
+      "title": "Piano Sonata No. 14 in C minor, K 457 — Molto allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9539,7 +9539,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata15_1",
-      "title": "Piano Sonata No. 15 in C major, @{OTL} (<i>@{OTP}</i>), @{SCT1}, mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 15 in C major — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9564,7 +9564,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata15_2",
-      "title": "Piano Sonata No. 15 in C major, @{OTL} (<i>@{OTP}</i>), @{SCT1}, mvmt. @{OMV} — Andante",
+      "title": "Piano Sonata No. 15 in C major — Andante",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9589,7 +9589,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata15_3",
-      "title": "Sonata No. 15 in C major, @{OTL} (<i>@{OTP}</i>), @{SCT1}, mvmt. @{OMV} — Rondo: Allegretto",
+      "title": "Sonata No. 15 in C major — Rondo: Allegretto",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9614,8 +9614,8 @@
     },
     {
       "corpus_path": "cloud/mps_sonata16_1",
-      "title": "Piano Sonata No. 16 in B-flat major, @{OTL}, K 576, mvmt. @{OMV} — Allegro",
-      "composer": "M&uuml;ler August Eberhard",
+      "title": "Piano Sonata No. 16 in B-flat major, K 576 — Allegro",
+      "composer": "Müler August Eberhard",
       "composer_dates": "1756-1791",
       "era": "Classical",
       "form": "Sonata",
@@ -9639,8 +9639,8 @@
     },
     {
       "corpus_path": "cloud/mps_sonata16_2",
-      "title": "Piano Sonata No. 16 in B-flat major, @{OTL}, K 576, mvmt. @{OMV} — Adagio",
-      "composer": "M&uuml;ler August Eberhard",
+      "title": "Piano Sonata No. 16 in B-flat major, K 576 — Adagio",
+      "composer": "Müler August Eberhard",
       "composer_dates": "1756-1791",
       "era": "Classical",
       "form": "Sonata",
@@ -9664,8 +9664,8 @@
     },
     {
       "corpus_path": "cloud/mps_sonata16_3",
-      "title": "Piano Sonata No. 16 in B-flat major, @{OTL}, K 576, mvmt. @{OMV} — Allegretto",
-      "composer": "M&uuml;ler August Eberhard",
+      "title": "Piano Sonata No. 16 in B-flat major, K 576 — Allegretto",
+      "composer": "Müler August Eberhard",
       "composer_dates": "1756-1791",
       "era": "Classical",
       "form": "Sonata",
@@ -9689,7 +9689,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata17_1",
-      "title": "Piano Sonata No. 17 in D major, @{OTL}, K 576, mvmt. @{OMV} — Allegro",
+      "title": "Piano Sonata No. 17 in D major, K 576 — Allegro",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9714,7 +9714,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata17_2",
-      "title": "Piano Sonata No. 17 in D major, @{OTL}, K 576, mvmt. @{OMV} — Adagio",
+      "title": "Piano Sonata No. 17 in D major, K 576 — Adagio",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
@@ -9739,7 +9739,7 @@
     },
     {
       "corpus_path": "cloud/mps_sonata17_3",
-      "title": "Piano Sonata No. 17 in D major, @{OTL}, K 576, mvmt. @{OMV} — Allegretto",
+      "title": "Piano Sonata No. 17 in D major, K 576 — Allegretto",
       "composer": "Wolfgang Amadeus Mozart",
       "composer_dates": "1756-1791",
       "era": "Classical",
