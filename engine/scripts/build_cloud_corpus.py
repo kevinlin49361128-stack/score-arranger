@@ -139,6 +139,29 @@ KRN_SOURCES = [
          composer_dates="c.1430-1492", era="Renaissance", form="Motet",
          ensemble="SATB", instruments=["voice"], year=1470, henle=None,
          tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    # ── batch 3 (2026-06-04): 補古典鋼琴三巨頭 Haydn + 業餘友善 + 文藝復興多樣性 ──
+    dict(key="hps", repo="craigsapp/haydn-piano-sonatas", subdir="kern",
+         limit=999, composer="Franz Joseph Haydn", composer_dates="1732-1809",
+         era="Classical", form="Sonata", ensemble="Piano Solo",
+         instruments=["piano"], year=1780, henle=4,
+         tags=["scales", "legato"], popular_tags=["amateur_pianist"]),
+    dict(key="hummel", repo="craigsapp/hummel-preludes", subdir="kern",
+         limit=999, composer="Johann Nepomuk Hummel", composer_dates="1778-1837",
+         era="Classical", form="Prelude", ensemble="Piano Solo",
+         instruments=["piano"], year=1815, henle=3,
+         tags=["scales", "expression"], popular_tags=["amateur_pianist"]),
+    dict(key="dufay", repo="josquin-research-project/Duf", subdir="", limit=999,
+         composer_dates="c.1397-1474", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1440, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    dict(key="larue", repo="josquin-research-project/Rue", subdir="", limit=60,
+         composer_dates="c.1452-1518", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1500, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    dict(key="isaac", repo="josquin-research-project/Isa", subdir="", limit=999,
+         composer_dates="c.1450-1517", era="Renaissance", form="Motet",
+         ensemble="SATB", instruments=["voice"], year=1490, henle=None,
+         tags=["counterpoint"], popular_tags=[], dynamic_form=True),
 ]
 
 
@@ -169,13 +192,16 @@ def clean_text(s: str) -> str:
         return s
     for bad, good in _MOJI.items():
         s = s.replace(bad, good)
+    s = re.sub(r"\\[nrt]", " ", s)             # 字面 \n \r \t escape
     for pat in _HUMDRUM_REF:
         s = pat.sub("", s)
     s = re.sub(r"@\{[^}]*\}", "", s)          # 任何殘留 @{...} token
     s = html.unescape(s)                       # &szlig; → ß 等
     s = re.sub(r"</?[A-Za-z][^>]*>", "", s)     # 去 <i> <sup> 等標籤
+    s = re.sub(r",\s*UE(?=\s|—|$)", "", s)      # Universal Edition 版本標記 (Haydn .krn)
     s = re.sub(r"\(\s*\)", "", s)               # token 拿掉後留下的空括號
     s = re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s+,", ",", s)                 # 逗號前多餘空白
     s = re.sub(r"\s*,\s*(?=,|—|$)", "", s)      # 逗號緊接 , — 或結尾 → 多餘
     return s.strip(" ,;")
 

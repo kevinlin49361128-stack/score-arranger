@@ -226,7 +226,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata01_3",
-      "title": "Piano Sonata no. 1 in F minor — TRIO, MINUETTO\\nAllegretto",
+      "title": "Piano Sonata no. 1 in F minor — TRIO, MINUETTO Allegretto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -318,7 +318,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata02_3",
-      "title": "Piano Sonata no. 2 in A major — SCHERZO\\nAllegretto",
+      "title": "Piano Sonata no. 2 in A major — SCHERZO Allegretto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -341,7 +341,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata02_4",
-      "title": "Piano Sonata no. 2 in A major — RONDO\\nGrazioso",
+      "title": "Piano Sonata no. 2 in A major — RONDO Grazioso",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -410,7 +410,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata03_3",
-      "title": "Piano Sonata no. 3 in C major — SCHERZO\\nAllegro",
+      "title": "Piano Sonata no. 3 in C major — SCHERZO Allegro",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -594,7 +594,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata05_3",
-      "title": "Piano Sonata no. 5 in C Minor — FINALE\\nPrestissimo",
+      "title": "Piano Sonata no. 5 in C Minor — FINALE Prestissimo",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -663,7 +663,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata06_3",
-      "title": "Piano Sonata no. 6 in F major — FINALE\\nPresto",
+      "title": "Piano Sonata no. 6 in F major — FINALE Presto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -732,7 +732,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata07_3",
-      "title": "Piano Sonata no. 7 in D major — MINUETTO\\nAllegro",
+      "title": "Piano Sonata no. 7 in D major — MINUETTO Allegro",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -893,7 +893,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata09_3",
-      "title": "Piano Sonata no. 9 in E major — RONDO\\nAllegro commodo",
+      "title": "Piano Sonata no. 9 in E major — RONDO Allegro commodo",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -962,7 +962,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata10_3",
-      "title": "Piano Sonata no. 10 in G major — SCHERZO\\nAllegro assai",
+      "title": "Piano Sonata no. 10 in G major — SCHERZO Allegro assai",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1031,7 +1031,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata11_3",
-      "title": "Piano Sonata no. 11 in B-flat major — Minore, MINUETTO\\nTempo di Minuetto",
+      "title": "Piano Sonata no. 11 in B-flat major — Minore, MINUETTO Tempo di Minuetto",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -1100,7 +1100,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata12_2",
-      "title": "Piano Sonata no. 12 in A-flat major — SCHERZO\\nAllegro molto, Trio",
+      "title": "Piano Sonata no. 12 in A-flat major — SCHERZO Allegro molto, Trio",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -2273,7 +2273,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata29_2",
-      "title": "Piano Sonata no. 29 in B-flat major — SCHERZO\\nAssai vivace. [half-dot] = 80",
+      "title": "Piano Sonata no. 29 in B-flat major — SCHERZO Assai vivace. [half-dot] = 80",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -2503,7 +2503,7 @@
     },
     {
       "corpus_path": "cloud/bps_sonata32_2",
-      "title": "Piano Sonata no. 32 in C minor — ARIETTA\\nAdagio molto, semplice e cantabile",
+      "title": "Piano Sonata no. 32 in C minor — ARIETTA Adagio molto, semplice e cantabile",
       "composer": "Ludwig van Beethoven",
       "composer_dates": "1770-1827",
       "era": "Classical",
@@ -4462,6 +4462,741 @@
       "bytes": 152924
     },
     {
+      "corpus_path": "cloud/dufay_duf1002a_missa_ave_regina_celorum_kyrie",
+      "title": "Kyrie — Kyrie I, Kyrie II, Christe I, Christe II, Christe III, Kyrie III, Kyrie IV, Kyrie V",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 202,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1002a_missa_ave_regina_celorum_kyrie.musicxml",
+      "sha256": "c65a6c0cacb47fb9f486584205ba34c996602319c11dd596f9e7afe0cee6d5ef",
+      "bytes": 599706
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1002b_missa_ave_regina_celorum_gloria",
+      "title": "Gloria — Et in terra pax, Domine deus rex celestis, Qui sedes, Gratias agimus tibi, Domine deus agnus dei, Qui tollis",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 237,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1002b_missa_ave_regina_celorum_gloria.musicxml",
+      "sha256": "bdf088a06f7db146a94c7deeb12bc0d2dba054701f760e64118214114a35c371",
+      "bytes": 703814
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1002c_missa_ave_regina_celorum_credo",
+      "title": "Credo — Patrem, Qui propter nos homines, Et ascendit in celum, Et unam sanctam",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 304,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1002c_missa_ave_regina_celorum_credo.musicxml",
+      "sha256": "cd4d19a056da5c943cc6913420ae151856cd8f46a1d9a875ead3645ec96e42bc",
+      "bytes": 919117
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1002d_missa_ave_regina_celorum_sanctus",
+      "title": "Sanctus — Sanctus, Pleni, Osanna I, Benedictus, Osanna II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 206,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1002d_missa_ave_regina_celorum_sanctus.musicxml",
+      "sha256": "3d6dd8fa7c294dedc0c09a739fef37d5f754a63fb832ebb9f0d1bcf0a1691ac0",
+      "bytes": 717570
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1003a_missa_ecce_ancilla_domini_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 156,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1003a_missa_ecce_ancilla_domini_kyrie.musicxml",
+      "sha256": "15d81653e574cb5cc530ad6d488494f7872dabbcaa62193b05e35771a2a33251",
+      "bytes": 423606
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1003b_missa_ecce_ancilla_domini_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 171,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1003b_missa_ecce_ancilla_domini_gloria.musicxml",
+      "sha256": "cdcd70edbfa0448379ed55b43bbd95f5485ccd3938e537c217d55e9551280361",
+      "bytes": 449738
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1003c_missa_ecce_ancilla_domini_credo",
+      "title": "Credo — Patrem, Et incarnatus est, Et in spiritum",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 267,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1003c_missa_ecce_ancilla_domini_credo.musicxml",
+      "sha256": "d8e00fcf1b284f242c809f9aaa8979916d6990005c068a9454f1d25eb5083936",
+      "bytes": 773061
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1003d_missa_ecce_ancilla_domini_sanctus",
+      "title": "Sanctus — Sanctus, Pleni, Osanna I, Benedictus, Osanna II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 178,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1003d_missa_ecce_ancilla_domini_sanctus.musicxml",
+      "sha256": "cf22d53603873879a09aedb121b077b6966f454b01901de6f97b148c36bdb160",
+      "bytes": 520099
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1003e_missa_ecce_ancilla_domini_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II, Agnus Dei III",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 150,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1003e_missa_ecce_ancilla_domini_agnus.musicxml",
+      "sha256": "f4cabb42ca727e3db0905696f9e1455d71d371b2131321d04b6d789ef6c2c030",
+      "bytes": 375842
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1004a_missa_lhomme_arme_kyrie",
+      "title": "Kyrie — Kyrie I, Kyrie II, Christe",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 117,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1004a_missa_lhomme_arme_kyrie.musicxml",
+      "sha256": "ceda46f52ea2126e6f98b192164eded906b286b808e8053211ecdcc9d67e2a7b",
+      "bytes": 359835
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1004b_missa_lhomme_arme_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 273,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1004b_missa_lhomme_arme_gloria.musicxml",
+      "sha256": "6ffe841b034d1e689c6cb138a9eb93bfb9a4bb7d3d510e4afe9ed89cb936c522",
+      "bytes": 764433
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1004c_missa_lhomme_arme_credo",
+      "title": "Credo — Patrem omnipotentem, Et incarnatus est",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 452,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1004c_missa_lhomme_arme_credo.musicxml",
+      "sha256": "56c61c7db5e65adcacbc7edfbbf5537315a30ab0c9cffa1ac88a8252612e6393",
+      "bytes": 1252038
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1004d_missa_lhomme_arme_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna I, Benedictus, Osanna II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 254,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1004d_missa_lhomme_arme_sanctus.musicxml",
+      "sha256": "4a52497dd72d5b360dc1eb89c8777136801d842b4708c3501e3115f79e7ca5a8",
+      "bytes": 703842
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1004e_missa_lhomme_arme_agnus",
+      "title": "Agnus Dei — Agnus Dei III, Agnus Dei I, Agnus Dei II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 183,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1004e_missa_lhomme_arme_agnus.musicxml",
+      "sha256": "fcf91f0a4653169c278ebd292fe6a8d35162b67b0db6c08f0abfe8046e3d7534",
+      "bytes": 599846
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1005a_missa_se_la_face_ay_pale_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 102,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1005a_missa_se_la_face_ay_pale_kyrie.musicxml",
+      "sha256": "878cd3f200711d38b932550c06b58fa1968786903b2919436143730743ab29c2",
+      "bytes": 314606
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1005b_missa_se_la_face_ay_pale_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis, Cum sancto spiritu",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 276,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1005b_missa_se_la_face_ay_pale_gloria.musicxml",
+      "sha256": "49c9e3b3fe8bc43c9af22b537c45cbedcc3e4dd9ffbbb63b271ba9a371760bd4",
+      "bytes": 762324
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1005c_missa_se_la_face_ay_pale_credo",
+      "title": "Credo — Patrem omnipotentem, Et iterum, Confiteor unum baptisma",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 276,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1005c_missa_se_la_face_ay_pale_credo.musicxml",
+      "sha256": "b5451286aca2d5866992da2c21bdf47a0ec12ed161a5d4c7c1a9443ba4efda34",
+      "bytes": 821807
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1005d_missa_se_la_face_ay_pale_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna I, Benedictus, Osanna II",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 196,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1005d_missa_se_la_face_ay_pale_sanctus.musicxml",
+      "sha256": "2c5a546713d0c5bcd02ceb389305f767d2b7aca0fa8c64f0735ed10a072dcc69",
+      "bytes": 518182
+    },
+    {
+      "corpus_path": "cloud/dufay_duf1005e_missa_se_la_face_ay_pale_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II, Agnus Dei III",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 135,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf1005e_missa_se_la_face_ay_pale_agnus.musicxml",
+      "sha256": "eb7f91b110e6f404c408e3c4ec0fbc7977d16166afae38458f1badaa896f4245",
+      "bytes": 385027
+    },
+    {
+      "corpus_path": "cloud/dufay_duf2012_ave_regina_celorum_iii",
+      "title": "Ave regina celorum III — Ave regina celorum, Salve, radix sancta, Gaude gloriosa, Vale, valde decora",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 261,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf2012_ave_regina_celorum_iii.musicxml",
+      "sha256": "c2353f21c07cae88974ac1cf90a2be8fbf5b7d35fa84256755eb1282bdba3c43",
+      "bytes": 712228
+    },
+    {
+      "corpus_path": "cloud/dufay_duf2027b_ave_maris_stella_verse_2_sumens_illud_ave_hymn",
+      "title": "hymn",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 23,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf2027b_ave_maris_stella_verse_2_sumens_illud_ave_hymn.musicxml",
+      "sha256": "360d1f69c67b3a365822be751af37910bfd55fe9b1826f9b5a6ab00f455eb950",
+      "bytes": 68406
+    },
+    {
+      "corpus_path": "cloud/dufay_duf2054_nuper_rosarum_flores_terribilis_est_locus_iste",
+      "title": "Nuper rosarum flores / Terribilis est locus iste",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 284,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf2054_nuper_rosarum_flores_terribilis_est_locus_iste.musicxml",
+      "sha256": "7a3ad4ce400c4f3ebdd2e5644654be274c2447f5c0bd8e2562de6a6ee2a367bc",
+      "bytes": 649991
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3007_2_craindre_vous_vueil_doulce_dame_de_pris",
+      "title": "Craindre vous vueil doulce dame de pris",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 33,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3007_2_craindre_vous_vueil_doulce_dame_de_pris.musicxml",
+      "sha256": "a3e66987605e316d52406b1117dc0f903195ab5bad635a87f300df37aea1f140",
+      "bytes": 90093
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3014_resvellies_vous_et_faites_chiere_lye_ballade",
+      "title": "Resvellies vous et faites chiere lye (ballade) — Resvellies vous, Car au jour d'ui",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 67,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3014_resvellies_vous_et_faites_chiere_lye_ballade.musicxml",
+      "sha256": "7438c3fb60112c87f488a6bf6042c5d83a73ca151514171d241dfe0fae4a924a",
+      "bytes": 222954
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3015_se_la_face_ay_pale",
+      "title": "Se la face ay pale",
+      "composer": "",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 30,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3015_se_la_face_ay_pale.musicxml",
+      "sha256": "988a7794ffa6bf77db0865d1e0126b5bebffbc851bb94c207b0df26e40370332",
+      "bytes": 93072
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3016_adieu_ces_bons_vins_de_lannoys",
+      "title": "Adieu ces bons vins de Lannoys",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 33,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3016_adieu_ces_bons_vins_de_lannoys.musicxml",
+      "sha256": "bf08c3b4e55ae459247cc16e8ea5393f9b3828d1c77fffdfb69caee4e375f6f3",
+      "bytes": 89211
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3017_adieu_mamour_adieu_ma_joye",
+      "title": "Adieu m'amour adieu ma joye",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 57,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3017_adieu_mamour_adieu_ma_joye.musicxml",
+      "sha256": "87c255e29fe8789f9061ca6f34dad3963b07cee0e7f95d30285a01af305c8923",
+      "bytes": 119152
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3018_adyeu_quitte_le_demeurant",
+      "title": "Adyeu quitte le demeurant",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 22,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3018_adyeu_quitte_le_demeurant.musicxml",
+      "sha256": "15ffdd71d7a92b0d491cd3a759ae10844c5770c2987bb3ef34045fee6d8b1be4",
+      "bytes": 64985
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3022_belle_vueillez_moy_vengier",
+      "title": "Belle vueillez moy vengier",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 51,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3022_belle_vueillez_moy_vengier.musicxml",
+      "sha256": "56f62604c5edd7290f33f807651ce821b16ae872f02820bb09d1c4fd5053b57f",
+      "bytes": 121050
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3025_bon_jour_bon_mois_bon_an_et_bonne_estraine",
+      "title": "Bon jour bon mois bon an et bonne estraine",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 44,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3025_bon_jour_bon_mois_bon_an_et_bonne_estraine.musicxml",
+      "sha256": "604fc7c35c979ab521db9d6df16cfe337fee1e39840a663d6ef3712e5d57eb02",
+      "bytes": 103384
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3067_puisque_vous_estez_campieur",
+      "title": "Puisque vous estez campieur",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 40,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3067_puisque_vous_estez_campieur.musicxml",
+      "sha256": "03cfd1b19fc0271daa77d10be1101502004fc8d343ff5dff2361e869585c0836",
+      "bytes": 100345
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3069_resvelons_nous_resvelons_amoureux_alons_en_bien_tos_au_may",
+      "title": "Resvelons nous resvelons amoureux / Alons en bien tos au may",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 22,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3069_resvelons_nous_resvelons_amoureux_alons_en_bien_tos_au_may.musicxml",
+      "sha256": "f6ae18d928d17de6a4f70ee66b5529ab130801a23883d1384cec2cb9d1cfa321",
+      "bytes": 56917
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3077_helas_mon_dueil_a_ce_cop_sui_je_mort",
+      "title": "Helas mon dueil a ce cop sui je mort — Il ne fault ja",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 61,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3077_helas_mon_dueil_a_ce_cop_sui_je_mort.musicxml",
+      "sha256": "eb622c7ce5675269bf1b1d5e8ebb47ed705c57a8609ed5d541585d8f7bb920b4",
+      "bytes": 148696
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3078_malheureulx_cueur_que_vieulx_tu_faire",
+      "title": "Malheureulx cueur que vieulx tu faire",
+      "composer": "Guillaume Du Fay",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 60,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3078_malheureulx_cueur_que_vieulx_tu_faire.musicxml",
+      "sha256": "6beff259dfab863db0a12ea83c3c4873d9e25689d4586cc94d632091992fdcf3",
+      "bytes": 155196
+    },
+    {
+      "corpus_path": "cloud/dufay_duf3080_hic_iocundus_sumit_mundus",
+      "title": "Hic iocundus sumit mundus",
+      "composer": "",
+      "composer_dates": "c.1397-1474",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1440,
+      "measures": 29,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_dufay_duf3080_hic_iocundus_sumit_mundus.musicxml",
+      "sha256": "bcd5ea7aa3c4d8bb7a815444d930e7e42218bfefef18a5a304d03dcad054ad72",
+      "bytes": 62508
+    },
+    {
       "corpus_path": "cloud/haydn_op1no1_mvt1",
       "title": "String Quartet in B-flat major, Op.1 No.1 'La chasse' — I. Presto",
       "composer": "Joseph Haydn",
@@ -4526,6 +5261,1336 @@
       "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_haydn_op74no1_mvt4.musicxml",
       "sha256": "2e923db83a070140977c240966a126c036b29a9a38ea6ad779a0677f7508543e",
       "bytes": 1403218
+    },
+    {
+      "corpus_path": "cloud/hps_sonata12_1",
+      "title": "Sonata No. 12 in A major — Andante.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 56,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata12_1.musicxml",
+      "sha256": "7a351f8c0cd4ca95f72308e8fd66f195820d3415caf75a4fef2a66e3a1ff2f3c",
+      "bytes": 471328,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata12_2",
+      "title": "Sonata No. 12 in A major — MENUETTO., TRIO. Minore.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 55,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata12_2.musicxml",
+      "sha256": "841a2da506d67340bdd88d6f5e78a2b9d4f0f57b13c71ca156620f2a1736a460",
+      "bytes": 158152,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata12_3",
+      "title": "Sonata No. 12 in A major — Finale.: Allegretto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 70,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata12_3.musicxml",
+      "sha256": "9b2a87f98d87caa8af5b094cf83253eb583ec7bfbac676ae79cdac765e0643d8",
+      "bytes": 179152,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata13_1",
+      "title": "Sonata No. 13 in G major — Allgero.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 50,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata13_1.musicxml",
+      "sha256": "b54b8c4954274096e4fb11dcd0cbe897e9b6e329c5c616190256d8f501a75eed",
+      "bytes": 574940,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata15_1",
+      "title": "Sonata No. 15 in E major — Moderato.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 85,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata15_1.musicxml",
+      "sha256": "a8f20e92dc20bcc9617ac43fe217611dbe812355bfc73bac3e06c60bcc4236ee",
+      "bytes": 333104,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata16_1",
+      "title": "Sonata No. 16 in D major — Allegro moderato.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 113,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata16_1.musicxml",
+      "sha256": "f940ab1103dc1d2ceed49f537ff2b7552706de7e049b16acdcf782e88d8c0450",
+      "bytes": 481113,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata16_2",
+      "title": "Sonata No. 16 in D major — MENUETTO., TRIO.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 56,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata16_2.musicxml",
+      "sha256": "3feb2f590729fc691ab69e8464b162a5038299b49b20ffa99b0f44d875b93b87",
+      "bytes": 170809,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata16_3",
+      "title": "Sonata No. 16 in D major — Presto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 109,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata16_3.musicxml",
+      "sha256": "e046f6a61a98d0d0574aa127dd7b49d9d7e24535642a0ec8d7987d7594887596",
+      "bytes": 327256,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata29_3",
+      "title": "Sonata No. 29 in E-flat major — Finale: Allegro di molto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 137,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata29_3.musicxml",
+      "sha256": "5e6ac3cdfbe3f62d6f455700d7a590edad7382aea36048fa4e9c8c5901ecb483",
+      "bytes": 578034,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata33_3",
+      "title": "Sonata No. 33 in C minor — Finale: Allegro.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 155,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata33_3.musicxml",
+      "sha256": "70fcc010a1bb373986bf464e5e588dd1106bdd635583e624cd0d12666de1930f",
+      "bytes": 578160,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata34_1",
+      "title": "Sonata No. 34 in D major — Allegro.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 195,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata34_1.musicxml",
+      "sha256": "e7fbeb84026b4c5690b581681455308d10e06edc524d158537a703712f138e4d",
+      "bytes": 616315,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata37_1",
+      "title": "Sonata No. 37 in E major — Allegro moderato.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 76,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata37_1.musicxml",
+      "sha256": "969d22602f4e79a210d7a311547ab73d60f596d427f6a35dbbd247a618ee13b3",
+      "bytes": 491919,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata42_3",
+      "title": "Sonata No. 42 in G major — Presto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 159,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata42_3.musicxml",
+      "sha256": "c332a0f03063b082b0a894e2482371c4e4c82674ac693bc00ce1bc6850e26977",
+      "bytes": 409610,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata45_3a",
+      "title": "Sonata No. 45 in A major — Tema con variazioni: Tempo di Menuetto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 17,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata45_3a.musicxml",
+      "sha256": "9180cc7eaa7f926e7e50febf832308fe2e9b37e96b65d7bab41b01355fb3cf0a",
+      "bytes": 45502,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata49_1",
+      "title": "Sonata No. 49 in C-sharp minor — Moderato.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 98,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata49_1.musicxml",
+      "sha256": "405da343c29fbfae318a99eb4bc81c03f3634d10390d0a53796a9a1a80469123",
+      "bytes": 564131,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata50_1",
+      "title": "Sonata No. 50 in D major — Allegro con brio.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 103,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata50_1.musicxml",
+      "sha256": "079b3d82b4a418bef97d2369e785e660b6fd2dc77f66aa89abb35dd5b89a8eb5",
+      "bytes": 681002,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata51_3",
+      "title": "Sonata No. 51 in E-flat major — Finale: Allegro.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 85,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata51_3.musicxml",
+      "sha256": "4a63181e823fc4d2002b0846703a0fafc9f75def155ffa15affc7e6af862c224",
+      "bytes": 224788,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata52_3",
+      "title": "Sonata No. 52 in G major — Prestissimo.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 122,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata52_3.musicxml",
+      "sha256": "eb05751582e26a24abba5d20468dff20f8659f2af1e8d472f2f181502dbfc128",
+      "bytes": 489519,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata53_3",
+      "title": "Sonata No. 53 in E minor — Finale: Molto vivace.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 144,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata53_3.musicxml",
+      "sha256": "b69551308ceb87b8786c8c6663652dd8f53c4128995563ff3f941597ec2d4bf0",
+      "bytes": 506268,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata59_1",
+      "title": "Sonata No. 59 in E-flat major — Allgero.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 221,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata59_1.musicxml",
+      "sha256": "b761e5aaa215b4001ed8155983fb0ea6429f460f00b1641cad7729aec40774dd",
+      "bytes": 890156,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata61_1",
+      "title": "Sonata No. 61 in D major — Andante.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 111,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata61_1.musicxml",
+      "sha256": "391f6fab31f6ebcf71c3302eb4efe11a5a4d30e7c0c580b890ba62b0c5087a9e",
+      "bytes": 949470,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata61_2",
+      "title": "Sonata No. 61 in D major — Finale: Presto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 171,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata61_2.musicxml",
+      "sha256": "3e3d550a7fe1e4c9207befff5a7429db30fd651759d9e2b0c45b5dc885335414",
+      "bytes": 430366,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata62_1",
+      "title": "Sonata No. 62 in E-flat major — Allegro.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 116,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata62_1.musicxml",
+      "sha256": "b804c703d818a1b57dc180a737cc936b9028d6a9d2d4e568b8ff1b1f274be045",
+      "bytes": 1056312,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata62_2",
+      "title": "Sonata No. 62 in E-flat major — Adagio.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 55,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata62_2.musicxml",
+      "sha256": "ffe2a992a60801b60b7fbf2f06c2675a4a7a25afc60310fcae6ce21905f43621",
+      "bytes": 416395,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hps_sonata62_3",
+      "title": "Sonata No. 62 in E-flat major — Finale: Presto.",
+      "composer": "Franz Joseph Haydn",
+      "composer_dates": "1732-1809",
+      "era": "Classical",
+      "form": "Sonata",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1780,
+      "measures": 310,
+      "tags": [
+        "scales",
+        "legato"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hps_sonata62_3.musicxml",
+      "sha256": "97576079a499108c5d296ed404d3ccdb6fb273a881ef2dc4480610bc57705482",
+      "bytes": 881054,
+      "henle_level": 4
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_01",
+      "title": "Prelude in C major, op. 67, no. 1 — Quasi improvisazione",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_01.musicxml",
+      "sha256": "167a5ab0fec2d361cc0841be77585e4271c6c12b44a560264ea3a6ec831438fb",
+      "bytes": 23440,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_02",
+      "title": "Prelude in A minor, op. 67, no. 2 — Allegro moderato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_02.musicxml",
+      "sha256": "4c8aedca5c8254be31c7920ee58c85a40ed4de1d436780f81dfc6f8bdd88f865",
+      "bytes": 41816,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_03",
+      "title": "Prelude in G major, op. 67, no. 3 — Allegro.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 6,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_03.musicxml",
+      "sha256": "3fd14dec57770eb05933aea3f5c5f88d316d44fb41fadf20bd8b084a9bd89bb1",
+      "bytes": 51591,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_04",
+      "title": "Prelude in E minor, op. 67, No. 4 — Molto allegro., Andante.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_04.musicxml",
+      "sha256": "05f0541e2f056e2bcb9c1357feab5769a6d0051b62b83ef27dd192384acc8d6b",
+      "bytes": 44145,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_05",
+      "title": "Prelude in D major, op. 67, no. 5 — Allegro con fuoco.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_05.musicxml",
+      "sha256": "260bcdef417f488a2bc705bcf07025d8a7f58cfe03ddf3e236ac994ec6a04edb",
+      "bytes": 45950,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_06",
+      "title": "Prelude in B minor, op. 67, no. 6 — Allegro non troppo.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_06.musicxml",
+      "sha256": "9e9997b668c68c8a12cbe19486eea16b7d12ec83623ce0fb0d41a71065fad5b1",
+      "bytes": 56381,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_07",
+      "title": "Prelude in F-sharp minor, op. 67, no. 7 — Moderato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_07.musicxml",
+      "sha256": "20e203f5bf1bbdcdc61d6f1ff82868dcf28259cccfc65b4c64c176beee104445",
+      "bytes": 69118,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_08",
+      "title": "Prelude in F-sharp minor, op. 67, no. 8 — Allegro, molto animato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 10,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_08.musicxml",
+      "sha256": "0aba19ecb8b2173bb14ad1fb810aa2fe365d2b1383b7fe6f96b0595ea4ce7166",
+      "bytes": 94287,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_09",
+      "title": "Prelude in E major, op. 67, no. 9 — Allegro.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_09.musicxml",
+      "sha256": "237fe67f4e7784dd524537bd3df7cc1eccf105457bb7da87718424932673d913",
+      "bytes": 62459,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_10",
+      "title": "Prelude in C-sharp minor, op. 67, no. 10 — Energico.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 4,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_10.musicxml",
+      "sha256": "21bf41e1e9517068a1790e72badb90fd00b88ca838413c7a1022c73223586930",
+      "bytes": 43639,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_11",
+      "title": "Prelude in B major, op. 67, no. 11 — Allegro.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_11.musicxml",
+      "sha256": "671dc1344bb245db325e954cf42ec652c2cafa84a9ca5e4b30e23b761799c8e1",
+      "bytes": 80462,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_12",
+      "title": "Prelude in G-sharp minor, op. 67, no. 12 — Allegro moderato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_12.musicxml",
+      "sha256": "26b471b5c50276b5e39909a1c9a9ed234c2901ff0517effc36853cb858ab329f",
+      "bytes": 56509,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_13",
+      "title": "Prelude in F-sharp major, op. 67, no. 13 — Allegro con fuoco., Andante.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_13.musicxml",
+      "sha256": "b64750ece7dd30089c74db0fd59237b1303b7637b67a97eb16513fdeb4ca6c4e",
+      "bytes": 41263,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_14",
+      "title": "Prelude in E-flat minor, op. 67, no. 14 — Alla cappella.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_14.musicxml",
+      "sha256": "1d3268d332b4a168407bc6964bfcb7fe4ce3954230af65a8c3b08aeb5a74e2bd",
+      "bytes": 25320,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_15",
+      "title": "Prelude in D-flat major, op. 67, no. 15 — Allegro moderato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 10,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_15.musicxml",
+      "sha256": "b19d8e4bd1822764b3640b97db044829721ea71b15591f056d31856f74eaf42e",
+      "bytes": 59455,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_16",
+      "title": "Prelude in B-flat minor, op. 67, no. 16 — Sostenuto.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_16.musicxml",
+      "sha256": "72a0fd3506f976bc580c734bfc8675858a7717d16a99f90c07a817132bf87eb6",
+      "bytes": 35213,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_17",
+      "title": "Prelude in A-flat major, op. 67, no. 17 — Allgero moderato.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 7,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_17.musicxml",
+      "sha256": "98678dd41355c8e7fee952aec9f425fe91e36456f46d414c4b6f66b2312dfae4",
+      "bytes": 64081,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_18",
+      "title": "Prelude in F minor, op. 67, no. 18 — Con molto fuoco.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 6,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_18.musicxml",
+      "sha256": "108c6fb8c9c5268a2319653fce787a2276f9471189827dae2eec80bc17cb1764",
+      "bytes": 34299,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_19",
+      "title": "Prelude in E-flat major, op. 67, no. 19 — Allegro comodo.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 9,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_19.musicxml",
+      "sha256": "5dd279323bafd4d907d87a73bdacb912044c04217ac9db90f362a4f96f111eac",
+      "bytes": 86349,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_20",
+      "title": "Prelude in C minor, op. 67, no. 20 — Andante con moto.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 5,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_20.musicxml",
+      "sha256": "1eb7db4986ef97836bf01b2de4403375e4c6f7a659374d02fc845eec5559b768",
+      "bytes": 39248,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_21",
+      "title": "Prelude in B major, op. 67, no. 21 — Allegro con brio.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 13,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_21.musicxml",
+      "sha256": "6bc1e280bd8a7cff28c7a9456ebb6a41eec15436da3aefc6317f0cdd6b1c2383",
+      "bytes": 106140,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_22",
+      "title": "Prelude in G minor, op. 67, no. 22 — Allegro vivace.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 11,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_22.musicxml",
+      "sha256": "baa17b3618b2a2e455d618dc7db729419f7e591f4d60d8c21ea9b5ac7f2f6d95",
+      "bytes": 113870,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_23",
+      "title": "Prelude in F major, op. 67, no. 23 — Allegro con fuoco.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 10,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_23.musicxml",
+      "sha256": "eec23dc55e474c9bb48caeb84336d72c5f64356f24de0ba745a033ec33f5d22b",
+      "bytes": 78923,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/hummel_prelude67_24",
+      "title": "Prelude in D minor, op. 67, no. 24 — Allegro spiritoso.",
+      "composer": "Johann Nepomuk Hummel",
+      "composer_dates": "1778-1837",
+      "era": "Classical",
+      "form": "Prelude",
+      "ensemble": "Piano Solo",
+      "instruments": [
+        "piano"
+      ],
+      "year": 1815,
+      "measures": 8,
+      "tags": [
+        "scales",
+        "expression"
+      ],
+      "popular_tags": [
+        "amateur_pianist"
+      ],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_hummel_prelude67_24.musicxml",
+      "sha256": "83de3781b8dae1939b7faa69c718effd7827dc44c18834201b10bdd15710ff46",
+      "bytes": 47606,
+      "henle_level": 3
+    },
+    {
+      "corpus_path": "cloud/isaac_isa1038_credo_i",
+      "title": "Credo I — Patrem omnipotentem, Et resurrexit",
+      "composer": "Heinrich Isaac",
+      "composer_dates": "c.1450-1517",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1490,
+      "measures": 148,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_isaac_isa1038_credo_i.musicxml",
+      "sha256": "9375994fbb51ded2dc81128db56eddcf2913517e53e34f8b254ceebe2bf52850",
+      "bytes": 481514
+    },
+    {
+      "corpus_path": "cloud/isaac_isa1039_credo_ii",
+      "title": "Credo II — Patrem omnipotentem, Genitum non factum, Et resurrexit, Qui cum Patre",
+      "composer": "Heinrich Isaac",
+      "composer_dates": "c.1450-1517",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1490,
+      "measures": 297,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_isaac_isa1039_credo_ii.musicxml",
+      "sha256": "f4aa5d47184732b486b4ab7313e560e4417bea580109f8d4f972b86fef1cc372",
+      "bytes": 898803
+    },
+    {
+      "corpus_path": "cloud/isaac_isa1040_credo_iii",
+      "title": "Credo III — Patrem omnipotentem, Qui propter nos, Et resurrexit, Et unam sanctam",
+      "composer": "Heinrich Isaac",
+      "composer_dates": "c.1450-1517",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1490,
+      "measures": 359,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_isaac_isa1040_credo_iii.musicxml",
+      "sha256": "1b84f99a52c23e15f8877058315ebe4ca5898d19ea71a16a7ffc72dd3d8de270",
+      "bytes": 1079429
+    },
+    {
+      "corpus_path": "cloud/isaac_isa1041_credo_iv",
+      "title": "Credo IV — Patrem omnipotentem, Genitum non factum, Et resurrexit, Qui cum Patre",
+      "composer": "Heinrich Isaac",
+      "composer_dates": "c.1450-1517",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1490,
+      "measures": 147,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_isaac_isa1041_credo_iv.musicxml",
+      "sha256": "5373a1de01bd9e3ba7466f9077e9a1da7bb4d3e9c056049f808ed77db387cb99",
+      "bytes": 480910
+    },
+    {
+      "corpus_path": "cloud/isaac_isa3002_alla_battaglia",
+      "title": "Alla battaglia — Per parte del excelso, Sarazenel si spaza, Ognun sia presto armato",
+      "composer": "Heinrich Isaac",
+      "composer_dates": "c.1450-1517",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1490,
+      "measures": 213,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_isaac_isa3002_alla_battaglia.musicxml",
+      "sha256": "338ab5bf9ce36d287fb2babe789302860148981f43197c3da7eb21f8c1d76b3b",
+      "bytes": 695844
     },
     {
       "corpus_path": "cloud/joplin_antoinette",
@@ -6730,6 +8795,1161 @@
       "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_josquin_jos0406e_missa_veni_sancte_spiritus_agnus.musicxml",
       "sha256": "7696a60a135e51f71b553c27d3b95c9a60475d5dc818a59aaaf21b9acfeef56e",
       "bytes": 224659
+    },
+    {
+      "corpus_path": "cloud/larue_rue1001a_missa_alleluia_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 74,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1001a_missa_alleluia_kyrie.musicxml",
+      "sha256": "907d9e63ff115895d586e47ef494cff7411b01475b2f584575401d61866c7229",
+      "bytes": 314599
+    },
+    {
+      "corpus_path": "cloud/larue_rue1001b_missa_alleluia_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 103,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1001b_missa_alleluia_gloria.musicxml",
+      "sha256": "574262e90559cb04752b9031e317c3560be9502ec72cb2f0690a83c757a093ff",
+      "bytes": 424343
+    },
+    {
+      "corpus_path": "cloud/larue_rue1002a_missa_almana_kyrie",
+      "title": "Kyrie — Kyrie I, Christe I, Christe II, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 119,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1002a_missa_almana_kyrie.musicxml",
+      "sha256": "81fb0263d0c4c0dac5cb1c33d23f51d5edc2e182f132053a2ed22fe6258aac9b",
+      "bytes": 357486
+    },
+    {
+      "corpus_path": "cloud/larue_rue1002b_missa_almana_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 162,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1002b_missa_almana_gloria.musicxml",
+      "sha256": "d993763aebe514585b0b6931f81bc2fc48bc4d648acb781f5c2a599d7f30ab98",
+      "bytes": 473987
+    },
+    {
+      "corpus_path": "cloud/larue_rue1002c_missa_almana_credo",
+      "title": "Credo — Patrem omnipotentem, Crucifixus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 223,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1002c_missa_almana_credo.musicxml",
+      "sha256": "c9754af2a203efbcdac05ab0086d307b1c8a265132b6ab2df1035e073c49f76a",
+      "bytes": 620026
+    },
+    {
+      "corpus_path": "cloud/larue_rue1002d_missa_almana_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus, In nomine Domini",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 189,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1002d_missa_almana_sanctus.musicxml",
+      "sha256": "e248041ef66636aaeda18c5c6e1d1c60549e76fb04cb9c052c180e1dc2c8420d",
+      "bytes": 539022
+    },
+    {
+      "corpus_path": "cloud/larue_rue1002e_missa_almana_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II, Agnus Dei III",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 157,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1002e_missa_almana_agnus.musicxml",
+      "sha256": "54328f15f9f6fe0269165886f969b27e861df7e0abb14037a764a1371e6a69ba",
+      "bytes": 482475
+    },
+    {
+      "corpus_path": "cloud/larue_rue1003a_missa_assumpta_est_maria_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 63,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1003a_missa_assumpta_est_maria_kyrie.musicxml",
+      "sha256": "05735e57b81525418bc0861e2b3239218b2a4595d92598eb9e9aa063a8e89c24",
+      "bytes": 199668
+    },
+    {
+      "corpus_path": "cloud/larue_rue1003b_missa_assumpta_est_maria_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 142,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1003b_missa_assumpta_est_maria_gloria.musicxml",
+      "sha256": "31a0565d414b69387e7c9d2925b147206a00cad6addf7f367633505d95391725",
+      "bytes": 441283
+    },
+    {
+      "corpus_path": "cloud/larue_rue1003c_missa_assumpta_est_maria_credo",
+      "title": "Credo — Patrem omnipotentem, Et resurrexit",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 173,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1003c_missa_assumpta_est_maria_credo.musicxml",
+      "sha256": "f36b4e96a640eab09bec2cf7035b9a55c7b6ddd992453ea03ac8d491ba91f914",
+      "bytes": 543725
+    },
+    {
+      "corpus_path": "cloud/larue_rue1003d_missa_assumpta_est_maria_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Gloria tua, Osanna, Benedictus and Osanna II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 148,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1003d_missa_assumpta_est_maria_sanctus.musicxml",
+      "sha256": "76e67d874081d5c6b361b80529f133d9e004a5798db71d8b0d8087cfd3a4b262",
+      "bytes": 422267
+    },
+    {
+      "corpus_path": "cloud/larue_rue1003e_missa_assumpta_est_maria_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II and III",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 87,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1003e_missa_assumpta_est_maria_agnus.musicxml",
+      "sha256": "f13df33fd2a6de0ed73ff3715437741e23e8b87342e3430f5ce23490fb65a6e3",
+      "bytes": 282711
+    },
+    {
+      "corpus_path": "cloud/larue_rue1004a_missa_ave_maria_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 80,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1004a_missa_ave_maria_kyrie.musicxml",
+      "sha256": "111ef3df678c9338fde9e8a73b860c46308b6147c6951dfd5c657f9c853f57dd",
+      "bytes": 249662
+    },
+    {
+      "corpus_path": "cloud/larue_rue1004b_missa_ave_maria_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 134,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1004b_missa_ave_maria_gloria.musicxml",
+      "sha256": "9b92dc5a4ef4866730ae7c0a65ae62cc609fb4c3c91f312f0868ae6232b4f171",
+      "bytes": 411579
+    },
+    {
+      "corpus_path": "cloud/larue_rue1004c_missa_ave_maria_credo",
+      "title": "Credo — Patrem omnipotentem, Et incarnatus est, Crucifixus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 207,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1004c_missa_ave_maria_credo.musicxml",
+      "sha256": "a1c30c8dc73baae99367fcdc683c628bf247aa3dc8c8c3eb49572063ef9368d4",
+      "bytes": 674929
+    },
+    {
+      "corpus_path": "cloud/larue_rue1004d_missa_ave_maria_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 173,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1004d_missa_ave_maria_sanctus.musicxml",
+      "sha256": "d5c898f2d33c5b382c45fe519507ec890258b7fee17d6b9283bdb0c41b87142a",
+      "bytes": 498331
+    },
+    {
+      "corpus_path": "cloud/larue_rue1004e_missa_ave_maria_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 109,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1004e_missa_ave_maria_agnus.musicxml",
+      "sha256": "6be9ec3800572fece5e66704394897d05b38fe67b0a02556f31f92eacf2c21ab",
+      "bytes": 330356
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005a_missa_ave_sanctissima_maria_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 71,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005a_missa_ave_sanctissima_maria_kyrie.musicxml",
+      "sha256": "b0088e5bf4cf1998849e26b188c86d6d3fef4c6234d487564d4b4c8b3f42c009",
+      "bytes": 288228
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005b_missa_ave_sanctissima_maria_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis, Qui sedes ad dexteram Patris",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 153,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005b_missa_ave_sanctissima_maria_gloria.musicxml",
+      "sha256": "f7c5594ee68c0b19f0250c7ff73056aeaee1e3b21b08f87f83f4d723fe4a5108",
+      "bytes": 638958
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005c_missa_ave_sanctissima_maria_credo",
+      "title": "Credo — Patrem omnipotentem, Visibilium omnium, Crucifixus, Et resurrexit, Et iterum venturus est",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 261,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005c_missa_ave_sanctissima_maria_credo.musicxml",
+      "sha256": "e5d602904209468b2ed5030c382e16ca9f8e051abebfdb801089fee4a34cccce",
+      "bytes": 960223
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005d_missa_ave_sanctissima_maria_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 175,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005d_missa_ave_sanctissima_maria_sanctus.musicxml",
+      "sha256": "72509aece35d4672d7425179d7c81a34f31cab1770e72dea25d1d476892bef60",
+      "bytes": 630980
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005e_missa_ave_sanctissima_maria_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 96,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005e_missa_ave_sanctissima_maria_agnus.musicxml",
+      "sha256": "c7015e1c25200ca24b69330d14e8c4be93a6b7fd916178134eec48c0970d2f1d",
+      "bytes": 397105
+    },
+    {
+      "corpus_path": "cloud/larue_rue1005f_missa_ave_sanctissima_maria_loco_deo_gratias",
+      "title": "Loco Deo Gratias — Te decet laus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 36,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1005f_missa_ave_sanctissima_maria_loco_deo_gratias.musicxml",
+      "sha256": "1aa23baeb2ac8e1d981cec2b485ab9a3f30ce3187d26e1e71b238253038ef0cb",
+      "bytes": 107890
+    },
+    {
+      "corpus_path": "cloud/larue_rue1006a_missa_conceptio_tua_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 72,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1006a_missa_conceptio_tua_kyrie.musicxml",
+      "sha256": "43e57b9a929326461d72920daebae502c37af3a5b15c8e0c5415c5e08cc26edd",
+      "bytes": 295128
+    },
+    {
+      "corpus_path": "cloud/larue_rue1006b_missa_conceptio_tua_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 137,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1006b_missa_conceptio_tua_gloria.musicxml",
+      "sha256": "38b2d3f25af537537fbdbc1357c0c1b4d1d059056d1d0d957cde371e4281e15c",
+      "bytes": 472143
+    },
+    {
+      "corpus_path": "cloud/larue_rue1006c_missa_conceptio_tua_credo",
+      "title": "Credo — Patrem omnipotentem, Et resurrexit",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 203,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1006c_missa_conceptio_tua_credo.musicxml",
+      "sha256": "ee3ead2d8d4097b44740b0ac1407a5078b447e38011ee2e4b92bfda02bf2a60a",
+      "bytes": 741762
+    },
+    {
+      "corpus_path": "cloud/larue_rue1006d_missa_conceptio_tua_sanctus",
+      "title": "Sanctus, Rue1006d-Missa_Conceptio_tua-Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus qui venit, In nomine Domini",
+      "composer": "Pierre de and La Rue la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Mass",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 160,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1006d_missa_conceptio_tua_sanctus.musicxml",
+      "sha256": "deb262daa64b7c3dfc549343ab67567eeacd8b84be388895c4bd4d1b70d349f0",
+      "bytes": 532760
+    },
+    {
+      "corpus_path": "cloud/larue_rue1006e_missa_conceptio_tua_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 85,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1006e_missa_conceptio_tua_agnus.musicxml",
+      "sha256": "3e222497f57c3a01e2c0ae550a912c5e415c585df74c97b95b01a4626ac2712c",
+      "bytes": 337107
+    },
+    {
+      "corpus_path": "cloud/larue_rue1008a_missa_de_beata_virgine_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 59,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1008a_missa_de_beata_virgine_kyrie.musicxml",
+      "sha256": "84404bde4df0f3ab0236fd7cef459259feb22e1729a2d11b1e871e8d2a14f38e",
+      "bytes": 220318
+    },
+    {
+      "corpus_path": "cloud/larue_rue1008b_missa_de_beata_virgine_gloria",
+      "title": "Gloria — Et in terra pax",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 121,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1008b_missa_de_beata_virgine_gloria.musicxml",
+      "sha256": "91ed270eef1e5fa220ce24453e7bc8a45a55077b67b2b70080bc2a3f0e9776ed",
+      "bytes": 341669
+    },
+    {
+      "corpus_path": "cloud/larue_rue1008c_missa_de_beata_virgine_credo",
+      "title": "Missa De beata virgine — Patrem omnipotentum, Crucifixus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Mass",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 195,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1008c_missa_de_beata_virgine_credo.musicxml",
+      "sha256": "ccb5fec30204465c9afd544b0e400155099d8f97b1f85c3b23968fff9dc46134",
+      "bytes": 486658
+    },
+    {
+      "corpus_path": "cloud/larue_rue1008d_missa_de_beata_virgine_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Benedictus, Osanna",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 154,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1008d_missa_de_beata_virgine_sanctus.musicxml",
+      "sha256": "bd2e5dee28174c7bcdfea84d79574cf80d4dbea6a31b6602ba7df7a8458cf2e7",
+      "bytes": 464389
+    },
+    {
+      "corpus_path": "cloud/larue_rue1008e_missa_de_beata_virgine_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 84,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1008e_missa_de_beata_virgine_agnus.musicxml",
+      "sha256": "e8358f094106d8d1d5ff0ee484b029d9ec9818632c21991f3066f9e08b84ffa0",
+      "bytes": 274255
+    },
+    {
+      "corpus_path": "cloud/larue_rue1009a_missa_de_feria_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 91,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1009a_missa_de_feria_kyrie.musicxml",
+      "sha256": "117162b5bf82535c9526027ef4a6697b729fa2ccd1a362414324422b3010dcb6",
+      "bytes": 325025
+    },
+    {
+      "corpus_path": "cloud/larue_rue1009b_missa_de_feria_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 121,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1009b_missa_de_feria_gloria.musicxml",
+      "sha256": "0a65d5537b275be25186ab7c1922d68051da5ccb40806af424a742dc54d21b71",
+      "bytes": 426841
+    },
+    {
+      "corpus_path": "cloud/larue_rue1009c_missa_de_feria_credo",
+      "title": "Credo — Patrem omnipotentem, Et incarnatus est, Crucifixus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 259,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1009c_missa_de_feria_credo.musicxml",
+      "sha256": "9ae0b32f4374357a4ec4fc2ba2715ae727159dee2e3e5ddc5568303a01fdc8fa",
+      "bytes": 823794
+    },
+    {
+      "corpus_path": "cloud/larue_rue1009d_missa_de_feria_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 147,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1009d_missa_de_feria_sanctus.musicxml",
+      "sha256": "12b34e69c00e6a7f38bde6821aebbfbaa956759ed38ad16a0e2e7fc45084304f",
+      "bytes": 485946
+    },
+    {
+      "corpus_path": "cloud/larue_rue1009e_missa_de_feria_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II, Agnus Dei III",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 130,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1009e_missa_de_feria_agnus.musicxml",
+      "sha256": "e2acfa746e30ce02e2cb935410dbfacf45b21e99bb5eaf2d24065450b9194d4d",
+      "bytes": 437139
+    },
+    {
+      "corpus_path": "cloud/larue_rue1011a_missa_de_sancta_cruce_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 79,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1011a_missa_de_sancta_cruce_kyrie.musicxml",
+      "sha256": "697954c73fe777cf0a9a7379cdaf5060ded029b627ac621fc4bd1ae8d3acc279",
+      "bytes": 320764
+    },
+    {
+      "corpus_path": "cloud/larue_rue1011b_missa_de_sancta_cruce_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 153,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1011b_missa_de_sancta_cruce_gloria.musicxml",
+      "sha256": "87d5b2c3419c0e36ede4b489bcb4cf07175a040a0e3e218710ee65a6c807eb3d",
+      "bytes": 580604
+    },
+    {
+      "corpus_path": "cloud/larue_rue1011c_missa_de_sancta_cruce_credo",
+      "title": "Credo — Patrem, Et resurrexit",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 182,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1011c_missa_de_sancta_cruce_credo.musicxml",
+      "sha256": "a83ac73c80eacf05dfdb599b113603c9b5db129a60de636cfb4ec910c0a0e494",
+      "bytes": 715518
+    },
+    {
+      "corpus_path": "cloud/larue_rue1011d_missa_de_sancta_cruce_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 162,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1011d_missa_de_sancta_cruce_sanctus.musicxml",
+      "sha256": "7ca559c486844314db5e44fc817dd7ffe1f4da524dc86fd74a6b96bddbf5ed9c",
+      "bytes": 647024
+    },
+    {
+      "corpus_path": "cloud/larue_rue1011e_missa_de_sancta_cruce_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 114,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1011e_missa_de_sancta_cruce_agnus.musicxml",
+      "sha256": "371ac90f7f89d42c014ad67c3621fa683a7f29241f7e03ca2da99cea9753ade1",
+      "bytes": 412800
+    },
+    {
+      "corpus_path": "cloud/larue_rue1012a_missa_de_sancto_antonio_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 76,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1012a_missa_de_sancto_antonio_kyrie.musicxml",
+      "sha256": "82a4d05ab2f36483c8d1044ae5b68a2fe58f6b6e884bf692085dfa078f0031b6",
+      "bytes": 272590
+    },
+    {
+      "corpus_path": "cloud/larue_rue1012b_missa_de_sancto_antonio_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 123,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1012b_missa_de_sancto_antonio_gloria.musicxml",
+      "sha256": "2e75ff275a0a906f26b614e9232a7fbbec80f4961b126f553443d474af27bef1",
+      "bytes": 421682
+    },
+    {
+      "corpus_path": "cloud/larue_rue1012c_missa_de_sancto_antonio_credo",
+      "title": "Credo — Patrem omnipotentem, Crucifixus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 173,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1012c_missa_de_sancto_antonio_credo.musicxml",
+      "sha256": "3157cde4126c5312f26a3d6cbfccfd5548a3d7f391d9bc221bfe032eb308801f",
+      "bytes": 549891
+    },
+    {
+      "corpus_path": "cloud/larue_rue1012d_missa_de_sancto_antonio_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus, In nomine",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 148,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1012d_missa_de_sancto_antonio_sanctus.musicxml",
+      "sha256": "f694e7db5ca7f5e613808a909a6a8d588af76cf48f4b64527201195e81a0207b",
+      "bytes": 469969
+    },
+    {
+      "corpus_path": "cloud/larue_rue1012e_missa_de_sancto_antonio_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 69,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1012e_missa_de_sancto_antonio_agnus.musicxml",
+      "sha256": "dee07f2698666044f24289b3d4ee3ba370a97b95300aae8b558d29272eb87e96",
+      "bytes": 251461
+    },
+    {
+      "corpus_path": "cloud/larue_rue1013a_missa_de_sancto_job_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 88,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1013a_missa_de_sancto_job_kyrie.musicxml",
+      "sha256": "5fa7b43859465a6dfedc16110aa38e9c3aa95acb2ba47e1e8125707548fba6cb",
+      "bytes": 288345
+    },
+    {
+      "corpus_path": "cloud/larue_rue1013b_missa_de_sancto_job_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 134,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1013b_missa_de_sancto_job_gloria.musicxml",
+      "sha256": "d141b21eb5cf7628bf27429e272b2d010c537e13ebc8ec6ce4b0454221aaa68d",
+      "bytes": 425218
+    },
+    {
+      "corpus_path": "cloud/larue_rue1013c_missa_de_sancto_job_credo",
+      "title": "Credo — Patrem omnipotentem, Et resurrexit",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 194,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1013c_missa_de_sancto_job_credo.musicxml",
+      "sha256": "f1f0666c140a70df6c14ae4977fe52180b45481bf235a5a962e5ca0c2ba0be67",
+      "bytes": 620137
+    },
+    {
+      "corpus_path": "cloud/larue_rue1013d_missa_de_sancto_job_sanctus",
+      "title": "Sanctus — Sanctus, Pleni sunt celi, Osanna, Benedictus",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 119,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1013d_missa_de_sancto_job_sanctus.musicxml",
+      "sha256": "afe6d3731e63ee7a7e63aa7a8abeff8fb84a416053a63f988dbf3863803caac4",
+      "bytes": 379126
+    },
+    {
+      "corpus_path": "cloud/larue_rue1013e_missa_de_sancto_job_agnus",
+      "title": "Agnus Dei — Agnus Dei I, Agnus Dei II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 75,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1013e_missa_de_sancto_job_agnus.musicxml",
+      "sha256": "67e65caea395611479b14588f33fb9f0a0f80b8464b914f2fcc9ab2243b33694",
+      "bytes": 247740
+    },
+    {
+      "corpus_path": "cloud/larue_rue1014a_missa_de_septem_doloribus_kyrie",
+      "title": "Kyrie — Kyrie I, Christe, Kyrie II",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 112,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1014a_missa_de_septem_doloribus_kyrie.musicxml",
+      "sha256": "bb765c1e0ca52fddae7666aa7627cf47c43b100a3ac59cb5976f78ebc341789e",
+      "bytes": 395427
+    },
+    {
+      "corpus_path": "cloud/larue_rue1014b_missa_de_septem_doloribus_gloria",
+      "title": "Gloria — Et in terra pax, Qui tollis",
+      "composer": "Pierre de la Rue",
+      "composer_dates": "c.1452-1518",
+      "era": "Renaissance",
+      "form": "Motet",
+      "ensemble": "SATB",
+      "instruments": [
+        "voice"
+      ],
+      "year": 1500,
+      "measures": 206,
+      "tags": [
+        "counterpoint"
+      ],
+      "popular_tags": [],
+      "url": "https://github.com/kevinlin49361128-stack/score-arranger/releases/download/corpus-v1/cloud_larue_rue1014b_missa_de_septem_doloribus_gloria.musicxml",
+      "sha256": "877ba50d74a64c0ba71c1932ea33275c79b045e81c831125f61fb78d18ab64f6",
+      "bytes": 678245
     },
     {
       "corpus_path": "cloud/mazurka_mazurka06_1",

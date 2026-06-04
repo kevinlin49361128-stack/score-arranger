@@ -135,6 +135,25 @@ compositions, distributed by the Humdrum Project. The encoding license is the
 same grey-zone as music21 corpus (see below): freely redistributable for
 non-commercial use; commercial users should verify with the original encoder.
 
+**Online corpus library (`corpus-v1` release assets, downloaded on demand —
+NOT shipped in the binary)** — Score Arranger also offers a larger optional
+library fetched at runtime (~676 movements as of 0.1.92). The musical works are
+all **public domain**; the MusicXML encodings derive from two open archives:
+
+- **Humdrum / KernScores** (Craig Sapp / Stanford CCARH) —
+  <https://github.com/craigsapp/{beethoven-piano-sonatas,beethoven-string-quartets,mozart-piano-sonatas,haydn-piano-sonatas,hummel-preludes,scarlatti-keyboard-sonatas,chopin-mazurkas,joplin}>.
+  Same grey-zone encoding terms as the bundled Humdrum files above.
+- **Josquin Research Project** (Stanford, Jesse Rodin et al.) —
+  <https://github.com/josquin-research-project> (`Jos`, `Ock`, `Obr`, `Bus`,
+  `Duf`, `Rue`, `Isa`): Renaissance Masses & motets by Josquin, Ockeghem,
+  Obrecht, Busnoys, Du Fay, Pierre de la Rue, Isaac. Released by the JRP for
+  open scholarly/non-commercial use; works are public domain.
+- **music21 corpus** string-quartet movements (Beethoven / Mozart / Haydn) —
+  same music21 corpus terms as below.
+
+Commercial redistribution of these encodings should be verified with the
+original encoders; the app fetches them for end-user study, not resale.
+
 **Most files** (~41 of 45 long-standing + 110 humdrum) have no `<rights>` tag
 and were obtained from publicly available encoding archives. They are treated
 as
