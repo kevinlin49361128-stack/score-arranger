@@ -1404,8 +1404,11 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                     className="sa-glass"
                     style={{
                       position: "absolute",
-                      left: Math.max(4, box.left + box.width - 8),
-                      top: box.top + box.height + 8,
+                      // 錨在 ⚠ pin 旁 (pin 在小節右上 box.top-11): 氣泡右緣對齊 pin、
+                      // 開在 pin 正下方。不再用 box.top+box.height (高小節如鋼琴/吉他
+                      // 大譜表會把氣泡推到面板外被裁掉)。left 夾住不溢出左邊。
+                      left: Math.max(4, box.left + box.width - 230),
+                      top: box.top + 14,
                       width: 244,
                       borderRadius: "var(--r-m)",
                       padding: 13,
