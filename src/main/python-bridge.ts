@@ -697,6 +697,10 @@ export async function auditPlayability(): Promise<unknown> {
   return client.call("audit_playability", {});
 }
 
+export async function tessitura(): Promise<unknown> {
+  return client.call("tessitura", {});
+}
+
 // B3: opt-in 建議弓法 / 圓滑線 (選擇性) — 改譜, 支援 undo
 export async function applyBowing(): Promise<unknown> {
   return client.call("apply_bowing", {});

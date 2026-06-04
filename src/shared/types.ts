@@ -56,6 +56,21 @@ export interface HarmonyAnalysis {
   chords: HarmonyChord[];
 }
 
+/** VIZ-2 音域帶狀圖 — 每聲部的實際用音域 vs 樂器舒適/絕對音域 (MIDI number) */
+export interface TessituraPart {
+  part_id: string;
+  display_name: string;
+  instrument_id: string;
+  used_low: number;
+  used_high: number;
+  comfortable_low?: number;
+  comfortable_high?: number;
+  absolute_low?: number;
+  absolute_high?: number;
+  out_comfortable?: number;
+  out_absolute?: number;
+}
+
 export interface AnalysisReport {
   metadata: Record<string, string>;
   summary: {

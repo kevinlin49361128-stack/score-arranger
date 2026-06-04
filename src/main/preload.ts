@@ -277,6 +277,7 @@ const api = {
       ipcRenderer.invoke("engine:computeQuality"),
     auditPlayability: () =>
       ipcRenderer.invoke("engine:auditPlayability"),
+    tessitura: () => ipcRenderer.invoke("engine:tessitura"),
     applyBowing: () =>
       ipcRenderer.invoke("engine:applyBowing"),
     applyFiguration: () =>

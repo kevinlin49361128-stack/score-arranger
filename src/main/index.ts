@@ -21,6 +21,7 @@ import {
   computeDifficulty,
   computeQuality,
   auditPlayability,
+  tessitura,
   applyBowing,
   applyFiguration,
   exportTargetMidi,
@@ -545,6 +546,7 @@ function registerIpcHandlers(): void {
     "engine:auditPlayability",
     async () => safeCall(() => auditPlayability()),
   );
+  ipcMain.handle("engine:tessitura", async () => safeCall(() => tessitura()));
   ipcMain.handle(
     "engine:applyBowing",
     async () => safeCall(() => applyBowing()),

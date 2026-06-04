@@ -2377,6 +2377,54 @@ def _method_audit_playability(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_tessitura(params: dict[str, Any]) -> dict:
+    """VIZ-2 音域帶狀圖: 每聲部的實際用音域 vs 樂器舒適/絕對音域。
+
+    唯讀 — 從當前 arrangement 的 target_score 收集每 part 的 min/max midi,
+    搭配樂器 profile 的 comfortable / absolute 區間 + 超界音數。前端畫帶狀圖。
+    """
+    from core.instruments import get_profile
+    from core.ir import ChordEvent, NoteEvent
+
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+    target = sess.current_arrangement.target_score
+
+    out: list[dict] = []
+    for part in target.parts:
+        midis: list[int] = []
+        for measure in part.measures:
+            for voice in measure.voices.values():
+                for ev in voice.events:
+                    if isinstance(ev, NoteEvent):
+                        midis.append(ev.pitch.midi_number)
+                    elif isinstance(ev, ChordEvent):
+                        midis.extend(p.midi_number for p in ev.pitches)
+        if not midis:
+            continue
+        entry: dict[str, Any] = {
+            "part_id": part.part_id,
+            "display_name": part.name_display or part.instrument_id,
+            "instrument_id": part.instrument_id,
+            "used_low": min(midis),
+            "used_high": max(midis),
+        }
+        prof = get_profile(part.instrument_id)
+        if prof is not None:
+            cl, ch = prof.range_comfortable
+            al, ah = prof.range_absolute
+            entry.update({
+                "comfortable_low": cl, "comfortable_high": ch,
+                "absolute_low": al, "absolute_high": ah,
+                "out_comfortable": sum(1 for m in midis if m < cl or m > ch),
+                "out_absolute": sum(1 for m in midis if m < al or m > ah),
+            })
+        out.append(entry)
+    return {"parts": out}
+
+
 def _method_apply_bowing(params: dict[str, Any]) -> dict:
     """B3 (opt-in): 對改編譜弦樂聲部加上選擇性弓法 + 圓滑線。支援 undo。
 
@@ -2996,6 +3044,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "to_midi": _method_to_midi,
     "score_clock": _method_score_clock,
     "audit_playability": _method_audit_playability,
+    "tessitura": _method_tessitura,
     "apply_bowing": _method_apply_bowing,
     "apply_figuration": _method_apply_figuration,
     "to_source_midi": _method_to_source_midi,

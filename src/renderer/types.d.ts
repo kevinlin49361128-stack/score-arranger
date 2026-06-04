@@ -18,6 +18,7 @@ import type {
   PreviewSuggestionResult,
   ReassignResult,
   SaveProjectResult,
+  TessituraPart,
   UndoRedoResult,
 } from "@shared/types";
 
@@ -279,6 +280,7 @@ declare global {
             tempo_bpm: number;
           }>
         >;
+        tessitura: () => Promise<IpcResponse<{ parts: TessituraPart[] }>>;
         applyBowing: () => Promise<
           IpcResponse<{
             target_musicxml: string | null;

@@ -490,6 +490,29 @@ export const IO_STRINGS: BiDict = {
     en: "Live harmony — detected key + current chord (Roman numeral) during playback",
     ja: "リアルタイム和声 — 検出した調 + 再生中の現在の和音 (ローマ数字)",
   },
+  "viz.tessitura.heading": {
+    "zh-TW": "音域帶 — 各聲部實際用音域 vs 樂器舒適區",
+    en: "Tessitura — each part's used range vs the instrument's comfortable zone",
+    ja: "声域バンド — 各パートの使用音域 vs 楽器の快適域",
+  },
+  "viz.tessitura.used": {
+    "zh-TW": "實際用", en: "used", ja: "使用域",
+  },
+  "viz.tessitura.comfortable": {
+    "zh-TW": "舒適", en: "comfortable", ja: "快適域",
+  },
+  "viz.tessitura.outComfort": {
+    "zh-TW": "超出舒適", en: "beyond comfortable", ja: "快適域超え",
+  },
+  "viz.tessitura.outAbsolute": {
+    "zh-TW": "超出音域", en: "beyond range", ja: "音域超え",
+  },
+  "viz.tessitura.flagComfort": {
+    "zh-TW": "頂到", en: "tight", ja: "限界付近",
+  },
+  "viz.tessitura.flagAbsolute": {
+    "zh-TW": "超域", en: "out of range", ja: "音域外",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",
