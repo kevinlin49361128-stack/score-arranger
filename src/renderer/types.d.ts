@@ -19,6 +19,7 @@ import type {
   ReassignResult,
   SaveProjectResult,
   TessituraPart,
+  TimelineLanes,
   UndoRedoResult,
 } from "@shared/types";
 
@@ -281,6 +282,7 @@ declare global {
           }>
         >;
         tessitura: () => Promise<IpcResponse<{ parts: TessituraPart[] }>>;
+        timelineLanes: () => Promise<IpcResponse<TimelineLanes>>;
         applyBowing: () => Promise<
           IpcResponse<{
             target_musicxml: string | null;

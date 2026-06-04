@@ -71,6 +71,23 @@ export interface TessituraPart {
   out_absolute?: number;
 }
 
+/** VIZ-5 連續時間軸 lanes — 每小節一條序列 (index i = 小節 first_measure+i) */
+export interface TimelineLanes {
+  first_measure: number;
+  measure_count: number;
+  /** 織體密度 0..1 (該小節 notehead 數 / 全曲最大) */
+  density: number[];
+  /** 和聲張力 0..1 (小節內音級兩兩 interval-class 不和諧平均) */
+  tension: number[];
+  /** 調性色彩 — 五度圈質心角度 0..1 → 前端映成 hue */
+  tonal_hue: number[];
+  /** 調性清晰度 0..1 (resultant 向量長度) → 前端映成飽和度 */
+  tonal_clarity: number[];
+  /** 弦樂把位 0..1 (1st..7th position)，無弦樂內容的小節為 null */
+  position: (number | null)[];
+  has_strings: boolean;
+}
+
 export interface AnalysisReport {
   metadata: Record<string, string>;
   summary: {

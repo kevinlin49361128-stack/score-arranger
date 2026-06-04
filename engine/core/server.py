@@ -2425,6 +2425,139 @@ def _method_tessitura(params: dict[str, Any]) -> dict:
     return {"parts": out}
 
 
+# interval-class 不和諧權重 (Huron 風格: 0=協和, 1=最不協和)
+_IC_DISSONANCE = {0: 0.0, 1: 1.0, 2: 0.4, 3: 0.1, 4: 0.1, 5: 0.0, 6: 0.8}
+
+
+def _method_timeline_lanes(params: dict[str, Any]) -> dict:
+    """VIZ-5 連續時間軸 lanes: 從當前 arrangement 的 target_score 逐小節算出四條
+    隨時間流動的序列 —— 織體密度 / 和聲張力 / 調性色彩 / 弦樂把位。前端用共用
+    timeline strip (VIZ-4) 疊出 lanes, 播放游標掃過。
+
+    全部從改編譜實際音高即時算 (不依賴 source 和聲分析) → 與 target 對齊、改編
+    後立即反映。粒度為「每小節」總覽: 張力是小節內音級的兩兩 interval-class
+    粗估 (非取樣同時性), 調性是五度圈加權質心。
+    """
+    import math
+
+    from core.instruments import get_profile
+    from core.ir import ChordEvent, NoteEvent
+    from core.validator_dynamic import calculate_violin_position
+
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+    target = sess.current_arrangement.target_score
+
+    # 弦樂 part 的 profile (給把位 lane); 順便判斷整譜有無弦樂
+    string_profiles: dict[str, Any] = {}
+    for part in target.parts:
+        prof = get_profile(part.instrument_id)
+        if prof is not None and prof.strings is not None:
+            string_profiles[part.part_id] = prof
+    has_strings = bool(string_profiles)
+
+    measures: dict[int, dict] = {}
+    for part in target.parts:
+        prof = string_profiles.get(part.part_id)
+        for measure in part.measures:
+            b = measures.get(measure.number)
+            if b is None:
+                b = {"notes": 0, "pcs": {}, "pos_sum": 0.0, "pos_n": 0}
+                measures[measure.number] = b
+            for voice in measure.voices.values():
+                for ev in voice.events:
+                    if isinstance(ev, NoteEvent):
+                        pitches = [ev.pitch]
+                    elif isinstance(ev, ChordEvent):
+                        pitches = list(ev.pitches)
+                    else:
+                        continue
+                    b["notes"] += len(pitches)
+                    for p in pitches:
+                        pc = p.midi_number % 12
+                        b["pcs"][pc] = b["pcs"].get(pc, 0) + 1
+                    if prof is not None:
+                        hi = max(pitches, key=lambda x: x.midi_number)
+                        pos = calculate_violin_position(hi, prof)
+                        if pos is not None:
+                            b["pos_sum"] += pos
+                            b["pos_n"] += 1
+
+    if not measures:
+        return {
+            "first_measure": 0, "measure_count": 0, "density": [],
+            "tension": [], "tonal_hue": [], "tonal_clarity": [],
+            "position": [], "has_strings": False,
+        }
+
+    first, last = min(measures), max(measures)
+    density_raw: list[float] = []
+    tension: list[float] = []
+    tonal_hue: list[float] = []
+    tonal_clarity: list[float] = []
+    position: list[float | None] = []
+    for n in range(first, last + 1):
+        b = measures.get(n)
+        if b is None or b["notes"] == 0:
+            density_raw.append(0.0)
+            tension.append(0.0)
+            tonal_hue.append(0.0)
+            tonal_clarity.append(0.0)
+            position.append(None)
+            continue
+        density_raw.append(float(b["notes"]))
+
+        pcs = sorted(b["pcs"].keys())
+        if len(pcs) >= 2:
+            tot, cnt = 0.0, 0
+            for i in range(len(pcs)):
+                for j in range(i + 1, len(pcs)):
+                    ic = abs(pcs[i] - pcs[j]) % 12
+                    if ic > 6:
+                        ic = 12 - ic
+                    tot += _IC_DISSONANCE[ic]
+                    cnt += 1
+            tension.append(tot / cnt if cnt else 0.0)
+        else:
+            tension.append(0.0)
+
+        x = y = 0.0
+        wtot = 0
+        for pc, w in b["pcs"].items():
+            ang = ((pc * 7) % 12) / 12.0 * 2 * math.pi  # 五度圈角度
+            x += w * math.cos(ang)
+            y += w * math.sin(ang)
+            wtot += w
+        if wtot > 0:
+            tonal_hue.append((math.atan2(y, x) / (2 * math.pi)) % 1.0)
+            tonal_clarity.append(math.hypot(x, y) / wtot)
+        else:
+            tonal_hue.append(0.0)
+            tonal_clarity.append(0.0)
+
+        if b["pos_n"] > 0:
+            avg = b["pos_sum"] / b["pos_n"]
+            position.append(min(1.0, max(0.0, (avg - 1) / 6.0)))
+        else:
+            position.append(None)
+
+    mx = max(density_raw) if density_raw else 0.0
+    density = [(d / mx if mx > 0 else 0.0) for d in density_raw]
+
+    return {
+        "first_measure": first,
+        "measure_count": last - first + 1,
+        "density": density,
+        "tension": tension,
+        "tonal_hue": tonal_hue,
+        "tonal_clarity": tonal_clarity,
+        "position": position,
+        "has_strings": has_strings,
+    }
+
+
 def _method_apply_bowing(params: dict[str, Any]) -> dict:
     """B3 (opt-in): 對改編譜弦樂聲部加上選擇性弓法 + 圓滑線。支援 undo。
 
@@ -3045,6 +3178,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "score_clock": _method_score_clock,
     "audit_playability": _method_audit_playability,
     "tessitura": _method_tessitura,
+    "timeline_lanes": _method_timeline_lanes,
     "apply_bowing": _method_apply_bowing,
     "apply_figuration": _method_apply_figuration,
     "to_source_midi": _method_to_source_midi,

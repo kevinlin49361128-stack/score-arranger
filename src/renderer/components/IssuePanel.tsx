@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ArrangementIssue, PlayabilityIssue } from "@shared/types";
 import { AssignmentsPanel } from "./AssignmentsPanel";
 import { TessituraPanel } from "./TessituraPanel";
+import { TimelinePanel } from "./TimelinePanel";
 import { FingerboardSimulator } from "./FingerboardSimulator";
 import { RepairTimeline } from "./RepairTimeline";
 import { useSessionStore } from "../stores/sessionStore";
@@ -549,6 +550,7 @@ export function IssuePanel() {
     <div style={{ overflow: "auto", height: "100%" }}>
       <AssignmentsPanel />
       <TessituraPanel />
+      <TimelinePanel />
       {auditBar}
       {repair && (
         <RepairTimeline

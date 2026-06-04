@@ -513,6 +513,28 @@ export const IO_STRINGS: BiDict = {
   "viz.tessitura.flagAbsolute": {
     "zh-TW": "超域", en: "out of range", ja: "音域外",
   },
+  "viz.timeline.heading": {
+    "zh-TW": "時間軸 — 全曲織體 / 張力 / 調性 / 把位的流動",
+    en: "Timeline — texture / tension / tonality / position flow across the piece",
+    ja: "タイムライン — 曲全体の織度 / 緊張 / 調性 / ポジションの流れ",
+  },
+  "viz.timeline.hint": {
+    "zh-TW": "每小節一格, 播放游標掃過。色帶換色 = 轉調; 張力高點 = 不協和聚集; 把位走高 = 弦樂吃力。",
+    en: "One cell per measure; the cursor sweeps as you play. Color shifts = modulation; tension peaks = dissonance; rising position = harder string passages.",
+    ja: "1小節1セル、再生で再生カーソルが走査。色の変化=転調、緊張のピーク=不協和、ポジション上昇=弦の難所。",
+  },
+  "viz.timeline.density": {
+    "zh-TW": "織體密度", en: "Texture density", ja: "織度",
+  },
+  "viz.timeline.tension": {
+    "zh-TW": "和聲張力", en: "Harmonic tension", ja: "和声緊張",
+  },
+  "viz.timeline.tonal": {
+    "zh-TW": "調性色彩", en: "Tonal color", ja: "調性カラー",
+  },
+  "viz.timeline.position": {
+    "zh-TW": "弦樂把位", en: "String position", ja: "弦ポジション",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",

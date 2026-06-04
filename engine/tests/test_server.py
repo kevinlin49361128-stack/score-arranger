@@ -108,6 +108,42 @@ class TestServerMethods:
         assert resp["data"]["target_musicxml"] is not None
         assert "<?xml" in resp["data"]["target_musicxml"]
 
+    def test_timeline_lanes(self, bach_xml):
+        """VIZ-5: arrange 後 timeline_lanes 回傳與小節對齊的四條 0..1 序列。"""
+        handle_request({
+            "id": "tl-arr", "method": "arrange",
+            "params": {"path": bach_xml, "target": "string_quartet"},
+        })
+        resp = handle_request({
+            "id": "tl1", "method": "timeline_lanes", "params": {},
+        })
+        assert resp["ok"]
+        d = resp["data"]
+        n = d["measure_count"]
+        assert n > 0
+        assert d["has_strings"] is True  # 弦樂四重奏 → 把位 lane 啟用
+        for key in ("density", "tension", "tonal_hue",
+                    "tonal_clarity", "position"):
+            assert len(d[key]) == n  # 每條都對齊小節數
+        assert all(0.0 <= v <= 1.0 for v in d["density"])
+        assert all(0.0 <= v <= 1.0 for v in d["tension"])
+        assert all(0.0 <= v <= 1.0 for v in d["tonal_hue"])
+        assert max(d["density"]) == pytest.approx(1.0)  # density 正規化過
+        assert all(v is None or 0.0 <= v <= 1.0 for v in d["position"])
+
+    def test_timeline_lanes_requires_arrangement(self):
+        """無 arrangement 時應回 error (而非崩潰)。"""
+        from core import server as _srv
+        saved = _srv._CURRENT_ARRANGEMENT
+        _srv._CURRENT_ARRANGEMENT = None
+        try:
+            resp = handle_request({
+                "id": "tl-empty", "method": "timeline_lanes", "params": {},
+            })
+            assert not resp["ok"]
+        finally:
+            _srv._CURRENT_ARRANGEMENT = saved
+
     def test_arrange_custom_returns_span(self, bach_xml):
         """回歸: arrange_custom 之前漏帶 assignment.span → 前端 MelodyRoutingPanel
         二次套用主旋律路線後 a.span[1] 崩潰。span 必須跟 arrange 一樣帶上。"""
