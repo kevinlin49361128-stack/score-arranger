@@ -40,6 +40,22 @@ export interface PlayabilityIssue {
 // Analysis report (engine/core/cli.py analyze 輸出結構)
 // ============================================================================
 
+/** VIZ-3 即時和聲讀出 — engine analyze_harmony 的回傳 */
+export interface HarmonyChord {
+  measure: number;
+  offset: number;
+  roman: string | null;
+  quality: string | null;
+  bass: string | null;
+}
+export interface HarmonyAnalysis {
+  detected_key: string;
+  key_confidence: number;
+  cadences: { measure: number; kind: string; from: string; to: string }[];
+  chord_count: number;
+  chords: HarmonyChord[];
+}
+
 export interface AnalysisReport {
   metadata: Record<string, string>;
   summary: {

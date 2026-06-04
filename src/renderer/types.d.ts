@@ -10,6 +10,7 @@ import type {
   ArrangementResult,
   EditEventResult,
   ExportFileResult,
+  HarmonyAnalysis,
   IpcResponse,
   LoadProjectResult,
   MeasureEventsResult,
@@ -81,6 +82,9 @@ declare global {
         parse: (path: string) => Promise<IpcResponse<unknown>>;
         validate: (path: string) => Promise<IpcResponse<unknown>>;
         phrases: (path: string) => Promise<IpcResponse<unknown>>;
+        analyzeHarmony: (
+          path: string,
+        ) => Promise<IpcResponse<HarmonyAnalysis>>;
         tagFunctions: (path: string) => Promise<IpcResponse<unknown>>;
         analyze: (path: string) => Promise<IpcResponse<AnalysisReport>>;
         arrange: (

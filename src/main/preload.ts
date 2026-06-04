@@ -76,6 +76,8 @@ const api = {
     parse: (path: string) => ipcRenderer.invoke("engine:parse", path),
     validate: (path: string) => ipcRenderer.invoke("engine:validate", path),
     phrases: (path: string) => ipcRenderer.invoke("engine:phrases", path),
+    analyzeHarmony: (path: string) =>
+      ipcRenderer.invoke("engine:analyzeHarmony", path),
     tagFunctions: (path: string) =>
       ipcRenderer.invoke("engine:tagFunctions", path),
     analyze: (path: string) => ipcRenderer.invoke("engine:analyze", path),

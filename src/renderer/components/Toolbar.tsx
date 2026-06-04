@@ -32,6 +32,7 @@ import { AboutDialog } from "./AboutDialog";
 import { Coachmark } from "./Coachmark";
 import { CustomEnsembleDialog, type CustomPlayer } from "./CustomEnsembleDialog";
 import { ExportMenu } from "./ExportMenu";
+import { HarmonyReadout } from "./HarmonyReadout";
 import { LLMSettingsDialog } from "./LLMSettingsDialog";
 import { LLMSetupWizard } from "./LLMSetupWizard";
 import { TeacherHub } from "./TeacherHub";
@@ -1305,6 +1306,8 @@ export function Toolbar() {
           面板都顯示游標, 方便對照. 源譜/改編譜面板自己的 compact 播放器
           (App.tsx 內) 不傳 syncBoth, 只各自播自己. */}
       <PlaybackControls compact syncBoth />
+      {/* VIZ-3: 即時和聲讀出 — 主播放器旁, 顯示調性 + 當下和弦 */}
+      <HarmonyReadout />
 
       {/* === 檔名 (吃所有剩餘空間, 視窗變窄時優先壓縮) === */}
       <span

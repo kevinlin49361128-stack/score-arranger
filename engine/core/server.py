@@ -698,6 +698,17 @@ def _method_analyze_harmony(params: dict[str, Any]) -> dict:
             for c in report.cadences
         ],
         "chord_count": len(report.chords),
+        # VIZ-3 即時和聲讀出: 逐和弦 (measure + offset + 羅馬數字 + 性質 + 低音)
+        "chords": [
+            {
+                "measure": c.measure,
+                "offset": c.offset,
+                "roman": c.roman_numeral,
+                "quality": c.quality,
+                "bass": c.bass,
+            }
+            for c in report.chords
+        ],
     }
 
 

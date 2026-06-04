@@ -485,6 +485,11 @@ export const IO_STRINGS: BiDict = {
   "playback.tuning.orchestra": {
     "zh-TW": "樂團", en: "orch.", ja: "オケ",
   },
+  "viz.harmony.title": {
+    "zh-TW": "即時和聲 — 偵測調性 + 播放時當下和弦 (羅馬數字)",
+    en: "Live harmony — detected key + current chord (Roman numeral) during playback",
+    ja: "リアルタイム和声 — 検出した調 + 再生中の現在の和音 (ローマ数字)",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",

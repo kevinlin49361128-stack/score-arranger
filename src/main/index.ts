@@ -14,6 +14,7 @@ import {
   arrangeScore,
   refineArrangement,
   closeSession,
+  analyzeHarmony,
   detectPhrases,
   editEvent,
   enrichRange,
@@ -242,6 +243,8 @@ function registerIpcHandlers(): void {
     safeCall(() => validateScore(path)));
   ipcMain.handle("engine:phrases", async (_evt, path: string) =>
     safeCall(() => detectPhrases(path)));
+  ipcMain.handle("engine:analyzeHarmony", async (_evt, path: string) =>
+    safeCall(() => analyzeHarmony(path)));
   ipcMain.handle("engine:tagFunctions", async (_evt, path: string) =>
     safeCall(() => tagFunctions(path)));
   ipcMain.handle("engine:analyze", async (_evt, path: string) =>
