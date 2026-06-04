@@ -1456,7 +1456,7 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                         ✕
                       </button>
                     </div>
-                    {mk.fixes.length > 0 ? (
+                    {mk.fixes.length > 0 && (
                       <div
                         style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
                       >
@@ -1484,12 +1484,6 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
                           </button>
                         ))}
                       </div>
-                    ) : (
-                      <span
-                        style={{ fontSize: 12, color: "var(--fg-muted)" }}
-                      >
-                        {mk.label}
-                      </span>
                     )}
                   </div>
                 )}

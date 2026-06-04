@@ -62,12 +62,13 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
           maxWidth: "90vw",
           height: "80vh",
           background: "var(--bg-panel)",
-          borderRadius: 8,
+          borderRadius: "var(--r-m)",
           border: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.4)",
+          // 0.1.91: 統一 elevation token (暖金光邊立體層次)
+          boxShadow: "var(--elev-3)",
         }}
       >
         <header

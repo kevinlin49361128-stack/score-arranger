@@ -188,9 +188,9 @@ export function PracticePanel({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 460, maxHeight: "82vh", background: "var(--bg-panel)",
-          borderRadius: 8, border: "1px solid var(--border)",
+          borderRadius: "var(--r-m)", border: "1px solid var(--border)",
           display: "flex", flexDirection: "column", overflow: "hidden",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          boxShadow: "var(--elev-3)",
         }}
       >
         <header

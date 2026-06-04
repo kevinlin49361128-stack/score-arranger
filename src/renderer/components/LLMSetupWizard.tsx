@@ -135,9 +135,9 @@ export function LLMSetupWizard({ onClose, onConfigured }: Props) {
         style={{
           width: 580, maxWidth: "92vw", maxHeight: "90vh",
           background: "var(--bg-panel)",
-          borderRadius: 10, border: "1px solid var(--border)",
+          borderRadius: "var(--r-m)", border: "1px solid var(--border)",
           display: "flex", flexDirection: "column", overflow: "hidden",
-          boxShadow: "0 16px 56px rgba(0,0,0,0.45)",
+          boxShadow: "var(--elev-3)",
           animation: entering ? "fx-modal-in 0.25s ease-out" : undefined,
         }}
       >
