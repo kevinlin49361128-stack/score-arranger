@@ -17,9 +17,7 @@
   - Response TypedDict 用 total=True (回傳欄位是契約, 該齊全)。
   - 命名: <Method>Req / <Method>Res (PascalCase)。
 """
-from __future__ import annotations
-
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 
 # ── ping ────────────────────────────────────────────────────────────────
@@ -87,6 +85,46 @@ class ScoreClockRes(TypedDict):
     entries: list[TimeMapEntry]
 
 
+# ── tessitura (VIZ-2 音域帶狀圖) ───────────────────────────────────────────
+class TessituraReq(TypedDict, total=False):
+    session_id: str
+
+
+class TessituraPartRes(TypedDict):
+    part_id: str
+    display_name: str
+    instrument_id: str
+    used_low: int
+    used_high: int
+    # 樂器有 profile 才帶這些 (舒適/絕對音域 + 超界計數)
+    comfortable_low: NotRequired[int]
+    comfortable_high: NotRequired[int]
+    absolute_low: NotRequired[int]
+    absolute_high: NotRequired[int]
+    out_comfortable: NotRequired[int]
+    out_absolute: NotRequired[int]
+
+
+class TessituraRes(TypedDict):
+    parts: list[TessituraPartRes]
+
+
+# ── timeline_lanes (VIZ-5 連續時間軸 lanes) ────────────────────────────────
+class TimelineLanesReq(TypedDict, total=False):
+    session_id: str
+
+
+class TimelineLanesRes(TypedDict):
+    first_measure: int
+    measure_count: int
+    density: list[float]
+    tension: list[float]
+    tonal_hue: list[float]
+    tonal_clarity: list[float]
+    position: list[float | None]  # 無弦樂內容的小節為 null
+    has_strings: bool
+
+
 # method 名稱 → (Request TypedDict, Response TypedDict)。
 # 補新 method: 上面加 <Method>Req/<Method>Res, 這裡加一行, 重跑 codegen。
 CONTRACTS: dict[str, tuple[type, type]] = {
@@ -94,4 +132,6 @@ CONTRACTS: dict[str, tuple[type, type]] = {
     "history_status": (HistoryStatusReq, HistoryStatusRes),
     "score_info": (ScoreInfoReq, ScoreInfoRes),
     "score_clock": (ScoreClockReq, ScoreClockRes),
+    "tessitura": (TessituraReq, TessituraRes),
+    "timeline_lanes": (TimelineLanesReq, TimelineLanesRes),
 }

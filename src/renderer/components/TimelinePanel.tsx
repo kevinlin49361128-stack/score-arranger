@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from "react";
 
-import type { TimelineLanes } from "../../shared/types";
+import type { TimelineLanesRes } from "../generated/rpc-types";
 import { t } from "../utils/i18n";
 import { useSessionStore } from "../stores/sessionStore";
 import { type TimelineLane, TimelineStrip } from "./TimelineStrip";
@@ -16,7 +16,7 @@ import { type TimelineLane, TimelineStrip } from "./TimelineStrip";
 export function TimelinePanel(): JSX.Element | null {
   const arrangement = useSessionStore((s) => s.arrangement);
   const playbackMeasure = useSessionStore((s) => s.playbackMeasure);
-  const [data, setData] = useState<TimelineLanes | null>(null);
+  const [data, setData] = useState<TimelineLanesRes | null>(null);
 
   useEffect(() => {
     let cancelled = false;

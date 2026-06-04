@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from "react";
 
-import type { TessituraPart } from "../../shared/types";
+import type { TessituraPartRes } from "../generated/rpc-types";
 import { t } from "../utils/i18n";
 import { useSessionStore } from "../stores/sessionStore";
 
@@ -19,7 +19,7 @@ function midiName(m: number): string {
 
 export function TessituraPanel(): JSX.Element | null {
   const arrangement = useSessionStore((s) => s.arrangement);
-  const [parts, setParts] = useState<TessituraPart[]>([]);
+  const [parts, setParts] = useState<TessituraPartRes[]>([]);
 
   useEffect(() => {
     let cancelled = false;

@@ -60,11 +60,50 @@ export interface TimeMapEntry {
   denominator: number;
 }
 
+export interface TessituraReq {
+  session_id?: string;
+}
+
+export interface TessituraRes {
+  parts: TessituraPartRes[];
+}
+
+export interface TessituraPartRes {
+  part_id: string;
+  display_name: string;
+  instrument_id: string;
+  used_low: number;
+  used_high: number;
+  comfortable_low?: number;
+  comfortable_high?: number;
+  absolute_low?: number;
+  absolute_high?: number;
+  out_comfortable?: number;
+  out_absolute?: number;
+}
+
+export interface TimelineLanesReq {
+  session_id?: string;
+}
+
+export interface TimelineLanesRes {
+  first_measure: number;
+  measure_count: number;
+  density: number[];
+  tension: number[];
+  tonal_hue: number[];
+  tonal_clarity: number[];
+  position: (number | null)[];
+  has_strings: boolean;
+}
+
 export interface RpcContracts {
   ping: { req: PingReq; res: PingRes };
   history_status: { req: HistoryStatusReq; res: HistoryStatusRes };
   score_info: { req: ScoreInfoReq; res: ScoreInfoRes };
   score_clock: { req: ScoreClockReq; res: ScoreClockRes };
+  tessitura: { req: TessituraReq; res: TessituraRes };
+  timeline_lanes: { req: TimelineLanesReq; res: TimelineLanesRes };
 }
 
 export type RpcMethod = keyof RpcContracts;

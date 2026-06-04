@@ -18,8 +18,6 @@ import type {
   PreviewSuggestionResult,
   ReassignResult,
   SaveProjectResult,
-  TessituraPart,
-  TimelineLanes,
   UndoRedoResult,
 } from "@shared/types";
 
@@ -281,8 +279,12 @@ declare global {
             tempo_bpm: number;
           }>
         >;
-        tessitura: () => Promise<IpcResponse<{ parts: TessituraPart[] }>>;
-        timelineLanes: () => Promise<IpcResponse<TimelineLanes>>;
+        tessitura: () => Promise<
+          IpcResponse<import("./generated/rpc-types").TessituraRes>
+        >;
+        timelineLanes: () => Promise<
+          IpcResponse<import("./generated/rpc-types").TimelineLanesRes>
+        >;
         applyBowing: () => Promise<
           IpcResponse<{
             target_musicxml: string | null;

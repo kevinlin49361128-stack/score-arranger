@@ -33,7 +33,11 @@ def ts_type(pyt: object) -> str:
         return "string"
     if origin in (list, tuple):
         args = typing.get_args(pyt)
-        return f"{ts_type(args[0])}[]" if args else "unknown[]"
+        if not args:
+            return "unknown[]"
+        inner = ts_type(args[0])
+        # union 元素要加括號, 否則 `number | null[]` 會被讀成 number | (null[])
+        return f"({inner})[]" if "|" in inner else f"{inner}[]"
     if origin is dict:
         return "Record<string, unknown>"
     if origin is typing.Union:
@@ -56,10 +60,11 @@ def emit_iface(name: str, td: type) -> str:
     if not hints:
         # 空契約 → type alias (避免 biome noEmptyInterface; total=False 本就允許任意 key)
         return f"export type {name} = Record<string, unknown>;"
-    total = getattr(td, "__total__", True)
+    # 用 __required_keys__ 判每欄選用性 → 支援 total + 逐欄 Required/NotRequired 混用
+    required = getattr(td, "__required_keys__", frozenset(hints))
     lines = [f"export interface {name} {{"]
     for key, val in hints.items():
-        opt = "" if total else "?"
+        opt = "" if key in required else "?"
         lines.append(f"  {key}{opt}: {ts_type(val)};")
     lines.append("}")
     return "\n".join(lines)
