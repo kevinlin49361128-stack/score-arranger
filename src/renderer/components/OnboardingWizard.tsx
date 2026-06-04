@@ -311,17 +311,17 @@ function Step1(
         {t("onboard.step1.hint")}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {samples.map((s) => (
+        {samples.map((s, i) => (
           <button
-            key={s.corpus}
+            key={`${s.corpus}:${i}`}
             onClick={() => onSelect(s)}
             style={{
               textAlign: "left",
               padding: "10px 12px",
-              background: selected.corpus === s.corpus
+              background: selected === s
                 ? "var(--bg-hover, rgba(77,140,255,0.12))"
                 : "var(--bg-secondary)",
-              border: selected.corpus === s.corpus
+              border: selected === s
                 ? "1.5px solid var(--accent)"
                 : "1px solid var(--border-light)",
               borderRadius: 6,
