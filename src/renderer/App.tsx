@@ -37,6 +37,7 @@ import { PanelResizer } from "./components/PanelResizer";
 import { SectionNavigator } from "./components/SectionNavigator";
 import { SetupHint } from "./components/SetupHint";
 import { SourcePanel } from "./components/SourcePanel";
+import { StatusBar } from "./components/StatusBar";
 import { TabStrip } from "./components/TabStrip";
 import { TargetPanel } from "./components/TargetPanel";
 import { Toolbar } from "./components/Toolbar";
@@ -473,6 +474,8 @@ export default function App() {
           </footer>
         )}
       </div>
+
+      <StatusBar />
 
       <MeasureEditor
         measure={editorMeasure}

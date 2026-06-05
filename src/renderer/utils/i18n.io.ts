@@ -867,4 +867,19 @@ export const IO_STRINGS: BiDict = {
     en: "Could not access MIDI: {message}",
     ja: "MIDI にアクセスできませんでした: {message}",
   },
+
+  // === StatusBar (Dorico 靈感 A3) ===
+  "statusbar.ready": { "zh-TW": "就緒", en: "Ready", ja: "準備完了" },
+  "statusbar.working": { "zh-TW": "處理中…", en: "Working…", ja: "処理中…" },
+  "statusbar.refining": { "zh-TW": "精修中…", en: "Refining…", ja: "微調整中…" },
+  "statusbar.parts": {
+    "zh-TW": "{count} 聲部",
+    en: "{count} parts",
+    ja: "{count} パート",
+  },
+  "statusbar.measure": {
+    "zh-TW": "第 {n} 小節",
+    en: "m. {n}",
+    ja: "第 {n} 小節",
+  },
 };
