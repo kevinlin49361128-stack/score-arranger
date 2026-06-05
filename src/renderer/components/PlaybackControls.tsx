@@ -566,6 +566,14 @@ export function PlaybackControls(
   /** 0.1.54 F: 弦樂專屬 vibrato — violin/cello 取樣 → vibrato → reverb,
    * 讓長音不再死直. depth 細微 (0.025), frequency 5.5Hz 對應古典 vibrato. */
   const stringVibratoRef = useRef<Tone.Vibrato | null>(null);
+  // A1 (力度→亮度): 弓弦每件樂器一個 lowpass, cutoff 隨每個音的力度在 onset
+  //   滑到對應頻率 — 真實弦樂大聲時泛音更亮、弱奏更暗 (取樣本身只有音量差).
+  // A4 (立體聲定位): violin/上方弦樂略偏左、cello/低音略偏右, 給合奏空間分離;
+  //   幅度刻意細微 (±0.12) 讓獨奏聽起來仍近乎置中, 不干擾.
+  const violinFilterRef = useRef<Tone.Filter | null>(null);
+  const celloFilterRef = useRef<Tone.Filter | null>(null);
+  const violinPannerRef = useRef<Tone.Panner | null>(null);
+  const celloPannerRef = useRef<Tone.Panner | null>(null);
   const samplesLoadedRef = useRef(false);
   const sampleLoadFailedRef = useRef(false);
   // 防重入: 啟動播放是 async (取 MIDI + 首次載入取樣)。期間若再次點擊,
@@ -621,6 +629,10 @@ export function PlaybackControls(
       reverbRef.current?.dispose?.();
       limiterRef.current?.dispose?.();
       stringVibratoRef.current?.dispose?.();
+      violinFilterRef.current?.dispose?.();
+      celloFilterRef.current?.dispose?.();
+      violinPannerRef.current?.dispose?.();
+      celloPannerRef.current?.dispose?.();
       metronomeVoiceRef.current?.dispose();
       pianoRef.current = null;
       violinRef.current = null;
@@ -635,6 +647,10 @@ export function PlaybackControls(
       violinFallbackRef.current = null;
       reverbRef.current = null;
       limiterRef.current = null;
+      violinFilterRef.current = null;
+      celloFilterRef.current = null;
+      violinPannerRef.current = null;
+      celloPannerRef.current = null;
       vibDepthLfoRef.current?.dispose();
       vibDepthLfoRef.current = null;
       vibRateLfoRef.current?.dispose();
@@ -669,7 +685,10 @@ export function PlaybackControls(
       limiterRef.current = new Tone.Limiter(-1).toDestination();
     }
     if (!reverbRef.current) {
-      const rv = new Tone.Reverb({ decay: 1.4, wet: 0.12 });
+      // 0.1.96 A2: 略放大房間 (decay 1.4→1.9) + preDelay 22ms 讓直達音與殘響分離,
+      //   更接近小型音樂廳而非乾錄音室; wet 仍保守 (0.13) 避免蓋掉旋律清晰度.
+      //   (真正的錄製廳堂 IR convolution 需外掛 IR 音檔, 列為 A2 後續資產升級.)
+      const rv = new Tone.Reverb({ decay: 1.9, preDelay: 0.022, wet: 0.13 });
       rv.connect(limiterRef.current);
       // Tone.Reverb 用 async generate impulse response; 等它 ready 再返回
       try {
@@ -696,6 +715,27 @@ export function PlaybackControls(
     setVibratoHumanize(
       stringVib, vibDepthLfoRef, vibRateLfoRef, humanizeRef.current,
     );
+
+    // A1+A4: 弓弦每件樂器的 [力度→亮度 lowpass] → [立體聲定位] → 共享 vibrato.
+    // rolloff -12 取較緩斜率減少染色; cutoff 初值給中間值, 播放時每音再依力度滑動.
+    if (!violinFilterRef.current) {
+      const f = new Tone.Filter({ type: "lowpass", frequency: 6000, rolloff: -12 });
+      const p = new Tone.Panner(-0.12);
+      f.connect(p);
+      p.connect(stringVib);
+      violinFilterRef.current = f;
+      violinPannerRef.current = p;
+    }
+    if (!celloFilterRef.current) {
+      const f = new Tone.Filter({ type: "lowpass", frequency: 5000, rolloff: -12 });
+      const p = new Tone.Panner(0.12);
+      f.connect(p);
+      p.connect(stringVib);
+      celloFilterRef.current = f;
+      celloPannerRef.current = p;
+    }
+    const violinChainIn = violinFilterRef.current;
+    const celloChainIn = celloFilterRef.current;
 
     // Fallback synth (純合成,通用)
     if (!fallbackRef.current) {
@@ -782,12 +822,13 @@ export function PlaybackControls(
       celloRef.current = cello.sampler.loaded
         ? cello.sampler
         : violinFallbackRef.current;
-      // 0.1.54 F: 把成功載入的 violin/cello sampler 從 bus 改接 vibrato.
+      // 0.1.54 F: 把成功載入的 violin/cello sampler 從 bus 改接弦樂鏈.
+      // 0.1.96 A1+A4: 改接 [力度→亮度 filter] → [panner] → vibrato (見上方建鏈).
       // disconnect 必先呼叫 (Tone connect 是 add-edge 不是 replace).
       if (violin.sampler.loaded) {
         try {
           violin.sampler.disconnect();
-          violin.sampler.connect(stringVib);
+          violin.sampler.connect(violinChainIn);
         } catch {
           violin.sampler.connect(bus);  // 失敗 fallback 直接回 bus
         }
@@ -795,7 +836,7 @@ export function PlaybackControls(
       if (cello.sampler.loaded) {
         try {
           cello.sampler.disconnect();
-          cello.sampler.connect(stringVib);
+          cello.sampler.connect(celloChainIn);
         } catch {
           cello.sampler.connect(bus);
         }
@@ -1349,6 +1390,19 @@ export function PlaybackControls(
           }
           const playVel = Math.min(1, note.velocity * gain);
           const id = Tone.Transport.schedule((time) => {
+            // A1 力度→亮度: 弓弦在每個音 onset 把該樂器 lowpass cutoff 滑到
+            //   對應頻率 — pp 暗 (~3kHz)、ff 亮 (~11kHz), 模擬真實弓壓泛音變化.
+            //   setTargetAtTime 20ms 平滑避免 cutoff 跳變的 zipper 雜訊.
+            if (isBowedString) {
+              const filt =
+                key === "violin"
+                  ? violinFilterRef.current
+                  : celloFilterRef.current;
+              if (filt) {
+                const cutoff = 3000 + playVel ** 1.4 * 8000;
+                filt.frequency.setTargetAtTime(cutoff, time, 0.02);
+              }
+            }
             instrument.triggerAttackRelease(trigPitch, noteDur, time, playVel);
           }, noteTime);
           scheduledIdsRef.current.push(id);

@@ -82,8 +82,24 @@ export async function renderMidiToWav(
     // 全局 reverb (室內樂空間感) — 所有 instruments connect 到此.
     // Tone.Offline 內部 context 接管全域 ctor — 直接 new Tone.X 就會落到 offline ctx.
     // 0.1.61: master limiter — 大鍵琴提升音量後防止離線渲染削波 (寫進檔案的削波更難救)
+    // 0.1.96 A3: 與 live 播放對齊改善版 reverb (decay/preDelay/wet), 讓匯出檔不再
+    //   比即時播放乾. (真正用取樣渲染離線版需預載 buffer, 列為 A3 後續驗證項.)
     const limiter = new Tone.Limiter(-1).toDestination();
-    const reverb = new Tone.Reverb({ decay: 1.4, wet: 0.12 }).connect(limiter);
+    const reverb = new Tone.Reverb({
+      decay: 1.9,
+      preDelay: 0.022,
+      wet: 0.13,
+    }).connect(limiter);
+    // 0.1.96 A3: 弦樂專用鏈 — fatsawtooth 疊音 → lowpass(暖化) → vibrato → reverb.
+    //   取代原本單薄的單一 sawtooth, 讓匯出的弦樂更接近真實取樣的厚度與生氣.
+    const stringVib = new Tone.Vibrato({ frequency: 5.5, depth: 0.02 });
+    stringVib.connect(reverb);
+    const stringFilter = new Tone.Filter({
+      type: "lowpass",
+      frequency: 5200,
+      rolloff: -12,
+    });
+    stringFilter.connect(stringVib);
     midi.tracks.forEach((track) => {
       if (track.notes.length === 0) return;
       const name = (track.instrument?.name || track.name || "").toLowerCase();
@@ -112,6 +128,27 @@ export async function renderMidiToWav(
         });
         return;
       }
+      // 弓弦: fatsawtooth 疊音 + 弓奏 attack, 接弦樂鏈 (filter→vibrato→reverb).
+      const lname = name;
+      const isString =
+        lname.includes("violin") || lname.includes("viola")
+        || lname.includes("cello") || lname.includes("string")
+        || lname.includes("contrabass") || lname.includes("double");
+      if (isString) {
+        const synth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "fatsawtooth", count: 3, spread: 16 },
+          envelope: { attack: 0.08, decay: 0.2, sustain: 0.75, release: 0.4 },
+        });
+        synth.connect(stringFilter);
+        synth.volume.value = -13;
+        track.notes.forEach((note) => {
+          synth.triggerAttackRelease(
+            note.name, note.duration, note.time + 0.05, note.velocity,
+          );
+        });
+        return;
+      }
+
       // 其他樂器: PolySynth + 不同 oscillator/envelope
       let oscType: "sine" | "triangle" | "sawtooth" | "square" = "triangle";
       let volume = -10;
@@ -119,9 +156,6 @@ export async function renderMidiToWav(
       if (name.includes("piano")) {
         oscType = "triangle";
         volume = -8;
-      } else if (name.includes("violin") || name.includes("string")) {
-        oscType = "sawtooth";
-        volume = -12;
       } else if (name.includes("flute") || name.includes("clarinet")
                  || name.includes("oboe")) {
         oscType = "sine";

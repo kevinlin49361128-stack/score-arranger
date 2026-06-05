@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弦樂音質提升 — 決策</title>
+<style>
+  :root{
+    --bg:#15171c; --panel:#1d2027; --panel2:#23272f; --border:#333842;
+    --fg:#e7e9ee; --muted:#9aa0ac; --gold:#d9a441; --green:#5fae6b;
+    --red:#c9655a; --blue:#5b8fd9; --accent:#7aa2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    line-height:1.6;padding:32px 18px 120px}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+  h2{font-size:16px;color:var(--gold);margin:30px 0 10px;letter-spacing:.5px;
+    border-bottom:1px solid var(--border);padding-bottom:6px}
+  .now{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:14px 16px;margin-bottom:8px;font-size:14px}
+  .now b{color:var(--green)} .now i{color:var(--red);font-style:normal}
+  .tier-note{font-size:13px;color:var(--muted);margin:2px 0 12px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.12s;display:flex;gap:12px}
+  .card:hover{border-color:var(--accent);background:var(--panel2)}
+  .card.on{border-color:var(--gold);background:#262217}
+  .box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;
+    flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:var(--gold)}
+  .card.on .box{border-color:var(--gold)}
+  .ct{flex:1;min-width:0}
+  .ct h3{margin:0 0 3px;font-size:15px}
+  .rec{color:var(--gold);font-size:12px;font-weight:700;margin-left:6px}
+  .ct p{margin:4px 0 0;font-size:13.5px;color:#cdd2db}
+  .meta{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;font-size:11.5px}
+  .pill{padding:1px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+  .pill.imp{color:var(--green);border-color:#3a5a40}
+  .pill.eff{color:var(--blue);border-color:#33506e}
+  .pill.risk{color:var(--red);border-color:#5e3a36}
+  .pill.dep{color:var(--gold);border-color:#5a4a22}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#10121699;backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);padding:12px 18px;display:flex;gap:12px;
+    align-items:center;justify-content:center}
+  button{background:var(--gold);color:#1a1500;border:0;border-radius:8px;
+    padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+  #count{color:var(--muted);font-size:13px}
+  .lede{background:var(--panel2);border-left:3px solid var(--gold);border-radius:6px;
+    padding:10px 14px;font-size:13.5px;color:#cdd2db;margin:8px 0 4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>弦樂音質提升 — 方向決策</h1>
+  <div class="sub">Score Arranger · 勾選想做的，底部「複製摘要」給我</div>
+
+  <h2>現況盤點（已經有的）</h2>
+  <div class="now">
+    <b>取樣</b>：nbrosowsky/tonejs-instruments，<i>線上載入</i>的<i>單一持續音 mp3</i>
+    （violin A3–C7 約 14 點、cello E2–A4 約 7 點），Tone.Sampler 之間做 pitch-shift。<br>
+    <b>處理層（不錯）</b>：弦樂專屬 vibrato（5.5Hz）+ humanize 漂移 LFO、齊奏微離調、
+    力度→音量、全局 reverb→limiter。<br>
+    <i>天花板</i>：① 每個音都是<i>同一種持續音</i> → 撥弦/斷弓/震音聽起來都像被切短的長音；
+    ② 力度<i>只改音量、不改音色</i>（真弦樂大聲＝更亮更多弓噪）；③ 取樣稀疏 → pitch-shift
+    失真；④ 沒有力度層、沒有換弓銜接；⑤ <i>離線匯出 WAV/MP3 用純合成</i>，比即時播放還差。
+  </div>
+  <div class="lede">一句話：<b>處理層已經做很多，瓶頸在「取樣本身」。</b>
+    所以選項分兩條路 —— A 路：在現有取樣上的高 ROI 速效；B 路：換更好的取樣庫拉升天花板。</div>
+
+  <h2>A 路 — 高 ROI 速效（不換樣本庫，數天，低風險）</h2>
+  <div class="tier-note">不碰授權/容量，現有樣本上就能聽到差別。建議先做這批。</div>
+
+  <div class="card" data-id="A1 力度→亮度">
+    <div class="box"></div><div class="ct">
+    <h3>A1　力度 → 音色亮度（不只音量）<span class="rec">🎯 建議</span></h3>
+    <p>每聲部串一個 lowpass，cutoff 隨 velocity 開合：弱奏暗、強奏亮。真弦樂的動態主要
+       靠音色變化，不是只有大小聲。改動小、現有樣本即生效。</p>
+    <div class="meta"><span class="pill imp">影響 高</span><span class="pill eff">工 1–2 天</span><span class="pill risk">風險 低</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="A2 convolution reverb">
+    <div class="box"></div><div class="ct">
+    <h3>A2　真實廳堂 convolution reverb<span class="rec">🎯 建議</span></h3>
+    <p>用一段真實室內樂廳/音樂廳的 impulse response 取代現在的演算法 reverb（Tone.Convolver）。
+       空間感真實度大躍進，弦樂尤其受益。隨附一個小 IR 檔即可。</p>
+    <div class="meta"><span class="pill imp">影響 高</span><span class="pill eff">工 1 天</span><span class="pill risk">風險 低</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="A3 修離線匯出音質">
+    <div class="box"></div><div class="ct">
+    <h3>A3　修離線匯出的音質落差<span class="rec">🎯 建議</span></h3>
+    <p>目前 WAV/MP3 匯出走<b>純合成</b>（audioExport.ts），比你即時聽到的還難聽 —— 學生拿到的
+       練習音檔反而最差。改成離線也用取樣（OfflineContext + Sampler 預載）。</p>
+    <div class="meta"><span class="pill imp">影響 中高</span><span class="pill eff">工 1–2 天</span><span class="pill risk">風險 中</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="A4 立體聲定位">
+    <div class="box"></div><div class="ct">
+    <h3>A4　合奏立體聲定位（panning）</h3>
+    <p>弦四/合奏時把各聲部擺到立體聲不同位置（小提左、中提中、大提右）。空間分離 → 各聲部更清楚、
+       更像真合奏。</p>
+    <div class="meta"><span class="pill imp">影響 中</span><span class="pill eff">工 0.5 天</span><span class="pill risk">風險 低</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="A5 起音層">
+    <div class="box"></div><div class="ct">
+    <h3>A5　起音瞬態層（attack transient）</h3>
+    <p>持續音樣本的起音偏軟 → 快速音群糊。疊一層極短的弓噪/起音，讓音頭清脆（斷弓尤其需要）。
+       可隨 articulation 開關。</p>
+    <div class="meta"><span class="pill imp">影響 中</span><span class="pill eff">工 1–2 天</span><span class="pill risk">風險 中</span></div>
+    </div>
+  </div>
+
+  <h2>B 路 — 拉升天花板（換/加取樣庫，數週，策略性）</h2>
+  <div class="tier-note">真正的大躍進，但要決定容量/授權/交付方式。可走既有的線上 corpus CDN
+    懶載入管線（不灌進 app，零 DMG 成本）。</div>
+
+  <div class="card" data-id="B1 多articulation取樣庫">
+    <div class="box"></div><div class="ct">
+    <h3>B1　升級多 articulation 弦樂取樣庫<span class="rec">🎯 天花板</span></h3>
+    <p>換成更密、含多種演奏法的免費庫：<b>VSCO2 Community（CC0）</b>、<b>Iowa MIS</b>、
+       Sonatina 等。真實度本質提升。走 corpus-release CDN 懶載入（首用下載、之後快取），
+       不灌進 DMG。取捨：容量（弦樂多 artic 數百 MB）、授權盤點、SFZ/多點 sampler 整合。</p>
+    <div class="meta"><span class="pill imp">影響 最高</span><span class="pill eff">工 1–2 週</span><span class="pill risk">風險 中高</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="B2 articulation切換">
+    <div class="box"></div><div class="ct">
+    <h3>B2　articulation-aware 樣本切換<span class="rec">🎯 天花板</span></h3>
+    <p>引擎<b>已經</b>標了 pizzicato/staccato/legato/tremolo；播放時切到對應樣本（不再一律持續音）。
+       同樣的音、真實感最大單筆增益。需 B1 的多 artic 庫。</p>
+    <div class="meta"><span class="pill imp">影響 最高</span><span class="pill eff">工 3–5 天</span><span class="pill dep">依賴 B1</span></div>
+    </div>
+  </div>
+
+  <div class="card" data-id="B3 力度層">
+    <div class="box"></div><div class="ct">
+    <h3>B3　力度層取樣（pp / mf / ff）</h3>
+    <p>每音多個力度的真實樣本 → 大聲是真的更亮、更多弓壓，不是把同一個樣本開大聲。需 B1 的庫含力度層。</p>
+    <div class="meta"><span class="pill imp">影響 高</span><span class="pill eff">工 3–5 天</span><span class="pill dep">依賴 B1</span></div>
+    </div>
+  </div>
+
+  <h2>C 路 — R&D（野心）</h2>
+  <div class="card" data-id="C1 物理建模">
+    <div class="box"></div><div class="ct">
+    <h3>C1　物理建模弦樂合成（bowed-string model）</h3>
+    <p>用弓弦物理模型取代 PolySynth 退路 —— 不靠樣本、表情連續、容量為零。但瀏覽器內做得好很難，
+       屬研究性。可當「無網路/退路音色」的長線方向。</p>
+    <div class="meta"><span class="pill imp">影響 高(不確定)</span><span class="pill eff">工 2 週+</span><span class="pill risk">風險 高</span></div>
+    </div>
+  </div>
+
+  <h2>我的建議</h2>
+  <div class="now">
+    <b>先做 A1+A2+A3</b>（數天、低風險、現有樣本就有感）—— 亮度動態 + 真廳堂殘響 + 修匯出落差，
+    投報率最高。<br>
+    <b>再評估 B1+B2</b>（真天花板，但要先拍板：容量走 CDN 懶載入、授權盤點）。B2「演奏法切換」是
+    單筆最大真實感增益，但綁在 B1 的庫上。<br>
+    <span style="color:var(--muted)">反方：Score Arranger 是<b>改編工具</b>，播放是<b>預覽/陪練</b>不是成品母帶。
+    弦樂音質別過度投資而排擠改編品質本身 —— 但 A 路夠便宜、且陪練音質對教學客群有實際價值，值得做；
+    B 路要你確認「值得花數週」再啟動。</span>
+  </div>
+</div>
+
+<div class="bar">
+  <span id="count">已選 0 項</span>
+  <button id="copy">複製決策摘要</button>
+  <button class="ghost" id="clear">清除</button>
+</div>
+
+<script>
+  const KEY="string-sound-decision";
+  const cards=[...document.querySelectorAll(".card")];
+  const saved=JSON.parse(localStorage.getItem(KEY)||"[]");
+  const upd=()=>{
+    const on=cards.filter(c=>c.classList.contains("on"));
+    document.getElementById("count").textContent=`已選 ${on.length} 項`;
+    localStorage.setItem(KEY,JSON.stringify(on.map(c=>c.dataset.id)));
+  };
+  cards.forEach(c=>{
+    if(saved.includes(c.dataset.id)){c.classList.add("on");c.querySelector(".box").textContent="✓";}
+    c.onclick=()=>{c.classList.toggle("on");
+      c.querySelector(".box").textContent=c.classList.contains("on")?"✓":"";upd();};
+  });
+  upd();
+  document.getElementById("copy").onclick=()=>{
+    const on=cards.filter(c=>c.classList.contains("on")).map(c=>"• "+c.dataset.id);
+    const txt=on.length?("弦樂音質 — 我想做：\n"+on.join("\n")):"（尚未選任何項）";
+    navigator.clipboard.writeText(txt).then(()=>{
+      const b=document.getElementById("copy");const t=b.textContent;
+      b.textContent="已複製 ✓";setTimeout(()=>b.textContent=t,1400);});
+  };
+  document.getElementById("clear").onclick=()=>{
+    cards.forEach(c=>{c.classList.remove("on");c.querySelector(".box").textContent="";});upd();};
+</script>
+</body>
+</html>
