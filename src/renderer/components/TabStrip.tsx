@@ -105,8 +105,10 @@ export function TabStrip() {
         gap: 2,
         padding: "4px 8px",
         background: "var(--bg-secondary)",
-        borderBottom: "1px solid var(--border)",
-        minHeight: 32,
+        // A1 收斂 chrome: TabStrip 與下方 ModeBar 同底色, 內部分隔線改細
+        // (border-light), 減少「多條橫線堆疊」的視覺噪音; 高度收緊 32→28。
+        borderBottom: "1px solid var(--border-light)",
+        minHeight: 28,
         overflowX: "auto",
       }}
     >

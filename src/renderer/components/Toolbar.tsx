@@ -939,7 +939,7 @@ export function Toolbar() {
         flexWrap: "wrap",
         gap: 4,
         rowGap: 4,
-        padding: "6px 10px",
+        padding: "5px 10px",
         borderBottom: "1px solid var(--border)",
         background: "var(--bg-panel)",
         color: "var(--fg-primary)",

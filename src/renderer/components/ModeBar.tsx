@@ -42,7 +42,8 @@ export function ModeBar() {
       style={{
         display: "flex",
         gap: 4,
-        padding: "8px 12px",
+        // A1 收斂 chrome: 8px→4px 垂直內距 (原本比其他 band 厚一倍), 騰出譜面空間
+        padding: "var(--sp-1) var(--sp-3)",
         borderBottom: "1px solid var(--border)",
         background: "var(--bg-secondary)",
       }}
@@ -53,13 +54,13 @@ export function ModeBar() {
           onClick={() => setMode(m.id)}
           title={t(m.descKey)}
           style={{
-            padding: "6px 16px",
+            padding: "5px 14px",
             border: "none",
             borderRadius: 6,
             background: mode === m.id ? "var(--accent)" : "transparent",
             color: mode === m.id ? "var(--accent-fg)" : "var(--fg-secondary)",
             cursor: "pointer",
-            fontSize: 14,
+            fontSize: "var(--fs-base)",
             fontWeight: mode === m.id ? 600 : 400,
           }}
         >
