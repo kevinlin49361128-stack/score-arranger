@@ -17,6 +17,7 @@ export function TimelinePanel(): JSX.Element | null {
   const arrangement = useSessionStore((s) => s.arrangement);
   const playbackMeasure = useSessionStore((s) => s.playbackMeasure);
   const [data, setData] = useState<TimelineLanesRes | null>(null);
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,21 +61,61 @@ export function TimelinePanel(): JSX.Element | null {
     });
   }
 
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const h = hoverIdx;
+  // hover 讀出: 該小節的精確值 (area lanes 用百分比, 調性用色塊)
+  const readout =
+    h != null && h < data.measure_count ? (
+      <>
+        <span style={{ color: "var(--fg)", fontWeight: 600 }}>
+          {t("viz.timeline.measure")} {data.first_measure + h}
+        </span>
+        <span style={{ color: "#5fae6b" }}>{t("viz.timeline.density")} {pct(data.density[h])}</span>
+        <span style={{ color: "#c9655a" }}>{t("viz.timeline.tension")} {pct(data.tension[h])}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+          {t("viz.timeline.tonal")}
+          <span
+            style={{
+              width: 9, height: 9, borderRadius: 2,
+              background: `hsl(${Math.round(data.tonal_hue[h] * 360)}, ${Math.round(35 + (data.tonal_clarity[h] ?? 0.5) * 45)}%, 52%)`,
+            }}
+          />
+        </span>
+        {data.has_strings && (
+          <span style={{ color: "#5b8fd9" }}>
+            {t("viz.timeline.position")}{" "}
+            {data.position[h] == null ? "—" : pct(data.position[h] as number)}
+          </span>
+        )}
+      </>
+    ) : null;
+
   return (
     <div style={{ padding: "8px 4px" }} title={t("viz.timeline.hint")}>
       <div
         style={{
           fontSize: 12, fontWeight: 700, color: "var(--gold, #d9a441)",
-          marginBottom: 8, letterSpacing: 0.5,
+          marginBottom: 4, letterSpacing: 0.5,
         }}
       >
         {t("viz.timeline.heading")}
+      </div>
+      {/* hover 讀出列 — 固定高度避免 hover 進出時版面跳動 */}
+      <div
+        style={{
+          minHeight: 15, marginBottom: 4, fontSize: 10.5,
+          color: "var(--fg-muted)", display: "flex", gap: 8,
+          flexWrap: "wrap", alignItems: "center",
+        }}
+      >
+        {readout}
       </div>
       <TimelineStrip
         firstMeasure={data.first_measure}
         measureCount={data.measure_count}
         playbackMeasure={playbackMeasure}
         lanes={lanes}
+        onHoverMeasure={setHoverIdx}
       />
     </div>
   );

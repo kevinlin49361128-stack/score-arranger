@@ -535,6 +535,9 @@ export const IO_STRINGS: BiDict = {
   "viz.timeline.position": {
     "zh-TW": "弦樂把位", en: "String position", ja: "弦ポジション",
   },
+  "viz.timeline.measure": {
+    "zh-TW": "小節", en: "m.", ja: "小節",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",

@@ -6,6 +6,7 @@
  * per-measure 序列重用。每 lane 一個 SVG (viewBox 寬 = 小節數, 非等比縮放),
  * 用細長 rect 畫 → null 安全、119 小節仍輕量。
  */
+import { useState } from "react";
 
 export interface TimelineLane {
   key: string;
@@ -26,6 +27,8 @@ interface Props {
   playbackMeasure: number | null;
   lanes: TimelineLane[];
   laneHeight?: number;
+  /** hover 到第幾個小節格 (0-based index, 不在範圍時 null) */
+  onHoverMeasure?: (idx: number | null) => void;
 }
 
 function AreaLane({ values, color, h }: {
@@ -79,7 +82,9 @@ function ColorBandLane({ hues, clarity, h }: {
 
 export function TimelineStrip({
   firstMeasure, measureCount, playbackMeasure, lanes, laneHeight = 20,
+  onHoverMeasure,
 }: Props): JSX.Element | null {
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   if (measureCount <= 0) return null;
 
   const inRange =
@@ -89,9 +94,29 @@ export function TimelineStrip({
   const cursorPct = inRange
     ? ((playbackMeasure - firstMeasure + 0.5) / measureCount) * 100
     : null;
+  const hoverPct =
+    hoverIdx != null ? ((hoverIdx + 0.5) / measureCount) * 100 : null;
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    const idx = Math.max(0, Math.min(measureCount - 1, Math.floor(ratio * measureCount)));
+    if (idx !== hoverIdx) {
+      setHoverIdx(idx);
+      onHoverMeasure?.(idx);
+    }
+  };
+  const onLeave = () => {
+    setHoverIdx(null);
+    onHoverMeasure?.(null);
+  };
 
   return (
-    <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6 }}>
+    <div
+      style={{ position: "relative", display: "flex", flexDirection: "column", gap: 6, cursor: "crosshair" }}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
       {lanes.map((lane) => (
         <div key={lane.key}>
           <div style={{ fontSize: 10, color: "var(--fg-muted)", marginBottom: 1 }}>
@@ -112,6 +137,16 @@ export function TimelineStrip({
           )}
         </div>
       ))}
+      {hoverPct != null && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute", top: 0, bottom: 0, left: `${hoverPct}%`,
+            width: 1, background: "var(--fg-muted)", opacity: 0.55,
+            pointerEvents: "none",
+          }}
+        />
+      )}
       {cursorPct != null && (
         <div
           aria-hidden
