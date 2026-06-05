@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dorico Pro 6 介面靈感 → Score Arranger UI/人因升級</title>
+<style>
+  :root{
+    --bg:#16140f; --bg2:#1e1b14; --card:#221e16; --card2:#28231a;
+    --fg:#f3ead7; --fg2:#c7bda6; --muted:#8f876f;
+    --gold:#d9aa63; --gold-soft:#e9c98f; --line:#3a3225;
+    --green:#7bbf73; --red:#d77; --blue:#7aa2ff; --purple:#b89be0;
+    --r:14px; --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(160deg,#16140f,#1a1710 60%,#14120d);
+    color:var(--fg);font:15px/1.6 -apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    padding:40px 22px 120px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:.3px}
+  h1 .sub{color:var(--gold);font-weight:600}
+  .lede{color:var(--fg2);max-width:780px;margin:0 0 8px}
+  .meta{color:var(--muted);font-size:13px;margin-bottom:30px}
+  h2{font-size:21px;margin:38px 0 4px;border-left:3px solid var(--gold);padding-left:12px}
+  h2 .tag{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+  .pathnote{color:var(--fg2);margin:6px 0 18px;font-size:14px}
+  .observe{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+    padding:18px 22px;margin:14px 0 8px}
+  .observe h3{margin:0 0 10px;font-size:16px;color:var(--gold-soft)}
+  .observe ul{margin:6px 0;padding-left:20px}
+  .observe li{margin:5px 0;color:var(--fg2)}
+  .observe li b{color:var(--fg)}
+  .counter{border-left:3px solid var(--red);background:rgba(221,119,119,.06);
+    padding:12px 18px;border-radius:8px;margin:14px 0;color:var(--fg2);font-size:14px}
+  .counter b{color:var(--red)}
+  .grid{display:grid;gap:14px;margin:8px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:16px 18px;transition:.25s var(--ease);cursor:pointer;position:relative;overflow:hidden}
+  .card:hover{border-color:var(--gold);background:var(--card2);transform:translateY(-1px)}
+  .card.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(217,170,99,.10),rgba(217,170,99,.02))}
+  .card.on::after{content:"✓";position:absolute;top:12px;right:14px;color:var(--gold);
+    font-weight:700;font-size:18px}
+  .ch{display:flex;align-items:baseline;gap:10px}
+  .ch .code{font:600 13px ui-monospace,monospace;color:var(--gold);min-width:30px}
+  .ch .ttl{font-size:16px;font-weight:600}
+  .rec{font-size:11px;background:var(--gold);color:#1a1510;border-radius:20px;
+    padding:1px 9px;font-weight:700;margin-left:6px;vertical-align:middle}
+  .desc{color:var(--fg2);font-size:14px;margin:8px 0 10px;padding-left:40px}
+  .from{color:var(--muted);font-size:12.5px;padding-left:40px;margin-bottom:10px}
+  .from b{color:var(--gold-soft)}
+  .pills{display:flex;gap:7px;flex-wrap:wrap;padding-left:40px}
+  .pill{font-size:11.5px;border-radius:6px;padding:2px 9px;border:1px solid var(--line);color:var(--fg2)}
+  .pill.i{border-color:#4a6b46;color:var(--green)}
+  .pill.e{border-color:#6b5a46;color:var(--gold-soft)}
+  .pill.r{border-color:#6b4646;color:var(--red)}
+  .pill.now{border-color:var(--gold);color:var(--gold);font-weight:600}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,18,13,.94);
+    border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:14px 22px;
+    display:flex;align-items:center;gap:16px;justify-content:center;z-index:9}
+  .bar .count{color:var(--fg2);font-size:14px}
+  .bar .count b{color:var(--gold);font-size:17px}
+  button.copy{background:var(--gold);color:#1a1510;border:0;border-radius:10px;
+    padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s var(--ease)}
+  button.copy:hover{background:var(--gold-soft);transform:translateY(-1px)}
+  button.copy:active{transform:translateY(0)}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--green);color:#0e1a0c;padding:10px 20px;border-radius:10px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.3s var(--ease)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .legend{color:var(--muted);font-size:12.5px;margin:18px 0 0;text-align:center}
+  code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:5px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dorico Pro 6 介面靈感 → <span class="sub">Score Arranger UI / 人因升級</span></h1>
+  <p class="lede">觀察 Dorico Pro 6 的介面與人因設計，對照 Score Arranger 現況，挑出值得借鑑的方向。
+  勾選你要的，底部「複製決策摘要」貼回給我即可開工。</p>
+  <p class="meta">2026-06-06 · 基於 Dorico 6 官方/Scoring Notes 評測 + 你目前 0.1.96 介面截圖與程式碼</p>
+
+  <div class="observe">
+    <h3>📌 先講結論：我們其實已經走在 Dorico 路線上</h3>
+    <ul>
+      <li><b>ModeBar</b>（設定／分析／改編／移植／修復／匯出）— 程式碼註解就寫著「借鑑 Dorico 的 mode-based workflow」，這正是 Dorico 五大 mode（Setup/Write/Engrave/Play/Print）的精神。</li>
+      <li><b>IssuePanel ≈ Dorico 6 Proofreading 面板</b> — Dorico 6 的旗艦新功能「校對面板」做的事（背景偵測、分類列出問題、點擊跳到位置），你早就有了。這是強力的方向驗證。</li>
+      <li><b>成熟的 design token 系統</b> — <code>index.html</code> 已有 light/dark 雙主題、gold accent、elevation／easing／radius／glass tokens、語意化 error/warning/success。基礎比多數 Electron app 紮實。</li>
+    </ul>
+    <p style="color:var(--fg2);margin:10px 0 0">所以這不是「從零美化」，而是<b style="color:var(--gold-soft)">精修 + 補上 Dorico 幾個招牌人因</b>。</p>
+  </div>
+
+  <div class="observe">
+    <h3>🔭 Dorico Pro 6 我觀察到、值得偷的人因設計</h3>
+    <ul>
+      <li><b>克制的 chrome</b>：頂部極簡，控制項收進情境面板，把畫面讓給譜。</li>
+      <li><b>情境感知 Properties 面板</b>（底部）：只顯示「目前選取物件」相關的屬性 — 漸進揭露，降低認知負荷。</li>
+      <li><b>Jump bar / 命令面板</b>：鍵盤驅動、搜尋所有命令（類似 VS Code ⌘K）。</li>
+      <li><b>Proofreading 呈現細節</b>：分類色碼（譜號／力度／調號／反覆…）、面板圖示上的<b>紅色數量徽章</b>、點擊後<b>動畫箭頭/方框</b>精準定位問題。</li>
+      <li><b>Fill View</b>（6 新增）：音樂填滿視窗寬度、垂直堆疊系統、看到最多小節。</li>
+      <li><b>Status bar</b>：底部持續顯示小節範圍、小節號、timecode。</li>
+      <li><b>更小的 handles、可拖曳 popover（帶錨點）、View Options 統整對話框</b>。</li>
+    </ul>
+  </div>
+
+  <div class="counter">
+    <b>⚖️ 反方論點（先說清楚）：</b>Score Arranger 是<b>智慧改編 + 教學工具</b>，不是專業排版軟體。
+    Dorico 的複雜度有一半是給排版/出版用的（Engrave ruler/grid、front matter…），照搬會稀釋你的定位。
+    我們該偷的是「<b>降低認知負荷</b>」與「<b>教學友善</b>」那一面，不是把功能堆到跟 Dorico 一樣多。下面卡片已照此篩選。
+  </div>
+
+  <h2>Path A — 視覺精修 <span class="tag">低風險，多數我可立即做，幾天內</span></h2>
+  <p class="pathnote">不改架構，只收斂視覺噪音、補上一致性。投報率最高、風險最低。</p>
+  <div class="grid" id="pathA">
+    <div class="card" data-id="A1">
+      <div class="ch"><span class="code">A1</span><span class="ttl">收斂頂部 chrome，讓譜面呼吸<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">目前頂部疊了 4–5 條橫列（Toolbar＋TabStrip＋ModeBar＋子工具列＋各面板播放列），譜被擠到下半。
+      合併/收納次要控制（如把播放列收進面板標頭、次要按鈕進 overflow 選單），騰出垂直空間。Dorico 最明顯的氣質就是「乾淨的頂部」。</div>
+      <div class="from">借鏡：<b>Dorico 克制的 chrome</b></div>
+      <div class="pills"><span class="pill i">衝擊 高</span><span class="pill e">投入 中</span><span class="pill r">風險 低</span><span class="pill now">可立即做</span></div>
+    </div>
+    <div class="card" data-id="A2">
+      <div class="ch"><span class="code">A2</span><span class="ttl">統一面板標頭 + 8px 間距節奏 + 克制 accent<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">所有面板用一致的標頭樣式（標題＋摺疊鈕＋次要動作靠右）、統一 padding 走 8px 網格、
+      把 gold accent 留給「主要動作/當前狀態」而非到處點綴（Dorico 用色極省）。立刻顯得更專業。</div>
+      <div class="from">借鏡：<b>Dorico 的視覺一致性與克制用色</b></div>
+      <div class="pills"><span class="pill i">衝擊 中</span><span class="pill e">投入 中</span><span class="pill r">風險 低</span><span class="pill now">可立即做</span></div>
+    </div>
+    <div class="card" data-id="A3">
+      <div class="ch"><span class="code">A3</span><span class="ttl">持久狀態列 (Status bar)</span></div>
+      <div class="desc">底部加一條持續資訊列：目前小節號、選取資訊、改編品質摘要、引擎狀態。
+      Dorico 招牌之一，也順手解決「引擎在做什麼」的可見性。</div>
+      <div class="from">借鏡：<b>Dorico Status bar</b></div>
+      <div class="pills"><span class="pill i">衝擊 中</span><span class="pill e">投入 中</span><span class="pill r">風險 低</span><span class="pill now">可立即做</span></div>
+    </div>
+    <div class="card" data-id="A4">
+      <div class="ch"><span class="code">A4</span><span class="ttl">字級階層 + 圖示一致化</span></div>
+      <div class="desc">收斂字級到 3–4 個尺度、統一圖示風格與描邊粗細、行高與對齊微調。細節層級的質感升級。</div>
+      <div class="from">借鏡：<b>Dorico 的排版紀律</b></div>
+      <div class="pills"><span class="pill i">衝擊 低</span><span class="pill e">投入 低</span><span class="pill r">風險 低</span><span class="pill now">可立即做</span></div>
+    </div>
+  </div>
+
+  <h2>Path B — 人因互動 <span class="tag">Dorico 招牌，中投入，1–2 週</span></h2>
+  <p class="pathnote">真正拉開體驗差距的部分。挑對教學/改編工作流有感的做。</p>
+  <div class="grid" id="pathB">
+    <div class="card" data-id="B1">
+      <div class="ch"><span class="code">B1</span><span class="ttl">命令面板 / Jump bar（⌘K 搜尋所有命令）<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">一個 ⌘K 喚出的搜尋框，輸入即可跳到任何 mode／套用任何操作／開任一面板／搜曲庫。
+      對熟手是巨大效率躍升，對新手是「找得到功能」的安全網。功能多但入口分散的 app 最該補這個。</div>
+      <div class="from">借鏡：<b>Dorico Jump bar</b></div>
+      <div class="pills"><span class="pill i">衝擊 高</span><span class="pill e">投入 中</span><span class="pill r">風險 低</span></div>
+    </div>
+    <div class="card" data-id="B2">
+      <div class="ch"><span class="code">B2</span><span class="ttl">IssuePanel → Proofreading 升級<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">把現有 IssuePanel 補上 Dorico 6 的呈現細節：問題<b>分類色碼</b>（音域／弓法／聲部範圍／可演奏性…）、
+      面板上的<b>數量徽章</b>、點擊時譜面<b>動畫定位</b>（你已有 flash highlight，再強化）。核心面板，直接受益。</div>
+      <div class="from">借鏡：<b>Dorico 6 Proofreading 面板</b></div>
+      <div class="pills"><span class="pill i">衝擊 高</span><span class="pill e">投入 中</span><span class="pill r">風險 低</span></div>
+    </div>
+    <div class="card" data-id="B3">
+      <div class="ch"><span class="code">B3</span><span class="ttl">情境 Properties 區（依選取顯示）</span></div>
+      <div class="desc">點選一個小節/音符/聲部時，底部出現「只跟它有關」的屬性與操作（移調、改演奏法、重分配…），
+      取代到處找面板。Dorico 漸進揭露的核心，但要小心別跟現有面板重複。</div>
+      <div class="from">借鏡：<b>Dorico Properties 面板</b></div>
+      <div class="pills"><span class="pill i">衝擊 中</span><span class="pill e">投入 高</span><span class="pill r">風險 中</span></div>
+    </div>
+    <div class="card" data-id="B4">
+      <div class="ch"><span class="code">B4</span><span class="ttl">Fill View（一鍵塞滿最多小節）</span></div>
+      <div class="desc">一個檢視模式：譜面填滿視窗寬度、垂直堆疊、不用橫向捲動就看到最多小節。
+      你已有 ribbon/zoom，這是補一個「總覽」視角。</div>
+      <div class="from">借鏡：<b>Dorico 6 Fill View</b></div>
+      <div class="pills"><span class="pill i">衝擊 中</span><span class="pill e">投入 中</span><span class="pill r">風險 中</span></div>
+    </div>
+  </div>
+
+  <h2>Path C — 大結構 <span class="tag">大投入，建議先緩</span></h2>
+  <p class="pathnote">方向正確但成本高、且部分對「改編工具」定位可能 overkill。列出來讓你知道有這條路。</p>
+  <div class="grid" id="pathC">
+    <div class="card" data-id="C1">
+      <div class="ch"><span class="code">C1</span><span class="ttl">完整 Properties-panel 範式重構</span></div>
+      <div class="desc">把所有編輯操作統一收斂成「選取 → 底部屬性面板」的單一範式（B3 的全面版）。體驗最一致，但要動很多既有面板，風險最高。</div>
+      <div class="from">借鏡：<b>Dorico 整體互動範式</b></div>
+      <div class="pills"><span class="pill i">衝擊 高</span><span class="pill e">投入 很高</span><span class="pill r">風險 高</span></div>
+    </div>
+    <div class="card" data-id="C2">
+      <div class="ch"><span class="code">C2</span><span class="ttl">Engrave 級精準（ruler / grid）</span></div>
+      <div class="desc">Dorico 6 在 Engrave mode 加了尺規與格線。對「出版排版」有用，但 Score Arranger 是改編工具、最終常匯出到 MuseScore/Dorico 細修 — 自己做排版精修可能不划算。<b>傾向不做。</b></div>
+      <div class="from">借鏡：<b>Dorico 6 Engrave ruler/grid</b></div>
+      <div class="pills"><span class="pill i">衝擊 低</span><span class="pill e">投入 很高</span><span class="pill r">風險 中</span></div>
+    </div>
+  </div>
+
+  <h2>🎯 我的建議起手式</h2>
+  <div class="observe">
+    <ul>
+      <li><b>先做 Path A 全部</b>（A1–A4）— 低風險、我可立即開工，幾天內就讓整體質感升一級。<b>A1 收斂頂部 chrome</b> 衝擊最大。</li>
+      <li><b>接著 B2（Proofreading 升級）+ B1（命令面板）</b> — 一個強化核心面板、一個補關鍵人因，兩個都是高 ROI。</li>
+      <li><b>B3/B4 看完上面再決定</b>；<b>Path C 先緩</b>（C2 傾向不做）。</li>
+    </ul>
+    <p style="color:var(--fg2);margin:8px 0 0">視覺改動我無法替你定「好不好看」— 所以走這份決策文件讓你掌方向；勾完我照單實作，每批做完出 build 給你看。</p>
+  </div>
+
+  <p class="legend">衝擊＝對體驗的提升 · 投入＝開發成本 · 風險＝改壞既有功能的機率 · 「可立即做」＝我這輪就能開工</p>
+</div>
+
+<div class="bar">
+  <span class="count">已選 <b id="n">0</b> 項</span>
+  <button class="copy" id="copy">複製決策摘要</button>
+</div>
+<div class="toast" id="toast">已複製到剪貼簿 ✓</div>
+
+<script>
+  const KEY="dorico-ui-picks-v1";
+  const titles={};
+  document.querySelectorAll(".card").forEach(c=>{
+    titles[c.dataset.id]=c.querySelector(".ttl").textContent.replace("🎯 建議","").trim();
+  });
+  const saved=JSON.parse(localStorage.getItem(KEY)||"[]");
+  const sel=new Set(saved);
+  function paint(){
+    document.querySelectorAll(".card").forEach(c=>{
+      c.classList.toggle("on",sel.has(c.dataset.id));
+    });
+    document.getElementById("n").textContent=sel.size;
+    localStorage.setItem(KEY,JSON.stringify([...sel]));
+  }
+  document.querySelectorAll(".card").forEach(c=>{
+    c.addEventListener("click",()=>{
+      const id=c.dataset.id;
+      sel.has(id)?sel.delete(id):sel.add(id);
+      paint();
+    });
+  });
+  paint();
+  document.getElementById("copy").addEventListener("click",()=>{
+    const order=["A1","A2","A3","A4","B1","B2","B3","B4","C1","C2"];
+    const picks=order.filter(id=>sel.has(id));
+    let txt="【Dorico 靈感 — UI/人因 決策】\n我想做：\n";
+    txt+= picks.length? picks.map(id=>"• "+id+" "+titles[id]).join("\n")
+                      : "（尚未勾選）";
+    navigator.clipboard.writeText(txt).then(()=>{
+      const t=document.getElementById("toast");
+      t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);
+    });
+  });
+</script>
+</body>
+</html>
