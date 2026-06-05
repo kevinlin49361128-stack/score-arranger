@@ -37,6 +37,7 @@ import { PanelResizer } from "./components/PanelResizer";
 import { SectionNavigator } from "./components/SectionNavigator";
 import { SetupHint } from "./components/SetupHint";
 import { SourcePanel } from "./components/SourcePanel";
+import { CommandPalette } from "./components/CommandPalette";
 import { StatusBar } from "./components/StatusBar";
 import { TabStrip } from "./components/TabStrip";
 import { TargetPanel } from "./components/TargetPanel";
@@ -488,6 +489,9 @@ export default function App() {
 
       {/* 0.1.61: 獨立節拍器浮動面板 */}
       <MetronomePanel />
+
+      {/* Dorico Jump bar 靈感 B1: ⌘K 命令面板 */}
+      <CommandPalette />
     </div>
   );
 }

@@ -882,4 +882,58 @@ export const IO_STRINGS: BiDict = {
     en: "m. {n}",
     ja: "第 {n} 小節",
   },
+
+  // === CommandPalette (Dorico Jump bar 靈感 B1) ===
+  "palette.placeholder": {
+    "zh-TW": "輸入命令或前往… (⌘K)",
+    en: "Type a command or go to… (⌘K)",
+    ja: "コマンドを入力 / 移動… (⌘K)",
+  },
+  "palette.empty": {
+    "zh-TW": "找不到符合的命令",
+    en: "No matching commands",
+    ja: "一致するコマンドがありません",
+  },
+  "palette.goto": { "zh-TW": "前往", en: "Go to", ja: "移動" },
+  "palette.hint.mode": { "zh-TW": "模式", en: "Mode", ja: "モード" },
+  "palette.cmd.import": {
+    "zh-TW": "匯入樂譜…",
+    en: "Import score…",
+    ja: "楽譜を読み込む…",
+  },
+  "palette.cmd.repertoire": {
+    "zh-TW": "開啟曲庫…",
+    en: "Open repertoire…",
+    ja: "ライブラリを開く…",
+  },
+  "palette.cmd.nlEdit": {
+    "zh-TW": "AI 改譜…",
+    en: "AI edit…",
+    ja: "AI 編集…",
+  },
+  "palette.cmd.export": {
+    "zh-TW": "匯出…",
+    en: "Export…",
+    ja: "書き出し…",
+  },
+  "palette.cmd.metronome": {
+    "zh-TW": "開啟節拍器",
+    en: "Open metronome",
+    ja: "メトロノームを開く",
+  },
+  "palette.cmd.theme": {
+    "zh-TW": "切換深色 / 淺色主題",
+    en: "Toggle dark / light theme",
+    ja: "ダーク / ライトを切替",
+  },
+  "palette.cmd.layout": {
+    "zh-TW": "切換面板版面方向",
+    en: "Toggle panel layout",
+    ja: "パネル配置を切替",
+  },
+  "palette.cmd.heatmap": {
+    "zh-TW": "切換難度熱圖",
+    en: "Toggle difficulty heatmap",
+    ja: "難易度ヒートマップを切替",
+  },
 };
