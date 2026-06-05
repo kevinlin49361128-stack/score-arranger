@@ -2558,6 +2558,36 @@ def _method_timeline_lanes(params: dict[str, Any]) -> dict:
     }
 
 
+def _method_set_title(params: dict[str, Any]) -> dict:
+    """使用者自訂改編標題 → 寫進 target_score.metadata['title']。
+
+    匯出 (PDF/MusicXML) 與譜面顯示共用此標題; 空字串 = 清掉自訂 (回退到來源
+    標題, 再不行就 ir_to_music21 的 'Untitled')。回傳清乾淨的標題 + 新
+    target_musicxml 供前端立即重繪。
+    """
+    from core.ir_to_music21 import clean_export_title
+
+    sess = _session(params)
+    if sess.current_arrangement is None \
+            or sess.current_arrangement.target_score is None:
+        raise ValueError("尚無 arrangement")
+    target = sess.current_arrangement.target_score
+    raw = str(params.get("title") or "").strip()
+    if raw:
+        target.metadata["title"] = raw
+    else:
+        target.metadata.pop("title", None)
+    try:
+        new_xml = write_musicxml_string(target)
+    except Exception:
+        new_xml = None
+    _persist_session(params.get("session_id"))
+    return {
+        "title": clean_export_title(target.metadata.get("title")),
+        "target_musicxml": new_xml,
+    }
+
+
 def _method_apply_bowing(params: dict[str, Any]) -> dict:
     """B3 (opt-in): 對改編譜弦樂聲部加上選擇性弓法 + 圓滑線。支援 undo。
 
@@ -3179,6 +3209,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "audit_playability": _method_audit_playability,
     "tessitura": _method_tessitura,
     "timeline_lanes": _method_timeline_lanes,
+    "set_title": _method_set_title,
     "apply_bowing": _method_apply_bowing,
     "apply_figuration": _method_apply_figuration,
     "to_source_midi": _method_to_source_midi,

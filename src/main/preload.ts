@@ -279,6 +279,8 @@ const api = {
       ipcRenderer.invoke("engine:auditPlayability"),
     tessitura: () => ipcRenderer.invoke("engine:tessitura"),
     timelineLanes: () => ipcRenderer.invoke("engine:timelineLanes"),
+    setTitle: (title: string) =>
+      ipcRenderer.invoke("engine:setTitle", title),
     applyBowing: () =>
       ipcRenderer.invoke("engine:applyBowing"),
     applyFiguration: () =>

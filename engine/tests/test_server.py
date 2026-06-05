@@ -144,6 +144,41 @@ class TestServerMethods:
         finally:
             _srv._CURRENT_ARRANGEMENT = saved
 
+    def test_set_title(self, bach_xml):
+        """自訂標題寫進匯出; 匯出絕不漏 music21 預設 'Music21 Fragment' (回歸)。"""
+        import core.server as _srv
+        handle_request({
+            "id": "st-arr", "method": "arrange",
+            "params": {"path": bach_xml, "target": "violin_piano"},
+        })
+        # 模擬來源把 music21 預設漏進 metadata
+        _srv._CURRENT_ARRANGEMENT.target_score.metadata["title"] = (
+            "Music21 Fragment"
+        )
+        r = handle_request({
+            "id": "st1", "method": "set_title",
+            "params": {"title": "我的改編 v1"},
+        })
+        assert r["ok"]
+        assert r["data"]["title"] == "我的改編 v1"
+        xml = r["data"]["target_musicxml"] or ""
+        assert "我的改編 v1" in xml
+        assert "Music21 Fragment" not in xml
+        # 清空 → 回退乾淨值, 不會變回 Music21 Fragment
+        r2 = handle_request({
+            "id": "st2", "method": "set_title", "params": {"title": ""},
+        })
+        assert "Music21 Fragment" not in (r2["data"]["target_musicxml"] or "")
+
+    def test_clean_export_title(self):
+        """ir_to_music21 標題消毒 — 空 / music21 預設 → Untitled, 正常保留。"""
+        from core.ir_to_music21 import clean_export_title
+        assert clean_export_title("Music21 Fragment") == "Untitled"
+        assert clean_export_title("music21 fragment — Violin") == "Untitled"
+        assert clean_export_title("") == "Untitled"
+        assert clean_export_title(None) == "Untitled"
+        assert clean_export_title("Bach 改編") == "Bach 改編"
+
     def test_arrange_custom_returns_span(self, bach_xml):
         """回歸: arrange_custom 之前漏帶 assignment.span → 前端 MelodyRoutingPanel
         二次套用主旋律路線後 a.span[1] 崩潰。span 必須跟 arrange 一樣帶上。"""

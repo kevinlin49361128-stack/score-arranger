@@ -11,6 +11,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ArrangementIssue, PlayabilityIssue } from "@shared/types";
+import { ArrangementTitle } from "./ArrangementTitle";
 import { AssignmentsPanel } from "./AssignmentsPanel";
 import { TessituraPanel } from "./TessituraPanel";
 import { TimelinePanel } from "./TimelinePanel";
@@ -548,6 +549,7 @@ export function IssuePanel() {
 
   return (
     <div style={{ overflow: "auto", height: "100%" }}>
+      <ArrangementTitle />
       <AssignmentsPanel />
       <TessituraPanel />
       <TimelinePanel />

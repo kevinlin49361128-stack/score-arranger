@@ -207,18 +207,38 @@ def _make_instrument(instrument_id: str) -> Optional[Any]:
 # 主轉換函式
 # ============================================================================
 
+# music21 對無 title 的 Score 匯出時自填的內建預設 (大小寫不敏感前綴比對)
+_MUSIC21_DEFAULT_TITLE = "music21 fragment"
+
+
+def clean_export_title(raw: object) -> str:
+    """匯出標題消毒: 空 / music21 內建預設 → 中性 fallback 'Untitled'。
+
+    匯出 (PDF / MusicXML) 一律經 ir_to_music21, 在此收斂標題, 確保任何來源
+    (corpus fragment / AMT / 無 metadata 匯入) 都不會讓 "Music21 Fragment"
+    外漏到匯出檔。使用者自訂標題會先寫進 metadata['title'], 故會原樣保留。
+    """
+    s = str(raw or "").strip()
+    if not s or s.lower().startswith(_MUSIC21_DEFAULT_TITLE):
+        return "Untitled"
+    return s
+
+
 def ir_to_music21(score: Score) -> m21_stream.Score:
     """Score → music21 Score。"""
     m21_score = m21_stream.Score()
 
     # Metadata
     md = metadata.Metadata()
-    for key in ("title", "composer", "arranger", "copyright"):
+    for key in ("composer", "arranger", "copyright"):
         if key in score.metadata:
             setattr(md, key, score.metadata[key])
-    # 同時設 movementName, 避免 OSMD/music21 viewer 用 "Music21 Fragment" 預設值
-    if "title" in score.metadata:
-        md.movementName = score.metadata["title"]
+    # 標題: 永遠設一個乾淨值, 不讓 music21 匯出時退回內建預設 "Music21 Fragment"。
+    # 來源無標題 (fragment / AMT / 無 metadata 的匯入) → 用中性 fallback;
+    # 漏進來的 "Music21 Fragment" 也濾掉。movementName 同步設, OSMD/verovio 共用。
+    title = clean_export_title(score.metadata.get("title"))
+    md.title = title
+    md.movementName = title
     m21_score.insert(0, md)
 
     # Parts

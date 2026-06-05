@@ -285,6 +285,11 @@ declare global {
         timelineLanes: () => Promise<
           IpcResponse<import("./generated/rpc-types").TimelineLanesRes>
         >;
+        setTitle: (
+          title: string,
+        ) => Promise<
+          IpcResponse<{ title: string; target_musicxml: string | null }>
+        >;
         applyBowing: () => Promise<
           IpcResponse<{
             target_musicxml: string | null;

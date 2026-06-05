@@ -538,6 +538,19 @@ export const IO_STRINGS: BiDict = {
   "viz.timeline.measure": {
     "zh-TW": "小節", en: "m.", ja: "小節",
   },
+  "arrange.title.label": {
+    "zh-TW": "標題", en: "Title", ja: "タイトル",
+  },
+  "arrange.title.placeholder": {
+    "zh-TW": "為這份改編命名…",
+    en: "Name this arrangement…",
+    ja: "この編曲に名前を…",
+  },
+  "arrange.title.hint": {
+    "zh-TW": "改編標題 — 會印在匯出的譜上 (PDF / MusicXML)。留空則用來源標題。",
+    en: "Arrangement title — printed on exported scores (PDF / MusicXML). Blank uses the source title.",
+    ja: "編曲タイトル — 書き出した楽譜 (PDF / MusicXML) に印刷されます。空欄なら元の曲名。",
+  },
   "playback.mute.title": {
     "zh-TW": "靜音聲部 — 開始播放後可選擇要靜音哪些 track",
     en: "Mute parts — pick which tracks to silence (available after first playback)",

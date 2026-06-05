@@ -23,6 +23,7 @@ import {
   auditPlayability,
   tessitura,
   timelineLanes,
+  setTitle,
   applyBowing,
   applyFiguration,
   exportTargetMidi,
@@ -550,6 +551,9 @@ function registerIpcHandlers(): void {
   ipcMain.handle("engine:tessitura", async () => safeCall(() => tessitura()));
   ipcMain.handle("engine:timelineLanes", async () =>
     safeCall(() => timelineLanes()),
+  );
+  ipcMain.handle("engine:setTitle", async (_evt, title: string) =>
+    safeCall(() => setTitle(title)),
   );
   ipcMain.handle(
     "engine:applyBowing",
