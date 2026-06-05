@@ -1129,6 +1129,39 @@ def build_target_score(
     # 3. 處理每個 assignment
     src_by_id = {p.part_id: p for p in source.parts}
     player_by_id = {p.player_id: p for p in players}
+
+    # 預先算每個 target part 的整體 source 音域 → 統一八度位移 (保旋律輪廓)。
+    # 逐音 fold 會把跨樂器音域的旋律打碎 (大提琴→小提琴: 低音被 +8va、本就在域內
+    # 的高音不動 → 輪廓錯亂)。改成整個 part 一致位移, 讓底部進範圍且保持音程關係。
+    part_pitches: dict[tuple[str, Staff], list[int]] = {}
+    for assignment in assignments:
+        sp = src_by_id.get(assignment.source_part_id)
+        key = (assignment.target_player_id, assignment.target_staff)
+        if sp is None or key not in target_parts:
+            continue
+        span_lo, span_hi = assignment.span
+        bucket = part_pitches.setdefault(key, [])
+        for src_m in sp.measures:
+            if not (span_lo <= src_m.number <= span_hi):
+                continue
+            for voice in src_m.voices.values():
+                if voice.is_divisi:
+                    continue
+                for ev in voice.events:
+                    if isinstance(ev, NoteEvent):
+                        bucket.append(ev.pitch.midi_number)
+                    elif isinstance(ev, ChordEvent):
+                        bucket.extend(p.midi_number for p in ev.pitches)
+    part_shift: dict[tuple[str, Staff], int] = {}
+    for key, tp in target_parts.items():
+        prof = get_profile(tp.instrument_id)
+        pitches = part_pitches.get(key)
+        if prof is not None and pitches:
+            lo, hi = prof.range_comfortable
+            part_shift[key] = _part_octave_shift(pitches, lo, hi)
+        else:
+            part_shift[key] = 0
+
     for assignment in assignments:
         src_part = src_by_id.get(assignment.source_part_id)
         if src_part is None:
@@ -1142,6 +1175,8 @@ def build_target_score(
         profile = get_profile(assignment.target_instrument)
         target_player = player_by_id.get(assignment.target_player_id)
         skill = target_player.skill_level if target_player else "professional"
+        shift = part_shift.get(
+            (assignment.target_player_id, assignment.target_staff), 0)
 
         # 依 assignment.span 裁切 — 樂句級換手時各 MELODY 指派只負責自己的
         # 樂句範圍; 非換手指派的 span 即整個 section, 行為不變。
@@ -1158,7 +1193,7 @@ def build_target_score(
                 if voice.is_divisi:
                     continue
                 for event in voice.events:
-                    new_event = _transform_event(event, profile, skill)
+                    new_event = _transform_event(event, profile, skill, shift)
                     if new_event is not None:
                         tgt_m.voices[1].events.append(new_event)
 
@@ -1231,10 +1266,51 @@ def _remap_hairpins(
     return out
 
 
-def _transform_event(event, profile, skill_level: str = "professional"):
-    """套用音域調整 (octave shift) 若超出 comfortable range.
+def _part_octave_shift(pitches: list[int], low: int, high: int) -> int:
+    """整個 part 的統一八度位移 (12 的倍數): 讓主體落進 [low,high]。
 
-    skill_level 影響和弦複雜度上限:
+    用第 10 百分位 (非絕對最低音) 當「有效底部」→ 少數極低離群音 (例: 巴洛克大
+    提琴偶觸 C2) 不會把整條線過度上移; 沿用慣例 (大提琴→小提琴 +1 八度), 那 2%
+    離群音的殘餘交給 _fit_pitch_octaves 折回。上移後頂部爆高且底部有餘裕才下移。
+    """
+    if not pitches:
+        return 0
+    s = sorted(pitches)
+    eff_low = s[len(s) // 10]      # 10th percentile — 略過極低離群
+    pmax = s[-1]
+    shift = 0
+    while eff_low + shift < low:
+        shift += 12
+    while pmax + shift > high and eff_low + shift - 12 >= low:
+        shift -= 12
+    return shift
+
+
+def _fit_pitch_octaves(p: Pitch, octave_shift: int, low: int, high: int) -> Pitch:
+    """套統一八度位移後, 把仍超出 [low,high] 的折回 (皆整八度)。
+
+    用 _shift_pitch_semitones 一次套淨位移 → 拼寫/八度數正確更新 (修舊版逐音
+    fold 只改 midi、拼寫沒跟著走, 導致渲染落在原八度/超界的 bug)。
+    """
+    net = octave_shift
+    midi = p.midi_number + net
+    while midi < low:
+        net += 12
+        midi += 12
+    while midi > high:
+        net -= 12
+        midi -= 12
+    return _shift_pitch_semitones(p, net) if net != 0 else copy.deepcopy(p)
+
+
+def _transform_event(
+    event, profile, skill_level: str = "professional", octave_shift: int = 0,
+):
+    """把事件搬進 target: 整個 part 一致的八度位移 (保旋律輪廓) + 殘餘折回音域
+    + 依 skill 縮減和弦。
+
+    octave_shift 由 build_target_score 依整個 target part 的音域算出 (取代逐音
+    fold — 逐音會把跨樂器音域的旋律輪廓打碎)。skill_level 影響和弦複雜度上限:
     - amateur: 最多 2 音 (頂 + 底)
     - intermediate: 最多 3 音 (頂 + 底 + 中)
     - professional: 不限 (用樂器 max_simultaneous_notes)
@@ -1248,19 +1324,19 @@ def _transform_event(event, profile, skill_level: str = "professional"):
     low, high = profile.range_comfortable
 
     if isinstance(event, NoteEvent):
-        new_midi = _adjust_octave(event.pitch.midi_number, low, high)
-        if new_midi == event.pitch.midi_number:
+        new_pitch = _fit_pitch_octaves(event.pitch, octave_shift, low, high)
+        if new_pitch.midi_number == event.pitch.midi_number:
             return copy.deepcopy(event)
         note_event = copy.deepcopy(event)
-        note_event.pitch = Pitch(midi_number=new_midi, spelling=event.pitch.spelling)
+        note_event.pitch = new_pitch
         return note_event
 
     if isinstance(event, ChordEvent):
         chord_event = copy.deepcopy(event)
-        adjusted = []
-        for p in event.pitches:
-            new_midi = _adjust_octave(p.midi_number, low, high)
-            adjusted.append(Pitch(midi_number=new_midi, spelling=p.spelling))
+        adjusted = [
+            _fit_pitch_octaves(p, octave_shift, low, high)
+            for p in event.pitches
+        ]
         # 去重 (調整後可能有同音高)
         seen = set()
         unique = []

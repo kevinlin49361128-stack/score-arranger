@@ -560,3 +560,57 @@ def test_sample_arranges_non_empty_and_full_length(sample):
     assert tgt_measures >= src_max * 0.5, (
         f"{sample} 被截斷: target {tgt_measures} 小節 vs source max {src_max}"
     )
+
+
+# ============================================================================
+# 跨樂器音域: 整 part 統一八度位移 (取代逐音 fold) — 大提琴→小提琴回歸
+# ============================================================================
+
+def test_part_octave_shift_ignores_low_outliers():
+    """少數極低離群音不該把整條線過度上移 (慣例 +12, 非 +24)。"""
+    from core.arranger import _part_octave_shift
+    # 多數在 G2-G4 (43-67), 加 2 個 C2(36) 離群; 10th 百分位 ≈ 43
+    pitches = [36, 36] + [43, 50, 59, 67] * 5
+    assert _part_octave_shift(pitches, 55, 100) == 12  # 不是 24
+
+
+def test_fit_pitch_octaves_updates_spelling():
+    """八度位移後拼寫的八度數要正確更新 (修 stale spelling bug)。"""
+    from core.arranger import _fit_pitch_octaves
+    out = _fit_pitch_octaves(Pitch(43, "G2"), 12, 55, 100)
+    assert out.midi_number == 55
+    assert out.spelling == "G3"  # 非 stale "G2"
+
+
+def test_cross_range_preserves_contour():
+    """大提琴線→小提琴: 主體統一位移保旋律輪廓 (不再逐音打碎), 拼寫對齊 midi。"""
+    from core.arranger import build_target_score
+    # 上行琶音 G2 D3 B3 (43,50,59) — 模擬巴洛克大提琴開頭
+    src = Score(
+        metadata={},
+        movements=[Movement(movement_id=1, sections=[
+            Section(section_id=0, start_measure=1, end_measure=1)])],
+        parts=[Part(part_id="vc", name_display="Cello", instrument_id="cello",
+            measures=[Measure(number=1, voices={1: Voice(voice_id=1, events=[
+                _note(43, onset=Fraction(0)), _note(50, onset=Fraction(1)),
+                _note(59, onset=Fraction(2)),
+            ])})])],
+    )
+    players = [Player(player_id="v1", display_name="Violin",
+        instruments=["violin"], primary_instrument="violin", staves=1)]
+    assignments = [Assignment(assignment_id=0, source_part_id="vc",
+        target_player_id="v1", target_instrument="violin", target_staff="main",
+        span=(1, 1), function=VoiceFunction.MELODY)]
+    section = Section(section_id=0, start_measure=1, end_measure=1)
+    tgt = build_target_score(src, players, assignments, section)
+    notes = [e for p in tgt.parts for m in p.measures
+             for e in m.voices[1].events if isinstance(e, NoteEvent)]
+    midis = [n.pitch.midi_number for n in notes]
+    # 統一 +12 → 55,62,71 (輪廓 = 上行, 跟來源 43,50,59 一致)
+    assert midis == [55, 62, 71]
+    assert all(m >= 55 for m in midis)            # 皆進小提琴音域
+    # 拼寫八度數對齊 midi (非 stale)
+    names = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
+    for n in notes:
+        implied = f"{names[n.pitch.midi_number % 12]}{n.pitch.midi_number // 12 - 1}"
+        assert n.pitch.spelling == implied
