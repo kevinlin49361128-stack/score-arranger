@@ -168,8 +168,10 @@ export const ScoreViewer = forwardRef<HTMLDivElement, ScoreViewerProps>(
     const setZoom = useSessionStore((s) => s.setZoom);
     const autoFit = useSessionStore((s) => s.autoFit);
     const panelLayout = useSessionStore((s) => s.panelLayout);
-    // 上下排列時 → 改用 ribbon 模式 (單行水平卷軸)
-    const isRibbon = panelLayout === "vertical";
+    const fillView = useSessionStore((s) => s.fillView);
+    // 上下排列時 → 改用 ribbon 模式 (單行水平卷軸);
+    // B4 Fill View 開啟時強制 page 模式 (系統換行堆疊, 看最多小節)。
+    const isRibbon = !fillView && panelLayout === "vertical";
     // 防止 autoFit 在多面板間競爭: 只讓有 musicXml 的第一個 panel 主導
     // 簡化: 以 containerRef 寬度為基準
     const autoFitIterRef = useRef(0);

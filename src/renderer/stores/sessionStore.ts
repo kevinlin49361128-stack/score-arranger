@@ -377,6 +377,10 @@ interface SessionState {
   showHeatmap: boolean;
   toggleHeatmap: () => void;
 
+  // Dorico Fill View 靈感 B4: 強制 page 模式 (系統換行堆疊), 一眼看最多小節。
+  fillView: boolean;
+  toggleFillView: () => void;
+
   /** 0.1.55 改編譜顯示音模式:
    * - "written" (預設): 玩家手上的譜, 移調樂器顯示記譜音
    * - "sounding": 總譜 / concert pitch, 實際發聲音高 (老師看實音對齊用)
@@ -809,6 +813,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   showHeatmap: false,
   toggleHeatmap: () => set((s) => ({ showHeatmap: !s.showHeatmap })),
+  fillView: false,
+  toggleFillView: () => set((s) => ({ fillView: !s.fillView })),
 
   displayPitchMode: "written",
   setDisplayPitchMode: (m) => set({ displayPitchMode: m }),

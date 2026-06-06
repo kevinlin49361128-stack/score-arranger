@@ -128,6 +128,13 @@ export function CommandPalette() {
         keywords: "heatmap 難度 熱圖",
         run: () => s.toggleHeatmap(),
       },
+      {
+        id: "act:fillview",
+        label: tr("palette.cmd.fillView"),
+        hint: "",
+        keywords: "fill view 塞滿 最多小節 page 檢視",
+        run: () => s.toggleFillView(),
+      },
     ];
   };
 

@@ -936,4 +936,9 @@ export const IO_STRINGS: BiDict = {
     en: "Toggle difficulty heatmap",
     ja: "難易度ヒートマップを切替",
   },
+  "palette.cmd.fillView": {
+    "zh-TW": "切換 Fill View（塞滿最多小節）",
+    en: "Toggle Fill View",
+    ja: "Fill View を切替",
+  },
 };

@@ -143,6 +143,8 @@ export function Toolbar() {
     toggleInfoPanelPos,
     showHeatmap,
     toggleHeatmap,
+    fillView,
+    toggleFillView,
   } = useSessionStore();
   const [enableRepair, setEnableRepair] = useState(true);
   const [locale, setLocaleState] = useState(getLocale());
@@ -923,6 +925,20 @@ export function Toolbar() {
           : tr("toolbar.infoPanel.toSide")}
       >
         {infoPanelPos === "side" ? "◧" : "▭"}
+      </button>
+      {/* B4 Fill View: 強制 page 模式塞滿最多小節 (Dorico 靈感) */}
+      <button
+        onClick={toggleFillView}
+        style={{
+          ...btnIcon,
+          background: fillView ? "var(--accent)" : btnIcon.background,
+          color: fillView ? "var(--accent-fg)" : btnIcon.color,
+        }}
+        title={fillView
+          ? tr("toolbar.fillView.off")
+          : tr("toolbar.fillView.on")}
+      >
+        ▦
       </button>
     </>
   );

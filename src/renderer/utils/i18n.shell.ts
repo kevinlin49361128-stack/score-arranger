@@ -221,6 +221,14 @@ export const SHELL_STRINGS: BiDict = {
     "zh-TW": "顯示難度熱圖", en: "Show difficulty heatmap",
     ja: "難易度ヒートマップを表示",
   },
+  "toolbar.fillView.on": {
+    "zh-TW": "Fill View：塞滿最多小節", en: "Fill View: show the most measures",
+    ja: "Fill View：最多の小節を表示",
+  },
+  "toolbar.fillView.off": {
+    "zh-TW": "關閉 Fill View（回單行）", en: "Turn off Fill View",
+    ja: "Fill View をオフ",
+  },
   "toolbar.layout.toHorizontal": {
     "zh-TW": "切為左右排列 (⌘\\)", en: "Switch to side-by-side layout (⌘\\)",
     ja: "左右レイアウトに切り替え (⌘\\)",
