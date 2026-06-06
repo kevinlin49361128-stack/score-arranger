@@ -29,8 +29,21 @@ import {
 import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
 import { MetronomeVoice } from "../utils/metronomeSounds";
+import { VSCO2_MANIFEST } from "../data/vsco2Manifest";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
+
+// 弦樂 B 路: VSCO2 標籤比 concert pitch 低一個八度 (violin 最低標 A2、
+// cello C1, 兩樂器一致), 載入 sampler 前統一 +1 八度校正。
+function shiftNoteOctave(note: string, delta: number): string {
+  const m = note.match(/^([A-G][#b]?)(-?\d+)$/);
+  return m ? `${m[1]}${Number.parseInt(m[2], 10) + delta}` : note;
+}
+function vscoLayerUrls(layer: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [n, u] of Object.entries(layer)) out[shiftNoteOctave(n, 1)] = u;
+  return out;
+}
 
 const SALAMANDER_BASE = "https://tonejs.github.io/audio/salamander/";
 // nbrosowsky/tonejs-instruments: 多種樂器 sample 集合, MIT,可線上載入
@@ -574,6 +587,12 @@ export function PlaybackControls(
   const celloFilterRef = useRef<Tone.Filter | null>(null);
   const violinPannerRef = useRef<Tone.Panner | null>(null);
   const celloPannerRef = useRef<Tone.Panner | null>(null);
+  // 弦樂 B 路②: VSCO2 多 articulation 取樣 bank — 目前先做 sustain 的
+  //   soft/loud 兩力度層。載入成功就優先用它取代 nbrosowsky 弦樂底色。
+  //   結構: { violin: { soft, loud }, cello: { soft, loud } }。
+  const vscoBankRef = useRef<
+    Record<string, { soft: Tone.Sampler; loud: Tone.Sampler }>
+  >({});
   const samplesLoadedRef = useRef(false);
   const sampleLoadFailedRef = useRef(false);
   // 防重入: 啟動播放是 async (取 MIDI + 首次載入取樣)。期間若再次點擊,
@@ -633,6 +652,11 @@ export function PlaybackControls(
       celloFilterRef.current?.dispose?.();
       violinPannerRef.current?.dispose?.();
       celloPannerRef.current?.dispose?.();
+      for (const bank of Object.values(vscoBankRef.current)) {
+        bank.soft.dispose?.();
+        bank.loud.dispose?.();
+      }
+      vscoBankRef.current = {};
       metronomeVoiceRef.current?.dispose();
       pianoRef.current = null;
       violinRef.current = null;
@@ -807,8 +831,19 @@ export function PlaybackControls(
       // 同 dB 聽感上明顯弱; 提升到 -2 補償, 讓獨奏 / 合奏 (小提琴+大鍵琴) 平衡。
       const harpsichord =
         buildSampler(HARPSICHORD_URLS, HARPSICHORD_BASE, 0.4, -2);
+      // 弦樂 B 路②: VSCO2 sustain soft/loud (絕對 URL → baseUrl 空字串)。
+      //   note 標籤 +1 八度校正; 走 jsDelivr WAV 懶載入。
+      const vVlnSoft = buildSampler(
+        vscoLayerUrls(VSCO2_MANIFEST.violin.sustain.soft), "", 0.6, -8);
+      const vVlnLoud = buildSampler(
+        vscoLayerUrls(VSCO2_MANIFEST.violin.sustain.loud), "", 0.6, -8);
+      const vVcSoft = buildSampler(
+        vscoLayerUrls(VSCO2_MANIFEST.cello.sustain.soft), "", 0.8, -8);
+      const vVcLoud = buildSampler(
+        vscoLayerUrls(VSCO2_MANIFEST.cello.sustain.loud), "", 0.8, -8);
       const all = [
         piano, violin, cello, flute, clarinet, guitar, harp, harpsichord,
+        vVlnSoft, vVlnLoud, vVcSoft, vVcLoud,
       ];
       await Promise.all(all.map((x) => x.ready));
 
@@ -841,6 +876,31 @@ export function PlaybackControls(
           cello.sampler.connect(bus);
         }
       }
+      // 弦樂 B 路②: VSCO2 sustain 兩力度層都載入成功才啟用該樂器的 bank,
+      //   並把兩個 sampler 都改接弦樂鏈 (filter→panner→vibrato)。任一層失敗
+      //   就不建 bank → schedule loop 自動退回 nbrosowsky violin/cello。
+      const settleVsco = (
+        key: string,
+        soft: { sampler: Tone.Sampler },
+        loud: { sampler: Tone.Sampler },
+        chainIn: typeof violinChainIn,
+      ) => {
+        if (!soft.sampler.loaded || !loud.sampler.loaded) return;
+        for (const s of [soft.sampler, loud.sampler]) {
+          try {
+            s.disconnect();
+            s.connect(chainIn);
+          } catch {
+            s.connect(bus);
+          }
+        }
+        vscoBankRef.current[key] = {
+          soft: soft.sampler,
+          loud: loud.sampler,
+        };
+      };
+      settleVsco("violin", vVlnSoft, vVlnLoud, violinChainIn);
+      settleVsco("cello", vVcSoft, vVcLoud, celloChainIn);
       fluteRef.current = flute.sampler.loaded
         ? flute.sampler
         : fallbackRef.current;
@@ -1393,6 +1453,9 @@ export function PlaybackControls(
             // A1 力度→亮度: 弓弦在每個音 onset 把該樂器 lowpass cutoff 滑到
             //   對應頻率 — pp 暗 (~3kHz)、ff 亮 (~11kHz), 模擬真實弓壓泛音變化.
             //   setTargetAtTime 20ms 平滑避免 cutoff 跳變的 zipper 雜訊.
+            // 弦樂 B 路②: 若 VSCO2 bank 已載入, 用它取代 nbrosowsky 底色,
+            //   並依力度挑 soft/loud 力度層 (門檻 0.5)。否則退回 instrument。
+            let target = instrument;
             if (isBowedString) {
               const filt =
                 key === "violin"
@@ -1402,8 +1465,10 @@ export function PlaybackControls(
                 const cutoff = 3000 + playVel ** 1.4 * 8000;
                 filt.frequency.setTargetAtTime(cutoff, time, 0.02);
               }
+              const bank = vscoBankRef.current[key];
+              if (bank) target = playVel < 0.5 ? bank.soft : bank.loud;
             }
-            instrument.triggerAttackRelease(trigPitch, noteDur, time, playVel);
+            target.triggerAttackRelease(trigPitch, noteDur, time, playVel);
           }, noteTime);
           scheduledIdsRef.current.push(id);
           if (noteTime + noteDur > lastTime) {
