@@ -293,15 +293,15 @@ function Overview() {
       </p>
 
       {/*
-        贊助區塊 — 完全自願, 不影響任何功能可用性. LMS 批准產品後把 href
-        改成 product 直連 (目前指向 store 首頁也合法可用).
-        TODO: LMS 批准後改成 https://kevin-lin.lemonsqueezy.com/buy/<UUID>
+        贊助區塊 — 完全自願, 不影響任何功能可用性.
+        0.1.104: Lemon Squeezy 拒收純贊助 (只收賣商品的 MoR), 改用 GitHub
+        Sponsors。帳號需先在 GitHub 啟用 Sponsors; 啟用前此連結會導到個人頁。
       */}
       <H2>{t("about.overview.supportHeading")}</H2>
       <p>{t("about.overview.supportIntro")}</p>
       <p style={{ marginTop: 8 }}>
         <a
-          href="https://kevin-lin.lemonsqueezy.com"
+          href="https://github.com/sponsors/kevinlin49361128-stack"
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -315,7 +315,7 @@ function Overview() {
             fontSize: 13,
           }}
         >
-          ☕ {t("about.overview.supportCta")}
+          ❤ {t("about.overview.supportCta")}
         </a>
       </p>
       <p style={{

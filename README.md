@@ -97,8 +97,7 @@ Score Arranger 是免費的開源軟體，所有功能都不付費鎖定。若�
 - 程式碼簽章 + macOS 公證
 - 開發時間（新樂器、新編制、Bug 修復）
 
-<!-- TODO: LMS 批准後改成 product 直連 -->
-**[☕ Buy me a coffee on Lemon Squeezy](https://kevin-lin.lemonsqueezy.com)** _(Pay what you want; minimum $1)_
+**[❤ Sponsor on GitHub](https://github.com/sponsors/kevinlin49361128-stack)**
 
 贊助是純粹自願 — 不影響任何功能可用性。
 

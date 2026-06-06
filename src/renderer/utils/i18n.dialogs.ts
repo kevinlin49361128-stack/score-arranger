@@ -137,28 +137,28 @@ export const DIALOG_STRINGS: BiDict = {
   "about.overview.supportIntro": {
     "zh-TW":
       "Score Arranger 是免費的開源軟體, 所有功能都不付費鎖定. 若這個工具 "
-      + "對你有幫助, 歡迎透過 Lemon Squeezy 隨意贊助 — 贊助會用於 "
+      + "對你有幫助, 歡迎透過 GitHub Sponsors 隨意贊助 — 贊助會用於 "
       + "Apple Developer 年費、程式碼簽章 + 公證、以及新功能開發.",
     en:
       "Score Arranger is free, open-source software with no paywalled features. "
-      + "If this tool helps you, consider supporting development via Lemon "
-      + "Squeezy — donations cover the Apple Developer fee, code signing + "
+      + "If this tool helps you, consider supporting development via GitHub "
+      + "Sponsors — donations cover the Apple Developer fee, code signing + "
       + "notarization, and time for new features.",
     ja:
       "Score Arranger は無料のオープンソースソフトウェアで, ペイウォール機能は "
-      + "ありません. このツールがあなたの役に立ったら, Lemon Squeezy を通じて "
+      + "ありません. このツールがあなたの役に立ったら, GitHub Sponsors を通じて "
       + "開発を支援することをご検討ください — 寄付は Apple Developer 年会費、 "
       + "コード署名 + 公証、新機能開発の時間に充てられます.",
   },
   "about.overview.supportCta": {
-    "zh-TW": "在 Lemon Squeezy 贊助",
-    en: "Support on Lemon Squeezy",
-    ja: "Lemon Squeezy で支援する",
+    "zh-TW": "在 GitHub 贊助",
+    en: "Sponsor on GitHub",
+    ja: "GitHub でスポンサー",
   },
   "about.overview.supportNote": {
-    "zh-TW": "Pay what you want · 最低 $1 · 完全自願, 不影響任何功能",
-    en: "Pay what you want · minimum $1 · fully voluntary, no features gated",
-    ja: "Pay what you want · 最低 $1 · 完全に任意, 機能制限なし",
+    "zh-TW": "完全自願 · 不影響任何功能",
+    en: "Fully voluntary · no features gated",
+    ja: "完全に任意 · 機能制限なし",
   },
 
   "about.overview.versionHeading": {
