@@ -8,7 +8,7 @@
  * - 其他: PolySynth 退路
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
 import { useSessionStore } from "../stores/sessionStore";
@@ -43,6 +43,18 @@ function vscoLayerUrls(layer: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [n, u] of Object.entries(layer)) out[shiftNoteOctave(n, 1)] = u;
   return out;
+}
+
+// 速度顯示根本修: 從原譜 MusicXML 直接讀 BPM (<sound tempo> 優先, 否則
+// <per-minute>)。原譜播放器原本借用「改編譜」的 tempo, 沒改編時就退成 %;
+// 改讀原譜自己的速度後, 還沒改編也能顯示 ♩=BPM + 義式術語。
+function parseSourceBpm(xml: string | null): number | null {
+  if (!xml) return null;
+  const sound = xml.match(/<sound\b[^>]*\btempo="([\d.]+)"/);
+  if (sound) return Math.round(Number.parseFloat(sound[1]));
+  const perMin = xml.match(/<per-minute>\s*([\d.]+)\s*<\/per-minute>/);
+  if (perMin) return Math.round(Number.parseFloat(perMin[1]));
+  return null;
 }
 
 const SALAMANDER_BASE = "https://tonejs.github.io/audio/salamander/";
@@ -354,6 +366,8 @@ export function PlaybackControls(
   /** 慢速練習 — 1.0 = 原速, 0.75 = 75%, 0.5 = 50%. 排程時把 note.time /
    * note.duration 都 ×(1/rate), measureStarts 同樣縮放, 所以播放游標跟得上. */
   const [playbackRate, setPlaybackRate] = useState<number>(1);
+  // 速度顯示根本修: 原譜自己的 BPM (從 sourceMusicXML 解析, 換曲才重算)。
+  const sourceBpm = useMemo(() => parseSourceBpm(sourceMusicXML), [sourceMusicXML]);
   /** 0.1.54 D: 節拍器 — 開啟後播放時每拍打點. */
   const [metronomeEnabled, setMetronomeEnabled] = useState<boolean>(false);
   /** 聲部 mute — set of track index. 在 handlePlay scheduling 時跳過. */
@@ -1721,7 +1735,11 @@ export function PlaybackControls(
       {/* 0.1.61: 速度改用 BPM (取代 1.5x/0.75x 倍率) — 顯示實際 ♩=BPM + 義式術語.
           base 取自樂譜 tempo; 沒有時退回百分比。練習用很常切, compact 也顯示。 */}
       {(() => {
-        const baseBpm = arrangement?.tempo?.base_bpm ?? null;
+        // 根本修: 原譜播放器讀「原譜自己」的 BPM; 改編譜/工具列讀改編譜 tempo,
+        // 沒改編時退回原譜 BPM。一律有值 (預設 120) → 永遠顯示 ♩=BPM 而非 %。
+        const baseBpm = side === "source"
+          ? (sourceBpm ?? 120)
+          : (arrangement?.tempo?.base_bpm ?? sourceBpm ?? 120);
         const RATE_OPTS = [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.25, 1.5];
         const effBpm = baseBpm != null
           ? Math.round(baseBpm * playbackRate)
