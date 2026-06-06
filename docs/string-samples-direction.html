@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弦樂 B 路 — 多 articulation 取樣庫選擇</title>
+<style>
+  :root{
+    --bg:#16140f; --bg2:#1e1b14; --card:#221e16; --card2:#28231a;
+    --fg:#f3ead7; --fg2:#c7bda6; --muted:#8f876f;
+    --gold:#d9aa63; --gold-soft:#e9c98f; --line:#3a3225;
+    --green:#7bbf73; --red:#d77; --blue:#7aa2ff;
+    --r:14px; --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(160deg,#16140f,#1a1710 60%,#14120d);
+    color:var(--fg);font:15px/1.6 -apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    padding:40px 22px 120px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:29px;margin:0 0 6px}
+  h1 .sub{color:var(--gold);font-weight:600}
+  .lede{color:var(--fg2);max-width:800px;margin:0 0 8px}
+  .meta{color:var(--muted);font-size:13px;margin-bottom:28px}
+  h2{font-size:20px;margin:36px 0 4px;border-left:3px solid var(--gold);padding-left:12px}
+  h2 .tag{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+  .pathnote{color:var(--fg2);margin:6px 0 16px;font-size:14px}
+  .observe{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+    padding:18px 22px;margin:14px 0}
+  .observe h3{margin:0 0 10px;font-size:16px;color:var(--gold-soft)}
+  .observe ul{margin:6px 0;padding-left:20px}
+  .observe li{margin:5px 0;color:var(--fg2)}
+  .observe li b{color:var(--fg)}
+  .counter{border-left:3px solid var(--red);background:rgba(221,119,119,.06);
+    padding:12px 18px;border-radius:8px;margin:14px 0;color:var(--fg2);font-size:14px}
+  .counter b{color:var(--red)}
+  .grid{display:grid;gap:13px;margin:8px 0}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:15px 17px;transition:.22s var(--ease);cursor:pointer;position:relative}
+  .card:hover{border-color:var(--gold);background:var(--card2);transform:translateY(-1px)}
+  .card.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(217,170,99,.10),rgba(217,170,99,.02))}
+  .card.on::after{content:"✓";position:absolute;top:11px;right:13px;color:var(--gold);
+    font-weight:700;font-size:17px}
+  .ch{display:flex;align-items:baseline;gap:9px}
+  .ch .code{font:600 12px ui-monospace,monospace;color:var(--gold);min-width:26px}
+  .ch .ttl{font-size:15.5px;font-weight:600}
+  .rec{font-size:11px;background:var(--gold);color:#1a1510;border-radius:20px;
+    padding:1px 9px;font-weight:700;margin-left:6px}
+  .desc{color:var(--fg2);font-size:13.5px;margin:7px 0 9px;padding-left:35px}
+  .pills{display:flex;gap:7px;flex-wrap:wrap;padding-left:35px}
+  .pill{font-size:11.5px;border-radius:6px;padding:2px 9px;border:1px solid var(--line);color:var(--fg2)}
+  .pill.g{border-color:#4a6b46;color:var(--green)}
+  .pill.w{border-color:#6b5a46;color:var(--gold-soft)}
+  .pill.r{border-color:#6b4646;color:var(--red)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,18,13,.94);
+    border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:14px 22px;
+    display:flex;align-items:center;gap:16px;justify-content:center;z-index:9}
+  .bar .count{color:var(--fg2);font-size:14px}
+  .bar .count b{color:var(--gold);font-size:17px}
+  button.copy{background:var(--gold);color:#1a1510;border:0;border-radius:10px;
+    padding:11px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:.2s var(--ease)}
+  button.copy:hover{background:var(--gold-soft);transform:translateY(-1px)}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--green);color:#0e1a0c;padding:10px 20px;border-radius:10px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.3s var(--ease)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .legend{color:var(--muted);font-size:12.5px;margin:18px 0 0;text-align:center}
+  code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:5px;font-size:13px}
+  a{color:var(--gold-soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>弦樂 B 路 — <span class="sub">多 articulation 取樣庫</span></h1>
+  <p class="lede">你選了「啟動弦樂 B 路取樣庫」—— 這是音質真正的天花板。
+  A 路（已做）只是在現有單一持續音樣本上做處理；要質變必須換成<b>多演奏法 + 力度層</b>的取樣庫。
+  庫的選擇其實很清楚（見下），真正要你拍板的是<b>範圍取捨</b>（決定容量 / 真實度 / 工時）。勾完貼回給我即可開工。</p>
+  <p class="meta">2026-06-06 · 已查 VSCO2 CE / Sonatina / Iowa / Virtual Playing Orchestra 現況與授權</p>
+
+  <div class="observe">
+    <h3>📌 取樣庫：VSCO2 CE 幾乎是唯一正解</h3>
+    <ul>
+      <li><b>VSCO2 Community Edition</b> = <b>CC0 公共領域</b>（零授權摩擦，連 attribution 都免）、Versilian 用專業器材重錄、含 violin/viola/cello/bass、<b>50+ articulations</b>（pizzicato、spiccato、tremolo、mute…），GitHub 開源 (WAV/SFZ)。對你（GPL 開源 + 教學）是完美匹配。</li>
+      <li>其他庫都更麻煩：Iowa MIS（公共領域、音質最高但<b>原始未處理</b>、超大）、Sonatina SSO（要 attribution、音色拼湊不一致）、Virtual Playing Orchestra（混多庫、要 attribution）。</li>
+    </ul>
+    <p style="color:var(--fg2);margin:8px 0 0">所以「選哪個庫」我直接建議 <b style="color:var(--gold-soft)">VSCO2 CE</b>。下面庫卡片預設幫你勾好它，其餘列出只為完整。</p>
+  </div>
+
+  <div class="counter">
+    <b>⚖️ 先講清楚工程量與反方：</b>這是整個音質工程<b>最大的一塊</b> —— 要把 WAV 轉成 web 友善的逐音檔、走 corpus CDN 懶載入（不灌 DMG）、寫多 articulation sampler bank、把引擎已標的演奏法（pizz/staccato…）路由到對應樣本（B2）、加力度層（B3）。預估<b>數天到一週</b>。
+    反方：Score Arranger 是<b>改編工具</b>，播放是預覽/陪練不是成品 —— 但你的客群是教學/陪練，音質對他們有實際價值，且這是你主動選的方向。重點是<b>範圍別爆</b>：下面預設配置刻意走「明顯變好但容量可控」。
+  </div>
+
+  <h2>① 取樣庫 <span class="tag">選一個（已預勾建議）</span></h2>
+  <div class="grid g2" id="lib">
+    <div class="card on" data-id="LIB_VSCO2">
+      <div class="ch"><span class="code">L1</span><span class="ttl">VSCO2 CE<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">CC0、專業重錄、4 件弦樂 + 50+ 演奏法。<a href="https://github.com/sgossner/VSCO-2-CE">GitHub 開源</a>。室內樂尺度、略乾（正好讓我們的 reverb 接手）。</div>
+      <div class="pills"><span class="pill g">授權 CC0</span><span class="pill g">演奏法齊全</span><span class="pill w">需轉檔/瘦身</span></div>
+    </div>
+    <div class="card" data-id="LIB_IOWA">
+      <div class="ch"><span class="code">L2</span><span class="ttl">University of Iowa MIS</span></div>
+      <div class="desc">公共領域、音質最高的逐音錄音；但<b>原始未處理</b>（要自己切音頭/正規化）、檔案巨大、演奏法較少整理。當「補強單一音色」的料可以，當主庫太重。</div>
+      <div class="pills"><span class="pill g">公共領域</span><span class="pill g">音質高</span><span class="pill r">原始/巨大</span></div>
+    </div>
+    <div class="card" data-id="LIB_SSO">
+      <div class="ch"><span class="code">L3</span><span class="ttl">Sonatina (SSO)</span></div>
+      <div class="desc">輕量、SFZ、有 pizz/tremolo；但<b>要 attribution</b>、音色來源拼湊不一致。容量敏感時的備案。</div>
+      <div class="pills"><span class="pill w">需 attribution</span><span class="pill g">輕量</span><span class="pill r">音色不一致</span></div>
+    </div>
+  </div>
+
+  <h2>② 範圍取捨 <span class="tag">這才是真正要你拍板的（決定容量/真實度/工時）</span></h2>
+
+  <p class="pathnote"><b>演奏法</b> — 每多一種 = 多一組樣本 + B2 切換邏輯。引擎已會標演奏法，差「有對應樣本可播」。</p>
+  <div class="grid" id="artic">
+    <div class="card on" data-id="ART_SUS">
+      <div class="ch"><span class="code">A1</span><span class="ttl">Sustain / arco（長弓持續音）<span class="rec">🎯 必備</span></span></div>
+      <div class="desc">基礎音色，取代現在的單一線上樣本。這條一定要。</div>
+      <div class="pills"><span class="pill g">基礎</span></div>
+    </div>
+    <div class="card on" data-id="ART_PIZZ">
+      <div class="ch"><span class="code">A2</span><span class="ttl">Pizzicato（撥弦）<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">與長弓<b>聽感差異最大</b>的演奏法，巴洛克/古典常用。投報率最高的第二組。</div>
+      <div class="pills"><span class="pill g">高對比</span><span class="pill w">+1 組</span></div>
+    </div>
+    <div class="card on" data-id="ART_STAC">
+      <div class="ch"><span class="code">A3</span><span class="ttl">Staccato / spiccato（短音）<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">快速音群、斷奏段落用持續音播會「黏成一片」；短音樣本立刻對。</div>
+      <div class="pills"><span class="pill g">快速段有感</span><span class="pill w">+1 組</span></div>
+    </div>
+    <div class="card" data-id="ART_TREM">
+      <div class="ch"><span class="code">A4</span><span class="ttl">Tremolo（震音）</span></div>
+      <div class="desc">浪漫派織體用。用到的曲目較少，可後補。</div>
+      <div class="pills"><span class="pill w">+1 組</span><span class="pill w">用量較少</span></div>
+    </div>
+    <div class="card" data-id="ART_MUTE">
+      <div class="ch"><span class="code">A5</span><span class="ttl">Con sordino（弱音器）</span></div>
+      <div class="desc">柔色段落。錦上添花，優先序最低。</div>
+      <div class="pills"><span class="pill w">+1 組</span><span class="pill w">錦上添花</span></div>
+    </div>
+  </div>
+
+  <p class="pathnote"><b>力度層（B3）</b> — 真弦樂大聲不只更響、是換了音色。現在只有音量差（A1 加了亮度濾波部分補償）。</p>
+  <div class="grid" id="vel">
+    <div class="card on" data-id="VEL_2">
+      <div class="ch"><span class="code">V2</span><span class="ttl">2 層（弱 / 強）<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">最佳 CP 值：力度跨過門檻就換音色，明顯更真，容量只 ×2。</div>
+      <div class="pills"><span class="pill g">CP 值最佳</span><span class="pill w">容量 ×2</span></div>
+    </div>
+    <div class="card" data-id="VEL_3">
+      <div class="ch"><span class="code">V3</span><span class="ttl">3 層（弱/中/強）</span></div>
+      <div class="desc">更細緻的漸層，但容量 ×3 + crossfade 邏輯更複雜。要不要看你對容量的容忍。</div>
+      <div class="pills"><span class="pill g">最真</span><span class="pill r">容量 ×3</span></div>
+    </div>
+    <div class="card" data-id="VEL_1">
+      <div class="ch"><span class="code">V1</span><span class="ttl">1 層（維持現狀 + 亮度濾波）</span></div>
+      <div class="desc">不加力度層，靠 A1 的亮度濾波撐。最省，但這就放棄了 B3 的主要價值。</div>
+      <div class="pills"><span class="pill g">最省</span><span class="pill r">放棄 B3</span></div>
+    </div>
+  </div>
+
+  <p class="pathnote"><b>容量控制</b> — 決定 CDN 流量 + 載入速度。Tone.Sampler 會自動內插缺的音。</p>
+  <div class="grid" id="size">
+    <div class="card on" data-id="SZ_SPARSE">
+      <div class="ch"><span class="code">S1</span><span class="ttl">疏取樣（每 3 半音 1 個）+ mp3 ~128k<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">Sampler 內插中間音，聽感幾乎無損但容量砍到 1/3。web 交付最務實。</div>
+      <div class="pills"><span class="pill g">容量小</span><span class="pill g">載入快</span></div>
+    </div>
+    <div class="card" data-id="SZ_DENSE">
+      <div class="ch"><span class="code">S2</span><span class="ttl">密取樣（每半音）+ 高位元率</span></div>
+      <div class="desc">最忠實、無內插假象，但容量數倍、首次載入慢。對「預覽/陪練」定位可能過頭。</div>
+      <div class="pills"><span class="pill g">最忠實</span><span class="pill r">容量大</span></div>
+    </div>
+    <div class="card on" data-id="SZ_CDN">
+      <div class="ch"><span class="code">S3</span><span class="ttl">走 corpus CDN 懶載入（不灌 DMG）<span class="rec">🎯 建議</span></span></div>
+      <div class="desc">沿用你既有的線上 corpus CDN 基礎設施，按樂器×演奏法<b>用到才載</b>，App 體積不變。</div>
+      <div class="pills"><span class="pill g">不灌 DMG</span><span class="pill g">復用既有 CDN</span></div>
+    </div>
+  </div>
+
+  <h2>🎯 我建議的起手配置</h2>
+  <div class="observe">
+    <p style="margin:0 0 8px;color:var(--fg2)"><b>VSCO2 CE</b> · 演奏法 = <b>長弓 + 撥弦 + 短音</b>（3 種）· <b>2 力度層</b> · <b>疏取樣 mp3 + CDN 懶載入</b>。</p>
+    <ul>
+      <li>這組「明顯質變但容量可控」：3 演奏法 × 2 力度層 × 疏取樣 × 4 弦樂器，估計每樂器幾 MB、總計可控，且全走 CDN 不進安裝檔。</li>
+      <li>之後想加 tremolo / 弱音器 / 第 3 力度層都能增量補，不用重做架構。</li>
+      <li>實作順序：先做 sampler bank 基礎設施 + 長弓換 VSCO2（立刻聽到底色變好）→ 接 B2 演奏法切換 → 加 B3 力度層。每階段出 build 給你聽。</li>
+    </ul>
+    <p style="color:var(--fg2);margin:8px 0 0">不確定就直接用我預勾的這組，按「複製決策摘要」貼回來即可。</p>
+  </div>
+
+  <p class="legend">綠＝優點 · 金＝成本/注意 · 紅＝缺點/風險 · 預勾 = 我的建議起手配置</p>
+</div>
+
+<div class="bar">
+  <span class="count">已選 <b id="n">0</b> 項</span>
+  <button class="copy" id="copy">複製決策摘要</button>
+</div>
+<div class="toast" id="toast">已複製到剪貼簿 ✓</div>
+
+<script>
+  const KEY="string-samples-picks-v1";
+  const titles={};
+  document.querySelectorAll(".card").forEach(c=>{
+    titles[c.dataset.id]=c.querySelector(".ttl").textContent.replace("🎯 建議","").replace("🎯 必備","").trim();
+  });
+  // 預設勾選 = 帶 on class 的卡 (我的建議起手配置)
+  const saved=localStorage.getItem(KEY);
+  const sel=new Set(saved? JSON.parse(saved)
+    : [...document.querySelectorAll(".card.on")].map(c=>c.dataset.id));
+  function paint(){
+    document.querySelectorAll(".card").forEach(c=>{
+      c.classList.toggle("on",sel.has(c.dataset.id));
+    });
+    document.getElementById("n").textContent=sel.size;
+    localStorage.setItem(KEY,JSON.stringify([...sel]));
+  }
+  document.querySelectorAll(".card").forEach(c=>{
+    c.addEventListener("click",()=>{
+      const id=c.dataset.id;
+      sel.has(id)?sel.delete(id):sel.add(id);
+      paint();
+    });
+  });
+  paint();
+  document.getElementById("copy").addEventListener("click",()=>{
+    const order=["LIB_VSCO2","LIB_IOWA","LIB_SSO",
+      "ART_SUS","ART_PIZZ","ART_STAC","ART_TREM","ART_MUTE",
+      "VEL_2","VEL_3","VEL_1","SZ_SPARSE","SZ_DENSE","SZ_CDN"];
+    const picks=order.filter(id=>sel.has(id));
+    let txt="【弦樂 B 路取樣庫 — 決策】\n我想做：\n";
+    txt+= picks.length? picks.map(id=>"• "+titles[id]).join("\n") : "（尚未勾選）";
+    navigator.clipboard.writeText(txt).then(()=>{
+      const t=document.getElementById("toast");
+      t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);
+    });
+  });
+</script>
+</body>
+</html>
