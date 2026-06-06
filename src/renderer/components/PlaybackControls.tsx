@@ -751,7 +751,8 @@ export function PlaybackControls(
       violinPannerRef.current = p;
     }
     if (!celloFilterRef.current) {
-      const f = new Tone.Filter({ type: "lowpass", frequency: 5000, rolloff: -12 });
+      // 0.1.103: cello cutoff 拉高 (5000→9000) — 配合 VSCO2 真取樣不被悶掉。
+      const f = new Tone.Filter({ type: "lowpass", frequency: 9000, rolloff: -12 });
       const p = new Tone.Panner(0.12);
       f.connect(p);
       p.connect(stringVib);
@@ -1462,7 +1463,13 @@ export function PlaybackControls(
                   ? violinFilterRef.current
                   : celloFilterRef.current;
               if (filt) {
-                const cutoff = 3000 + playVel ** 1.4 * 8000;
+                // violin 3000–11000 (合身); cello 拉高到 6500–15500 — VSCO2 cello
+                //   是真取樣, 低力度時 cutoff 砍到 3kHz 會把弓毛質感/上頻悶掉
+                //   (Kevin 耳驗:「蓋了布」)。力度層已負責 soft/loud 音色, 濾波只
+                //   做輕微點綴, 不再當主要音色機制。
+                const base = key === "violin" ? 3000 : 6500;
+                const span = key === "violin" ? 8000 : 9000;
+                const cutoff = base + playVel ** 1.4 * span;
                 filt.frequency.setTargetAtTime(cutoff, time, 0.02);
               }
               const bank = vscoBankRef.current[key];
