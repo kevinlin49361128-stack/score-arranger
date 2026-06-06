@@ -118,6 +118,28 @@ export function suggestionLabel(code: string): string {
     : code;
 }
 
+/**
+ * Dorico Proofreading 靈感 B2: 依 issue code 歸到「類別」並給專屬色碼。
+ * 讓使用者一眼分辨問題性質 (音域 / 和弦弓法 / 把位 / 聲部進行 / 鋼琴),
+ * 不必逐條讀。順序有意義: 先判聲部/鋼琴避免 CHORD7TH 被誤歸和弦類。
+ */
+function issueCategory(code: string): { key: string; color: string } {
+  if (/PIANO/.test(code)) return { key: "piano", color: "#c76b9b" };
+  if (/PARALLEL|HIDDEN|UNRESOLVED|LEADING/.test(code)) {
+    return { key: "voicing", color: "#5fae6b" };
+  }
+  if (/RANGE|BELOW_STRING|EXTREME|COMFORTABLE/.test(code)) {
+    return { key: "range", color: "#5b8fd9" };
+  }
+  if (/FRET|STRETCH|POSITION_JUMP/.test(code)) {
+    return { key: "position", color: "#e0a458" };
+  }
+  if (/CHORD|STOP|NON_ADJACENT|MONOPHONIC|HARP/.test(code)) {
+    return { key: "chord", color: "#b89be0" };
+  }
+  return { key: "other", color: "var(--fg-tertiary)" };
+}
+
 /** 把同一 severity 的 issue 依 code 收合; 數量多的排前面 (大問題優先)。 */
 function groupByCode(
   list: UnifiedIssue[],
@@ -636,11 +658,14 @@ export function IssuePanel() {
                   {groupByCode(list).map(([groupCode, codeIssues]) => {
                     const groupKey = `${sev}:${groupCode}`;
                     const groupOpen = expanded.has(groupKey);
+                    // B2: 類別色碼 — 左側 3px 彩條標示問題性質
+                    const cat = issueCategory(groupCode);
                     return (
                       <li
                         key={groupKey}
                         style={{
                           borderTop: "1px solid var(--border-light)",
+                          borderLeft: `3px solid ${cat.color}`,
                         }}
                       >
                         {/* 同類收合的群組標題 */}

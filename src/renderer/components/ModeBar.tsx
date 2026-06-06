@@ -36,6 +36,12 @@ export function ModeBar() {
   useLocale(); // 訂閱語言切換 → 切 locale 時 re-render
   const mode = useSessionStore((s) => s.mode);
   const setMode = useSessionStore((s) => s.setMode);
+  // B2 (Dorico Proofreading 靈感): 在「微調」mode tab 上顯示待修問題數量徽章,
+  // 讓問題密度從 mode bar 一眼可見 (Dorico 把計數放在面板存取點)。
+  const issues = useSessionStore((s) => s.arrangementIssues);
+  const issueCount = issues.filter(
+    (i) => i.severity === "error" || i.severity === "warning",
+  ).length;
 
   return (
     <nav
@@ -54,6 +60,7 @@ export function ModeBar() {
           onClick={() => setMode(m.id)}
           title={t(m.descKey)}
           style={{
+            position: "relative",
             padding: "5px 14px",
             border: "none",
             borderRadius: 6,
@@ -66,6 +73,30 @@ export function ModeBar() {
         >
           <span style={{ opacity: 0.6, marginRight: 6 }}>{i + 1}</span>
           {t(m.labelKey)}
+          {m.id === "refine" && issueCount > 0 && (
+            <span
+              aria-hidden
+              title={t("modebar.refine.issueBadge", { count: issueCount })}
+              style={{
+                marginLeft: 6,
+                minWidth: 16,
+                height: 16,
+                padding: "0 4px",
+                borderRadius: 8,
+                background: "var(--error-fg)",
+                color: "#fff",
+                fontSize: 10,
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                lineHeight: 1,
+                verticalAlign: "middle",
+              }}
+            >
+              {issueCount}
+            </span>
+          )}
         </button>
       ))}
     </nav>

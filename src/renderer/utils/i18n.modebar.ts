@@ -36,6 +36,11 @@ export const MODEBAR_STRINGS: BiDict = {
     en: "Resolve playability issues",
     ja: "演奏可能性の問題を解消します",
   },
+  "modebar.refine.issueBadge": {
+    "zh-TW": "{count} 個待修問題",
+    en: "{count} issues to resolve",
+    ja: "未解決の問題 {count} 件",
+  },
   "modebar.export": { "zh-TW": "匯出", en: "Export", ja: "書き出し" },
   "modebar.export.desc": {
     "zh-TW": "匯出 MusicXML / MIDI / PDF",
