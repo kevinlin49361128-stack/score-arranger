@@ -1157,7 +1157,7 @@ def build_target_score(
         prof = get_profile(tp.instrument_id)
         pitches = part_pitches.get(key)
         if prof is not None and pitches:
-            lo, hi = prof.range_comfortable
+            lo, hi = _fit_range(prof)
             part_shift[key] = _part_octave_shift(pitches, lo, hi)
         else:
             part_shift[key] = 0
@@ -1266,6 +1266,19 @@ def _remap_hairpins(
     return out
 
 
+def _fit_range(profile) -> tuple[int, int]:
+    """octave-fitting 該用的音域。
+
+    鍵盤類 (piano/harpsichord) 用 range_absolute: 整個鍵盤每個鍵一樣好按,
+    comfortable/absolute 的區分是給管弦樂「高把位難按」這類極端音域用的, 套到
+    鍵盤上會把正常的右手 (大鍵琴常到 d'''–f''') 誤判成超域而硬降八度。
+    其餘樂器仍用 comfortable (高/低極端確實較難演奏)。
+    """
+    if getattr(profile, "family", None) == "keyboard":
+        return profile.range_absolute
+    return profile.range_comfortable
+
+
 def _part_octave_shift(pitches: list[int], low: int, high: int) -> int:
     """整個 part 的統一八度位移 (12 的倍數): 讓主體落進 [low,high]。
 
@@ -1321,7 +1334,7 @@ def _transform_event(
     if profile is None:
         return copy.deepcopy(event)
 
-    low, high = profile.range_comfortable
+    low, high = _fit_range(profile)
 
     if isinstance(event, NoteEvent):
         new_pitch = _fit_pitch_octaves(event.pitch, octave_shift, low, high)
