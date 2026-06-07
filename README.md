@@ -91,13 +91,13 @@ docs/            設計規格文件 (architecture.md 架構設計書、IR/樂句
 
 ## 支持開發
 
-Score Arranger 是免費的開源軟體，所有功能都不付費鎖定。若這個工具對你有幫助，歡迎透過 Lemon Squeezy 隨意贊助 — 贊助會用於以下開支：
+Score Arranger 是免費的開源軟體，所有功能都不付費鎖定。若這個工具對你有幫助，歡迎隨意贊助 — 贊助會用於以下開支：
 
 - Apple Developer Program 年費（$99/yr）
 - 程式碼簽章 + macOS 公證
 - 開發時間（新樂器、新編制、Bug 修復）
 
-**[❤ Sponsor on GitHub](https://github.com/sponsors/kevinlin49361128-stack)**
+**[❤ 用 Wise 贊助](https://wise.com/pay/me/link213)** ·（GitHub Sponsors 即將推出）
 
 贊助是純粹自願 — 不影響任何功能可用性。
 

@@ -1,3 +1,5 @@
-# GitHub Sponsors — 啟用後 repo 右上會出現 "Sponsor" 按鈕。
-# 帳號需先在 github.com/sponsors 完成金流/身分上線才會生效。
+# Repo 右上 "Sponsor" 下拉會列出以下管道。
+# custom = Wise 付款連結 (現在就能收款)。
+# github = GitHub Sponsors，帳號需先在 github.com/sponsors 完成金流/身分上線才生效。
+custom: ["https://wise.com/pay/me/link213"]
 github: kevinlin49361128-stack

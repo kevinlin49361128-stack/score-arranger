@@ -294,14 +294,16 @@ function Overview() {
 
       {/*
         贊助區塊 — 完全自願, 不影響任何功能可用性.
-        0.1.104: Lemon Squeezy 拒收純贊助 (只收賣商品的 MoR), 改用 GitHub
-        Sponsors。帳號需先在 GitHub 啟用 Sponsors; 啟用前此連結會導到個人頁。
+        0.1.104: Lemon Squeezy 拒收純贊助 → 改 GitHub Sponsors，但帳號未啟用 →
+        連結 302 到個人頁 (死路)。
+        0.1.105: 主要管道改 Wise 付款連結 (現在就能收款); GitHub Sponsors 仍以
+        「即將推出」次要連結保留，待 Kevin 在 GitHub 啟用後再升為主要。
       */}
       <H2>{t("about.overview.supportHeading")}</H2>
       <p>{t("about.overview.supportIntro")}</p>
       <p style={{ marginTop: 8 }}>
         <a
-          href="https://github.com/sponsors/kevinlin49361128-stack"
+          href="https://wise.com/pay/me/link213"
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -316,6 +318,16 @@ function Overview() {
           }}
         >
           ❤ {t("about.overview.supportCta")}
+        </a>
+      </p>
+      <p style={{ marginTop: 6, fontSize: 12 }}>
+        <a
+          href="https://github.com/sponsors/kevinlin49361128-stack"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "var(--fg-tertiary)" }}
+        >
+          {t("about.overview.supportSponsorsSoon")}
         </a>
       </p>
       <p style={{
