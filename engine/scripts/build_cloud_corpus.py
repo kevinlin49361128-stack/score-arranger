@@ -19,8 +19,10 @@ manifest entry, 合併進現有 catalog.json (跳過已存在的 corpus_path, �
 產出:
   engine/corpus/catalog.json               合併後 manifest (版控)
   engine/corpus/dist/cloud_<slug>.musicxml 上傳用 assets (gitignore)
-之後:
-  gh release upload corpus-v1 engine/corpus/dist/*.musicxml engine/corpus/catalog.json --clobber
+之後 (GitHub 單 release 上限 1000 資產; v1 已滿 → 新資產溢出到 ACTIVE_TAG):
+  gh release upload corpus-v2 engine/corpus/dist/*.musicxml --clobber   # 新資產 → 溢出 release
+  gh release upload corpus-v1 engine/corpus/catalog.json --clobber       # manifest 永遠在 v1 (app 從這抓)
+ACTIVE_TAG 撞 1000 時 → 開 corpus-v3, 把 ACTIVE_TAG 指過去即可 (舊 entry 各自帶 url 不受影響)。
 """
 from __future__ import annotations
 
@@ -37,9 +39,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 OWNER = "kevinlin49361128-stack"
 REPO = "score-arranger"
-CORPUS_TAG = "corpus-v1"
+# GitHub 單 release 上限 1000 資產。catalog.json (app 抓的 manifest) 永遠住 MANIFEST_TAG;
+# 新的 .musicxml 資產上傳到 ACTIVE_TAG (溢出 release)。每筆 entry 自帶絕對 url,
+# 所以舊曲目留在 v1、新曲目進 v2, 混在同一份 catalog 也完全相容。
+MANIFEST_TAG = "corpus-v1"   # catalog.json 的家 (app hardcode 從這抓 manifest)
+ACTIVE_TAG = "corpus-v2"     # 新資產上傳目標; 撞 1000 時改指 corpus-v3
 RELEASE_BASE = (
-    f"https://github.com/{OWNER}/{REPO}/releases/download/{CORPUS_TAG}"
+    f"https://github.com/{OWNER}/{REPO}/releases/download/{ACTIVE_TAG}"
 )
 
 CORPUS_DIR = Path(__file__).parent.parent / "corpus"
@@ -162,6 +168,34 @@ KRN_SOURCES = [
          composer_dates="c.1450-1517", era="Renaissance", form="Motet",
          ensemble="SATB", instruments=["voice"], year=1490, henle=None,
          tags=["counterpoint"], popular_tags=[], dynamic_form=True),
+    # ── batch 4 (2026-06-07): Bach 370 四部聖詠 — 補最大缺口 (Bach),
+    # 教和聲/聲部進行的標準教材, 正對應引擎的 voice-leading DP。
+    dict(key="bachchorale", repo="craigsapp/bach-370-chorales", subdir="kern",
+         limit=999, composer="Johann Sebastian Bach", composer_dates="1685-1750",
+         era="Baroque", form="Chorale", ensemble="SATB", instruments=["voice"],
+         year=1730, henle=None, tags=["counterpoint", "harmony"],
+         popular_tags=[]),
+    # ── batch 5 (2026-06-07): KernScores 補缺 — 巴洛克器樂/對位 + 近代鋼琴。
+    # 新資產進 corpus-v2 (ACTIVE_TAG)。
+    dict(key="vivaldi", repo="craigsapp/vivaldi-op6", subdir="kern", limit=999,
+         composer="Antonio Vivaldi", composer_dates="1678-1741", era="Baroque",
+         form="Concerto", ensemble="String Ensemble", instruments=["strings"],
+         year=1719, henle=None, tags=["baroque", "ensemble"], popular_tags=[]),
+    dict(key="artfugue", repo="craigsapp/art-of-the-fugue", subdir="kern",
+         limit=999, composer="Johann Sebastian Bach", composer_dates="1685-1750",
+         era="Baroque", form="Fugue", ensemble="Keyboard",
+         instruments=["keyboard"], year=1750, henle=None,
+         tags=["counterpoint", "fugue"], popular_tags=[]),
+    dict(key="musoffering", repo="craigsapp/bach-musical-offering",
+         subdir="kern", limit=999, composer="Johann Sebastian Bach",
+         composer_dates="1685-1750", era="Baroque", form="Ricercar",
+         ensemble="Keyboard", instruments=["keyboard"], year=1747, henle=None,
+         tags=["counterpoint"], popular_tags=[]),
+    dict(key="scriabin", repo="craigsapp/scriabin", subdir="ccarh_kern",
+         limit=999, composer="Alexander Scriabin", composer_dates="1872-1915",
+         era="Romantic", form="Character Piece", ensemble="Piano Solo",
+         instruments=["piano"], year=1900, henle=None, tags=["expression"],
+         popular_tags=[], dynamic_form="piano"),
 ]
 
 
@@ -312,7 +346,22 @@ def process_krn(src: dict, have: set[str]) -> list[dict]:
                 out.unlink(missing_ok=True)
                 continue
             eff = src
-            if src.get("dynamic_form"):
+            dyn = src.get("dynamic_form")
+            if dyn == "piano":
+                # 鋼琴小品: 由標題關鍵字定 form (Scriabin op.11 前奏曲 / op.8 練習曲…)
+                t = title.lower()
+                form = next(
+                    (f for kw, f in (
+                        ("etude", "Etude"), ("prelude", "Prelude"),
+                        ("poem", "Poem"), ("poème", "Poem"), ("sonata", "Sonata"),
+                        ("mazurka", "Mazurka"), ("nocturne", "Nocturne"),
+                        ("waltz", "Waltz"), ("valse", "Waltz"),
+                        ("impromptu", "Impromptu"),
+                    ) if kw in t),
+                    "Character Piece",
+                )
+                eff = {**src, "form": form}
+            elif dyn:  # 文藝復興: Missa→Mass 否則 Motet
                 form = "Mass" if "missa" in title.lower() else "Motet"
                 eff = {**src, "form": form}
             entry = _validate_and_entry(out, asset_name, slug, title, composer, eff)

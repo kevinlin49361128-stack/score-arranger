@@ -137,19 +137,31 @@ non-commercial use; commercial users should verify with the original encoder.
 
 **Online corpus library (`corpus-v1` release assets, downloaded on demand —
 NOT shipped in the binary)** — Score Arranger also offers a larger optional
-library fetched at runtime (~676 movements as of 0.1.92). The musical works are
-all **public domain**; the MusicXML encodings derive from two open archives:
+library fetched at runtime (~1103 movements as of 0.1.105). The musical works are
+all **public domain**; the MusicXML encodings derive from these open archives:
 
 - **Humdrum / KernScores** (Craig Sapp / Stanford CCARH) —
-  <https://github.com/craigsapp/{beethoven-piano-sonatas,beethoven-string-quartets,mozart-piano-sonatas,haydn-piano-sonatas,hummel-preludes,scarlatti-keyboard-sonatas,chopin-mazurkas,joplin}>.
+  <https://github.com/craigsapp/{bach-370-chorales,art-of-the-fugue,bach-musical-offering,vivaldi-op6,scriabin,beethoven-piano-sonatas,beethoven-string-quartets,mozart-piano-sonatas,haydn-piano-sonatas,hummel-preludes,scarlatti-keyboard-sonatas,chopin-mazurkas,joplin}>.
   Same grey-zone encoding terms as the bundled Humdrum files above.
 - **Josquin Research Project** (Stanford, Jesse Rodin et al.) —
   <https://github.com/josquin-research-project> (`Jos`, `Ock`, `Obr`, `Bus`,
   `Duf`, `Rue`, `Isa`): Renaissance Masses & motets by Josquin, Ockeghem,
   Obrecht, Busnoys, Du Fay, Pierre de la Rue, Isaac. Released by the JRP for
   open scholarly/non-commercial use; works are public domain.
-- **music21 corpus** string-quartet movements (Beethoven / Mozart / Haydn) —
-  same music21 corpus terms as below.
+- **music21 corpus** string-quartet movements (Beethoven / Mozart / Haydn) plus
+  Handel's *Lascia ch'io pianga* (from *Rinaldo*, HWV 7) — same music21 corpus
+  terms as below.
+- **Mutopia Project** (<https://www.mutopiaproject.org>) — Handel violin
+  sonatas, derived from MIDI exports of the project's LilyPond editions.
+  Unlike the public-domain–encoding archives above, Mutopia's *typesetting*
+  is licensed **[CC-BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/)**,
+  which requires **attribution + share-alike**. Attribution per work
+  (`cloud_handel_hwv*.musicxml`):
+  - *Violin Sonata in A major, HWV 361* (Op. 1 No. 3) — typeset by **Felix Hammer**.
+  - *Violin Sonata in F major, HWV 370* (Op. 1 No. 12) — typeset by **Felix Hammer**.
+
+  These encodings are redistributed under the same CC-BY-SA 2.5 terms;
+  derivatives must keep the attribution and share-alike obligation.
 
 Commercial redistribution of these encodings should be verified with the
 original encoders; the app fetches them for end-user study, not resale.
