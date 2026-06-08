@@ -125,6 +125,39 @@ class TimelineLanesRes(TypedDict):
     has_strings: bool
 
 
+# ── to_midi (匯出 arrangement 為 base64 MIDI; 播放/下載用) ─────────────────
+class ToMidiReq(TypedDict, total=False):
+    session_id: str
+    # 省略 = 匯出整個 arrangement; 給 player_id = 只匯出該 player 的聲部。
+    player_id: str
+
+
+class ToMidiRes(TypedDict):
+    midi_base64: str
+    size_bytes: int
+
+
+# ── compute_quality (改編品質: 旋律保留 / 和聲完整 / 可演奏性) ──────────────
+class QualityDetails(TypedDict):
+    melody_matched: int
+    melody_total: int
+    measures_compared: int
+    issue_count_error: int
+    issue_count_warning: int
+
+
+class ComputeQualityReq(TypedDict, total=False):
+    session_id: str
+
+
+class ComputeQualityRes(TypedDict):
+    melody_preservation: float
+    harmony_completeness: float
+    playability: float
+    overall: float
+    details: QualityDetails
+
+
 # method 名稱 → (Request TypedDict, Response TypedDict)。
 # 補新 method: 上面加 <Method>Req/<Method>Res, 這裡加一行, 重跑 codegen。
 CONTRACTS: dict[str, tuple[type, type]] = {
@@ -134,4 +167,6 @@ CONTRACTS: dict[str, tuple[type, type]] = {
     "score_clock": (ScoreClockReq, ScoreClockRes),
     "tessitura": (TessituraReq, TessituraRes),
     "timeline_lanes": (TimelineLanesReq, TimelineLanesRes),
+    "to_midi": (ToMidiReq, ToMidiRes),
+    "compute_quality": (ComputeQualityReq, ComputeQualityRes),
 }

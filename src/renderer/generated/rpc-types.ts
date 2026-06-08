@@ -97,6 +97,36 @@ export interface TimelineLanesRes {
   has_strings: boolean;
 }
 
+export interface ToMidiReq {
+  session_id?: string;
+  player_id?: string;
+}
+
+export interface ToMidiRes {
+  midi_base64: string;
+  size_bytes: number;
+}
+
+export interface ComputeQualityReq {
+  session_id?: string;
+}
+
+export interface ComputeQualityRes {
+  melody_preservation: number;
+  harmony_completeness: number;
+  playability: number;
+  overall: number;
+  details: QualityDetails;
+}
+
+export interface QualityDetails {
+  melody_matched: number;
+  melody_total: number;
+  measures_compared: number;
+  issue_count_error: number;
+  issue_count_warning: number;
+}
+
 export interface RpcContracts {
   ping: { req: PingReq; res: PingRes };
   history_status: { req: HistoryStatusReq; res: HistoryStatusRes };
@@ -104,6 +134,8 @@ export interface RpcContracts {
   score_clock: { req: ScoreClockReq; res: ScoreClockRes };
   tessitura: { req: TessituraReq; res: TessituraRes };
   timeline_lanes: { req: TimelineLanesReq; res: TimelineLanesRes };
+  to_midi: { req: ToMidiReq; res: ToMidiRes };
+  compute_quality: { req: ComputeQualityReq; res: ComputeQualityRes };
 }
 
 export type RpcMethod = keyof RpcContracts;
