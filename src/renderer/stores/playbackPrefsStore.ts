@@ -13,6 +13,7 @@ import { useSyncExternalStore } from "react";
 const KEY_HUMANIZE = "sa.humanizeStrings";
 const KEY_SAMPLES = "sa.useSamples";
 const KEY_TUNING = "sa.tuningHz";
+const KEY_PHYSICAL = "sa.physicalStrings";
 
 /** 調音基準 A4 合理範圍 — 低於 380 / 高於 470 已非音樂用途, 夾住防誤輸入。 */
 export const TUNING_MIN = 380;
@@ -26,6 +27,11 @@ export interface PlaybackPrefs {
   humanizeStrings: boolean;
   /** 調音基準 A4 (Hz). 440 = 標準; 415 = 巴洛克; 442 = 樂團/獨奏。預設 440。 */
   tuningHz: number;
+  /**
+   * 弦樂改用物理建模合成 (弓弦 Karplus-Strong) 取代取樣. 預設 false。
+   * 實驗性: 不需下載取樣即可發聲、延音更連續, 但音色比真取樣陽春。
+   */
+  physicalStrings: boolean;
 }
 
 function clampTuning(hz: number): number {
@@ -37,16 +43,18 @@ function load(): PlaybackPrefs {
   let useSamples = true;
   let humanizeStrings = false;
   let tuningHz = TUNING_DEFAULT;
+  let physicalStrings = false;
   try {
     const s = localStorage.getItem(KEY_SAMPLES);
     useSamples = s === null ? true : s === "1";
     humanizeStrings = localStorage.getItem(KEY_HUMANIZE) === "1";
+    physicalStrings = localStorage.getItem(KEY_PHYSICAL) === "1";
     const tun = localStorage.getItem(KEY_TUNING);
     if (tun !== null) tuningHz = clampTuning(parseFloat(tun));
   } catch {
     /* localStorage 不可用 → 用預設 */
   }
-  return { useSamples, humanizeStrings, tuningHz };
+  return { useSamples, humanizeStrings, tuningHz, physicalStrings };
 }
 
 let state: PlaybackPrefs = load();
@@ -83,6 +91,17 @@ export function setHumanizeStrings(on: boolean): void {
   state = { ...state, humanizeStrings: on };
   try {
     localStorage.setItem(KEY_HUMANIZE, on ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+  emit();
+}
+
+export function setPhysicalStrings(on: boolean): void {
+  if (state.physicalStrings === on) return;
+  state = { ...state, physicalStrings: on };
+  try {
+    localStorage.setItem(KEY_PHYSICAL, on ? "1" : "0");
   } catch {
     /* ignore */
   }

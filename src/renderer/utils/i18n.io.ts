@@ -682,6 +682,11 @@ export const IO_STRINGS: BiDict = {
     en: "Humanize strings",
     ja: "弦楽器を自然化",
   },
+  "playback.physicalStrings.label": {
+    "zh-TW": "弦樂物理建模 (實驗)",
+    en: "Physical-model strings (beta)",
+    ja: "弦楽器の物理モデリング (試験的)",
+  },
   "playback.humanize.hint": {
     "zh-TW": "弦樂加上輕微的 vibrato 漂移與齊奏微離調, 減少機械感 (僅影響播放)",
     en: "Adds subtle vibrato drift and unison detune to strings for a less mechanical sound (playback only)",

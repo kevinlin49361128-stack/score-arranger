@@ -43,6 +43,7 @@ import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
 import { PlaybackControls } from "./PlaybackControls";
 import {
   setHumanizeStrings,
+  setPhysicalStrings,
   setUseSamples,
   usePlaybackPrefs,
 } from "../stores/playbackPrefsStore";
@@ -1556,6 +1557,12 @@ export function Toolbar() {
               label={tr("playback.humanize.label")}
               icon={playbackPrefs.humanizeStrings ? "☑" : "☐"}
               onClick={() => setHumanizeStrings(!playbackPrefs.humanizeStrings)}
+            />
+            <MenuRow
+              label={tr("playback.physicalStrings.label")}
+              icon={playbackPrefs.physicalStrings ? "☑" : "☐"}
+              onClick={() =>
+                setPhysicalStrings(!playbackPrefs.physicalStrings)}
             />
             <div
               style={{

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as Tone from "tone";
 import { Midi } from "@tonejs/midi";
+import { PolyBowedString } from "../audio/bowedStringSynth";
 import { useSessionStore } from "../stores/sessionStore";
 import {
   setHumanizeStrings,
@@ -267,7 +268,7 @@ interface InstrumentRouter {
   routeTrack: (trackIndex: number, trackName: string) => string;
   /** 取得對應 instrument 的可發聲節點 */
   get: (key: string) =>
-    | Tone.PolySynth | Tone.Sampler | PolyPluckSynth;
+    | Tone.PolySynth | Tone.Sampler | PolyPluckSynth | PolyBowedString;
 }
 
 interface PlaybackControlsProps {
@@ -351,7 +352,8 @@ export function PlaybackControls(
   // 播放音色偏好 (取樣 / 弦樂自然化) — 全域共享 store, 三個播放器同步;
   // 開關 UI 收在工具列 ⚙ 設定 (見 Toolbar)。setUseSamples / setHumanizeStrings
   // 由 store 提供 (見 import)。
-  const { useSamples, humanizeStrings, tuningHz } = usePlaybackPrefs();
+  const { useSamples, humanizeStrings, tuningHz, physicalStrings } =
+    usePlaybackPrefs();
   const humanizeRef = useRef(humanizeStrings);
   // 調音基準 A4 — 排程時讀 ref 拿當下值 (播放中改不影響已排程音)。
   const tuningHzRef = useRef(tuningHz);
@@ -581,6 +583,9 @@ export function PlaybackControls(
   const harpsichordFallbackRef = useRef<PolyPluckSynth | null>(null);
   const fallbackRef = useRef<Tone.PolySynth | null>(null);
   const violinFallbackRef = useRef<Tone.PolySynth | null>(null);
+  // C1 物理建模: 弓弦 Karplus-Strong (physicalStrings 開啟時取代取樣/合成)
+  const violinPhysicalRef = useRef<PolyBowedString | null>(null);
+  const celloPhysicalRef = useRef<PolyBowedString | null>(null);
   // A3: 弦樂自然化的 vibrato 漂移 LFO — humanize 開啟時才建立 (疊在共享 vibrato 上)
   const vibDepthLfoRef = useRef<Tone.LFO | null>(null);
   const vibRateLfoRef = useRef<Tone.LFO | null>(null);
@@ -659,6 +664,8 @@ export function PlaybackControls(
       harpsichordFallbackRef.current?.dispose?.();
       fallbackRef.current?.dispose?.();
       violinFallbackRef.current?.dispose?.();
+      violinPhysicalRef.current?.dispose();
+      celloPhysicalRef.current?.dispose();
       reverbRef.current?.dispose?.();
       limiterRef.current?.dispose?.();
       stringVibratoRef.current?.dispose?.();
@@ -683,6 +690,8 @@ export function PlaybackControls(
       harpsichordFallbackRef.current = null;
       fallbackRef.current = null;
       violinFallbackRef.current = null;
+      violinPhysicalRef.current = null;
+      celloPhysicalRef.current = null;
       reverbRef.current = null;
       limiterRef.current = null;
       violinFilterRef.current = null;
@@ -793,6 +802,16 @@ export function PlaybackControls(
       });
       violinFallbackRef.current.connect(bus);
       violinFallbackRef.current.volume.value = -10;
+    }
+    // C1 弓弦物理建模 (實驗性): physicalStrings 開啟才建立。接進與取樣相同的
+    // A1濾波 → panner → vibrato → reverb 鏈, 共用亮度/空間感。
+    if (physicalStrings && violinChainIn && !violinPhysicalRef.current) {
+      violinPhysicalRef.current = new PolyBowedString(12, 0.9)
+        .connect(violinChainIn);
+    }
+    if (physicalStrings && celloChainIn && !celloPhysicalRef.current) {
+      celloPhysicalRef.current = new PolyBowedString(10, 0.95)
+        .connect(celloChainIn);
     }
     // Harpsichord 退路: Karplus-Strong 撥弦合成 (Tone.PluckSynth pool).
     // 取樣載入失敗或使用者關閉取樣時使用; 取樣可用時改用下方 Sampler.
@@ -981,8 +1000,16 @@ export function PlaybackControls(
         return "piano";
       },
       get: (key) => {
-        if (key === "violin") return violinRef.current ?? violinFallbackRef.current!;
-        if (key === "cello") return celloRef.current ?? violinFallbackRef.current!;
+        if (key === "violin") {
+          if (physicalStrings && violinPhysicalRef.current)
+            return violinPhysicalRef.current;
+          return violinRef.current ?? violinFallbackRef.current!;
+        }
+        if (key === "cello") {
+          if (physicalStrings && celloPhysicalRef.current)
+            return celloPhysicalRef.current;
+          return celloRef.current ?? violinFallbackRef.current!;
+        }
         if (key === "flute") return fluteRef.current ?? fallbackRef.current!;
         if (key === "clarinet") return clarinetRef.current ?? fallbackRef.current!;
         if (key === "guitar") return guitarRef.current ?? fallbackRef.current!;
