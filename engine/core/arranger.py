@@ -28,7 +28,7 @@ from .arrangement_model import (
     Player,
     Staff,
 )
-from .instruments import get_profile
+from .instruments import InstrumentProfile, get_profile
 from .ir import (
     ChordEvent,
     DynamicHairpin,
@@ -1103,8 +1103,8 @@ def build_target_score(
     # 開始, 否則 source ↔ target 上下對照會錯位一格.
     n_measures = section.end_measure - section.start_measure + 1
     src_pickup_numbers: set[int] = set()
-    for sp in source.parts:
-        for m in sp.measures:
+    for src_p in source.parts:
+        for m in src_p.measures:
             if m.is_pickup:
                 src_pickup_numbers.add(m.number)
     for tp in target_parts.values():
@@ -1135,13 +1135,13 @@ def build_target_score(
     # 的高音不動 → 輪廓錯亂)。改成整個 part 一致位移, 讓底部進範圍且保持音程關係。
     part_pitches: dict[tuple[str, Staff], list[int]] = {}
     for assignment in assignments:
-        sp = src_by_id.get(assignment.source_part_id)
+        srcp = src_by_id.get(assignment.source_part_id)
         key = (assignment.target_player_id, assignment.target_staff)
-        if sp is None or key not in target_parts:
+        if srcp is None or key not in target_parts:
             continue
         span_lo, span_hi = assignment.span
         bucket = part_pitches.setdefault(key, [])
-        for src_m in sp.measures:
+        for src_m in srcp.measures:
             if not (span_lo <= src_m.number <= span_hi):
                 continue
             for voice in src_m.voices.values():
@@ -1266,7 +1266,7 @@ def _remap_hairpins(
     return out
 
 
-def _fit_range(profile) -> tuple[int, int]:
+def _fit_range(profile: InstrumentProfile) -> tuple[int, int]:
     """octave-fitting 該用的音域。
 
     鍵盤類 (piano/harpsichord) 用 range_absolute: 整個鍵盤每個鍵一樣好按,
