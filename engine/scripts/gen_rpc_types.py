@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import sys
+import types
 import typing
 from pathlib import Path
 
@@ -40,7 +41,9 @@ def ts_type(pyt: object) -> str:
         return f"({inner})[]" if "|" in inner else f"{inner}[]"
     if origin is dict:
         return "Record<string, unknown>"
-    if origin is typing.Union:
+    # PEP 604 `X | Y` 的 get_origin 因 Python 版本而異: <=3.13 回 types.UnionType,
+    # 3.14 起與 typing.Union 統一。兩者都收, codegen 輸出才不隨 Python 版本飄。
+    if origin is typing.Union or origin is types.UnionType:
         args = typing.get_args(pyt)
         non_none = [a for a in args if a is not type(None)]
         body = " | ".join(ts_type(a) for a in non_none) or "unknown"
