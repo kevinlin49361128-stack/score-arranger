@@ -450,6 +450,32 @@ export async function scoreInfo(path: string): Promise<{
   };
 }
 
+export interface SuspiciousNote {
+  part_id: string;
+  measure: number;
+  voice: number;
+  event_index: number;
+  midi: number;
+  note: string;
+  local_key: string;
+  roman: string;
+  suggested_midi: number | null;
+  suggested_note: string | null;
+  confidence: number;
+  reason: string;
+}
+
+// OMR 後校正 (③): 標出疑似辨識錯誤的音給人複檢 (只標不改)。
+export async function omrReview(path: string): Promise<{
+  count: number;
+  suspicious: SuspiciousNote[];
+}> {
+  return (await client.call("omr_review", { path })) as {
+    count: number;
+    suspicious: SuspiciousNote[];
+  };
+}
+
 export interface OMRStatus {
   available: boolean;
   java_ok: boolean;
@@ -461,6 +487,29 @@ export interface OMRStatus {
 
 export async function omrStatus(): Promise<OMRStatus> {
   return (await client.call("omr_status", {})) as OMRStatus;
+}
+
+export interface HomrStatus {
+  available: boolean;
+  homr_path: string | null;
+  version: string | null;
+  missing: string[];
+  install_hints: Record<string, string>;
+}
+
+// homr — 可選 end-to-end OMR 引擎 (與 Audiveris 並列, 影像輸入)。
+export async function homrStatus(): Promise<HomrStatus> {
+  return (await client.call("homr_status", {})) as HomrStatus;
+}
+
+export async function homrImageToMusicXML(
+  imagePath: string,
+  timeoutSec = 600,
+): Promise<{ musicxml_path: string; engine: string }> {
+  return (await client.call("homr_image_to_musicxml", {
+    path: imagePath,
+    timeout_sec: timeoutSec,
+  })) as { musicxml_path: string; engine: string };
 }
 
 export async function pdfToMusicXML(

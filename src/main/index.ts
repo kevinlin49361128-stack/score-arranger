@@ -55,6 +55,9 @@ import {
   undoEdit,
   validateScore,
   omrStatus,
+  omrReview,
+  homrStatus,
+  homrImageToMusicXML,
   pdfToMusicXML,
   amtStatus,
   audioToMusicXML,
@@ -295,6 +298,12 @@ function registerIpcHandlers(): void {
     safeCall(() => scoreInfo(path)));
   ipcMain.handle("engine:omrStatus", async () =>
     safeCall(() => omrStatus()));
+  ipcMain.handle("engine:omrReview", async (_evt, path: string) =>
+    safeCall(() => omrReview(path)));
+  ipcMain.handle("engine:homrStatus", async () =>
+    safeCall(() => homrStatus()));
+  ipcMain.handle("engine:homrImageToMusicXML", async (_evt, path: string) =>
+    safeCall(() => homrImageToMusicXML(path)));
   ipcMain.handle("engine:pdfToMusicXML", async (_evt, path: string) =>
     safeCall(() => pdfToMusicXML(path)));
   ipcMain.handle("engine:amtStatus", async () =>

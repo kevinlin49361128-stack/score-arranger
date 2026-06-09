@@ -134,6 +134,11 @@ const api = {
     scoreInfo: (path: string) =>
       ipcRenderer.invoke("engine:scoreInfo", path),
     omrStatus: () => ipcRenderer.invoke("engine:omrStatus"),
+    omrReview: (path: string) =>
+      ipcRenderer.invoke("engine:omrReview", path),
+    homrStatus: () => ipcRenderer.invoke("engine:homrStatus"),
+    homrImageToMusicXML: (path: string) =>
+      ipcRenderer.invoke("engine:homrImageToMusicXML", path),
     pdfToMusicXML: (path: string) =>
       ipcRenderer.invoke("engine:pdfToMusicXML", path),
     amtStatus: () => ipcRenderer.invoke("engine:amtStatus"),

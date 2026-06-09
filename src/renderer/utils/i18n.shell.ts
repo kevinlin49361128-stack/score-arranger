@@ -561,6 +561,19 @@ export const SHELL_STRINGS: BiDict = {
   "omrReview.partListHeading": {
     "zh-TW": "聲部清單", en: "Part list", ja: "声部一覧",
   },
+  "omrReview.suspectHeading": {
+    "zh-TW": "疑似辨識錯誤 (僅標記, 不會自動改)",
+    en: "Possible recognition errors (flagged only, not auto-changed)",
+    ja: "認識ミスの疑い (印のみ・自動修正なし)",
+  },
+  "omrReview.suspectNone": {
+    "zh-TW": "和聲檢查未發現明顯可疑音。",
+    en: "Harmony check found no obviously suspicious notes.",
+    ja: "和声チェックで明らかに不審な音は見つかりませんでした。",
+  },
+  "omrReview.suspectSuggest": {
+    "zh-TW": "建議", en: "suggest", ja: "提案",
+  },
   "omrReview.cancel": {
     "zh-TW": "放棄", en: "Cancel", ja: "キャンセル",
   },

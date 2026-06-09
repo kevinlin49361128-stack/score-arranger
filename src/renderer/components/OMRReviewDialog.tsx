@@ -43,6 +43,16 @@ export function OMRReviewDialog({
   const [info, setInfo] = useState<ReviewInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [review, setReview] = useState<{
+    count: number;
+    suspicious: {
+      measure: number;
+      note: string;
+      localKey: string;
+      roman: string;
+      suggestedNote: string | null;
+    }[];
+  } | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -74,6 +84,27 @@ export function OMRReviewDialog({
       .finally(() => {
         if (alive) setLoading(false);
       });
+    return () => { alive = false; };
+  }, [omrPath]);
+
+  // ③ 後校正: harmony-aware 標出疑似 OMR 辨識錯誤的音 (best-effort, 不阻斷匯入)
+  useEffect(() => {
+    let alive = true;
+    window.scoreArranger.engine.omrReview(omrPath)
+      .then((res) => {
+        if (!alive || !res.ok || !res.data) return;
+        setReview({
+          count: res.data.count,
+          suspicious: res.data.suspicious.slice(0, 8).map((s) => ({
+            measure: s.measure,
+            note: s.note,
+            localKey: s.local_key,
+            roman: s.roman,
+            suggestedNote: s.suggested_note,
+          })),
+        });
+      })
+      .catch(() => { /* OMR review 失敗不阻斷匯入流程 */ });
     return () => { alive = false; };
   }, [omrPath]);
 
@@ -248,6 +279,56 @@ export function OMRReviewDialog({
                 </>
               )}
             </>
+          )}
+
+          {review != null && review.count > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{
+                fontSize: 11, color: "var(--fg-muted)",
+                textTransform: "uppercase", letterSpacing: ".05em",
+                marginBottom: 6,
+              }}>
+                🔍 {t("omrReview.suspectHeading")} ({review.count})
+              </div>
+              <ul style={{
+                listStyle: "none", padding: 0, margin: 0,
+                border: "1px solid var(--border-light)",
+                borderRadius: 6, overflow: "hidden",
+                maxHeight: 168, overflowY: "auto",
+              }}>
+                {review.suspicious.map((s, i) => (
+                  <li
+                    key={`${s.measure}-${s.note}-${i}`}
+                    style={{
+                      padding: "6px 12px",
+                      borderBottom: i < review.suspicious.length - 1
+                        ? "1px solid var(--border-light)" : "none",
+                      display: "flex", gap: 10, alignItems: "baseline",
+                      fontSize: 12,
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: "monospace", color: "var(--fg-muted)",
+                      minWidth: 34,
+                    }}>
+                      m{s.measure}
+                    </span>
+                    <span style={{ fontWeight: 600 }}>{s.note}</span>
+                    <span style={{
+                      color: "var(--fg-muted)", flex: 1,
+                      fontFamily: "monospace", fontSize: 11,
+                    }}>
+                      {s.localKey} · {s.roman}
+                    </span>
+                    {s.suggestedNote != null && (
+                      <span style={{ color: "var(--accent)" }}>
+                        {t("omrReview.suspectSuggest")} {s.suggestedNote}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </main>
 

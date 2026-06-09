@@ -145,6 +145,34 @@ declare global {
           missing: string[];
           install_hints: Record<string, string>;
         }>>;
+        omrReview: (path: string) => Promise<IpcResponse<{
+          count: number;
+          suspicious: {
+            part_id: string;
+            measure: number;
+            voice: number;
+            event_index: number;
+            midi: number;
+            note: string;
+            local_key: string;
+            roman: string;
+            suggested_midi: number | null;
+            suggested_note: string | null;
+            confidence: number;
+            reason: string;
+          }[];
+        }>>;
+        homrStatus: () => Promise<IpcResponse<{
+          available: boolean;
+          homr_path: string | null;
+          version: string | null;
+          missing: string[];
+          install_hints: Record<string, string>;
+        }>>;
+        homrImageToMusicXML: (path: string) => Promise<IpcResponse<{
+          musicxml_path: string;
+          engine: string;
+        }>>;
         pdfToMusicXML: (path: string) => Promise<IpcResponse<{
           musicxml_path: string;
           audiveris_version: string | null;
