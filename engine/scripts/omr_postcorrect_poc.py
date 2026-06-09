@@ -206,7 +206,113 @@ def build_llm_prompts(corrupt_path: str, max_prompts: int = 3):
     return prompts
 
 
+def emit_packet(path: str, rate: float, seed: int, truth_out: str):
+    """產生「盲測封包」: flagged 候選 + 完整 context, 但印出時不含 ground truth。
+
+    用途: 讓 LLM (含「我自己當 LLM」) 只憑 context 做 triage, 再用 grade() 計分。
+    """
+    corrupt = parse_musicxml(path)
+    truth = inject_errors(corrupt, rate, random.Random(seed))
+    truth_keys = {(t["part"], t["measure"], t["voice"], t["idx"]): t for t in truth}
+    regions = analyze_harmony(corrupt)
+    starts_float = _region_starts_float(regions)
+    cum = _per_part_cumulative_starts(corrupt)
+    cands = []
+    cid = 0
+    for pi, part in enumerate(corrupt.parts):
+        mstarts = cum[pi]
+        for measure in part.measures:
+            mstart = mstarts.get(measure.number, Fraction(0))
+            for vid, voice in measure.voices.items():
+                seq = [(i, ev) for i, ev in enumerate(voice.events)
+                       if isinstance(ev, NoteEvent)]
+                gons = [mstart + ev.onset for _, ev in seq]
+                for k, (i, ev) in enumerate(seq):
+                    midi = ev.pitch.midi_number
+                    region = find_region_at(regions, gons[k], starts_float)
+                    if region is None:
+                        continue
+                    prev_midi = seq[k - 1][1].pitch.midi_number if k > 0 else None
+                    next_midi = seq[k + 1][1].pitch.midi_number if k + 1 < len(seq) else None
+                    prev_region = (find_region_at(regions, gons[k - 1], starts_float)
+                                   if k > 0 else None)
+                    cls = classify_note_function(
+                        midi, region, prev_midi, prev_region, next_midi)
+                    if cls != "other":
+                        continue
+                    key = (pi, measure.number, vid, i)
+                    cands.append({
+                        "cid": cid, "key": list(key), "measure": measure.number,
+                        "note": _spelling(midi), "midi": midi,
+                        "keysig": region.key.name, "roman": region.roman.figure_string,
+                        "chord_pcs": sorted(region.ideal_pitch_classes),
+                        "prev": _spelling(prev_midi) if prev_midi is not None else None,
+                        "next": _spelling(next_midi) if next_midi is not None else None,
+                        "_is_error": key in truth_keys,
+                        "_orig": truth_keys[key]["orig_midi"] if key in truth_keys else None,
+                    })
+                    cid += 1
+    Path(truth_out).write_text(json.dumps(cands, ensure_ascii=False, indent=2))
+    print(f"=== 盲測封包: {Path(path).stem} ({len(cands)} 個 flagged 候選) ===")
+    print("(只給 context, 不給答案。triage: 每個候選判 真錯誤? + 提議正確音)\n")
+    for c in cands:
+        print(f"cid={c['cid']:>2} | m{c['measure']} {c['note']}(midi {c['midi']}) | "
+              f"{c['keysig']} {c['roman']} 和弦pc={c['chord_pcs']} | "
+              f"prev={c['prev']} next={c['next']}")
+    print(f"\ntruth 寫入 {truth_out} (grade 時讀)")
+
+
+def grade(truth_path: str, verdicts_path: str):
+    """用 LLM verdicts (含我自己當 LLM 的) 對盲測封包計分, 比較 rule-only vs LLM-triage。"""
+    cands = json.loads(Path(truth_path).read_text())
+    verdicts = json.loads(Path(verdicts_path).read_text())  # {cid: {error:bool, fix:int|null}}
+    by_cid = {c["cid"]: c for c in cands}
+    total = len(cands)
+    real = sum(1 for c in cands if c["_is_error"])
+    kept = [int(cid) for cid, v in verdicts.items() if v.get("error")]
+    tp = sum(1 for cid in kept if by_cid[cid]["_is_error"])
+    llm_prec = tp / len(kept) if kept else 0.0
+    llm_recall = tp / real if real else 0.0
+    fix_ok = sum(1 for cid in kept if by_cid[cid]["_is_error"]
+                 and verdicts[str(cid)].get("fix") == by_cid[cid]["_orig"])
+    print(f"=== 計分: {total} 個 flagged 候選, 其中真錯誤 {real} ===")
+    print(f"rule-only (全留為可疑): precision={real / total:.3f}  recall=1.000")
+    print(f"LLM-triage (留 {len(kept)} 個): precision={llm_prec:.3f}  "
+          f"recall={llm_recall:.3f}  修正對={fix_ok}/{tp}")
+    delta = llm_prec - real / total
+    print(f"→ precision 變化: {delta:+.3f} ({'LLM triage 有效' if delta > 0 else '無改善'})")
+
+
+def call_anthropic(prompt: str, model: str = "claude-opus-4-20250514") -> str:
+    """PoC 專用最小 Anthropic 呼叫 (raw HTTP, 無相依)。需 ANTHROPIC_API_KEY。"""
+    import urllib.request
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise RuntimeError("ANTHROPIC_API_KEY 未設")
+    body = json.dumps({
+        "model": model, "max_tokens": 256,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages", data=body,
+        headers={"x-api-key": key, "anthropic-version": "2023-06-01",
+                 "content-type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        data = json.loads(r.read())
+    return "".join(b.get("text", "") for b in data.get("content", []))
+
+
 def main():
+    # CLI dispatch
+    if len(sys.argv) > 1 and sys.argv[1] == "packet":
+        sd = ENGINE / "core" / "sample_scores"
+        emit_packet(str(sd / "bach_chorale_336.musicxml"), 0.08, 1234,
+                    "/tmp/omr_poc_truth.json")
+        return
+    if len(sys.argv) > 2 and sys.argv[1] == "grade":
+        grade("/tmp/omr_poc_truth.json", sys.argv[2])
+        return
+
     sample_dir = ENGINE / "core" / "sample_scores"
     # 挑和聲密度不同的代表曲: Bach chorale (最密) / Corelli / Beethoven / Chopin
     picks = [
