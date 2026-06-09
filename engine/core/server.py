@@ -2684,6 +2684,41 @@ def _method_score_clock(params: dict[str, Any]) -> dict:
     return serialize_score_clock(build_score_clock(score))
 
 
+def _method_omr_review(params: dict[str, Any]) -> dict:
+    """OMR 後校正 (③): 標出疑似辨識錯誤的音給人複檢 — 只標不改, 絕不自動套用。
+
+    優先序: path (剛 OMR 出的譜) > source_score > target_score。
+    回傳 suspicious 清單 (依信心高→低); 前端在 OMR 糾錯面板列出供人確認。
+    """
+    sess = _session(params)
+    from core.omr_review import find_suspicious_notes
+    arr = sess.current_arrangement
+    if params.get("path"):
+        score = parse_musicxml(params["path"])
+    elif arr is not None and arr.source_score is not None:
+        score = arr.source_score
+    elif arr is not None and arr.target_score is not None:
+        score = arr.target_score
+    else:
+        raise ValueError("尚無樂譜可做 OMR 複檢")
+    notes = find_suspicious_notes(score, key_window=params.get("key_window", 8))
+    return {
+        "count": len(notes),
+        "suspicious": [
+            {
+                "part_id": n.part_id, "measure": n.measure_number,
+                "voice": n.voice_id, "event_index": n.event_index,
+                "midi": n.midi, "note": n.note_name,
+                "local_key": n.local_key, "roman": n.roman,
+                "suggested_midi": n.suggested_midi,
+                "suggested_note": n.suggested_name,
+                "confidence": n.confidence, "reason": n.reason,
+            }
+            for n in notes
+        ],
+    }
+
+
 def _inner_voice_indices(score: Score) -> "set[int]":
     """回傳「主要功能為內聲部 (和聲/踏板/裝飾)」的 part index 集。
 
@@ -3206,6 +3241,7 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "history_status": _method_history_status,
     "to_midi": _method_to_midi,
     "score_clock": _method_score_clock,
+    "omr_review": _method_omr_review,
     "audit_playability": _method_audit_playability,
     "tessitura": _method_tessitura,
     "timeline_lanes": _method_timeline_lanes,
