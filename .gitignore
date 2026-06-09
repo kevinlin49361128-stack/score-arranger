@@ -42,3 +42,6 @@ node_modules/
 # Project artifacts
 *.sarr
 test-output/
+
+# OMR PoC 生成結果 (可重跑)
+engine/scripts/omr_poc_result.json
