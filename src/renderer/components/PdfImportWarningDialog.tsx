@@ -8,8 +8,13 @@
 
 import { t, useLocale } from "../utils/i18n";
 
+type OmrEngine = "audiveris" | "homr";
+
 interface PdfImportWarningDialogProps {
   fileName: string;
+  homrAvailable: boolean;
+  engine: OmrEngine;
+  onEngineChange: (engine: OmrEngine) => void;
   onProceed: () => void;
   onCancel: () => void;
 }
@@ -23,7 +28,9 @@ const POINT_KEYS = [
 ];
 
 export function PdfImportWarningDialog(
-  { fileName, onProceed, onCancel }: PdfImportWarningDialogProps,
+  {
+    fileName, homrAvailable, engine, onEngineChange, onProceed, onCancel,
+  }: PdfImportWarningDialogProps,
 ) {
   useLocale();
   return (
@@ -92,6 +99,53 @@ export function PdfImportWarningDialog(
           {t("pdfWarn.fileLabel")}
           <span style={{ color: "var(--fg-primary)" }}>{fileName}</span>
         </div>
+
+        {homrAvailable && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{
+              fontSize: 12, color: "var(--fg-muted)", marginBottom: 6,
+            }}>
+              {t("pdfWarn.engineLabel")}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {(["audiveris", "homr"] as const).map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => onEngineChange(e)}
+                  style={{
+                    flex: 1, padding: "8px 10px", cursor: "pointer",
+                    textAlign: "left", borderRadius: 6,
+                    border: engine === e
+                      ? "1.5px solid var(--accent)"
+                      : "1px solid var(--border)",
+                    background: engine === e
+                      ? "var(--bg-secondary)" : "var(--button-bg)",
+                    color: "var(--fg-primary)",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, fontSize: 12 }}>
+                    {e === "audiveris" ? "Audiveris" : "homr"}
+                    {e === "homr" && (
+                      <span style={{
+                        fontSize: 10, color: "var(--fg-muted)", marginLeft: 4,
+                      }}>
+                        {t("pdfWarn.engineExperimental")}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: "var(--fg-muted)", marginTop: 2,
+                  }}>
+                    {t(e === "audiveris"
+                      ? "pdfWarn.engineAudiverisDesc"
+                      : "pdfWarn.engineHomrDesc")}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div
           style={{

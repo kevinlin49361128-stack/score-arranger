@@ -502,6 +502,10 @@ export const SHELL_STRINGS: BiDict = {
     "zh-TW": "Audiveris 辨識中", en: "Audiveris recognizing",
     ja: "Audiveris で認識中",
   },
+  "toolbar.omrProgress.headingHomr": {
+    "zh-TW": "homr 辨識中", en: "homr recognizing",
+    ja: "homr で認識中",
+  },
   "toolbar.omrProgress.elapsed": {
     "zh-TW": "已用時 {sec}s · 大型 PDF 需 1-3 分鐘",
     en: "Elapsed {sec}s · large PDFs take 1-3 minutes",

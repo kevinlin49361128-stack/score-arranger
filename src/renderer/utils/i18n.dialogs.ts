@@ -1175,6 +1175,22 @@ export const DIALOG_STRINGS: BiDict = {
     "zh-TW": "仍要匯入 PDF", en: "Import PDF anyway",
     ja: "それでも PDF をインポート",
   },
+  "pdfWarn.engineLabel": {
+    "zh-TW": "辨識引擎", en: "Recognition engine", ja: "認識エンジン",
+  },
+  "pdfWarn.engineExperimental": {
+    "zh-TW": "實驗", en: "experimental", ja: "実験的",
+  },
+  "pdfWarn.engineAudiverisDesc": {
+    "zh-TW": "傳統 OMR，對乾淨印刷譜穩定",
+    en: "Classic OMR, stable on clean print",
+    ja: "従来型 OMR、清書譜に安定",
+  },
+  "pdfWarn.engineHomrDesc": {
+    "zh-TW": "神經網路，對拍照/掃描較穩",
+    en: "Neural net, better on photos/scans",
+    ja: "ニューラルネット、写真/スキャンに強い",
+  },
 
   // ==========================================================================
   // CustomEnsembleDialog

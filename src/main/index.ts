@@ -304,6 +304,28 @@ function registerIpcHandlers(): void {
     safeCall(() => homrStatus()));
   ipcMain.handle("engine:homrImageToMusicXML", async (_evt, path: string) =>
     safeCall(() => homrImageToMusicXML(path)));
+  // homr 流程用: 讀 PDF bytes (給 renderer 的 pdf.js rasterize) + 把 rasterize
+  // 出來的 PNG 寫到 tmpdir (homr 吃檔案路徑)。皆做 tmpdir realpath 防劫持。
+  ipcMain.handle("omr:readPdfBase64", async (_evt, path: string) =>
+    safeCall(async () => {
+      const p = realpathSync(path);
+      if (!p.toLowerCase().endsWith(".pdf")) {
+        throw new Error("僅允許讀取 .pdf");
+      }
+      return readFileSync(p).toString("base64");
+    }));
+  ipcMain.handle("omr:writeTempImage", async (_evt, base64: string) =>
+    safeCall(async () => {
+      const dir = join(tmpdir(), "score-arranger");
+      mkdirSync(dir, { recursive: true });
+      const realDir = realpathSync(dir);
+      if (!realDir.startsWith(realpathSync(tmpdir()))) {
+        throw new Error("Refused: tmpdir 解析到預期之外");
+      }
+      const filePath = join(realDir, `omr-page-${Date.now()}.png`);
+      writeFileSync(filePath, Buffer.from(base64, "base64"));
+      return filePath;
+    }));
   ipcMain.handle("engine:pdfToMusicXML", async (_evt, path: string) =>
     safeCall(() => pdfToMusicXML(path)));
   ipcMain.handle("engine:amtStatus", async () =>

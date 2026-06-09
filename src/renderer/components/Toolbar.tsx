@@ -40,6 +40,7 @@ import { NLEditDialog } from "./NLEditDialog";
 import { OMRInstallDialog } from "./OMRInstallDialog";
 import { OMRReviewDialog } from "./OMRReviewDialog";
 import { PdfImportWarningDialog } from "./PdfImportWarningDialog";
+import { homrPdfToMusicXML } from "../utils/homrImport";
 import { PlaybackControls } from "./PlaybackControls";
 import {
   setHumanizeStrings,
@@ -262,6 +263,18 @@ export function Toolbar() {
   const [pdfWarning, setPdfWarning] = useState<{
     pendingPdfPath: string;
   } | null>(null);
+  // OMR 引擎選擇 (Audiveris 預設 / homr 可選) — homr 偵測到才開放。
+  const [omrEngine, setOmrEngine] = useState<"audiveris" | "homr">(() =>
+    localStorage.getItem("sa-omr-engine") === "homr" ? "homr" : "audiveris",
+  );
+  const [homrAvailable, setHomrAvailable] = useState(false);
+  useEffect(() => {
+    window.scoreArranger.engine.homrStatus()
+      .then((r) => {
+        if (r.ok && r.data) setHomrAvailable(r.data.available);
+      })
+      .catch(() => { /* homr 偵測失敗 → 保持只用 Audiveris */ });
+  }, []);
   // OMR 跑完後的「核對結果」對話框 — 確認後才實際 setSourcePath.
   // Audiveris 常產出嚴重錯誤 (漏小節 / 0 聲部), 先讓使用者核對基本資訊.
   const [omrReview, setOmrReview] = useState<{
@@ -522,12 +535,19 @@ export function Toolbar() {
       setOmrProgress({ elapsedSec: Math.round((Date.now() - startedAt) / 1000) });
     }, 1000);
     try {
+      // homr 引擎: renderer 端 pdf.js rasterize PDF→影像 → homr 辨識。
+      if (omrEngine === "homr" && homrAvailable) {
+        return await homrPdfToMusicXML(pdfPath);
+      }
       const omrRes = await window.scoreArranger.engine.pdfToMusicXML(pdfPath);
       if (!omrRes.ok || !omrRes.data) {
         setError(omrRes.error ?? tr("toolbar.error.omrFailed"));
         return null;
       }
       return omrRes.data.musicxml_path;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      return null;
     } finally {
       clearInterval(timer);
       setOmrProgress(null);
@@ -1710,7 +1730,9 @@ export function Toolbar() {
           }}
         >
           <div style={{ fontWeight: 600 }}>
-            {tr("toolbar.omrProgress.heading")}
+            {tr(omrEngine === "homr" && homrAvailable
+              ? "toolbar.omrProgress.headingHomr"
+              : "toolbar.omrProgress.heading")}
           </div>
           <div style={{ color: "var(--fg-muted)", fontSize: 11 }}>
             {tr("toolbar.omrProgress.elapsed", {
@@ -1723,6 +1745,12 @@ export function Toolbar() {
         <PdfImportWarningDialog
           fileName={pdfWarning.pendingPdfPath.split(/[/\\]/).pop()
             ?? pdfWarning.pendingPdfPath}
+          homrAvailable={homrAvailable}
+          engine={omrEngine}
+          onEngineChange={(e) => {
+            setOmrEngine(e);
+            localStorage.setItem("sa-omr-engine", e);
+          }}
           onCancel={() => setPdfWarning(null)}
           onProceed={() => {
             const pdfPath = pdfWarning.pendingPdfPath;

@@ -173,6 +173,8 @@ declare global {
           musicxml_path: string;
           engine: string;
         }>>;
+        readPdfBase64: (path: string) => Promise<IpcResponse<string>>;
+        writeTempImage: (base64: string) => Promise<IpcResponse<string>>;
         pdfToMusicXML: (path: string) => Promise<IpcResponse<{
           musicxml_path: string;
           audiveris_version: string | null;

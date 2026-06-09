@@ -139,6 +139,10 @@ const api = {
     homrStatus: () => ipcRenderer.invoke("engine:homrStatus"),
     homrImageToMusicXML: (path: string) =>
       ipcRenderer.invoke("engine:homrImageToMusicXML", path),
+    readPdfBase64: (path: string) =>
+      ipcRenderer.invoke("omr:readPdfBase64", path),
+    writeTempImage: (base64: string) =>
+      ipcRenderer.invoke("omr:writeTempImage", base64),
     pdfToMusicXML: (path: string) =>
       ipcRenderer.invoke("engine:pdfToMusicXML", path),
     amtStatus: () => ipcRenderer.invoke("engine:amtStatus"),
