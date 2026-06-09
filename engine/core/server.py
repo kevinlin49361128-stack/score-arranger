@@ -604,6 +604,35 @@ def _method_pdf_to_musicxml(params: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _method_homr_status(_params: dict[str, Any]) -> dict[str, Any]:
+    """檢查 homr (可選 end-to-end OMR 引擎) 是否可用. 給引擎選擇器判斷."""
+    from .omr import detect_homr
+    s = detect_homr()
+    return {
+        "available": s.available,
+        "homr_path": s.homr_path,
+        "version": s.version,
+        "missing": s.missing,
+        "install_hints": s.install_hints,
+    }
+
+
+def _method_homr_image_to_musicxml(params: dict[str, Any]) -> dict[str, Any]:
+    """用 homr 把單頁譜面影像 (PNG/JPG) 轉 MusicXML 檔.
+
+    回傳 {"musicxml_path": str, "engine": "homr"}. 與 pdf_to_musicxml (Audiveris)
+    並列; 前端引擎選擇器擇一。homr 吃影像; PDF 來源需前端先 rasterize 逐頁送。
+    """
+    from .omr import HomrError, image_to_musicxml
+    image_path = params["path"]
+    timeout = int(params.get("timeout_sec", 600))
+    try:
+        out = image_to_musicxml(image_path, timeout_sec=timeout)
+    except HomrError as e:
+        raise RuntimeError(f"homr OMR 失敗: {e}") from e
+    return {"musicxml_path": out, "engine": "homr"}
+
+
 def _method_list_corpus(_params: dict[str, Any]) -> list[dict[str, str]]:
     """列出可用的範例樂譜。
 
@@ -3204,6 +3233,8 @@ METHODS: dict[str, Callable[[dict[str, Any]], Any]] = {
     "score_info": _method_score_info,
     "omr_status": _method_omr_status,
     "pdf_to_musicxml": _method_pdf_to_musicxml,
+    "homr_status": _method_homr_status,
+    "homr_image_to_musicxml": _method_homr_image_to_musicxml,
     "amt_status": _method_amt_status,
     "audio_to_musicxml": _method_audio_to_musicxml,
     "list_style_presets": _method_list_style_presets,
