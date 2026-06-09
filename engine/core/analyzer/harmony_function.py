@@ -258,11 +258,47 @@ def identify_chord(
 # Public API
 # ============================================================================
 
-def analyze_harmony(score: object) -> list[HarmonicRegion]:
+def _key_corr(hist: list[float], key: "Key") -> float:
+    """局部直方圖對某 key 的 KK 相關 (與 detect_key 同一套 profile/rotate)。"""
+    prof = _KK_MAJOR if key.mode == "major" else _KK_MINOR
+    return _pearson(hist, _rotate(prof, key.tonic_pc))
+
+
+def _local_key(
+    center: Fraction, onsets: list, weights: dict,
+    window: int, global_key: "Key", margin: float = 0.08,
+) -> "Key":
+    """±window 拍視窗的 duration-weighted 局部 key, 對 global key 偏置防 flicker。
+
+    只有當局部 key 在「局部直方圖」下對 global key 的 KK 相關優勢 ≥ margin 才換,
+    否則守 global — 避免單一半音和弦造成假轉調。
+    """
+    import bisect
+    lo = bisect.bisect_left(onsets, center - window)
+    hi = bisect.bisect_right(onsets, center + window)
+    hist = [0.0] * 12
+    for o in onsets[lo:hi]:
+        for pc, w in weights[o].items():
+            hist[pc] += w
+    if sum(hist) == 0:
+        return global_key
+    lk, _ = detect_key(hist)
+    if lk.tonic_pc == global_key.tonic_pc and lk.mode == global_key.mode:
+        return global_key
+    if _key_corr(hist, lk) - _key_corr(hist, global_key) >= margin:
+        return lk
+    return global_key
+
+
+def analyze_harmony(
+    score: object, key_window: Optional[int] = None
+) -> list[HarmonicRegion]:
     """分析整首曲子的和聲, 回傳 list[HarmonicRegion].
 
-    0.1.31 MVP: KK key detection (整曲一個 key) + 按 onset 切片 chord ID.
-    無 HMM 平滑, 無轉調偵測 — 那留下一輪.
+    key_window=None (預設): 整曲單一 key (KK detection) — 既有行為, 完全不變。
+    key_window=W (quarter 半徑): 每個 onset 改用 ±W 拍視窗的 duration-weighted
+      直方圖估「局部 key」(偏置 global key 防 flicker), 讓轉調 / 副屬的半音在
+      局部 key 下能正確判為和弦音。OMR 後校正 (③) 與評估走此路徑。
     """
     # 動態 import 避開循環 (core.analyzer ← core.ir ← ...)
     try:
@@ -277,6 +313,9 @@ def analyze_harmony(score: object) -> list[HarmonicRegion]:
     pc_histogram = [0.0] * 12
     # onset_pcs[global_onset] = set of pc 在那個 onset 同時響的
     onset_pcs: dict[Fraction, set[int]] = defaultdict(set)
+    # onset_weight[onset][pc] = 累積 duration (給局部 key 視窗用)
+    onset_weight: dict[Fraction, dict[int, float]] = defaultdict(
+        lambda: defaultdict(float))
 
     cumulative_starts = _per_part_cumulative_starts(score)
     for part_idx, part in enumerate(score.parts):
@@ -298,6 +337,7 @@ def analyze_harmony(score: object) -> list[HarmonicRegion]:
                         pc = midi % 12
                         pc_histogram[pc] += dur
                         onset_pcs[g_onset].add(pc)
+                        onset_weight[g_onset][pc] += dur
 
     if sum(pc_histogram) == 0:
         return []
@@ -312,14 +352,16 @@ def analyze_harmony(score: object) -> list[HarmonicRegion]:
             sorted_onsets[idx + 1] if idx + 1 < len(sorted_onsets)
             else onset + Fraction(4)  # 最後一個 region 保 4 拍
         )
+        region_key = (key if key_window is None else _local_key(
+            onset, sorted_onsets, onset_weight, key_window, key))
         pcs = onset_pcs[onset]
-        rn = identify_chord(pcs, key)
+        rn = identify_chord(pcs, region_key)
         if rn is None:
             continue
         # 從 figure_string 推 ideal/essential PCs
-        degrees = (_MAJOR_DEGREE_SEMITONES if key.mode == "major"
+        degrees = (_MAJOR_DEGREE_SEMITONES if region_key.mode == "major"
                    else _MINOR_DEGREE_SEMITONES)
-        root_pc = (key.tonic_pc + degrees[rn.degree - 1]) % 12
+        root_pc = (region_key.tonic_pc + degrees[rn.degree - 1]) % 12
         if rn.quality in ("dominant7", "minor7", "major7",
                           "half_diminished", "fully_diminished"):
             template = _build_seventh_pcs(root_pc, rn.quality)
@@ -346,7 +388,7 @@ def analyze_harmony(score: object) -> list[HarmonicRegion]:
         regions.append(HarmonicRegion(
             start_quarter=onset,
             end_quarter=next_onset,
-            key=key,
+            key=region_key,
             roman=rn,
             confidence=confidence,
             ideal_pitch_classes=sorted(template),

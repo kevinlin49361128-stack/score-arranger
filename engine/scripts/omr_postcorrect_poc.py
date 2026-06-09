@@ -48,6 +48,8 @@ ERROR_MODEL = [
     (-12, 1, "octave"), (12, 1, "octave"),  # 八度誤判 (pc 不變)
 ]
 _NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+# 局部 key 視窗半徑 (quarters); None = 整曲單一 key (舊行為)。
+KEY_WINDOW: "int | None" = 8
 
 
 def _spelling(midi: int) -> str:
@@ -93,7 +95,7 @@ def inject_errors(score, rate: float, rng: random.Random):
 
 def detect(score):
     """harmony-aware 偵測。回傳 {(part,measure,voice,idx): {...}} 含 cls / suspicious / fix。"""
-    regions = analyze_harmony(score)
+    regions = analyze_harmony(score, key_window=KEY_WINDOW)
     if not regions:
         return {}, None
     starts_float = _region_starts_float(regions)
@@ -214,7 +216,7 @@ def emit_packet(path: str, rate: float, seed: int, truth_out: str):
     corrupt = parse_musicxml(path)
     truth = inject_errors(corrupt, rate, random.Random(seed))
     truth_keys = {(t["part"], t["measure"], t["voice"], t["idx"]): t for t in truth}
-    regions = analyze_harmony(corrupt)
+    regions = analyze_harmony(corrupt, key_window=KEY_WINDOW)
     starts_float = _region_starts_float(regions)
     cum = _per_part_cumulative_starts(corrupt)
     cands = []
