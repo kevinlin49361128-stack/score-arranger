@@ -9,7 +9,7 @@
 
 ## 下載
 
-macOS 安裝檔（`.dmg`，已經過 Apple 公證）：到 **[介紹網頁](https://kevinlin49361128-stack.github.io/score-arranger-web/)** 下載。
+macOS 安裝檔（`.dmg`，已經過 Apple 公證）：到 **[介紹網頁](https://kevinlin49361128-stack.github.io/score-arranger/)** 下載。
 
 > 首次開啟請保持連網一次（Gatekeeper 會做一次線上查驗），之後即可離線使用。
 
