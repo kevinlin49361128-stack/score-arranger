@@ -805,13 +805,32 @@ export function PlaybackControls(
     }
     // C1 弓弦物理建模 (實驗性): physicalStrings 開啟才建立。接進與取樣相同的
     // A1濾波 → panner → vibrato → reverb 鏈, 共用亮度/空間感。
+    // 輸出增益刻意壓低 (0.9→0.34): 弓弦是「持續音」, 平均能量遠高於會衰減的取樣
+    //   (取樣弦樂在 -8dB 但會 decay), 同峰值下聽感大很多 → 不壓會蓋掉鋼琴伴奏。
+    //   使用者仍可用播放混音台逐聲部微調。
     if (physicalStrings && violinChainIn && !violinPhysicalRef.current) {
-      violinPhysicalRef.current = new PolyBowedString(12, 0.9)
+      violinPhysicalRef.current = new PolyBowedString(12, 0.34, "violin")
         .connect(violinChainIn);
     }
     if (physicalStrings && celloChainIn && !celloPhysicalRef.current) {
-      celloPhysicalRef.current = new PolyBowedString(10, 0.95)
+      celloPhysicalRef.current = new PolyBowedString(10, 0.36, "cello")
         .connect(celloChainIn);
+    }
+    // 弓弦物理建模的 Tone.FeedbackCombFilter 是 AudioWorklet, processor module
+    // 經 addModule 從 blob 非同步載入 (見 index.html CSP script-src blob:)。
+    // 等它 ready 再回 router, 否則首次播放頭幾個音會在 comb 接通前送出 → 漏掉。
+    if (physicalStrings && (violinPhysicalRef.current || celloPhysicalRef.current)) {
+      // workletsAreReady 在 Tone 的 Context 上是 runtime 方法, 但沒被列進
+      // BaseContext 的 .d.ts → 窄轉型存取。回傳 _workletPromise (FeedbackCombFilter
+      // 建構時就已設好)。
+      const ctx = Tone.getContext() as unknown as {
+        workletsAreReady?: () => Promise<void>;
+      };
+      try {
+        await ctx.workletsAreReady?.();
+      } catch {
+        /* 理論上 CSP 修好後不會走到; 失敗也不擋其餘樂器播放 */
+      }
     }
     // Harpsichord 退路: Karplus-Strong 撥弦合成 (Tone.PluckSynth pool).
     // 取樣載入失敗或使用者關閉取樣時使用; 取樣可用時改用下方 Sampler.
@@ -871,6 +890,9 @@ export function PlaybackControls(
         vscoLayerUrls(VSCO2_MANIFEST.violin.sustain.soft), "", 0.6, -8);
       const vVlnLoud = buildSampler(
         vscoLayerUrls(VSCO2_MANIFEST.violin.sustain.loud), "", 0.6, -8);
+      // VSCO cello 錄音電平比 violin 低 ~10dB (實測 peak-1s-RMS: violin -22, cello
+      //   -33 dBFS)。目前 VSCO 取樣來源 (jsDelivr) 刻意不放進 CSP 白名單 → 此 bank
+      //   不會載入, 弦樂走 nbrosowsky。日後要啟用 VSCO 須逐樂器量化校正電平再開。
       const vVcSoft = buildSampler(
         vscoLayerUrls(VSCO2_MANIFEST.cello.sustain.soft), "", 0.8, -8);
       const vVcLoud = buildSampler(
@@ -1513,8 +1535,12 @@ export function PlaybackControls(
                 const cutoff = base + playVel ** 1.4 * span;
                 filt.frequency.setTargetAtTime(cutoff, time, 0.02);
               }
-              const bank = vscoBankRef.current[key];
-              if (bank) target = playVel < 0.5 ? bank.soft : bank.loud;
+              // physicalStrings 開時 instrument 已是弓弦物理合成 (router.get
+              // 回傳)；不可被 VSCO 取樣覆蓋, 否則物理建模永遠被取樣蓋掉 = 形同沒開。
+              if (!physicalStrings) {
+                const bank = vscoBankRef.current[key];
+                if (bank) target = playVel < 0.5 ? bank.soft : bank.loud;
+              }
             }
             target.triggerAttackRelease(trigPitch, noteDur, time, playVel);
           }, noteTime);

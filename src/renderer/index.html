@@ -7,14 +7,25 @@
          connect-src 白名單:
            - 'self' / file: → 本地 (Vite dev / 打包後 file://)
            - tonejs / nbrosowsky / gleitz → SoundFont sample 來源 (硬編 https)
+             (註: VSCO-2 弦樂取樣走 cdn.jsdelivr.net, 刻意「不」放進白名單 →
+              弦樂用 nbrosowsky 底色。VSCO 各樂器錄音電平不一 (cello 比 violin 小
+              ~10dB), 直接啟用會破壞平衡; 要用得逐樂器量化校正, 列為獨立任務。)
            - api.anthropic.com / api.openai.com → LLM provider
            - http://localhost:* → 自架 Ollama / OpenAI-compat endpoint
          script-src 'wasm-unsafe-eval' — verovio + 部分 Tone.js 內部需要 WASM.
-         worker-src 'self' blob: — Tone.js 15+ 的 AudioWorklet 從 blob 載入,
-                                    沒這條會直接無聲 (worklet 載不進去).
+         script-src blob: + connect-src blob: — Tone.js 15 的 AudioWorklet
+                            (FeedbackCombFilter, 弦樂物理建模用) 從 blob URL 載入
+                            processor module。Chromium 136 (Electron 42) 的
+                            AudioWorklet.addModule 會「fetch 該 blob URL」, 這個 fetch
+                            同時受 script-src 與 connect-src 治理 —— 兩者缺 blob: 都會讓
+                            addModule reject (AbortError) → comb 永不接通 → 物理建模合成
+                            永久無聲 (其餘樂器不用 worklet, 不受影響)。實證: headless
+                            Chromium 驗過 connect-src 缺 blob: → "Connecting to blob:...
+                            violates connect-src" + AbortError + 零訊號。
+                            worker-src/child-src blob: 保留給一般 Worker。
          style 用 'unsafe-inline' 是 React/CSS-in-JS 必需 (component 內 style 屬性). -->
     <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self' file:; script-src 'self' file: 'wasm-unsafe-eval'; worker-src 'self' file: blob:; child-src 'self' file: blob:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
+      content="default-src 'self' file:; script-src 'self' file: 'wasm-unsafe-eval' blob:; worker-src 'self' file: blob:; child-src 'self' file: blob:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
     <title>Score Arranger</title>
     <style>
       :root {
