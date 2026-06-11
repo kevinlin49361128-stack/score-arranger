@@ -45,3 +45,7 @@ test-output/
 
 # OMR PoC 生成結果 (可重跑)
 engine/scripts/omr_poc_result.json
+
+# audio-qa harness 產物
+audio-qa-out/
+scripts/audio-qa/.build/

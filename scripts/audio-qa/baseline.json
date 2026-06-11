@@ -1,0 +1,13 @@
+{
+  "tolerance_db": 2,
+  "deltas": {
+    "piano": 0,
+    "violin": 4.98,
+    "cello": 6.44,
+    "flute": 7.2,
+    "clarinet": 8.31,
+    "guitar": 6.28,
+    "harp": 5.97,
+    "harpsichord": -3.68
+  }
+}

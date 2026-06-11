@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>決策：音色真實感投資路線 — Score Arranger</title>
+<style>
+  :root {
+    --bg: #1a1d23; --card: #242830; --card-hover: #2a2f38;
+    --text: #e8e6e3; --dim: #9a958e; --accent: #d4a373; --accent2: #8ab4f8;
+    --green: #81c995; --red: #f28b82; --yellow: #fdd663;
+    --border: #3a3f48;
+    font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); margin: 0; padding: 32px 16px 120px; line-height: 1.65; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: .9rem; margin-bottom: 24px; }
+  .context { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; font-size: .92rem; }
+  .context b { color: var(--accent); }
+  h2 { font-size: 1.1rem; margin: 32px 0 12px; color: var(--accent); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; transition: background .15s, border-color .15s; position: relative; }
+  .card:hover { background: var(--card-hover); }
+  .card.checked { border-color: var(--accent); }
+  .card label.head { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .card input[type=checkbox] { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; }
+  .title { font-weight: 600; font-size: 1.02rem; }
+  .badge { display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; }
+  .rec { background: rgba(212,163,115,.18); color: var(--accent); border: 1px solid var(--accent); }
+  .exp { background: rgba(138,180,248,.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .pre { background: rgba(129,201,149,.15); color: var(--green); border: 1px solid var(--green); }
+  .meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--dim); margin: 6px 0 10px 32px; }
+  .meta span b { color: var(--text); font-weight: 500; }
+  .body { margin-left: 32px; font-size: .9rem; }
+  .body p { margin: 6px 0; }
+  .plus { color: var(--green); } .minus { color: var(--red); } .warn { color: var(--yellow); }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(26,29,35,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 14px 16px; }
+  .footer-inner { max-width: 880px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+  button.copy { background: var(--accent); color: #1a1d23; border: none; padding: 10px 22px; border-radius: 8px; font-size: .95rem; font-weight: 600; cursor: pointer; }
+  button.copy:hover { filter: brightness(1.1); }
+  .count { color: var(--dim); font-size: .85rem; }
+  .toast { color: var(--green); font-size: .85rem; opacity: 0; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎻 音色真實感投資路線</h1>
+  <div class="sub">Score Arranger · 2026-06-10 · 勾選要投資的路線（可複選），底部可複製決策摘要</div>
+
+  <div class="context">
+    <b>背景</b>：0.1.114 修復了物理建模無聲（worklet CSP），音色迭代到「鋸齒+梳狀+琴體 formant」。
+    本次 session 的教訓：(1) VSCO 直接啟用因錄音電平不一致而爆平衡；(2) 純合成弓弦難逼真；
+    (3) 沒有客觀 QA 迴圈時，音訊回歸只能靠 Kevin 耳朵抓 → 來回成本高。<br>
+    <b>產品定位提醒</b>：播放是「改編預覽」，使用者最終給真人演奏 —— 播放只需「清楚、平衡、有表現力」，不需逼真到取代錄音。
+  </div>
+
+  <h2>前置（無論選哪條路線都建議先做）</h2>
+
+  <div class="card" data-key="qa">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">P. 音訊 QA harness + A/B 試聽流程</span><span class="badge pre">前置・強烈建議</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~1 session</b></span><span>風險 <b>低</b></span><span>價值 <b>讓所有音訊工作可驗證</b></span></div>
+    <div class="body">
+      <p>把這次「只聽到大提琴」這種回歸變成 CI 可抓：</p>
+      <ul>
+        <li><b>平衡測試</b>：離線 render 各樂器 C 大調音階 → 量有效 LUFS，斷言落在鋼琴參考 ±2dB 內。換取樣/調 fader 跑一次就知道有沒有爆。</li>
+        <li><b>A/B bounce</b>：重用既有 OfflineContext 匯出（#32），一鍵把音色變體 render 成 WAV 檔 → Kevin 一分鐘聽 5 個版本，不用裝 app 來回。</li>
+      </ul>
+      <p class="plus">＋ 直接解掉本 session 最大的痛（盲迭代）；所有後續路線的地基。</p>
+    </div>
+  </div>
+
+  <h2>路線選項</h2>
+
+  <div class="card" data-key="A">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">A. 取樣地基重建 — 正規化管線 + 多 articulation</span><span class="badge rec">🎯 推薦・主力</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~2-3 sessions</b></span><span>風險 <b>低-中</b></span><span>真實感提升 <b>★★★★</b></span></div>
+    <div class="body">
+      <p>VSCO-2 失敗的不是音質，是<b>沒做電平校正就上線</b>。正確做法是離線預處理管線：</p>
+      <ul>
+        <li>下載 VSCO-2 CE（CC0，可自由改製散布）→ 逐音符 <b>LUFS 響度正規化</b> → 轉檔瘦身 → 自架（重用既有 corpus_cache 懶下載模式，不肥大 app）。</li>
+        <li>多 articulation 切換（sustain / pizz / staccato / tremolo）+ 2 力度層 crossfade —— <b>引擎已經知道弓法和 articulation</b>（A1/B3 已做），只差播放端接線。</li>
+        <li>音色座位感：每件樂器 EQ + 定位 + early reflection（現有 A4 panner 延伸）。</li>
+      </ul>
+      <p class="plus">＋ 業界共識：取樣的「真實感÷工時」無可匹敵；90% 的聽感提升來自這裡。</p>
+      <p class="minus">－ 工程多於演算法（管線、manifest、快取）；VSCO CE 錄音品質中上、非頂級。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="B">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">B. 譜面感知表現力 — NotePerformer-lite</span><span class="badge rec">🎯 推薦・差異化</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~2-4 sessions</b></span><span>風險 <b>中</b></span><span>真實感提升 <b>★★★★（在 A 之上疊加）</b></span></div>
+    <div class="body">
+      <p>「假」的最大來源常不是音色而是<b>演奏呆板</b>。NotePerformer 的核心是讀譜的 AI 表現力，而本專案<b>已經有</b>樂句偵測、和聲分析、弓法生成 —— 譜面智慧是現成資產，缺的只是把它接到播放排程：</p>
+      <ul>
+        <li>樂句級力度造型（起句漸入、句尾收束、和聲張力 → 強弱）。</li>
+        <li>Agogics 微時值（句首微遲、終止式微緩）— 量很小就很有效。</li>
+        <li>圓滑線真連奏（音尾搭接 + bow change 雜訊）、長音內 crescendo（雙力度層 crossfade）。</li>
+      </ul>
+      <p class="plus">＋ 利用本專案獨有的分析引擎，是別人難抄的差異化；純控制邏輯，無新 DSP 風險。</p>
+      <p class="minus">－ 「好聽的表現力」要靠耳驗迭代調參（QA harness 的 A/B bounce 因此重要）。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">C. 物理建模 v3 — body IR convolution + Faust 波導</span><span class="badge exp">實驗・time-box</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>time-box 1-2 sessions</b></span><span>風險 <b>高</b></span><span>真實感提升 <b>★★（上限明確）</b></span></div>
+    <div class="body">
+      <p>若要續投 C1，兩個真正有效的升級（不是再調參數）：</p>
+      <ul>
+        <li><b>琴體改 convolution</b>：用實測小提琴琴身 impulse response（或從真實取樣反推頻譜包絡）取代 parametric formant —— 木質感的差距主要在這。Tone.Convolver 現成。</li>
+        <li><b>弓弦改真波導</b>：Faust pm.lib 有現成 bowed-string 模型，faust2wasm 可直接編成 AudioWorklet（CSP 已修通，這條路現在才可行）。</li>
+      </ul>
+      <p class="warn">⚠ 誠實的上限：SWAM 級的擬真需要連續控制器輸入（弓壓/弓速曲線）+ 多年調校；純譜面驅動的 PM 天花板就是「有趣的合成弦樂」。建議 time-box，到期用耳朵投票 keep/kill。</p>
+      <p class="plus">＋ 無授權問題、體積零、長音內動態天生連續；教學上「聽得到弓的物理」有獨特價值。</p>
+      <p class="minus">－ 投報率最低的一條；有沉沒成本陷阱。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="D">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">D. 神經渲染 — DDSP/MIDI-DDSP 離線匯出</span><span class="badge exp">研究賭注・可選引擎</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~2-3 sessions (PoC)</b></span><span>風險 <b>高</b></span><span>真實感提升 <b>★★★★?（未驗證）</b></span></div>
+    <div class="body">
+      <p>2026 的新選項：DDSP 系列（Apache-2，模型僅數 MB）能從音符+表現力參數合成相當逼真的小提琴/大提琴。定位成<b>「匯出擬真音訊 demo」</b>功能而非即時播放：</p>
+      <ul>
+        <li>走 homr 模式 —— Python 端可選引擎、按需下載，不肥大主程式、不碰即時路徑。</li>
+        <li>引擎已有完整 IR + 表現力資料 → 餵 MIDI-DDSP 的 note→expression→audio 管線剛好對口。</li>
+        <li>給教師的賣點：「改編完，一鍵生成可以放給學生聽的示範音檔」。</li>
+      </ul>
+      <p class="minus">－ 品質未驗證（音準漂移、複音=逐聲部跑模型）；增加 Python 依賴面；先 PoC 聽過再決定。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="E">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">E. 不投資音色 — 維持現狀，火力集中他處</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>0</b></span><span>風險 <b>機會成本而已</b></span></div>
+    <div class="body">
+      <p>反方選項，認真列出：播放只是預覽，nbrosowsky + A 路表現力「夠用」。OMR/homr 還在收尾、Epic C 拆檔、教師工作流都在排隊 —— 音色的邊際價值可能低於這些。</p>
+      <p class="warn">⚠ 若選此項，建議仍做前置 P（QA harness 很便宜，且防止未來音訊回歸）。</p>
+    </div>
+  </div>
+
+  <h2>建議的執行順序（若全採納）</h2>
+  <div class="context">
+    <b>P（QA harness）→ A（取樣地基）→ B（表現力）→ C/D 擇一 time-box 試水</b><br>
+    理由：P 讓之後每步可驗證；A 是聽感提升的大頭；B 疊在 A 上且用到獨有的分析引擎；
+    C 與 D 都是實驗性，等 A+B 落地後用 A/B bounce 直接比，數據說話再決定續投或砍。
+  </div>
+</div>
+
+<div class="footer-bar">
+  <div class="footer-inner">
+    <button class="copy" onclick="copySummary()">📋 複製決策摘要</button>
+    <span class="count" id="count"></span>
+    <span class="toast" id="toast">已複製 ✓</span>
+  </div>
+</div>
+
+<script>
+const KEY = "sa-decision-audio-realism";
+const NAMES = {
+  qa: "P 音訊QA harness + A/B試聽",
+  A: "A 取樣地基重建 (正規化管線+多articulation)",
+  B: "B 譜面感知表現力 (NotePerformer-lite)",
+  C: "C 物理建模v3 (body IR + Faust波導, time-box)",
+  D: "D 神經渲染 DDSP 離線匯出 (可選引擎 PoC)",
+  E: "E 不投資音色, 維持現狀",
+};
+const cards = document.querySelectorAll(".card");
+const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+cards.forEach(c => {
+  const k = c.dataset.key, cb = c.querySelector("input");
+  if (saved[k]) { cb.checked = true; c.classList.add("checked"); }
+  cb.addEventListener("change", () => {
+    c.classList.toggle("checked", cb.checked);
+    saved[k] = cb.checked;
+    localStorage.setItem(KEY, JSON.stringify(saved));
+    updateCount();
+  });
+});
+function updateCount() {
+  const n = [...cards].filter(c => c.querySelector("input").checked).length;
+  document.getElementById("count").textContent = n ? `已選 ${n} 項` : "尚未選擇";
+}
+function copySummary() {
+  const picked = [...cards].filter(c => c.querySelector("input").checked).map(c => "✓ " + NAMES[c.dataset.key]);
+  const text = "【音色真實感投資決策】\n" + (picked.length ? picked.join("\n") : "(未選)") +
+    "\n\n建議順序: P → A → B → C/D 擇一 time-box";
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById("toast");
+    t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800);
+  });
+}
+updateCount();
+</script>
+</body>
+</html>

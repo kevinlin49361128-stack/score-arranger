@@ -31,6 +31,11 @@ import { t, useLocale } from "../utils/i18n";
 import { bpmToTempoTerm } from "../utils/tempoTerms";
 import { MetronomeVoice } from "../utils/metronomeSounds";
 import { VSCO2_MANIFEST } from "../data/vsco2Manifest";
+// 取樣 URL / baseUrl / release / 音量 → 單一事實來源 (audio QA harness 量同一份)
+import {
+  SAMPLER_CONFIGS,
+  type SamplerKey as SamplerCfgKey,
+} from "../audio/instrumentConfig";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
 
@@ -57,136 +62,6 @@ function parseSourceBpm(xml: string | null): number | null {
   if (perMin) return Math.round(Number.parseFloat(perMin[1]));
   return null;
 }
-
-const SALAMANDER_BASE = "https://tonejs.github.io/audio/salamander/";
-// nbrosowsky/tonejs-instruments: 多種樂器 sample 集合, MIT,可線上載入
-const TONEJS_INSTRUMENTS_BASE =
-  "https://nbrosowsky.github.io/tonejs-instruments/samples/";
-// gleitz/midi-js-soundfonts (FluidR3_GM, MIT): tonejs-instruments 沒有大鍵琴,
-// 改用此 soundfont 的真實大鍵琴取樣。
-const HARPSICHORD_BASE =
-  "https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/harpsichord-mp3/";
-
-// tonejs-instruments violin 確認存在的 sample 集
-const VIOLIN_URLS: Record<string, string> = {
-  A3: "violin/A3.mp3",
-  C4: "violin/C4.mp3",
-  E4: "violin/E4.mp3",
-  G4: "violin/G4.mp3",
-  A4: "violin/A4.mp3",
-  C5: "violin/C5.mp3",
-  E5: "violin/E5.mp3",
-  G5: "violin/G5.mp3",
-  A5: "violin/A5.mp3",
-  C6: "violin/C6.mp3",
-  E6: "violin/E6.mp3",
-  G6: "violin/G6.mp3",
-  A6: "violin/A6.mp3",
-  C7: "violin/C7.mp3",
-};
-
-const CELLO_URLS: Record<string, string> = {
-  E2: "cello/E2.mp3",
-  A2: "cello/A2.mp3",
-  D3: "cello/D3.mp3",
-  G3: "cello/G3.mp3",
-  C4: "cello/C4.mp3",
-  E4: "cello/E4.mp3",
-  A4: "cello/A4.mp3",
-};
-
-const FLUTE_URLS: Record<string, string> = {
-  C4: "flute/C4.mp3",
-  E4: "flute/E4.mp3",
-  G4: "flute/G4.mp3",
-  C5: "flute/C5.mp3",
-  E5: "flute/E5.mp3",
-  G5: "flute/G5.mp3",
-  C6: "flute/C6.mp3",
-};
-
-const CLARINET_URLS: Record<string, string> = {
-  D3: "clarinet/D3.mp3",
-  F3: "clarinet/F3.mp3",
-  A3: "clarinet/A3.mp3",
-  D4: "clarinet/D4.mp3",
-  F4: "clarinet/F4.mp3",
-  A4: "clarinet/A4.mp3",
-  D5: "clarinet/D5.mp3",
-  F5: "clarinet/F5.mp3",
-};
-
-// tonejs-instruments guitar-nylon — 古典吉他取樣 (魯特琴也共用此 sampler)
-const GUITAR_URLS: Record<string, string> = {
-  B1: "guitar-nylon/B1.mp3",
-  D2: "guitar-nylon/D2.mp3",
-  E2: "guitar-nylon/E2.mp3",
-  A2: "guitar-nylon/A2.mp3",
-  E3: "guitar-nylon/E3.mp3",
-  G3: "guitar-nylon/G3.mp3",
-  A3: "guitar-nylon/A3.mp3",
-  B3: "guitar-nylon/B3.mp3",
-  E4: "guitar-nylon/E4.mp3",
-  A4: "guitar-nylon/A4.mp3",
-  A5: "guitar-nylon/A5.mp3",
-};
-
-const HARP_URLS: Record<string, string> = {
-  E1: "harp/E1.mp3",
-  D2: "harp/D2.mp3",
-  C3: "harp/C3.mp3",
-  E3: "harp/E3.mp3",
-  G3: "harp/G3.mp3",
-  D4: "harp/D4.mp3",
-  A4: "harp/A4.mp3",
-  C5: "harp/C5.mp3",
-  E5: "harp/E5.mp3",
-  D6: "harp/D6.mp3",
-  F6: "harp/F6.mp3",
-};
-
-// Salamander 取樣的 ABC 標記 — Tone.Sampler 會在缺音時自動 transpose
-const PIANO_URLS: Record<string, string> = {
-  A0: "A0.mp3",
-  C1: "C1.mp3",
-  "D#1": "Ds1.mp3",
-  "F#1": "Fs1.mp3",
-  A1: "A1.mp3",
-  C2: "C2.mp3",
-  "D#2": "Ds2.mp3",
-  "F#2": "Fs2.mp3",
-  A2: "A2.mp3",
-  C3: "C3.mp3",
-  "D#3": "Ds3.mp3",
-  "F#3": "Fs3.mp3",
-  A3: "A3.mp3",
-  C4: "C4.mp3",
-  "D#4": "Ds4.mp3",
-  "F#4": "Fs4.mp3",
-  A4: "A4.mp3",
-  C5: "C5.mp3",
-  "D#5": "Ds5.mp3",
-  "F#5": "Fs5.mp3",
-  A5: "A5.mp3",
-  C6: "C6.mp3",
-  "D#6": "Ds6.mp3",
-  "F#6": "Fs6.mp3",
-  A6: "A6.mp3",
-  C7: "C7.mp3",
-  "D#7": "Ds7.mp3",
-  "F#7": "Fs7.mp3",
-  A7: "A7.mp3",
-  C8: "C8.mp3",
-};
-
-// gleitz FluidR3 大鍵琴 — 全 88 鍵皆有, 此處每 3 半音取一個 (Sampler 內插)。
-const HARPSICHORD_URLS: Record<string, string> = {
-  C2: "C2.mp3", Eb2: "Eb2.mp3", Gb2: "Gb2.mp3", A2: "A2.mp3",
-  C3: "C3.mp3", Eb3: "Eb3.mp3", Gb3: "Gb3.mp3", A3: "A3.mp3",
-  C4: "C4.mp3", Eb4: "Eb4.mp3", Gb4: "Gb4.mp3", A4: "A4.mp3",
-  C5: "C5.mp3", Eb5: "Eb5.mp3", Gb5: "Gb5.mp3", A5: "A5.mp3",
-  C6: "C6.mp3",
-};
 
 /**
  * Karplus-Strong 多聲部撥弦合成器 — wrap a pool of Tone.PluckSynth.
@@ -872,18 +747,20 @@ export function PlaybackControls(
         return { sampler, ready };
       };
 
-      const piano = buildSampler(PIANO_URLS, SALAMANDER_BASE, 1, -6);
-      const violin = buildSampler(VIOLIN_URLS, TONEJS_INSTRUMENTS_BASE, 0.6, -8);
-      const cello = buildSampler(CELLO_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
-      const flute = buildSampler(FLUTE_URLS, TONEJS_INSTRUMENTS_BASE, 0.4, -10);
-      const clarinet =
-        buildSampler(CLARINET_URLS, TONEJS_INSTRUMENTS_BASE, 0.5, -10);
-      const guitar = buildSampler(GUITAR_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
-      const harp = buildSampler(HARP_URLS, TONEJS_INSTRUMENTS_BASE, 0.8, -8);
-      // 0.1.61: FluidR3 GM 大鍵琴取樣本身錄製偏小聲 + 撥弦衰減快, 與弦樂 (-8)
-      // 同 dB 聽感上明顯弱; 提升到 -2 補償, 讓獨奏 / 合奏 (小提琴+大鍵琴) 平衡。
-      const harpsichord =
-        buildSampler(HARPSICHORD_URLS, HARPSICHORD_BASE, 0.4, -2);
+      // 設定 (urls/baseUrl/release/volume) 全部來自 instrumentConfig —
+      // QA harness 量同一份, 這裡改值會被 audio-qa 的 baseline 漂移斷言抓到。
+      const fromCfg = (k: SamplerCfgKey) => {
+        const c = SAMPLER_CONFIGS[k];
+        return buildSampler(c.urls, c.baseUrl, c.release, c.volume);
+      };
+      const piano = fromCfg("piano");
+      const violin = fromCfg("violin");
+      const cello = fromCfg("cello");
+      const flute = fromCfg("flute");
+      const clarinet = fromCfg("clarinet");
+      const guitar = fromCfg("guitar");
+      const harp = fromCfg("harp");
+      const harpsichord = fromCfg("harpsichord");
       // 弦樂 B 路②: VSCO2 sustain soft/loud (絕對 URL → baseUrl 空字串)。
       //   note 標籤 +1 八度校正; 走 jsDelivr WAV 懶載入。
       const vVlnSoft = buildSampler(
