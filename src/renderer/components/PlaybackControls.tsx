@@ -1850,6 +1850,31 @@ export function PlaybackControls(
           </label>
         );
       })()}
+      {/* 取樣關閉警示 badge — 不分 compact 模式一律顯示。0.1.117 教訓:
+          取樣 checkbox 只在非 compact 渲染, 開關被關掉後沒有任何視覺提示,
+          使用者只聽到「鋼琴變正弦波」卻找不到原因。點擊直接開回取樣。 */}
+      {!useSamples && (
+        <button
+          type="button"
+          onClick={() => state === "idle" && setUseSamples(true)}
+          disabled={state !== "idle"}
+          title={t("playback.synthBadge.hint")}
+          style={{
+            fontSize: 10,
+            padding: "2px 8px",
+            marginLeft: 6,
+            border: "1px solid var(--accent)",
+            borderRadius: 999,
+            background: "transparent",
+            color: "var(--accent)",
+            fontWeight: 600,
+            cursor: state === "idle" ? "pointer" : "default",
+            whiteSpace: "nowrap",
+          }}
+        >
+          ⚠ {t("playback.synthBadge.label")}
+        </button>
+      )}
       {/* VIZ-1: 聲部即時音量表 — 首次播放後才有 track 列表 */}
       {knownTracks.length > 0 && (
         <VuMeters

@@ -63,6 +63,7 @@ npm run dev          # 開發環境 (renderer + main + electron)
 npm run typecheck    # TypeScript 型別檢查
 npm run lint         # Biome lint
 npm run test         # 前端單元測試 (Vitest)
+npm run audio-qa     # 音訊平衡 QA (golden baseline 漂移斷言 + WAV 試聽檔)
 npm run dist:mac     # 打包 macOS app (簽章版)
 
 cd engine && .venv/bin/python -m pytest   # 引擎測試

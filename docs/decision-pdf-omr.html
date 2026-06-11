@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>決策：PDF 匯入 / OMR 策略 — Score Arranger</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#fffdf8; --ink:#2a2622; --muted:#6b635a;
+    --line:#e3dccf; --accent:#7c5cff; --accent-soft:#efeaff;
+    --good:#2f8f5b; --warn:#b8862f; --bad:#b54a3a; --rec:#7c5cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:36px 22px 120px}
+  h1{font-size:25px;margin:0 0 4px;letter-spacing:.3px}
+  .sub{color:var(--muted);margin:0 0 24px;font-size:14px}
+  .ctx{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin:0 0 30px}
+  .ctx h2{font-size:15px;margin:0 0 10px;color:var(--accent)}
+  .ctx p{margin:6px 0;font-size:14.5px;color:#473f37}
+  .ctx .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:20px;
+    background:var(--accent-soft);color:var(--accent);margin-right:6px;font-weight:600}
+  .excluded{border-left:3px solid var(--bad);padding-left:12px;margin-top:12px;
+    font-size:13.5px;color:#6b463f;background:#fbf0ee;border-radius:0 8px 8px 0;padding:10px 12px}
+  .group{margin:0 0 30px}
+  .group > h2{font-size:17px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .group > .q{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .num{display:inline-flex;width:24px;height:24px;border-radius:7px;background:var(--accent);
+    color:#fff;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+  .cards{display:grid;gap:12px}
+  .card{position:relative;background:var(--card);border:1.5px solid var(--line);
+    border-radius:13px;padding:15px 17px 15px 46px;cursor:pointer;transition:.15s}
+  .card:hover{border-color:#c9bfa9;transform:translateY(-1px)}
+  .card.sel{border-color:var(--accent);background:#fbf9ff;box-shadow:0 2px 14px rgba(124,92,255,.13)}
+  .card .dot{position:absolute;left:16px;top:17px;width:18px;height:18px;border-radius:50%;
+    border:2px solid #cfc6b6;transition:.15s}
+  .card.sel .dot{border-color:var(--accent);background:var(--accent);
+    box-shadow:inset 0 0 0 3px #fff}
+  .card .t{font-weight:700;font-size:15.5px;margin:0 0 3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card .d{font-size:13.5px;color:#544b42;margin:0}
+  .rec{font-size:11px;font-weight:700;color:#fff;background:var(--rec);
+    padding:1px 8px;border-radius:20px;letter-spacing:.3px}
+  .cost{font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:20px}
+  .c-none{background:#eee;color:#666}.c-s{background:#e6f3ec;color:var(--good)}
+  .c-m{background:#fbf1de;color:var(--warn)}.c-l{background:#fbe7e3;color:var(--bad)}
+  .tradeoff{font-size:12.5px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .tradeoff b{color:#6b635a;font-weight:600}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,248,.96);
+    backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:13px 22px;
+    display:flex;gap:12px;align-items:center;justify-content:center}
+  .btn{border:none;border-radius:10px;padding:11px 22px;font-size:14.5px;font-weight:700;
+    cursor:pointer;transition:.15s;font-family:inherit}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:#6a48f5}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%) translateY(20px);
+    background:#2a2622;color:#fff;padding:10px 18px;border-radius:10px;font-size:13.5px;
+    opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .foot{font-size:12px;color:#a59a8b;text-align:center;margin-top:34px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>決策：PDF 匯入 / OMR 策略</h1>
+  <p class="sub">Score Arranger · 2026-06-09 · 點卡片選擇，底部可複製決策摘要（選擇會自動記憶）</p>
+
+  <div class="ctx">
+    <h2>背景與研究結論</h2>
+    <p><span class="tag">起點</span>你的想法：用 LLM 先把匯入的 PDF 清理成乾淨版本，再經預設演算法 (OMR) 匯入樂譜格式。</p>
+    <p><span class="tag">研究結論</span>方向對一半，但<b>順序反了</b>。2025 實測 GPT-4o / Gemini / Claude 3 Opus 幾乎讀不出樂譜像素 → LLM 對「影像」是盲的，對「符號化樂譜」才會推理。所以 LLM 該放 <b>OMR 之後</b>做符號層校正，不是之前清影像。</p>
+    <p><span class="tag">既有決定</span>2026-06-03 已決議「PDF/OMR 先保持現狀、不擴張」。核心價值是<b>改編</b>，曲庫已有 1103 首乾淨 MusicXML，PDF 只是入口而非產品本體。</p>
+    <div class="excluded">⛔ <b>已排除（不需勾選）：</b>「LLM 預清理影像 → 再 OMR」。LLM 碰像素會幻覺改音/加音/漏音，在 OMR 前就污染內容，違反「任何一步不准無中生有」。</div>
+  </div>
+
+  <!-- 決策 1 -->
+  <div class="group" data-key="invest">
+    <h2><span class="num">1</span>投資程度</h2>
+    <p class="q">要不要、以及投多少資源在 PDF/OMR 品質上？（單選）</p>
+    <div class="cards">
+      <div class="card" data-val="A">
+        <div class="dot"></div>
+        <div class="t">A. 維持現狀，不動 <span class="cost c-none">零成本</span></div>
+        <div class="d">保持 6/3 決定。Audiveris 照舊（乾淨印刷譜 80–90%），資源全放改編核心。</div>
+        <div class="tradeoff"><b>取捨：</b>PDF 匯入體驗不變；手機拍照/掃描譜仍不好用，但那本來就不是主力場景。</div>
+      </div>
+      <div class="card" data-val="B">
+        <div class="dot"></div>
+        <div class="t">B. 小投資：③ LLM 符號後校正層 <span class="rec">🎯 建議</span> <span class="cost c-s">低</span></div>
+        <div class="d">OMR 跑完後，讓 LLM 用調號 / 和弦進行 / 樂理合理性去修辨識錯誤。重用<b>既有</b> harmony 分析 + LLM 整合 + OMR 糾錯 UI。</div>
+        <div class="tradeoff"><b>取捨：</b>槓桿最高、不碰像素、風險低；但只能修「符號層說得通與否」，救不了 OMR 根本沒認出來的東西。</div>
+      </div>
+      <div class="card" data-val="C">
+        <div class="dot"></div>
+        <div class="t">C. 中投資：B + homr 並列引擎 <span class="cost c-m">中</span></div>
+        <div class="d">除了後校正，再把開源 <b>homr</b>（改良版 oemer，對拍照/掃描更穩）做成 Audiveris 的<b>替代引擎選項</b>，讓使用者依來源挑。</div>
+        <div class="tradeoff"><b>取捨：</b>覆蓋拍照場景；但 homr 目前丟掉力度/演奏法/重升降，對乾淨印刷譜不見得贏 Audiveris → 是互補不是取代，且多一條相依與維運。</div>
+      </div>
+      <div class="card" data-val="D">
+        <div class="dot"></div>
+        <div class="t">D. 大投資：換 end-to-end OMR 引擎 + 後校正 <span class="cost c-l">高</span></div>
+        <div class="d">導入 Transformer 系 OMR（SMT++ / LEGATO 一脈）取代 Audiveris，全頁複音、層級更高。</div>
+        <div class="tradeoff"><b>取捨：</b>天花板最高；但多為研究模型、整合與算力成本高、OMR 是焦油坑（最後 10–15% 錯誤最惱人），投報率不確定。與「核心是改編」的定位拉扯。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 決策 2 -->
+  <div class="group" data-key="evalset">
+    <h2><span class="num">2</span>前置：要不要先建 OMR 評估集？</h2>
+    <p class="q">動 OMR 前，先準備一組手標 ground-truth（10–20 首）。（單選）</p>
+    <div class="cards">
+      <div class="card" data-val="yes">
+        <div class="dot"></div>
+        <div class="t">先建評估集再動 <span class="rec">🎯 建議</span></div>
+        <div class="d">沒有量測基準，「改了」≠「變好」，會盲飛。10–20 首手標就夠看出後校正/換引擎的實際增益。</div>
+        <div class="tradeoff"><b>取捨：</b>多花前置工；但符合驗證紀律，之後每次調整都有客觀分數可比。</div>
+      </div>
+      <div class="card" data-val="no">
+        <div class="dot"></div>
+        <div class="t">先憑感覺做，邊做邊看</div>
+        <div class="d">直接做 PoC，用幾首譜目視判斷。</div>
+        <div class="tradeoff"><b>取捨：</b>啟動快；但無法客觀證明有沒有變好，容易自我感覺良好。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 決策 3 -->
+  <div class="group" data-key="next">
+    <h2><span class="num">3</span>立即下一步要我做什麼？</h2>
+    <p class="q">這次想推進到哪。（單選）</p>
+    <div class="cards">
+      <div class="card" data-val="poc">
+        <div class="dot"></div>
+        <div class="t">做 ③ 的小型 PoC <span class="rec">🎯 建議</span></div>
+        <div class="d">拿現有 LLM + harmony 分析，對一份 OMR 輸出做後校正，看實際修對多少 → 同時當作評估集的第一批樣本。</div>
+      </div>
+      <div class="card" data-val="evalfirst">
+        <div class="dot"></div>
+        <div class="t">先只建評估集 + 量現況 baseline</div>
+        <div class="d">先把量測基準鋪好，再決定投不投。最保守。</div>
+      </div>
+      <div class="card" data-val="park">
+        <div class="dot"></div>
+        <div class="t">先放著，回去做別的</div>
+        <div class="d">這版先不動 OMR，回頭做難度品質 / 前端 god files / Epic 等既有清單。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">選擇存在瀏覽器 localStorage，重開此頁會記得。決策文件本身不影響程式碼。</div>
+</div>
+
+<div class="bar">
+  <button class="btn ghost" onclick="resetAll()">清除選擇</button>
+  <button class="btn primary" onclick="copySummary()">複製決策摘要</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const KEY="sa-decision-pdf-omr";
+  const labels={
+    invest:{A:"A. 維持現狀不動",B:"B. 小投資：LLM 符號後校正層 ③",C:"C. 中投資：B + homr 並列引擎",D:"D. 大投資：換 end-to-end OMR 引擎"},
+    evalset:{yes:"先建 OMR 評估集再動",no:"先憑感覺邊做邊看"},
+    next:{poc:"做 ③ LLM 後校正的小型 PoC",evalfirst:"先建評估集 + 量 baseline",park:"先放著，回去做既有清單"}
+  };
+  let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+  function render(){
+    document.querySelectorAll(".group").forEach(g=>{
+      const k=g.dataset.key;
+      g.querySelectorAll(".card").forEach(c=>{
+        c.classList.toggle("sel",state[k]===c.dataset.val);
+      });
+    });
+  }
+  document.querySelectorAll(".group").forEach(g=>{
+    const k=g.dataset.key;
+    g.querySelectorAll(".card").forEach(c=>{
+      c.addEventListener("click",()=>{
+        state[k]=c.dataset.val;
+        localStorage.setItem(KEY,JSON.stringify(state));
+        render();
+      });
+    });
+  });
+  function toast(m){const t=document.getElementById("toast");t.textContent=m;
+    t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1900);}
+  function resetAll(){state={};localStorage.removeItem(KEY);render();toast("已清除");}
+  function copySummary(){
+    const L=[];
+    L.push("【Score Arranger — PDF/OMR 決策摘要】");
+    for(const k of ["invest","evalset","next"]){
+      const name={invest:"投資程度",evalset:"評估集前置",next:"立即下一步"}[k];
+      L.push(`• ${name}：${state[k]?labels[k][state[k]]:"（未選）"}`);
+    }
+    L.push("（已排除：LLM 預清理影像 → 再 OMR，幻覺改音風險）");
+    const txt=L.join("\n");
+    navigator.clipboard.writeText(txt).then(()=>toast("已複製，貼回對話給我即可"),
+      ()=>{const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);
+        ta.select();document.execCommand("copy");ta.remove();toast("已複製");});
+  }
+  render();
+</script>
+</body>
+</html>

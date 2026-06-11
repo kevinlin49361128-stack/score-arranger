@@ -473,6 +473,16 @@ export const IO_STRINGS: BiDict = {
     en: "Tuning reference A4 — playback pitch standard (440=std, 415=Baroque, 442=orchestra/solo)",
     ja: "調律基準 A4 — 再生ピッチ基準 (440=標準, 415=バロック, 442=オケ/ソロ)",
   },
+  "playback.synthBadge.label": {
+    "zh-TW": "合成音色",
+    en: "synth sound",
+    ja: "シンセ音色",
+  },
+  "playback.synthBadge.hint": {
+    "zh-TW": "「真實取樣」目前關閉 — 所有樂器都用合成器音色 (鋼琴會像電子琴)。點擊重新開啟取樣 (播放停止時)。",
+    en: "Real samples are OFF — all instruments use synth fallback (piano sounds electronic). Click to re-enable (when idle).",
+    ja: "リアルサンプルがオフ — 全楽器がシンセ音色になります。クリックで再有効化 (停止中のみ)。",
+  },
   "playback.tuning.standard": {
     "zh-TW": "標準", en: "std", ja: "標準",
   },
