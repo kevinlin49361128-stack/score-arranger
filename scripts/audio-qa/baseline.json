@@ -8,6 +8,10 @@
     "clarinet": 8.31,
     "guitar": 6.28,
     "harp": 5.97,
-    "harpsichord": -3.68
+    "harpsichord": -3.68,
+    "violin_vsco": 5.02,
+    "viola_vsco": 5.53,
+    "cello_vsco": 6.42,
+    "violin_vsco_stacc": 0.56
   }
 }

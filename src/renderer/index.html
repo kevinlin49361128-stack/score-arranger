@@ -7,9 +7,9 @@
          connect-src 白名單:
            - 'self' / file: → 本地 (Vite dev / 打包後 file://)
            - tonejs / nbrosowsky / gleitz → SoundFont sample 來源 (硬編 https)
-             (註: VSCO-2 弦樂取樣走 cdn.jsdelivr.net, 刻意「不」放進白名單 →
-              弦樂用 nbrosowsky 底色。VSCO 各樂器錄音電平不一 (cello 比 violin 小
-              ~10dB), 直接啟用會破壞平衡; 要用得逐樂器量化校正, 列為獨立任務。)
+           - cdn.jsdelivr.net → VSCO-2 弦樂多 articulation 取樣。各層電平已由
+             scripts/vsco-pipeline 逐音符量測對齊 (manifest gainDb) + audio-qa
+             harness 驗證平衡 — 早前「直接啟用爆平衡」的前提已解除。
            - api.anthropic.com / api.openai.com → LLM provider
            - http://localhost:* → 自架 Ollama / OpenAI-compat endpoint
          script-src 'wasm-unsafe-eval' — verovio + 部分 Tone.js 內部需要 WASM.
@@ -25,7 +25,7 @@
                             worker-src/child-src blob: 保留給一般 Worker。
          style 用 'unsafe-inline' 是 React/CSS-in-JS 必需 (component 內 style 屬性). -->
     <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self' file:; script-src 'self' file: 'wasm-unsafe-eval' blob:; worker-src 'self' file: blob:; child-src 'self' file: blob:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
+      content="default-src 'self' file:; script-src 'self' file: 'wasm-unsafe-eval' blob:; worker-src 'self' file: blob:; child-src 'self' file: blob:; style-src 'self' file: 'unsafe-inline'; img-src 'self' file: data: blob:; media-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io; connect-src 'self' file: blob: https://tonejs.github.io https://nbrosowsky.github.io https://gleitz.github.io https://cdn.jsdelivr.net https://api.anthropic.com https://api.openai.com http://localhost:* http://127.0.0.1:*; font-src 'self' file: data:; object-src 'none'; base-uri 'self'; form-action 'none';" />
     <title>Score Arranger</title>
     <style>
       :root {

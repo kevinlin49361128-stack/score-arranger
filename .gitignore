@@ -49,3 +49,5 @@ engine/scripts/omr_poc_result.json
 # audio-qa harness 產物
 audio-qa-out/
 scripts/audio-qa/.build/
+scripts/vsco-pipeline/.cache/
+scripts/vsco-pipeline/.report.json

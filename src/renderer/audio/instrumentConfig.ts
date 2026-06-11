@@ -152,6 +152,18 @@ export type SamplerKey =
   | "piano" | "violin" | "cello" | "flute"
   | "clarinet" | "guitar" | "harp" | "harpsichord";
 
+/** VSCO-2 弦樂 bank 的 per-family 音量 trim (dB)。
+ * 管線已把每層 median 對齊 -20 dBFS (見 vsco2Manifest gainDb), 這裡只負責
+ * 把「對齊後的 VSCO」整體放到與 nbrosowsky 基準相同的平衡位置 —
+ * 數值由 audio-qa harness 校準 (Δ vs piano 對齊 nb 同樂器的 baseline)。 */
+export const VSCO_TRIM: Record<"violin" | "viola" | "cello", number> = {
+  // audio-qa 校準 (trim=0 時 VSCO Δ vs piano: violin +11.1 / viola +11.4 /
+  // cello +12.3; 目標 = nb 基準 violin +5.0 / viola ~+5.5 / cello +6.4)
+  violin: -6.1,
+  viola: -5.9,
+  cello: -5.9,
+};
+
 export const SAMPLER_CONFIGS: Record<SamplerKey, SamplerConfig> = {
   piano: { urls: PIANO_URLS, baseUrl: SALAMANDER_BASE, release: 1, volume: -6 },
   violin: { urls: VIOLIN_URLS, baseUrl: TONEJS_INSTRUMENTS_BASE, release: 0.6, volume: -8 },
