@@ -2,10 +2,11 @@
  * Electron main process — 視窗管理 + IPC 對外接口
  */
 
-import { app, BrowserWindow, dialog, ipcMain, session, shell } from "electron";
-import { mkdirSync, readFileSync, realpathSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, session, shell } from "electron";
+import { existsSync, mkdirSync, readFileSync, realpathSync, unwatchFile, watchFile, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { clearCache, listRemote, resolveRemote } from "./corpus-fetch";
 import {
   analyzeScore,
@@ -81,6 +82,44 @@ import {
 } from "./llm";
 
 const isDev = !app.isPackaged;
+
+// ── 隨 app 散布的核心取樣 (sa-samples:// scheme) ──
+// 為何自訂 scheme 而非 file://: Chromium 的 fetch() 不支援 file: scheme,
+// Tone.js 載 buffer 走 fetch → 必須用註冊過 supportFetchAPI 的特權 scheme。
+// 取樣目錄: packaged → Resources/samples; dev → repo build/samples
+// (跑過 scripts/fetch-bundled-samples.mjs 才存在; 不存在就回 null → CDN fallback)。
+const SAMPLES_DIR = app.isPackaged
+  ? join(process.resourcesPath, "samples")
+  : join(app.getAppPath(), "build", "samples");
+
+// 必須在 app ready 前註冊; corsEnabled 讓 dev (http://localhost) 也能 fetch
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "sa-samples",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+      corsEnabled: true,
+    },
+  },
+]);
+
+function registerSamplesProtocol(): void {
+  protocol.handle("sa-samples", (req) => {
+    // URL 形如 sa-samples://local/piano/A0.mp3 → 相對路徑 piano/A0.mp3
+    const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, "");
+    const abs = resolve(SAMPLES_DIR, rel);
+    // 路徑穿越防護: 解析後必須仍在取樣目錄內
+    if (!abs.startsWith(resolve(SAMPLES_DIR) + "/")) {
+      return new Response("forbidden", { status: 403 });
+    }
+    return net.fetch(pathToFileURL(abs).toString(), {
+      headers: { "Access-Control-Allow-Origin": "*" },
+    });
+  });
+}
 
 async function createWindow(): Promise<BrowserWindow> {
   const win = new BrowserWindow({
@@ -171,6 +210,11 @@ function requireApprovedPath(path: string): void {
 }
 
 function registerIpcHandlers(): void {
+  // 隨 app 散布的核心取樣根 URL — 目錄不存在 (dev 未跑 fetch 腳本) 回 null,
+  // renderer 自動退回 CDN。
+  ipcMain.handle("samples:localRoot", () =>
+    existsSync(join(SAMPLES_DIR, "piano")) ? "sa-samples://local/" : null,
+  );
   ipcMain.handle("dialog:openScore", async () => {
     // 第一個 filter 是 macOS 對話框的預設選項 — 必須涵蓋所有支援格式,
     // 否則 PDF / MIDI / ABC / krn 會被 grey-out 而無法選取。
@@ -678,6 +722,7 @@ app.whenReady().then(async () => {
       callback(permission === "media");
     },
   );
+  registerSamplesProtocol();
   registerIpcHandlers();
   const win = await createWindow();
   setupAutoUpdater(win);

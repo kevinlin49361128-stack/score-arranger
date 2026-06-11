@@ -48,6 +48,9 @@ jobs:
       - name: Build renderer + main
         run: npm run build
 
+      - name: Fetch bundled samples (核心取樣隨 app 散布)
+        run: node scripts/fetch-bundled-samples.mjs
+
       - name: Freeze Python engine (PyInstaller)
         run: |
           cd engine

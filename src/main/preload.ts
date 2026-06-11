@@ -134,6 +134,7 @@ const api = {
     scoreInfo: (path: string) =>
       ipcRenderer.invoke("engine:scoreInfo", path),
     omrStatus: () => ipcRenderer.invoke("engine:omrStatus"),
+    samplesLocalRoot: () => ipcRenderer.invoke("samples:localRoot"),
     omrReview: (path: string) =>
       ipcRenderer.invoke("engine:omrReview", path),
     homrStatus: () => ipcRenderer.invoke("engine:homrStatus"),

@@ -26,6 +26,10 @@ files:
 # 「accompanying notice」要求在 packaged binary 內就能查到 (不必去找 source
 # repo). About Dialog 已連結這些檔案; Finder 也可從「顯示套件內容」進去.
 extraResources:
+  # 隨 app 散布的核心取樣 (scripts/fetch-bundled-samples.mjs 產出) —
+  # 播放零網路依賴; 缺目錄時 electron-builder 會報錯, 提醒先跑 fetch 腳本。
+  - from: "build/samples"
+    to: "samples"
   - from: "engine/build-pyi/dist/score-arranger-engine"
     to: "engine/score-arranger-engine"
   - from: "LICENSE"

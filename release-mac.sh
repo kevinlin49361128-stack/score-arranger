@@ -20,6 +20,7 @@ DIST="$HOME/build/score-arranger/dist"
 
 echo "[1/5] 編譯 renderer + main process..."
 npm run build
+node scripts/fetch-bundled-samples.mjs
 
 echo "[2/5] 凍結 Python engine (PyInstaller)..."
 bash engine/freeze.sh

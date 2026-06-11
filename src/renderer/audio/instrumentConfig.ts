@@ -164,6 +164,33 @@ export const VSCO_TRIM: Record<"violin" | "viola" | "cello", number> = {
   cello: -5.9,
 };
 
+/** 各樂器在「隨 app 散布的本地取樣」目錄下的前綴 (見 scripts/fetch-bundled-samples)。
+ * nbrosowsky 系的 urls 自帶子路徑 (violin/A3.mp3), 共用 tonejs/ 前綴。 */
+export const LOCAL_SAMPLE_PREFIX: Record<SamplerKey, string> = {
+  piano: "piano/",
+  violin: "tonejs/",
+  cello: "tonejs/",
+  flute: "tonejs/",
+  clarinet: "tonejs/",
+  guitar: "tonejs/",
+  harp: "tonejs/",
+  harpsichord: "harpsichord/",
+};
+
+/**
+ * 解析取樣 baseUrl: 本地取樣可用 (packaged app / 開發時跑過 fetch 腳本) 就用
+ * sa-samples:// 本地 scheme — 播放零網路依賴、不受 CDN/離線影響;
+ * 否則退回各自的 CDN baseUrl (行為同 bundle 化之前)。
+ */
+export function resolveSamplerBase(
+  key: SamplerKey,
+  localRoot: string | null,
+): string {
+  return localRoot
+    ? `${localRoot}${LOCAL_SAMPLE_PREFIX[key]}`
+    : SAMPLER_CONFIGS[key].baseUrl;
+}
+
 export const SAMPLER_CONFIGS: Record<SamplerKey, SamplerConfig> = {
   piano: { urls: PIANO_URLS, baseUrl: SALAMANDER_BASE, release: 1, volume: -6 },
   violin: { urls: VIOLIN_URLS, baseUrl: TONEJS_INSTRUMENTS_BASE, release: 0.6, volume: -8 },

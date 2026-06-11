@@ -35,6 +35,7 @@ import { VSCO2_MANIFEST } from "../data/vsco2Manifest";
 import {
   SAMPLER_CONFIGS,
   VSCO_TRIM,
+  resolveSamplerBase,
   type SamplerKey as SamplerCfgKey,
 } from "../audio/instrumentConfig";
 // 音色 B: 譜面感知表現力 (樂句弧線 / 終止式微緩 / 真連奏)
@@ -756,9 +757,16 @@ export function PlaybackControls(
 
       // 設定 (urls/baseUrl/release/volume) 全部來自 instrumentConfig —
       // QA harness 量同一份, 這裡改值會被 audio-qa 的 baseline 漂移斷言抓到。
+      // 核心取樣優先用「隨 app 散布」的本地檔 (sa-samples://) — 零網路依賴、
+      // 離線可用、不受 CDN 影響; 無本地取樣 (dev 未跑 fetch 腳本) 退回 CDN。
+      const localRoot = await window.scoreArranger.engine
+        .samplesLocalRoot()
+        .catch(() => null);
       const fromCfg = (k: SamplerCfgKey) => {
         const c = SAMPLER_CONFIGS[k];
-        return buildSampler(c.urls, c.baseUrl, c.release, c.volume);
+        return buildSampler(
+          c.urls, resolveSamplerBase(k, localRoot), c.release, c.volume,
+        );
       };
       const piano = fromCfg("piano");
       const violin = fromCfg("violin");

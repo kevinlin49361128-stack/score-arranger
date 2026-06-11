@@ -145,6 +145,8 @@ declare global {
           missing: string[];
           install_hints: Record<string, string>;
         }>>;
+        /** 隨 app 散布的核心取樣根 URL (sa-samples://local/), 無本地取樣時 null */
+        samplesLocalRoot: () => Promise<string | null>;
         omrReview: (path: string) => Promise<IpcResponse<{
           count: number;
           suspicious: {
