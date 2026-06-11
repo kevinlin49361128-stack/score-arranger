@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>決策：下一階段方向 — Score Arranger (2026-06-12)</title>
+<style>
+  :root {
+    --bg: #1a1d23; --card: #242830; --card-hover: #2a2f38;
+    --text: #e8e6e3; --dim: #9a958e; --accent: #d4a373; --accent2: #8ab4f8;
+    --green: #81c995; --red: #f28b82; --yellow: #fdd663; --border: #3a3f48;
+    font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); margin: 0; padding: 32px 16px 120px; line-height: 1.65; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--dim); font-size: .9rem; margin-bottom: 24px; }
+  .context { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; font-size: .92rem; }
+  .context b { color: var(--accent); }
+  .context td { padding: 2px 14px 2px 0; vertical-align: top; }
+  h2 { font-size: 1.1rem; margin: 30px 0 12px; color: var(--accent); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; transition: background .15s, border-color .15s; }
+  .card:hover { background: var(--card-hover); }
+  .card.checked { border-color: var(--accent); }
+  .card label.head { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .card input[type=checkbox] { width: 20px; height: 20px; margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; }
+  .title { font-weight: 600; font-size: 1.02rem; }
+  .badge { display: inline-block; font-size: .72rem; padding: 1px 8px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; }
+  .rec { background: rgba(212,163,115,.18); color: var(--accent); border: 1px solid var(--accent); }
+  .ask { background: rgba(138,180,248,.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--dim); margin: 6px 0 10px 32px; }
+  .meta span b { color: var(--text); font-weight: 500; }
+  .body { margin-left: 32px; font-size: .9rem; }
+  .body p { margin: 6px 0; }
+  .plus { color: var(--green); } .minus { color: var(--red); } .warn { color: var(--yellow); }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(26,29,35,.95); backdrop-filter: blur(8px); border-top: 1px solid var(--border); padding: 14px 16px; }
+  .footer-inner { max-width: 880px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+  button.copy { background: var(--accent); color: #1a1d23; border: none; padding: 10px 22px; border-radius: 8px; font-size: .95rem; font-weight: 600; cursor: pointer; }
+  button.copy:hover { filter: brightness(1.1); }
+  .count { color: var(--dim); font-size: .85rem; }
+  .toast { color: var(--green); font-size: .85rem; opacity: 0; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧭 下一階段方向</h1>
+  <div class="sub">Score Arranger · 2026-06-12 · 模型換代後的全專案重新評估 · 勾選要走的方向（可複選）</div>
+
+  <div class="context">
+    <b>新鮮視角的現況診斷</b>（數據為當下實測）：
+    <table style="margin-top:6px">
+      <tr><td>💪 <b>強項</b></td><td>分析引擎是真差異化（樂句/和聲/弓法/難度閉環，~929 引擎測試）；release 基礎設施完整（公證/自動更新/雙平台 CI）；音訊現在有 QA harness 護欄。</td></tr>
+      <tr><td>⚠️ <b>結構債</b></td><td>PlaybackControls <b>2,278</b> 行、Toolbar 1,844、ScoreViewer 1,526、server.py <b>3,374</b>。Epic P0/A/B/C 掛 in-progress 已久。本輪音訊工作每一步都在 2,300 行檔案裡搏鬥 — 債務成本已實證。</td></tr>
+      <tr><td>🕳️ <b>最大盲點</b></td><td><b>零使用者回饋迴路</b>：350+ 任務做完，但沒有任何管道知道誰在用、用什麼功能、卡在哪。最近三次「regression」有一次其實是設定迷宮（取樣開關）— 沒有真實使用者眼睛，UX 債只能靠 Kevin 自己踩。</td></tr>
+      <tr><td>🌐 <b>脆弱依賴</b></td><td>預設播放音色 100% 依賴第三方 CDN（取樣全走網路）— 離線/校園網路環境直接退化成合成器，且已造成兩類載入競速 bug。</td></tr>
+      <tr><td>📦 <b>待出貨</b></td><td>0.1.115–118（音色 A+B、鋼琴載入修復、警示 badge）共 12 個 commit 未 push、未公開發布。</td></tr>
+    </table>
+  </div>
+
+  <h2>選項（可複選，建議至多挑 2 個當主力）</h2>
+
+  <div class="card" data-key="R">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">R. 立即出貨 — 公開發布 0.1.118 批次</span><span class="badge rec">🎯 推薦・先行</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~0.5 session</b></span><span>前置 <b>你耳驗 OK</b></span></div>
+    <div class="body">
+      <p>音色 A+B + 鋼琴修復 + 警示 badge 一次出。現有使用者經 auto-update 拿到木管真取樣（長笛/單簧管首次有真音色）、VSCO 弦樂、表現力。</p>
+      <p class="warn">⚠ 唯一前置：你最終耳驗（鋼琴對、弦四平衡對、表現力不突兀）。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C1">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">1. 鞏固 Sprint — 拆 god files + 核心取樣本地化</span><span class="badge rec">🎯 推薦・主力</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~3-5 sessions</b></span><span>風險 <b>中 (有 QA harness + 測試護欄)</b></span><span>價值 <b>降低之後每件事的成本</b></span></div>
+    <div class="body">
+      <ul>
+        <li><b>拆 PlaybackControls</b>（2,278 行）：抽出 audio engine（ensureInstruments / 樂器 rack / 排程）成獨立模組 — 本輪已開頭（instrumentConfig/expressivity/bowedStringSynth 已獨立），把剩下的搬完。</li>
+        <li><b>拆 server.py</b>（3,374 行）：按 method 域分模組（repair.py 拆分的成功模式重演）。</li>
+        <li><b>核心取樣 bundle 進 app</b>（~20MB mp3：Salamander 鋼琴 + nbrosowsky 核心）：播放零網路依賴、離線/校園網路可用、<b>永久消滅載入競速 bug 類</b>。VSCO 維持線上懶載入。</li>
+        <li>schema-first RPC（Epic P0）收尾或正式砍掉 — 掛太久的 in-progress 要有了結。</li>
+      </ul>
+      <p class="plus">＋ 這輪音訊工作實證了債務成本；現在護欄齊（98 前端測試 + audio-qa + 929 引擎測試），是拆的最佳時機。</p>
+      <p class="minus">－ 對使用者「看不見」；拆檔期間新功能凍結。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C2">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">2. 使用者回饋迴路 — 從「盲做」到「有眼睛」</span><span class="badge ask">方向題・需要你定調</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~1-2 sessions</b></span><span>取捨 <b>涉及隱私聲明</b></span></div>
+    <div class="body">
+      <ul>
+        <li><b>低敏感版</b>：in-app「回報問題/建議」入口（預填系統資訊的 GitHub issue 連結）+ 開 GitHub Discussions — 不碰隱私。</li>
+        <li><b>進階版</b>：opt-in 匿名使用統計（功能使用次數、無內容資料）— 需改 PRIVACY.md，與目前「零連網蒐集」的隱私立場衝突，<b>這是你要拍板的方向</b>。</li>
+      </ul>
+      <p class="plus">＋ 350+ 任務後最缺的是知道「哪些功能真的有人用」。</p>
+      <p class="minus">－ 沒有使用者基數時，管道做了也可能空轉（先有觸及才有回饋 → 與選項 3 互補）。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C3">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">3. 觸及/推廣 — 讓對的人找到它</span><span class="badge ask">方向題・需要你定調</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>~1-2 sessions (技術面)</b></span><span>持續投入 <b>需要你出面的部分</b></span></div>
+    <div class="body">
+      <ul>
+        <li>技術面（我能做）：<b>Homebrew cask</b>、GitHub README 英文版、網站 SEO/OG 卡、示範 GIF/影片素材。</li>
+        <li>人的部分（你決定）：教師社群/論壇分享、音樂教育圈試用者招募。</li>
+      </ul>
+      <p class="plus">＋ 產品成熟度已遠超「能見度」— 不對稱明顯。</p>
+      <p class="minus">－ 曝光後 issue/支援量會上升；要先想好你願意投入的維護節奏。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C4">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">4. 功能線續推 — homr 驗收 + 音色 v2</span></div>
+    </label>
+    <div class="meta"><span>工時 <b>視範圍</b></span></div>
+    <div class="body">
+      <ul>
+        <li><b>homr PDF 匯入驗收</b> — 0.1.107 做完後你一直沒實測（懸置事項），匯一張 PDF 選 homr 引擎比對 Audiveris 品質。</li>
+        <li>音色 B-v2：pizz/tremolo 接引擎 per-note articulation（manifest 已有取樣層）。</li>
+        <li>音色 A-v2：取樣自架 + 轉檔瘦身（與選項 1 的 bundle 化部分重疊 — 二選一即可）。</li>
+      </ul>
+      <p class="minus">－ 反方：在結構債清掉前繼續堆功能，每件的成本都比拆完後貴。</p>
+    </div>
+  </div>
+
+  <div class="card" data-key="C5">
+    <label class="head"><input type="checkbox">
+      <div><span class="title">5. 養護模式 — 暫停新工作，只修 bug</span></div>
+    </label>
+    <div class="body">
+      <p>誠實列出的反方選項：專案已遠超個人工具的完成度，也許該停下來用一陣子、讓真實使用淘出真正的痛點，再決定投資方向。</p>
+    </div>
+  </div>
+
+  <h2>我的建議組合</h2>
+  <div class="context">
+    <b>R（耳驗後立即發布）→ 1（鞏固 Sprint）</b>，同時把 <b>2 的低敏感版</b>（回饋入口，半天工）夾帶在鞏固期做掉。
+    3（推廣）等鞏固完、且你想清楚維護節奏再啟動；4 的 homr 驗收只需要你十分鐘實測，隨時可插隊。<br>
+    <span style="color:var(--dim)">反方提醒：如果你目前對這專案的定位是「自用工具 + 作品集」而非「要長使用者的產品」，那 2/3 都可跳過，1 也可以縮成只做核心取樣 bundle（最痛的一項）。定位本身只有你能定。</span>
+  </div>
+</div>
+
+<div class="footer-bar">
+  <div class="footer-inner">
+    <button class="copy" onclick="copySummary()">📋 複製決策摘要</button>
+    <span class="count" id="count"></span>
+    <span class="toast" id="toast">已複製 ✓</span>
+  </div>
+</div>
+
+<script>
+const KEY = "sa-decision-next-phase";
+const NAMES = {
+  R: "R 立即發布 0.1.118 批次 (耳驗後)",
+  C1: "1 鞏固 Sprint (拆 god files + 核心取樣本地化 + RPC 收尾)",
+  C2: "2 使用者回饋迴路",
+  C3: "3 觸及/推廣 (Homebrew cask / 英文 README / 影片)",
+  C4: "4 功能線續推 (homr 驗收 + 音色 v2)",
+  C5: "5 養護模式 (只修 bug)",
+};
+const cards = document.querySelectorAll(".card");
+const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+cards.forEach(c => {
+  const k = c.dataset.key, cb = c.querySelector("input");
+  if (saved[k]) { cb.checked = true; c.classList.add("checked"); }
+  cb.addEventListener("change", () => {
+    c.classList.toggle("checked", cb.checked);
+    saved[k] = cb.checked;
+    localStorage.setItem(KEY, JSON.stringify(saved));
+    updateCount();
+  });
+});
+function updateCount() {
+  const n = [...cards].filter(c => c.querySelector("input").checked).length;
+  document.getElementById("count").textContent = n ? `已選 ${n} 項` : "尚未選擇";
+}
+function copySummary() {
+  const picked = [...cards].filter(c => c.querySelector("input").checked).map(c => "✓ " + NAMES[c.dataset.key]);
+  const text = "【下一階段方向決策】\n" + (picked.length ? picked.join("\n") : "(未選)") +
+    "\n\n建議組合: R → 1 (+2 低敏感版夾帶); 3 等鞏固後; homr 驗收隨時插隊";
+  navigator.clipboard.writeText(text).then(() => {
+    const t = document.getElementById("toast");
+    t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800);
+  });
+}
+updateCount();
+</script>
+</body>
+</html>
