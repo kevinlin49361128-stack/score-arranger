@@ -479,6 +479,8 @@ export function PlaybackControls(
   //   sustain 載入成功才啟用該樂器 (取代 nbrosowsky 底色); staccato 為可選
   //   加值層 — 排程時短音切到 staccato 取樣 (見 schedule loop)。
   //   每層 sampler 音量 = manifest gainDb (管線逐音符量測對齊) + VSCO_TRIM。
+  /** 所有建構過的 VSCO sampler (含未 settle 的) — unmount dispose 用。 */
+  const vscoPendingRef = useRef<Tone.Sampler[]>([]);
   const vscoBankRef = useRef<
     Record<
       string,
@@ -549,6 +551,8 @@ export function PlaybackControls(
       celloFilterRef.current?.dispose?.();
       violinPannerRef.current?.dispose?.();
       celloPannerRef.current?.dispose?.();
+      for (const s of vscoPendingRef.current) s.dispose?.();
+      vscoPendingRef.current = [];
       for (const bank of Object.values(vscoBankRef.current)) {
         for (const artic of [bank.sustain, bank.staccato]) {
           artic?.soft.dispose?.();
@@ -764,37 +768,11 @@ export function PlaybackControls(
       const guitar = fromCfg("guitar");
       const harp = fromCfg("harp");
       const harpsichord = fromCfg("harpsichord");
-      // 弦樂 B 路②: VSCO2 sustain soft/loud (絕對 URL → baseUrl 空字串)。
-      //   note 標籤 +1 八度校正; 走 jsDelivr WAV 懶載入。
-      // VSCO2 bank: 每層 volume = manifest gainDb (逐音符量測對齊 -20dBFS)
-      //   + per-family trim (audio-qa 校準對齊 nbrosowsky 平衡基準)。
-      //   sustain 必載; staccato 為加值層 (短音切換)。
-      const VSCO_RELEASE: Record<string, number> = {
-        violin: 0.6, viola: 0.7, cello: 0.8,
-      };
-      const vscoBuilds: Record<
-        string,
-        Record<string, { soft: ReturnType<typeof buildSampler>;
-          loud: ReturnType<typeof buildSampler> }>
-      > = {};
-      for (const inst of ["violin", "viola", "cello"] as const) {
-        vscoBuilds[inst] = {};
-        for (const artic of ["sustain", "staccato"] as const) {
-          const a = VSCO2_MANIFEST[inst]?.[artic];
-          if (!a) continue;
-          const rel = artic === "staccato" ? 0.3 : VSCO_RELEASE[inst];
-          vscoBuilds[inst][artic] = {
-            soft: buildSampler(a.soft.urls, "", rel, a.soft.gainDb + VSCO_TRIM[inst]),
-            loud: buildSampler(a.loud.urls, "", rel, a.loud.gainDb + VSCO_TRIM[inst]),
-          };
-        }
-      }
-      const vscoAll = Object.values(vscoBuilds)
-        .flatMap((artics) => Object.values(artics))
-        .flatMap((l) => [l.soft, l.loud]);
+      // 只 await 核心 8 件 (共幾 MB mp3) — VSCO (數百 MB WAV) 絕不能放進這個
+      // await: 0.1.116 教訓 — 頻寬被 VSCO 吃光, Salamander 鋼琴在 20s settle
+      // timeout 內載不完 → loaded=false → 退回三角波合成器 (鋼琴音色變糟)。
       const all = [
         piano, violin, cello, flute, clarinet, guitar, harp, harpsichord,
-        ...vscoAll,
       ];
       await Promise.all(all.map((x) => x.ready));
 
@@ -827,9 +805,41 @@ export function PlaybackControls(
           cello.sampler.connect(bus);
         }
       }
-      // 弦樂 B 路②: VSCO2 sustain 兩力度層都載入成功才啟用該樂器的 bank,
-      //   並把兩個 sampler 都改接弦樂鏈 (filter→panner→vibrato)。任一層失敗
-      //   就不建 bank → schedule loop 自動退回 nbrosowsky violin/cello。
+      // 弦樂 B 路②: VSCO2 多 articulation bank — 在核心樂器 settle「之後」
+      // 才開始抓 (給核心全頻寬) 且不 await: 載完才掛 bank。排程端逐 track
+      // snapshot bank → 播放中不換音色, 下一次播放自動升級成 VSCO。
+      // 每層 volume = manifest gainDb (管線逐音符量測對齊 -20dBFS) +
+      // per-family trim (audio-qa 校準對齊 nbrosowsky 平衡基準)。
+      const VSCO_RELEASE: Record<string, number> = {
+        violin: 0.6, viola: 0.7, cello: 0.8,
+      };
+      const vscoBuilds: Record<
+        string,
+        Record<string, { soft: ReturnType<typeof buildSampler>;
+          loud: ReturnType<typeof buildSampler> }>
+      > = {};
+      for (const inst of ["violin", "viola", "cello"] as const) {
+        vscoBuilds[inst] = {};
+        for (const artic of ["sustain", "staccato"] as const) {
+          const a = VSCO2_MANIFEST[inst]?.[artic];
+          if (!a) continue;
+          const rel = artic === "staccato" ? 0.3 : VSCO_RELEASE[inst];
+          vscoBuilds[inst][artic] = {
+            soft: buildSampler(a.soft.urls, "", rel, a.soft.gainDb + VSCO_TRIM[inst]),
+            loud: buildSampler(a.loud.urls, "", rel, a.loud.gainDb + VSCO_TRIM[inst]),
+          };
+        }
+      }
+      const vscoAll = Object.values(vscoBuilds)
+        .flatMap((artics) => Object.values(artics))
+        .flatMap((l) => [l.soft, l.loud]);
+      // unmount 清理需涵蓋「尚未 settle 進 bank」的 sampler
+      // (dispose 冪等, 與 bank 內同物件重複 dispose 無害)
+      vscoPendingRef.current.push(...vscoAll.map((b) => b.sampler));
+
+      // sustain 兩力度層都載入成功才啟用該樂器的 bank, 並把 sampler 改接
+      // 弦樂鏈 (filter→panner→vibrato)。任一層失敗就不建 bank →
+      // schedule loop 自動退回 nbrosowsky violin/cello。
       const settleVsco = (
         key: string,
         builds: (typeof vscoBuilds)[string],
@@ -861,10 +871,12 @@ export function PlaybackControls(
         }
         vscoBankRef.current[key] = bank;
       };
-      settleVsco("violin", vscoBuilds.violin, violinChainIn);
-      // viola 共用 violin 的亮度/定位鏈 (v1 — 專屬鏈列為後續)
-      settleVsco("viola", vscoBuilds.viola, violinChainIn);
-      settleVsco("cello", vscoBuilds.cello, celloChainIn);
+      void Promise.all(vscoAll.map((x) => x.ready)).then(() => {
+        settleVsco("violin", vscoBuilds.violin, violinChainIn);
+        // viola 共用 violin 的亮度/定位鏈 (v1 — 專屬鏈列為後續)
+        settleVsco("viola", vscoBuilds.viola, violinChainIn);
+        settleVsco("cello", vscoBuilds.cello, celloChainIn);
+      });
       fluteRef.current = flute.sampler.loaded
         ? flute.sampler
         : fallbackRef.current;
@@ -1406,6 +1418,12 @@ export function PlaybackControls(
         const instrument = router.get(key);
         const isBowedString =
           key === "violin" || key === "viola" || key === "cello";
+        // VSCO bank 逐 track snapshot (非排程 callback 內讀 ref): VSCO 是
+        // 背景載入, 播放中 settle 不可讓音色曲中切換 — 本次播放用 snapshot,
+        // 下一次播放才升級。
+        const vscoBank = isBowedString
+          ? vscoBankRef.current[key]
+          : undefined;
         // 音色 B (NotePerformer-lite v1): 弦樂自然化開啟時, 對弓弦聲部套
         // 樂句弧線力度 / 終止式微緩 / 真連奏重疊。純 velocity/duration 變換,
         // onset 不動 → 跨聲部零失步、游標不受影響。
@@ -1467,7 +1485,7 @@ export function PlaybackControls(
               // physicalStrings 開時 instrument 已是弓弦物理合成 (router.get
               // 回傳)；不可被 VSCO 取樣覆蓋, 否則物理建模永遠被取樣蓋掉 = 形同沒開。
               if (!physicalStrings) {
-                const bank = vscoBankRef.current[key];
+                const bank = vscoBank;
                 if (bank) {
                   // 短音 (<0.22s) 且有 staccato 取樣 → 切 spiccato 一擊取樣,
                   // 否則 sustain; 兩者皆依力度挑 soft/loud 層 (門檻 0.5)。
