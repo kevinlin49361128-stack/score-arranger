@@ -12,6 +12,7 @@
  *   - violin_vsco_stacc — staccato 層短音樂句 (bounce 耳驗用 + 電平監看)
  */
 import * as Tone from "tone";
+import { shapePhrasing } from "../../src/renderer/audio/expressivity";
 import {
   SAMPLER_CONFIGS,
   VSCO_TRIM,
@@ -20,7 +21,11 @@ import {
 import { VSCO2_MANIFEST } from "../../src/renderer/data/vsco2Manifest";
 
 type VscoInst = "violin" | "viola" | "cello";
-type QaKey = SamplerKey | `${VscoInst}_vsco` | "violin_vsco_stacc";
+type QaKey =
+  | SamplerKey
+  | `${VscoInst}_vsco`
+  | "violin_vsco_stacc"
+  | "violin_expr";
 
 /** 每件樂器在舒適音域的 5 音測試樂句 (落在各自的取樣涵蓋內)。 */
 const PHRASES: Record<string, string[]> = {
@@ -37,6 +42,8 @@ const PHRASES: Record<string, string[]> = {
   viola_vsco: ["C4", "D4", "E4", "F4", "G4"],
   cello_vsco: ["C3", "D3", "E3", "F3", "G3"],
   violin_vsco_stacc: ["G4", "A4", "B4", "C5", "D5"],
+  // 表現力 A/B: 同 violin 樂句 + shapePhrasing — 與 violin.wav 對聽
+  violin_expr: ["G4", "A4", "B4", "C5", "D5"],
 };
 
 const NOTE_SPACING = 0.5;
@@ -64,6 +71,16 @@ interface SamplerSpec {
 }
 
 function specFor(key: QaKey): SamplerSpec {
+  if (key === "violin_expr") {
+    const cfg = SAMPLER_CONFIGS.violin;
+    return {
+      urls: cfg.urls,
+      baseUrl: cfg.baseUrl,
+      release: cfg.release,
+      volume: cfg.volume,
+      noteDur: NOTE_DUR,
+    };
+  }
   if (key.endsWith("_vsco") || key.endsWith("_stacc")) {
     const inst = key.split("_")[0] as VscoInst;
     const artic = key.endsWith("_stacc") ? "staccato" : "sustain";
@@ -103,6 +120,7 @@ window.qaKeys = [
   "viola_vsco",
   "cello_vsco",
   "violin_vsco_stacc",
+  "violin_expr",
 ];
 
 window.renderInstrument = async (key: QaKey) => {
@@ -121,11 +139,17 @@ window.renderInstrument = async (key: QaKey) => {
       sampler.toDestination();
       // Tone.loaded() 在 offline context 內等所有 buffer 載完 (走網路抓取樣)
       await Tone.loaded();
-      phrase.forEach((note, i) => {
-        sampler.triggerAttackRelease(
-          note, spec.noteDur, i * NOTE_SPACING, VELOCITY,
-        );
-      });
+      let events = phrase.map((note, i) => ({
+        name: note,
+        time: i * NOTE_SPACING,
+        duration: spec.noteDur,
+        velocity: VELOCITY,
+      }));
+      // violin_expr: 走與播放器相同的表現力造型 → 與 violin.wav A/B 對聽
+      if (key === "violin_expr") events = shapePhrasing(events);
+      for (const ev of events) {
+        sampler.triggerAttackRelease(ev.name, ev.duration, ev.time, ev.velocity);
+      }
     },
     duration,
     1,

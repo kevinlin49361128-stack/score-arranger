@@ -37,6 +37,8 @@ import {
   VSCO_TRIM,
   type SamplerKey as SamplerCfgKey,
 } from "../audio/instrumentConfig";
+// 音色 B: 譜面感知表現力 (樂句弧線 / 終止式微緩 / 真連奏)
+import { shapePhrasing } from "../audio/expressivity";
 
 type PlayState = "idle" | "loading" | "playing" | "paused";
 
@@ -1404,7 +1406,22 @@ export function PlaybackControls(
         const instrument = router.get(key);
         const isBowedString =
           key === "violin" || key === "viola" || key === "cello";
-        for (const note of track.notes) {
+        // 音色 B (NotePerformer-lite v1): 弦樂自然化開啟時, 對弓弦聲部套
+        // 樂句弧線力度 / 終止式微緩 / 真連奏重疊。純 velocity/duration 變換,
+        // onset 不動 → 跨聲部零失步、游標不受影響。
+        const exprNotes =
+          humanizeRef.current && isBowedString
+            ? shapePhrasing(
+                track.notes.map((n) => ({
+                  time: n.time,
+                  duration: n.duration,
+                  velocity: n.velocity,
+                  name: n.name,
+                  midi: n.midi,
+                })),
+              )
+            : track.notes;
+        for (const note of exprNotes) {
           const noteTime = note.time * stretch + countInOffset;
           const noteDur = note.duration * stretch;
           // 調音基準 + (A3 humanize 開 + 弓弦) 同音齊奏第 2+ 聲部微離調 → 合併成單一 detune
