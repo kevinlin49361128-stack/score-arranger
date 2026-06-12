@@ -91,6 +91,7 @@ class EngineClient {
   /** 慢方法的逾時覆寫 — 未列出者用 DEFAULT_TIMEOUT_MS。 */
   private readonly METHOD_TIMEOUT_MS: Record<string, number> = {
     pdf_to_musicxml: 900_000, // Audiveris OMR — 引擎端另有 timeout, 此為 process 卡死後備
+    homr_image_to_musicxml: 660_000, // homr 深度學習推論 (引擎端 timeout_sec=600 + 緩衝); 沒這條會落到 180s DEFAULT, 但巨圖推論需更久 → client 先放棄會誤殺
     audio_to_musicxml: 600_000, // basic-pitch AMT
     arrange: 300_000, // 修復迴圈 (0.1.60 已加事件數硬上限, 不會跑滿)
     arrange_custom: 300_000,

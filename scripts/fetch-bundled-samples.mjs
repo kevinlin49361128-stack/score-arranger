@@ -16,7 +16,7 @@
  * 用法: node scripts/fetch-bundled-samples.mjs   (已存在的檔案跳過, 可重跑)
  * 在 release-mac.sh 與 build-windows.yml 都會先跑這支。
  */
-import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -80,4 +80,21 @@ await Promise.all(Array.from({ length: CONCURRENCY }, () => worker(queue)));
 console.log(
   `bundled-samples: ${done} 下載, ${skipped} 已存在, ${failed} 失敗 (共 ${jobs.length})`,
 );
+
+// pdf.js 執行期資源 (cMaps / 標準字型 / 影像解碼 wasm) — 隨 app 散布, 經
+// sa-samples:// scheme 餵給 homr 的 PDF→影像 rasterize。掃描版 PDF 的
+// JBIG2/JPEG2000 影像需要 wasmUrl 才能解碼, 否則 render 出全白 (homr 因此
+// 報 "No noteheads found")。CID 字型需要 cMaps; 非內嵌標準字型需要 standard_fonts。
+const PDFJS_SRC = join(ROOT, "node_modules", "pdfjs-dist");
+const PDFJS_OUT = join(OUT, "pdfjs");
+let pdfjsCopied = 0;
+for (const dir of ["cmaps", "standard_fonts", "wasm"]) {
+  const src = join(PDFJS_SRC, dir);
+  if (existsSync(src)) {
+    cpSync(src, join(PDFJS_OUT, dir), { recursive: true });
+    pdfjsCopied++;
+  }
+}
+console.log(`bundled-pdfjs: 複製 ${pdfjsCopied}/3 個資源目錄 → ${PDFJS_OUT}`);
+
 if (failed > 0) process.exit(1);
