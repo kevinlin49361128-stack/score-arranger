@@ -18,7 +18,7 @@
  */
 import { cpSync, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -35,8 +35,10 @@ await esbuild.build({
   outfile: join(BUILD_DIR, "instrumentConfig.mjs"),
   logLevel: "silent",
 });
+// pathToFileURL: Windows 上 import() 不吃裸絕對路徑 (D:\… 的 'D:' 會被當成 URL
+// scheme → ERR_UNSUPPORTED_ESM_URL_SCHEME); 必須轉成 file:// URL。POSIX 也通用。
 const { SAMPLER_CONFIGS, LOCAL_SAMPLE_PREFIX } = await import(
-  join(BUILD_DIR, "instrumentConfig.mjs")
+  pathToFileURL(join(BUILD_DIR, "instrumentConfig.mjs")).href
 );
 
 const jobs = [];
